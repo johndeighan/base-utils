@@ -67,7 +67,7 @@ Add a README.md file:
 
 ```text
 Creating this project
-===============================
+=====================
 
 ```
 
@@ -83,11 +83,22 @@ $ git commit -m "initial commit"
 ```
 
 All unit tests should pass using `npm test`
-`git status` should show nothing to commit, working directory clean
+`git status` should show:
 
+```text
+On branch main
+nothing to commit, working tree clean
+```
 
+Create a GitHub repo
+====================
 
+```bash
+$ cd ..
+$ gh repo create
+```
 
+The first command should put you in the parent folder
 
 I followed instructions from:
 
@@ -106,3 +117,7 @@ the folder, which will become the name of the repo.
 Furthermore, later prompts also do not appear, so you should just
 keep hitting 'Enter' and eventually you'll get your bash prompt
 back and the repo will be created at GitHub.
+
+Publishing on npm
+=================
+
