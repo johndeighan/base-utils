@@ -1,0 +1,22 @@
+{
+  "name": "@jdeighan/exceptions",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "utilities to generate and handle exceptions",
+  "main": "index.js",
+	"exports": {
+		".": "./src/exceptions.js"
+	},
+  "scripts": {
+    "test": "ava"
+  },
+  "keywords": [
+    "javascript"
+  ],
+  "author": "John Deighan",
+  "license": "MIT",
+  "dependencies": {
+    "ava": "^4.3.3",
+    "js-yaml": "^4.1.0"
+  }
+}
