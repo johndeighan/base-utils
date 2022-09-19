@@ -1,12 +1,12 @@
 {
   "name": "@jdeighan/exceptions",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "utilities to generate and handle exceptions",
   "main": "index.js",
-	"exports": {
-		".": "./src/exceptions.js"
-	},
+  "exports": {
+    ".": "./src/exceptions.js"
+  },
   "scripts": {
     "test": "ava"
   },
