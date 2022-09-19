@@ -121,3 +121,9 @@ back and the repo will be created at GitHub.
 Publishing on npm
 =================
 
+```bash
+$ publish
+```
+
+This is a synonum for `npm publish --access=public`
+(in my .bashrc file)
