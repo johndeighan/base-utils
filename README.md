@@ -1,0 +1,108 @@
+Creating the exceptions project
+===============================
+
+1.-
+```bash
+$ mkdir exceptions
+$ cd exceptions
+$ git init -b main
+$ npm init
+$ mkdir src
+$ mkdir test
+$ npm install js-yaml
+$ npm install ava
+```
+
+NOTE: During 'npm init', make the package name '@jdeighan/exceptions'
+      using your npm user name in place of 'jdeighan'
+
+In the src/ folder, add your library, e.g. exceptions.coffee
+In the test/ folder, add your unit tests, e.g.
+
+```coffeescript
+import test from 'ava'
+
+import {
+	haltOnError, logErrors, LOG, DEBUG, error, assert, croak,
+	normalize, super_normalize,
+	} from '@jdeighan/exceptions'
+
+# ---------------------------------------------------------------------------
+
+test 'foo', (t) => t.pass()
+
+block = """
+	abc\tdef
+	\tabc     def
+	"""
+
+norm = normalize(block)
+snorm = super_normalize(block)
+
+test 'normalize', (t) => t.is(norm, "abc def\nabc def")
+test 'super_normalize', (t) => t.is(snorm, "abc def abc def")
+```
+
+In your package.json file:
+
+1. Add key to 'scripts' section: "test": "ava"
+2. Add key "type": "module"
+3. Add key "exports":
+	{ ".": "./src/exceptions.js"}
+
+Add a .gitignore file:
+
+```text
+node_modules/
+```
+
+Add a .npmrc file:
+
+```text
+engine-strict=true
+loglevel=silent
+```
+
+Add a README.md file:
+
+```text
+Creating this project
+===============================
+
+```
+
+```bash
+$ git status
+```
+
+Should not include ANYTHING inside the node_modules folder
+
+```bash
+$ git add -A
+$ git commit -m "initial commit"
+```
+
+All unit tests should pass using `npm test`
+`git status` should show nothing to commit, working directory clean
+
+
+
+
+
+I followed instructions from:
+
+	https://docs.github.com/en/get-started/importing-your-projects-to-github/importing-source-code-to-github/adding-locally-hosted-code-to-github
+
+Unfortunately, they didn't work. To make it work, I had to cd to the
+parent folder, then run 'gh repo create'.
+
+At the initial prompt, you should select:
+
+	Push an existing local repository to GitHub
+
+After that, you won't see the prompt, just a '?'. Enter the name of
+the folder, which will become the name of the repo.
+
+Furthermore, later prompts also do not appear, so you should just
+keep hitting 'Enter' and eventually you'll get your bash prompt
+back and the repo will be created at GitHub.
