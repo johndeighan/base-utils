@@ -5,14 +5,30 @@ import test from 'ava';
 import {
   haltOnError,
   logErrors,
+  toTAML,
   LOG,
   DEBUG,
-  error,
   assert,
   croak
 } from '@jdeighan/exceptions';
 
 // ---------------------------------------------------------------------------
-test('foo', (t) => {
+test('pass', (t) => {
   return t.pass();
+});
+
+test('taml', (t) => {
+  return t.is(toTAML([1, 2]), "---\n- 1\n- 2\n");
+});
+
+test('assert', (t) => {
+  return t.is(assert(2 + 2 === 4, "garbage"), true);
+});
+
+logErrors(false);
+
+test('unassert', (t) => {
+  return t.throws(function() {
+    return assert(2 + 2 === 5, "garbage");
+  });
 });

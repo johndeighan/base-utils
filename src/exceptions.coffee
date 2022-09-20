@@ -14,20 +14,24 @@ doLog = true
 # ---------------------------------------------------------------------------
 
 export haltOnError = (flag=true) ->
+	# --- return existing setting
 
+	save = doHaltOnError
 	doHaltOnError = flag
-	return
+	return save
 
 # ---------------------------------------------------------------------------
 
 export logErrors = (flag=true) ->
 
+	save = doLog
 	doLog = flag
-	return
+	return save
 
 # ---------------------------------------------------------------------------
+# --- export only to allow unit tests
 
-toTAML = (obj) ->
+export toTAML = (obj) ->
 	str = yaml.dump(obj, {
 		skipInvalid: true
 		indent: 3
@@ -41,37 +45,32 @@ toTAML = (obj) ->
 
 export LOG = (lArgs...) ->
 
-	[label, item] = lArgs
-	if lArgs.length > 1
-		# --- There's both a label and an item
-		if (item == undef)
-			console.log "#{label} = undef"
-		else if (item == null)
-			console.log "#{label} = null"
-		else
-			console.log sep_dash
-			console.log "#{label}:"
-			if isString(item)
-				console.log untabify(item)
+	switch lArgs.length
+		when 0
+			console.log ""
+		when 1
+			console.log lArgs[0]
+		when 2
+			# --- There's both a label and an item
+			[label, item] = lArgs
+			if (item == undef)
+				console.log "#{label} = undef"
+			else if (item == null)
+				console.log "#{label} = null"
 			else
-				console.log toTAML(item)
-			console.log sep_dash
-	else
-		console.log label
+				console.log sep_dash
+				console.log "#{label}:"
+				if isString(item)
+					console.log untabify(item)
+				else
+					console.log toTAML(item)
+				console.log sep_dash
+		else
+			console.log "TOO MANY ARGS for LOG(): #{lArgs.length}"
 	return true   # to allow use in boolean expressions
 
 # --- Use this instead to make it easier to remove all instances
 export DEBUG = LOG   # synonym
-
-# ---------------------------------------------------------------------------
-#   error - throw an error
-
-export error = (message) ->
-
-	if doHaltOnError
-		console.trace("ERROR: #{message}")
-		process.exit()
-	throw new Error(message)
 
 # ---------------------------------------------------------------------------
 
@@ -116,25 +115,31 @@ export assert = (cond, msg) ->
 				console.log "   #{caller}"
 			console.log '--------------------'
 			console.log "ERROR: #{msg} (in #{lCallers[0]}())"
-		if doHaltOnError
-			process.exit()
-		error msg
+		croak msg
 	return true
 
 # ---------------------------------------------------------------------------
 #   croak - throws an error after possibly printing useful info
+#           err can be a string or an Error object
 
-export croak = (err, label, obj) ->
+export croak = (err, label=undef, obj=undef) ->
 
 	if isString(err)
 		curmsg = err
 	else
 		curmsg = err.message
-	newmsg = """
+
+	if isEmpty(label)
+		newmsg = "ERROR (croak): #{curmsg}"
+	else
+		newmsg = """
 			ERROR (croak): #{curmsg}
 			#{label}:
-			#{JSON.stringify(obj)}
+			#{toTAML(obj)}
 			"""
-
-	# --- re-throw the error
-	throw new Error(newmsg)
+	if doHaltOnError
+		console.trace newmsg
+		process.exit()
+	else
+		# --- re-throw the error
+		throw new Error(newmsg)

@@ -8,7 +8,7 @@
     ".": "./src/exceptions.js"
   },
   "scripts": {
-    "test": "ava"
+    "test": "coffee -c . && ava"
   },
   "keywords": [
     "javascript"
