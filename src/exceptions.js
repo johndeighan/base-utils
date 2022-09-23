@@ -57,6 +57,9 @@ export var toTAML = function(obj) {
 // This is useful for debugging
 export var LOG = function(...lArgs) {
   var item, label;
+  if (!doLog) {
+    return;
+  }
   switch (lArgs.length) {
     case 0:
       console.log("");
@@ -154,7 +157,7 @@ ${label}:
 ${toTAML(obj)}`;
   }
   if (doHaltOnError) {
-    console.trace(newmsg);
+    LOG(newmsg);
     return process.exit();
   } else {
     // --- re-throw the error

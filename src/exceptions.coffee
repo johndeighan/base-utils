@@ -45,6 +45,8 @@ export toTAML = (obj) ->
 
 export LOG = (lArgs...) ->
 
+	if ! doLog
+		return
 	switch lArgs.length
 		when 0
 			console.log ""
@@ -138,7 +140,7 @@ export croak = (err, label=undef, obj=undef) ->
 			#{toTAML(obj)}
 			"""
 	if doHaltOnError
-		console.trace newmsg
+		LOG newmsg
 		process.exit()
 	else
 		# --- re-throw the error
