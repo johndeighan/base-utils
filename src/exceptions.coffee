@@ -2,11 +2,9 @@
 
 import yaml from 'js-yaml'
 
-sep_dash = '-'.repeat(42)
-sep_eq = '='.repeat(42)
-`const undef = undefined`
-isString = (x) => return (typeof x == 'string') || (x instanceof String)
-untabify = (str) -> return str.replace(/\t/g, ' '.repeat(3))
+import {
+	undef, sep_dash, sep_eq, isString, untabify, LOG, toTAML,
+	} from '@jdeighan/exceptions/utils'
 
 doHaltOnError = false
 doLog = true
@@ -27,52 +25,6 @@ export logErrors = (flag=true) ->
 	save = doLog
 	doLog = flag
 	return save
-
-# ---------------------------------------------------------------------------
-# --- export only to allow unit tests
-
-export toTAML = (obj) ->
-	str = yaml.dump(obj, {
-		skipInvalid: true
-		indent: 3
-		sortKeys: true
-		lineWidth: -1
-		})
-	return "---\n" + str
-
-# ---------------------------------------------------------------------------
-# This is useful for debugging
-
-export LOG = (lArgs...) ->
-
-	if ! doLog
-		return
-	switch lArgs.length
-		when 0
-			console.log ""
-		when 1
-			console.log lArgs[0]
-		when 2
-			# --- There's both a label and an item
-			[label, item] = lArgs
-			if (item == undef)
-				console.log "#{label} = undef"
-			else if (item == null)
-				console.log "#{label} = null"
-			else
-				console.log sep_dash
-				console.log "#{label}:"
-				if isString(item)
-					console.log untabify(item)
-				else
-					console.log toTAML(item)
-				console.log sep_dash
-		else
-			console.log "TOO MANY ARGS for LOG(): #{lArgs.length}"
-	return true   # to allow use in boolean expressions
-
-# --- Use this instead to make it easier to remove all instances
-export DEBUG = LOG   # synonym
 
 # ---------------------------------------------------------------------------
 

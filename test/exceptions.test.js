@@ -5,12 +5,15 @@ import test from 'ava';
 import {
   haltOnError,
   logErrors,
-  toTAML,
-  LOG,
-  DEBUG,
   assert,
   croak
 } from '@jdeighan/exceptions';
+
+import {
+  LOG,
+  DEBUG,
+  toTAML
+} from '@jdeighan/exceptions/utils';
 
 // ---------------------------------------------------------------------------
 test('pass', (t) => {
@@ -18,7 +21,7 @@ test('pass', (t) => {
 });
 
 test('taml', (t) => {
-  return t.is(toTAML([1, 2]), "---\n- 1\n- 2\n");
+  return t.is(toTAML([1, 2]), "---\n- 1\n- 2");
 });
 
 test('assert', (t) => {
