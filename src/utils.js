@@ -5,19 +5,16 @@ var myReplacer;
 import yaml from 'js-yaml';
 
 import {
-  assert,
-  croak
-} from '@jdeighan/exceptions';
+  strict as assert
+} from 'node:assert';
 
 export const undef = undefined;
 
-export var sep_dash = '-'.repeat(42);
-
-export var sep_eq = '='.repeat(42);
-
 // ---------------------------------------------------------------------------
 //   pass - do nothing
-export var pass = function() {};
+export var pass = () => {
+  return true;
+};
 
 // ---------------------------------------------------------------------------
 export var defined = (obj) => {
@@ -35,9 +32,30 @@ export var untabify = (str) => {
 };
 
 // ---------------------------------------------------------------------------
+//   deepCopy - deep copy an array or object
+export var deepCopy = function(obj) {
+  var err, newObj, objStr;
+  if (obj === undef) {
+    return undef;
+  }
+  objStr = JSON.stringify(obj);
+  try {
+    newObj = JSON.parse(objStr);
+  } catch (error) {
+    err = error;
+    croak("ERROR: err.message", objStr);
+  }
+  return newObj;
+};
+
+// ---------------------------------------------------------------------------
 // --- a replacer is (key, value) -> newvalue
 myReplacer = function(name, value) {
-  if (isString(value)) {
+  if (value === undef) {
+    return 'undef';
+  } else if (value === null) {
+    return null;
+  } else if (isString(value)) {
     return escapeStr(value);
   } else if (isObject(value, ['tamlReplacer'])) {
     return value.tamlReplacer();
@@ -69,13 +87,18 @@ export var toTAML = function(obj, hOptions = {}) {
 
 // ---------------------------------------------------------------------------
 //   escapeStr - escape newlines, TAB chars, etc.
-export var hDefEsc = {
+export var hEsc = {
   "\n": '®',
   "\t": '→',
   " ": '˳'
 };
 
-export var escapeStr = function(str, hEscape = hDefEsc) {
+export var hEscNoNL = {
+  "\t": '→',
+  " ": '˳'
+};
+
+export var escapeStr = function(str, hReplace = hEsc) {
   var ch, lParts;
   assert(isString(str), "escapeStr(): not a string");
   lParts = (function() {
@@ -84,8 +107,8 @@ export var escapeStr = function(str, hEscape = hDefEsc) {
     results = [];
     for (i = 0, len1 = ref.length; i < len1; i++) {
       ch = ref[i];
-      if (hEscape[ch] != null) {
-        results.push(hEscape[ch]);
+      if (defined(hReplace[ch])) {
+        results.push(hReplace[ch]);
       } else {
         results.push(ch);
       }
@@ -93,6 +116,45 @@ export var escapeStr = function(str, hEscape = hDefEsc) {
     return results;
   })();
   return lParts.join('');
+};
+
+// ---------------------------------------------------------------------------
+export var hasChar = (str, ch) => {
+  return str.indexOf(ch) >= 0;
+};
+
+// ---------------------------------------------------------------------------
+export var quoted = (str, escape = undef) => {
+  switch (escape) {
+    case 'escape':
+      str = escapeStr(str);
+      break;
+    case 'escapeNoNL':
+      str = escapeStr(str, hEscNoNL);
+      break;
+    default:
+      pass;
+  }
+  assert(isString(str), `not a string: ${OL(str)}`);
+  if (!hasChar(str, "'")) {
+    return "'" + str + "'";
+  }
+  if (!hasChar(str, '"')) {
+    return '"' + str + '"';
+  }
+  return '<' + str + '>';
+};
+
+// ---------------------------------------------------------------------------
+//   unescapeStr - unescape newlines, TAB chars, etc.
+export var hUnesc = {
+  '®': "\n",
+  '→': "\t",
+  '˳': " "
+};
+
+export var unescapeStr = function(str, hReplace = hUnesc) {
+  return escapeStr(str, hReplace);
 };
 
 // ---------------------------------------------------------------------------
@@ -105,51 +167,6 @@ export var OL = function(obj) {
     }
   } else {
     return 'undef';
-  }
-};
-
-// ---------------------------------------------------------------------------
-export var jsType = function(x) {
-  var lKeys;
-  if (notdefined(x)) {
-    return [undef, undef];
-  } else if (isString(x)) {
-    if (x.match(/^\s*$/)) {
-      return ['string', 'empty'];
-    } else {
-      return ['string', undef];
-    }
-  } else if (isNumber(x)) {
-    if (Number.isInteger(x)) {
-      return ['number', 'integer'];
-    } else {
-      return ['number', undef];
-    }
-  } else if (isBoolean(x)) {
-    return ['boolean', undef];
-  } else if (isHash(x)) {
-    lKeys = Object.keys(x);
-    if (lKeys.length === 0) {
-      return ['hash', 'empty'];
-    } else {
-      return ['hash', undef];
-    }
-  } else if (isArray(x)) {
-    if (x.length === 0) {
-      return ['array', 'empty'];
-    } else {
-      return ['array', undef];
-    }
-  } else if (isRegExp(x)) {
-    return ['regexp', undef];
-  } else if (isConstructor(x)) {
-    return ['function', 'constructor'];
-  } else if (isFunction(x)) {
-    return ['function', undef];
-  } else if (isObject(x)) {
-    return ['object', undef];
-  } else {
-    throw new Error(`Unknown type: ${OL(x)}`);
   }
 };
 
@@ -286,44 +303,55 @@ export var isObject = function(x, lReqKeys = undef) {
 };
 
 // ---------------------------------------------------------------------------
-// This is useful for debugging
-export var LOG = function(...lArgs) {
-  var item, label;
-  switch (lArgs.length) {
-    case 0:
-      console.log("");
-      break;
-    case 1:
-      console.log(lArgs[0]);
-      break;
-    case 2:
-      // --- There's both a label and an item
-      [label, item] = lArgs;
-      if (item === undef) {
-        console.log(`${label} = undef`);
-      } else if (item === null) {
-        console.log(`${label} = null`);
-      } else {
-        console.log(sep_dash);
-        console.log(`${label}:`);
-        if (isString(item)) {
-          console.log(untabify(item));
-        } else {
-          console.log(toTAML(item));
-        }
-        console.log(sep_dash);
-      }
-      break;
-    default:
-      console.log(`TOO MANY ARGS for LOG(): ${lArgs.length}`);
+export var jsType = function(x) {
+  var lKeys;
+  if (x === null) {
+    return [undef, 'null'];
+  } else if (x === undef) {
+    return [undef, 'undef'];
+  } else if (isString(x)) {
+    if (x.match(/^\s*$/)) {
+      return ['string', 'empty'];
+    } else {
+      return ['string', undef];
+    }
+  } else if (isNumber(x)) {
+    if (Number.isInteger(x)) {
+      return ['number', 'integer'];
+    } else {
+      return ['number', undef];
+    }
+  } else if (isBoolean(x)) {
+    if (x) {
+      return ['boolean', 'true'];
+    } else {
+      return ['boolean', 'false'];
+    }
+  } else if (isHash(x)) {
+    lKeys = Object.keys(x);
+    if (lKeys.length === 0) {
+      return ['hash', 'empty'];
+    } else {
+      return ['hash', undef];
+    }
+  } else if (isArray(x)) {
+    if (x.length === 0) {
+      return ['array', 'empty'];
+    } else {
+      return ['array', undef];
+    }
+  } else if (isRegExp(x)) {
+    return ['regexp', undef];
+  } else if (isConstructor(x)) {
+    return ['function', 'constructor'];
+  } else if (isFunction(x)) {
+    return ['function', undef];
+  } else if (isObject(x)) {
+    return ['object', undef];
+  } else {
+    throw new Error(`Unknown type: ${OL(x)}`);
   }
-  return true; // to allow use in boolean expressions
 };
-
-
-// --- Use this instead to make it easier to remove all instances
-export var DEBUG = LOG; // synonym
-
 
 // ---------------------------------------------------------------------------
 //   isEmpty
@@ -361,7 +389,7 @@ export var nonEmpty = function(x) {
   if (isHash(x)) {
     return Object.keys(x).length > 0;
   } else {
-    return croak("isEmpty(): Invalid parameter");
+    return defined(x);
   }
 };
 
@@ -372,6 +400,7 @@ export var blockToArray = function(block) {
   if ((block === undef) || (block === '')) {
     return [];
   } else {
+    assert(isString(block), `block is ${jsType(block)}`);
     lLines = block.split(/\r?\n/);
     // --- remove trailing empty lines
     len = lLines.length;
@@ -385,7 +414,8 @@ export var blockToArray = function(block) {
 
 // ---------------------------------------------------------------------------
 //   arrayToBlock - block and lines in block will have no trailing whitespace
-export var arrayToBlock = function(lLines) {
+export var arrayToBlock = function(lLines, hEsc = undef) {
+  var result;
   if (lLines === undef) {
     return undef;
   }
@@ -396,7 +426,11 @@ export var arrayToBlock = function(lLines) {
   if (lLines.length === 0) {
     return undef;
   } else {
-    return rtrim(lLines.join('\n'));
+    result = rtrim(lLines.join('\n'));
+    if (defined(hEsc)) {
+      result = escapeStr(result, hEsc);
+    }
+    return result;
   }
 };
 

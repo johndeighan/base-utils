@@ -1,6 +1,6 @@
-# arrow.coffee
+# prefix.coffee
 
-import {assert} from '@jdeighan/exceptions'
+import {strict as assert} from 'node:assert'
 import {undef, OL, setCharsAt} from '@jdeighan/exceptions/utils'
 
 # --- We use spaces here because Windows Terminal handles TAB chars badly
@@ -12,35 +12,43 @@ export arrowhead = '>'
 export space = ' '
 export dot = '.'
 
+export fourSpaces  = space  + space + space     + space
 export oneIndent   = vbar   + space + space     + space
 export arrow       = corner + hbar  + arrowhead + space
-export clearIndent = space  + space + space     + space
 export dotIndent   = dot    + space + space     + space
 
 # ---------------------------------------------------------------------------
 
-export prefix = (level, option='none') ->
+export getPrefix = (level, option='none') ->
 
+	if (option == 'noLast2Vbars') && (level < 2)
+		option = 'noLastVbar'
 	switch option
+		when 'plain'
+			return oneIndent.repeat(level)
 		when 'withArrow'
 			if (level == 0)
 				return arrow
 			else
 				return oneIndent.repeat(level-1) + arrow
 		when 'noLastVbar'
-			assert (level >= 1), "prefix(), noLastVbar but level=#{OL(level)}"
-			return oneIndent.repeat(level-1) + clearIndent
+			assert (level >= 1),
+				"getPrefix(), noLastVbar but level=#{OL(level)}"
+			return oneIndent.repeat(level-1) + fourSpaces
 		when 'noLast2Vbars'
-			assert (level >= 2), "prefix(), noLast2Vbars but level=#{OL(level)}"
-			return oneIndent.repeat(level-2) + clearIndent + clearIndent
+			assert (level >= 2),
+				"getPrefix(), noLast2Vbars but level=#{OL(level)}"
+			return oneIndent.repeat(level-2) + fourSpaces + fourSpaces
 		when 'dotLastVbar'
-			assert (level >= 1), "prefix(), dotLastVbar but level=#{OL(level)}"
+			assert (level >= 1),
+				"getPrefix(), dotLastVbar but level=#{OL(level)}"
 			return oneIndent.repeat(level-1) + dotIndent
 		when 'dotLast2Vbars'
-			assert (level >= 2), "prefix(), dotLast2Vbars but level=#{OL(level)}"
-			return oneIndent.repeat(level-2) + dotIndent + clearIndent
+			assert (level >= 2),
+				"getPrefix(), dotLast2Vbars but level=#{OL(level)}"
+			return oneIndent.repeat(level-2) + dotIndent + fourSpaces
 		else
-			return oneIndent.repeat(level)
+			return fourSpaces.repeat(level)
 
 # ---------------------------------------------------------------------------
 

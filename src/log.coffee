@@ -1,31 +1,54 @@
 # log.coffee
 
-import {assert, croak} from '@jdeighan/exceptions'
+import {strict as assert} from 'node:assert'
 import {
-	undef, sep_eq, sep_dash, LOG, escapeStr, pass, OL,
-	toTAML, blockToArray,
+	pass, undef, defined, notdefined, deepCopy,
+	hEsc, escapeStr, OL,
+	toTAML, blockToArray, arrayToBlock,
 	isNumber, isInteger, isString, isHash, isFunction,
+	nonEmpty, hEscNoNL, jsType, hasChar, quoted,
 	} from '@jdeighan/exceptions/utils'
+import {getPrefix} from '@jdeighan/exceptions/prefix'
 
 # --- This logger only ever gets passed a single string argument
 putstr = undef
-doDebugLog = false
+
+export logWidth = 42
+export sep_dash = '-'.repeat(logWidth)
+export sep_eq = '='.repeat(logWidth)
 
 export stringify = undef
-fourSpaces  = '    '
+doDebugLogging = false
+threeSpaces  = '   '
 
 # ---------------------------------------------------------------------------
 
-export debugLog = (flag=true) ->
+export setLogWidth = (w) =>
 
-	doDebugLog = flag
-	if doDebugLog
-		LOG "doDebugLog = #{flag}"
+	logWidth = w
+	sep_dash = '-'.repeat(logWidth)
+	sep_eq = '='.repeat(logWidth)
 	return
 
 # ---------------------------------------------------------------------------
 
-export setStringifier = (func) ->
+export resetLogWidth = () =>
+
+	setLogWidth(42)
+	return
+
+# ---------------------------------------------------------------------------
+
+export debugLogging = (flag=true) =>
+
+	doDebugLogging = flag
+	if doDebugLogging
+		console.log "doDebugLogging = #{flag}"
+	return
+
+# ---------------------------------------------------------------------------
+
+export setStringifier = (func) =>
 
 	orgStringifier = stringify
 	assert isFunction(func), "setStringifier() arg is not a function"
@@ -34,13 +57,13 @@ export setStringifier = (func) ->
 
 # ---------------------------------------------------------------------------
 
-export resetStringifier = () ->
+export resetStringifier = () =>
 
 	setStringifier orderedStringify
 
 # ---------------------------------------------------------------------------
 
-export setLogger = (func) ->
+export setLogger = (func) =>
 
 	assert isFunction(func), "setLogger() arg is not a function"
 	orgLogger = putstr
@@ -49,13 +72,13 @@ export setLogger = (func) ->
 
 # ---------------------------------------------------------------------------
 
-export resetLogger = () ->
+export resetLogger = () =>
 
 	setLogger console.log
 
 # ---------------------------------------------------------------------------
 
-export tamlStringify = (obj, escape=false) ->
+export tamlStringify = (obj, escape=false) =>
 
 	return toTAML(obj, {
 		useTabs: false
@@ -65,7 +88,7 @@ export tamlStringify = (obj, escape=false) ->
 
 # ---------------------------------------------------------------------------
 
-export orderedStringify = (obj, escape=false) ->
+export orderedStringify = (obj, escape=false) =>
 
 	return toTAML(obj, {
 		useTabs: false
@@ -75,107 +98,82 @@ export orderedStringify = (obj, escape=false) ->
 
 # ---------------------------------------------------------------------------
 
-maxOneLine = 32
+export LOG = (str="", prefix="") =>
 
-# ---------------------------------------------------------------------------
-
-export log = (str, prefix='') ->
-
-	assert isString(prefix), "not a string: #{OL(prefix)}"
-	assert isString(str),      "log(): not a string: #{OL(str)}"
-	assert isFunction(putstr), "putstr not properly set"
-	prefix = fixForTerminal(prefix)
-
-	if doDebugLog
-		LOG "CALL log(#{OL(str)}), prefix = #{OL(prefix)}"
+	if doDebugLogging
+		console.log "CALL LOG(#{OL(str)}), prefix=#{OL(prefix)}"
+		if (putstr != console.log)
+			console.log "   - use custom logger"
 
 	putstr "#{prefix}#{str}"
 	return true   # to allow use in boolean expressions
 
 # ---------------------------------------------------------------------------
 
-export logBareItem = (item, pre='') ->
+export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 
-	logItem undef, item, pre
-	return
+	assert nonEmpty(label), "label is empty"
+	if notdefined(itemPrefix)
+		itemPrefix = prefix
 
-# ---------------------------------------------------------------------------
+	if doDebugLogging
+		str1 = OL(label)
+		str2 = OL(value)
+		str3 = OL(prefix)
+		console.log "CALL LOGITEM(#{str1}, #{str2}), prefix=#{str3}"
 
-export logItem = (label, item, pre='', itemPre=undef) ->
+	[type, subtype] = jsType(value)
+	baselen = prefix.length + label.length
+	switch type
+		when undef
+			putstr "#{prefix}#{label} = #{subtype}"
 
-	assert isString(pre), "not a string: #{OL(pre)}"
-	assert isFunction(putstr), "putstr not properly set"
-	assert !label || isString(label), "label a non-string"
-	if (itemPre == undef)
-		itemPre = pre
-
-	assert pre.indexOf("\t") == -1, "pre has TAB"
-	assert itemPre.indexOf("\t") == -1, "itemPre has TAB"
-
-	if doDebugLog
-		LOG "CALL logItem(#{OL(label)}, #{OL(item)})"
-		LOG "pre = #{OL(pre)}"
-		LOG "itemPre = #{OL(itemPre)}"
-
-	if label
-		labelStr = "#{label} = "
-	else
-		labelStr = ""
-
-	if (item == undef)
-		putstr "#{pre}#{labelStr}undef"
-	else if (item == null)
-		putstr "#{pre}#{labelStr}null"
-	else if isNumber(item)
-		putstr "#{pre}#{labelStr}#{item}"
-	else if isString(item)
-		if (item.length <= maxOneLine)
-			result = escapeStr(item)
-			hasApos = (result.indexOf("'") >= 0)
-			if hasApos
-				putstr "#{pre}#{labelStr}\"#{result}\""
+		when 'string'
+			if (subtype == 'empty')
+				putstr "#{prefix}#{label} = ''"
 			else
-				putstr "#{pre}#{labelStr}'#{result}'"
-		else
-			if label
-				putstr "#{pre}#{label}:"
-			putBlock item, itemPre
-	else
-		if label
-			putstr "#{pre}#{label}:"
+				str = quoted(value, 'escape')
+				if (baselen + str.length + 3 <= logWidth)
+					putstr "#{prefix}#{label} = #{str}"
+				else
+					# --- escape, but not newlines
+					str = quoted(value, 'escapeNoNL')
+					putstr "#{prefix}#{label} = #{str}"
 
-		# --- escape special chars
-		for str in blockToArray(stringify(item, true))
-			putstr "#{itemPre}#{str}"
+		when 'number'
+			putstr "#{prefix}#{label} = #{value}"
+
+		when 'boolean'
+			putstr "#{prefix}#{label} = #{subtype}"
+
+		when 'hash', 'array'
+			str = toTAML(value, {sortKeys: true})
+			putstr "#{prefix}#{label} ="
+			for str in blockToArray(str)
+				putstr "#{itemPrefix}#{str}"
+
+		when 'regexp'
+			putstr "#{prefix}#{label} = <regexp>"
+
+		when 'function'
+			putstr "#{prefix}#{label} = <function>"
+
+		when 'object'
+			putstr "#{prefix}#{label} = <object>"
 
 	return true
 
 # ---------------------------------------------------------------------------
+# simple redirect to an array - useful in unit tests
 
-export shortEnough = (label, value) ->
+lUTLog = []
 
-	return (value == undef)
+export utReset = () =>
+	lUTLog = []
+	setLogger (str) => lUTLog.push(str)
 
-# ---------------------------------------------------------------------------
-# --- needed because Windows Terminal handles TAB chars badly
-
-fixForTerminal = (str) ->
-
-	if !str
-		return ''
-
-	# --- convert TAB char to 4 spaces
-	return str.replace(/\t/g, fourSpaces)
-
-# ---------------------------------------------------------------------------
-
-putBlock = (item, prefix='') ->
-
-	putstr "#{prefix}#{sep_eq}"
-	for line in blockToArray(item)
-		putstr "#{prefix}#{escapeStr(line)}"
-	putstr "#{prefix}#{sep_eq}"
-	return
+export utGetLog = () =>
+	return arrayToBlock(lUTLog, hEscNoNL)
 
 # ---------------------------------------------------------------------------
 

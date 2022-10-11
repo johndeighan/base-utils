@@ -9,7 +9,7 @@
     "./log": "./src/log.js",
     "./debug": "./src/debug.js",
     "./stack": "./src/stack.js",
-    "./arrow": "./src/arrow.js",
+    "./prefix": "./src/prefix.js",
     "./utils": "./src/utils.js"
   },
   "scripts": {

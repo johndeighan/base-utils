@@ -1,21 +1,23 @@
 # debug.coffee
 
-import {assert, croak} from '@jdeighan/exceptions'
 import {
-	undef, sep_dash, sep_eq, pass, defined, notdefined, untabify,
+	undef, pass, defined, notdefined, untabify,
 	toTAML, escapeStr, OL,
 	jsType, isString, isNumber, isInteger, isHash, isArray, isBoolean,
 	isConstructor, isFunction, isRegExp, isObject,
-	LOG, DEBUG, isEmpty, nonEmpty, blockToArray, arrayToBlock, chomp, words,
+	isEmpty, nonEmpty, blockToArray, arrayToBlock, chomp, words,
 	} from '@jdeighan/exceptions/utils'
-import {CallStack} from '@jdeighan/exceptions/stack'
-import {prefix} from '@jdeighan/exceptions/arrow'
 import {
-	log, logItem, logBareItem, shortEnough,
+	LOG, LOGVALUE, sep_dash, sep_eq,
 	} from '@jdeighan/exceptions/log'
+import {getPrefix} from '@jdeighan/exceptions/prefix'
+import {assert, croak} from '@jdeighan/exceptions'
+import {CallStack} from '@jdeighan/exceptions/stack'
+
+callStack = new CallStack()
 
 # --- set in resetDebugging() and setDebugging()
-export callStack = new CallStack()
+#     returns undef for no logging, or a label to log
 export shouldLog = () -> undef
 
 lFuncList = []          # names of functions being debugged
@@ -76,7 +78,7 @@ export debug = (orgLabel, lObjects...) ->
 
 # ---------------------------------------------------------------------------
 
-export debug2 = (orgLabel, lObjects...) ->
+debug2 = (orgLabel, lObjects...) ->
 
 	[type, funcName] = getType(orgLabel, lObjects)
 	label = shouldLog(orgLabel, type, funcName, callStack)
@@ -108,32 +110,28 @@ export doTheLogging = (type, label, lObjects) ->
 	switch type
 
 		when 'enter'
-			log label, prefix(level)
-			pre = prefix(level+1, 'dotLastVbar')
-			itemPre = prefix(level+2, 'dotLast2Vbars')
+			LOG label, getPrefix(level)
+			pre = getPrefix(level+1, 'dotLastVbar')
+			itemPre = getPrefix(level+2, 'dotLast2Vbars')
 			for obj,i in lObjects
-				logItem "arg[#{i}]", obj, pre, itemPre
+				LOGVALUE "arg[#{i}]", obj, pre, itemPre
 
 		when 'return'
-			log label, prefix(level, 'withArrow')
-			pre = prefix(level, 'noLastVbar')
-			itemPre = prefix(level+1, 'noLast2Vbars')
+			LOG label, getPrefix(level, 'withArrow')
+			pre = getPrefix(level, 'noLastVbar')
+			itemPre = getPrefix(level, 'noLast2Vbars')
 			for obj,i in lObjects
-				logItem "ret[#{i}]", obj, pre, itemPre
+				LOGVALUE "ret[#{i}]", obj, pre, itemPre
 
 		when 'string'
-			pre = prefix(level)
-			itemPre = prefix(level+1, 'noLastVbar')
-			if (lObjects.length==0)
-				log label, pre
-			else if (lObjects.length==1) && shortEnough(label, lObjects[0])
-				logItem label, lObjects[0], pre
+			pre = getPrefix(level, 'plain')
+			itemPre = getPrefix(level+1, 'noLastVbar')
+			nVals = lObjects.length
+			if (nVals == 0)
+				LOG label, pre
 			else
-				if (label.indexOf(':') != label.length - 1)
-					label += ':'
-				log label, pre
-				for obj in lObjects
-					logBareItem obj, itemPre
+				assert (nVals == 1), "Only 1 value allowed, #{nVals} found"
+				LOGVALUE label, lObjects[0], pre
 	return
 
 # ---------------------------------------------------------------------------
@@ -168,8 +166,8 @@ export stdShouldLog = (label, type, funcName, stack) ->
 export isMyFunc = (funcName) ->
 
 	return funcName in words('debug debug2 doTheLogging
-			stdShouldLog setDebugging getFuncList funcMatch
-			getType dumpCallStack')
+			stdShouldLog setDebugging resetDebugging getFuncList
+			funcMatch getType dumpCallStack')
 
 # ---------------------------------------------------------------------------
 
@@ -197,6 +195,14 @@ export setDebugging = (option) ->
 		shouldLog = option
 	else
 		croak "bad parameter #{OL(option)}"
+	return
+
+# ---------------------------------------------------------------------------
+
+export resetDebugging = () ->
+
+	callStack.reset()
+	shouldLog = () -> return undef
 	return
 
 # ---------------------------------------------------------------------------
@@ -298,5 +304,6 @@ export dumpDebugGlobals = () ->
 	for funcName in lFuncList
 		LOG "   #{OL(funcName)}"
 	LOG '='.repeat(40)
+	return
 
 # ---------------------------------------------------------------------------

@@ -2,16 +2,16 @@
 
 import yaml from 'js-yaml'
 
-import {assert, croak} from '@jdeighan/exceptions'
+import {strict as assert} from 'node:assert'
 
 `export const undef = undefined`
-export sep_dash = '-'.repeat(42)
-export sep_eq = '='.repeat(42)
 
 # ---------------------------------------------------------------------------
 #   pass - do nothing
 
-export pass = () ->
+export pass = () =>
+
+	return true
 
 # ---------------------------------------------------------------------------
 
@@ -32,11 +32,30 @@ export untabify = (str) =>
 	return str.replace(/\t/g, ' '.repeat(3))
 
 # ---------------------------------------------------------------------------
+#   deepCopy - deep copy an array or object
+
+export deepCopy = (obj) ->
+
+	if (obj == undef)
+		return undef
+	objStr = JSON.stringify(obj)
+	try
+		newObj = JSON.parse(objStr)
+	catch err
+		croak "ERROR: err.message", objStr
+
+	return newObj
+
+# ---------------------------------------------------------------------------
 # --- a replacer is (key, value) -> newvalue
 
 myReplacer = (name, value) ->
 
-	if isString(value)
+	if (value == undef)
+		return 'undef'
+	else if (value == null)
+		return null
+	else if isString(value)
 		return escapeStr(value)
 	else if isObject(value, ['tamlReplacer'])
 		return value.tamlReplacer()
@@ -65,18 +84,60 @@ export toTAML = (obj, hOptions={}) ->
 # ---------------------------------------------------------------------------
 #   escapeStr - escape newlines, TAB chars, etc.
 
-export hDefEsc = {
+export hEsc = {
 	"\n": '®'
 	"\t": '→'
 	" ": '˳'
 	}
+export hEscNoNL = {
+	"\t": '→'
+	" ": '˳'
+	}
 
-export escapeStr = (str, hEscape=hDefEsc) ->
+export escapeStr = (str, hReplace=hEsc) ->
 
 	assert isString(str), "escapeStr(): not a string"
 	lParts = for ch in str.split('')
-		if hEscape[ch]? then hEscape[ch] else ch
+		if defined(hReplace[ch]) then hReplace[ch] else ch
 	return lParts.join('')
+
+# ---------------------------------------------------------------------------
+
+export hasChar = (str, ch) =>
+
+	return (str.indexOf(ch) >= 0)
+
+# ---------------------------------------------------------------------------
+
+export quoted = (str, escape=undef) =>
+
+	switch escape
+		when 'escape'
+			str = escapeStr(str)
+		when 'escapeNoNL'
+			str = escapeStr(str, hEscNoNL)
+		else
+			pass
+
+	assert isString(str), "not a string: #{OL(str)}"
+	if ! hasChar(str, "'")
+		return "'" + str + "'"
+	if ! hasChar(str, '"')
+		return '"' + str + '"'
+	return '<' + str + '>'
+
+# ---------------------------------------------------------------------------
+#   unescapeStr - unescape newlines, TAB chars, etc.
+
+export hUnesc = {
+	'®': "\n"
+	'→': "\t"
+	'˳': " "
+	}
+
+export unescapeStr = (str, hReplace=hUnesc) ->
+
+	return escapeStr(str, hReplace)
 
 # ---------------------------------------------------------------------------
 
@@ -89,46 +150,6 @@ export OL = (obj) ->
 			return JSON.stringify(obj)
 	else
 		return 'undef'
-
-# ---------------------------------------------------------------------------
-
-export jsType = (x) ->
-
-	if notdefined(x)
-		return [undef, undef]
-	else if isString(x)
-		if x.match(/^\s*$/)
-			return ['string', 'empty']
-		else
-			return ['string', undef]
-	else if isNumber(x)
-		if Number.isInteger(x)
-			return ['number', 'integer']
-		else
-			return ['number', undef]
-	else if isBoolean(x)
-		return ['boolean', undef]
-	else if isHash(x)
-		lKeys = Object.keys(x);
-		if (lKeys.length == 0)
-			return ['hash', 'empty']
-		else
-			return ['hash', undef]
-	else if isArray(x)
-		if (x.length == 0)
-			return ['array', 'empty']
-		else
-			return ['array', undef]
-	else if isRegExp(x)
-		return ['regexp', undef]
-	else if isConstructor(x)
-		return ['function', 'constructor']
-	else if isFunction(x)
-		return ['function', undef]
-	else if isObject(x)
-		return ['object', undef]
-	else
-		throw new Error("Unknown type: #{OL(x)}")
 
 # ---------------------------------------------------------------------------
 
@@ -250,36 +271,49 @@ export isObject = (x, lReqKeys=undef) ->
 		return false
 
 # ---------------------------------------------------------------------------
-# This is useful for debugging
 
-export LOG = (lArgs...) ->
+export jsType = (x) ->
 
-	switch lArgs.length
-		when 0
-			console.log ""
-		when 1
-			console.log lArgs[0]
-		when 2
-			# --- There's both a label and an item
-			[label, item] = lArgs
-			if (item == undef)
-				console.log "#{label} = undef"
-			else if (item == null)
-				console.log "#{label} = null"
-			else
-				console.log sep_dash
-				console.log "#{label}:"
-				if isString(item)
-					console.log untabify(item)
-				else
-					console.log toTAML(item)
-				console.log sep_dash
+	if (x == null)
+		return [undef, 'null']
+	else if (x == undef)
+		return [undef, 'undef']
+	else if isString(x)
+		if x.match(/^\s*$/)
+			return ['string', 'empty']
 		else
-			console.log "TOO MANY ARGS for LOG(): #{lArgs.length}"
-	return true   # to allow use in boolean expressions
-
-# --- Use this instead to make it easier to remove all instances
-export DEBUG = LOG   # synonym
+			return ['string', undef]
+	else if isNumber(x)
+		if Number.isInteger(x)
+			return ['number', 'integer']
+		else
+			return ['number', undef]
+	else if isBoolean(x)
+		if x
+			return ['boolean', 'true']
+		else
+			return ['boolean', 'false']
+	else if isHash(x)
+		lKeys = Object.keys(x);
+		if (lKeys.length == 0)
+			return ['hash', 'empty']
+		else
+			return ['hash', undef]
+	else if isArray(x)
+		if (x.length == 0)
+			return ['array', 'empty']
+		else
+			return ['array', undef]
+	else if isRegExp(x)
+		return ['regexp', undef]
+	else if isConstructor(x)
+		return ['function', 'constructor']
+	else if isFunction(x)
+		return ['function', undef]
+	else if isObject(x)
+		return ['object', undef]
+	else
+		throw new Error("Unknown type: #{OL(x)}")
 
 # ---------------------------------------------------------------------------
 #   isEmpty
@@ -313,7 +347,7 @@ export nonEmpty = (x) ->
 	if isHash(x)
 		return Object.keys(x).length > 0
 	else
-		croak "isEmpty(): Invalid parameter"
+		return defined(x)
 
 # ---------------------------------------------------------------------------
 #   blockToArray - split a block into lines
@@ -323,6 +357,7 @@ export blockToArray = (block) ->
 	if (block == undef) || (block == '')
 		return []
 	else
+		assert isString(block), "block is #{jsType(block)}"
 		lLines = block.split(/\r?\n/)
 
 		# --- remove trailing empty lines
@@ -335,7 +370,7 @@ export blockToArray = (block) ->
 # ---------------------------------------------------------------------------
 #   arrayToBlock - block and lines in block will have no trailing whitespace
 
-export arrayToBlock = (lLines) ->
+export arrayToBlock = (lLines, hEsc=undef) ->
 
 	if (lLines == undef)
 		return undef
@@ -344,7 +379,10 @@ export arrayToBlock = (lLines) ->
 	if lLines.length == 0
 		return undef
 	else
-		return rtrim(lLines.join('\n'))
+		result = rtrim(lLines.join('\n'))
+		if defined(hEsc)
+			result = escapeStr(result, hEsc)
+		return result
 
 # ---------------------------------------------------------------------------
 

@@ -9,8 +9,6 @@ import {
 
 import {
   undef,
-  sep_dash,
-  sep_eq,
   pass,
   defined,
   notdefined,
@@ -18,6 +16,7 @@ import {
   toTAML,
   escapeStr,
   OL,
+  deepCopy,
   jsType,
   isString,
   isNumber,
@@ -36,6 +35,16 @@ import {
   chomp,
   words
 } from '@jdeighan/exceptions/utils';
+
+import {
+  sep_dash,
+  sep_eq,
+  LOG
+} from '@jdeighan/exceptions/log';
+
+import {
+  getPrefix
+} from '@jdeighan/exceptions/prefix';
 
 doDebugStack = false;
 
@@ -60,7 +69,7 @@ export var CallStack = class CallStack {
 
   // ........................................................................
   indent() {
-    return '   '.repeat(this.lStack.length);
+    return getPrefix(this.lStack.length);
   }
 
   // ........................................................................
@@ -122,7 +131,7 @@ export var CallStack = class CallStack {
   returnFrom(fName) {
     var fullName, isLogged;
     if (this.lStack.length === 0) {
-      console.log(`ERROR: returnFrom('${fName}') but stack is empty`);
+      LOG(`ERROR: returnFrom('${fName}') but stack is empty`);
       return;
     }
     ({fullName, isLogged} = this.lStack.pop());
@@ -130,7 +139,7 @@ export var CallStack = class CallStack {
       console.log(this.indent() + `[<-- BACK ${fName}]`);
     }
     if (fullName !== fName) {
-      console.log(`ERROR: returnFrom('${fName}') but TOS is ${fullName}`);
+      LOG(`ERROR: returnFrom('${fName}') but TOS is ${fullName}`);
       return;
     }
   }

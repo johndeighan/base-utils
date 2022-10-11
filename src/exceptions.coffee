@@ -1,13 +1,13 @@
 # exceptions.coffee
 
-import yaml from 'js-yaml'
-
 import {
-	undef, sep_dash, sep_eq, isString, untabify, LOG, toTAML,
+	undef, defined, notdefined, isString, isEmpty, untabify, OL, toTAML,
 	} from '@jdeighan/exceptions/utils'
+import {
+	LOG, sep_dash, sep_eq,
+	} from '@jdeighan/exceptions/log'
 
 doHaltOnError = false
-doLog = true
 
 # ---------------------------------------------------------------------------
 
@@ -16,14 +16,6 @@ export haltOnError = (flag=true) ->
 
 	save = doHaltOnError
 	doHaltOnError = flag
-	return save
-
-# ---------------------------------------------------------------------------
-
-export logErrors = (flag=true) ->
-
-	save = doLog
-	doLog = flag
 	return save
 
 # ---------------------------------------------------------------------------
@@ -59,16 +51,15 @@ getCallers = (stackTrace, lExclude=[]) ->
 export assert = (cond, msg) ->
 
 	if ! cond
-		if doLog
-			stackTrace = new Error().stack
-			lCallers = getCallers(stackTrace, ['assert'])
+		stackTrace = new Error().stack
+		lCallers = getCallers(stackTrace, ['assert'])
 
-			console.log '--------------------'
-			console.log 'JavaScript CALL STACK:'
-			for caller in lCallers
-				console.log "   #{caller}"
-			console.log '--------------------'
-			console.log "ERROR: #{msg} (in #{lCallers[0]}())"
+		LOG sep_dash
+		LOG 'JavaScript CALL STACK:'
+		for caller in lCallers
+			LOG "   #{caller}"
+		LOG sep_dash
+		LOG "ERROR: #{msg} (in #{lCallers[0]}())"
 		croak msg
 	return true
 
