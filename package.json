@@ -10,6 +10,7 @@
     "./debug": "./src/debug.js",
     "./stack": "./src/stack.js",
     "./prefix": "./src/prefix.js",
+    "./taml": "./src/taml.js",
     "./utils": "./src/utils.js"
   },
   "scripts": {

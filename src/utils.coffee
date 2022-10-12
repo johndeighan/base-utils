@@ -27,9 +27,9 @@ export notdefined = (obj) =>
 
 # ---------------------------------------------------------------------------
 
-export untabify = (str) =>
+export untabify = (str, numSpaces=3) =>
 
-	return str.replace(/\t/g, ' '.repeat(3))
+	return str.replace(/\t/g, ' '.repeat(numSpaces))
 
 # ---------------------------------------------------------------------------
 #   deepCopy - deep copy an array or object

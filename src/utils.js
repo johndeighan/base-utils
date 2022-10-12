@@ -27,8 +27,8 @@ export var notdefined = (obj) => {
 };
 
 // ---------------------------------------------------------------------------
-export var untabify = (str) => {
-  return str.replace(/\t/g, ' '.repeat(3));
+export var untabify = (str, numSpaces = 3) => {
+  return str.replace(/\t/g, ' '.repeat(numSpaces));
 };
 
 // ---------------------------------------------------------------------------

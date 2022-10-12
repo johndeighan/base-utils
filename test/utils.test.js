@@ -687,6 +687,10 @@ test("line 305", (t) => {
   return t.falsy(hasChar('abc', 'x'));
 });
 
+test("line 306", (t) => {
+  return t.falsy(hasChar("\t\t", ' '));
+});
+
 // ---------------------------------------------------------------------------
 test("line 309", (t) => {
   return t.is(quoted('abc'), "'abc'");

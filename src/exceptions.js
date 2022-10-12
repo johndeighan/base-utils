@@ -20,6 +20,15 @@ import {
   sep_eq
 } from '@jdeighan/exceptions/log';
 
+import {
+  debug
+} from '@jdeighan/exceptions/debug';
+
+export {
+  LOG,
+  debug
+};
+
 doHaltOnError = false;
 
 // ---------------------------------------------------------------------------

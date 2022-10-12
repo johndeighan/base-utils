@@ -301,8 +301,9 @@ test "line 297", (t) => t.is(setCharsAt('abc', 1, 'xyz'), 'axyz')
 test "line 301", (t) => t.deepEqual(words('a b c'), ['a', 'b', 'c'])
 test "line 302", (t) => t.deepEqual(words('  a   b   c  '), ['a', 'b', 'c'])
 
-test "line 304", (t) => t.truthy(hasChar('abc', 'b'))
-test "line 305", (t) => t.falsy( hasChar('abc', 'x'))
+test "line 304", (t) => t.truthy hasChar('abc', 'b')
+test "line 305", (t) => t.falsy  hasChar('abc', 'x')
+test "line 306", (t) => t.falsy  hasChar("\t\t", ' ')
 
 # ---------------------------------------------------------------------------
 

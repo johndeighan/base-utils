@@ -1,11 +1,13 @@
 # exceptions.coffee
 
 import {
-	undef, defined, notdefined, isString, isEmpty, untabify, OL, toTAML,
+	undef, defined, notdefined, isString, isEmpty, untabify,
+	OL, toTAML,
 	} from '@jdeighan/exceptions/utils'
-import {
-	LOG, sep_dash, sep_eq,
-	} from '@jdeighan/exceptions/log'
+import {LOG, sep_dash, sep_eq} from '@jdeighan/exceptions/log'
+import {debug} from '@jdeighan/exceptions/debug'
+
+export {LOG, debug}
 
 doHaltOnError = false
 
