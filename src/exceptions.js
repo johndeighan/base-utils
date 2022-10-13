@@ -14,6 +14,7 @@ import {
 } from '@jdeighan/exceptions/utils';
 
 import {
+  isTAML,
   fromTAML,
   toTAML
 } from '@jdeighan/exceptions/taml';
@@ -26,13 +27,16 @@ import {
 } from '@jdeighan/exceptions/log';
 
 import {
+  setDebugging,
   debug
 } from '@jdeighan/exceptions/debug';
 
 export {
   LOG,
   LOGVALUE,
+  setDebugging,
   debug,
+  isTAML,
   fromTAML,
   toTAML
 };
