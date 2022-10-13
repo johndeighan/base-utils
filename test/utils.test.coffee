@@ -4,7 +4,7 @@ import test from 'ava'
 
 import {
 	undef, pass, defined, notdefined, untabify,
-	toTAML, escapeStr, unescapeStr, OL,
+	escapeStr, unescapeStr, OL,
 	isString, isNumber, isInteger, isHash, isArray, isBoolean,
 	isConstructor, isFunction, isRegExp, isObject, jsType,
 	isEmpty, nonEmpty,
@@ -52,36 +52,6 @@ test "line 40", (t) => t.falsy(notdefined({}))
 		#{prefix}#{prefix}third line
 		""")
 	)()
-
-# ---------------------------------------------------------------------------
-
-test "line 58", (t) => t.is(toTAML(undef), "---\nundef")
-test "line 59", (t) => t.is(toTAML(null), "---\nnull")
-test "line 60", (t) => t.is(toTAML({a:1}), "---\na: 1")
-test "line 61", (t) => t.is(toTAML({a:1, b:2}), "---\na: 1\nb: 2")
-test "line 62", (t) => t.is(toTAML([1,'abc',{a:1}]), "---\n- 1\n- abc\n-\n   a: 1")
-
-test "line 64", (t) => t.is(toTAML({a:1, b:2}), """
-	---
-	a: 1
-	b: 2
-	""")
-
-test "line 70", (t) => t.is(toTAML(['a','b']), """
-	---
-	- a
-	- b
-	""")
-
-test "line 76", (t) => t.is(toTAML(['a','b', {a:1}, ['x']]), untabify("""
-	---
-	- a
-	- b
-	-
-		a: 1
-	-
-		- x
-	"""))
 
 # ---------------------------------------------------------------------------
 

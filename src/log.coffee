@@ -1,13 +1,15 @@
 # log.coffee
 
 import {strict as assert} from 'node:assert'
+
 import {
 	pass, undef, defined, notdefined, deepCopy,
 	hEsc, escapeStr, OL,
-	toTAML, blockToArray, arrayToBlock,
+	blockToArray, arrayToBlock,
 	isNumber, isInteger, isString, isHash, isFunction,
 	nonEmpty, hEscNoNL, jsType, hasChar, quoted,
 	} from '@jdeighan/exceptions/utils'
+import {toTAML} from '@jdeighan/exceptions/taml'
 import {getPrefix} from '@jdeighan/exceptions/prefix'
 
 # --- This logger only ever gets passed a single string argument

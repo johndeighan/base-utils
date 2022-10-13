@@ -1,15 +1,17 @@
 # stack.coffee
 
-import {assert, croak} from '@jdeighan/exceptions'
+import {strict as assert} from 'node:assert'
+
 import {
 	undef, pass, defined, notdefined, untabify,
-	toTAML, escapeStr, OL, deepCopy,
+	escapeStr, OL, deepCopy,
 	jsType, isString, isNumber, isInteger, isHash, isArray, isBoolean,
 	isConstructor, isFunction, isRegExp, isObject,
 	isEmpty, nonEmpty, blockToArray, arrayToBlock, chomp, words,
 	} from '@jdeighan/exceptions/utils'
-import {sep_dash, sep_eq, LOG} from '@jdeighan/exceptions/log'
+import {toTAML} from '@jdeighan/exceptions/taml'
 import {getPrefix} from '@jdeighan/exceptions/prefix'
+import {sep_dash, sep_eq, LOG} from '@jdeighan/exceptions/log'
 
 doDebugStack = false
 

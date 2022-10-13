@@ -1,6 +1,7 @@
 # prefix.coffee
 
 import {strict as assert} from 'node:assert'
+
 import {undef, OL, setCharsAt} from '@jdeighan/exceptions/utils'
 
 # --- We use spaces here because Windows Terminal handles TAB chars badly

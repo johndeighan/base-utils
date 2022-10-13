@@ -1,17 +1,19 @@
 # debug.coffee
 
+import {strict as assert} from 'node:assert'
+
 import {
 	undef, pass, defined, notdefined, untabify,
-	toTAML, escapeStr, OL,
+	escapeStr, OL,
 	jsType, isString, isNumber, isInteger, isHash, isArray, isBoolean,
 	isConstructor, isFunction, isRegExp, isObject,
 	isEmpty, nonEmpty, blockToArray, arrayToBlock, chomp, words,
 	} from '@jdeighan/exceptions/utils'
+import {toTAML} from '@jdeighan/exceptions/taml'
+import {getPrefix} from '@jdeighan/exceptions/prefix'
 import {
 	LOG, LOGVALUE, sep_dash, sep_eq,
 	} from '@jdeighan/exceptions/log'
-import {getPrefix} from '@jdeighan/exceptions/prefix'
-import {assert, croak} from '@jdeighan/exceptions'
 import {CallStack} from '@jdeighan/exceptions/stack'
 
 callStack = new CallStack()
@@ -194,7 +196,7 @@ export setDebugging = (option) ->
 	else if isFunction(option)
 		shouldLog = option
 	else
-		croak "bad parameter #{OL(option)}"
+		throw new Error("setDebugging(): bad parameter #{OL(option)}")
 	return
 
 # ---------------------------------------------------------------------------
@@ -234,7 +236,7 @@ export getFuncList = (str) ->
 					plus: (plus == '+')
 					}
 		else
-			croak "Bad word in func list: #{OL(word)}"
+			throw new Error("getFuncList: bad word : #{OL(word)}")
 	return lFuncList
 
 # ---------------------------------------------------------------------------

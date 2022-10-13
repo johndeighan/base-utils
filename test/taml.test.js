@@ -101,3 +101,75 @@ test("line 44", (t) => {
     }
   });
 });
+
+test("line 46", (t) => {
+  return t.is(toTAML(undef), "---\nundef");
+});
+
+test("line 47", (t) => {
+  return t.is(toTAML(null), "---\nnull");
+});
+
+test("line 48", (t) => {
+  return t.is(toTAML({
+    a: 1
+  }), "---\na: 1");
+});
+
+test("line 49", (t) => {
+  return t.is(toTAML({
+    a: 1,
+    b: 2
+  }), "---\na: 1\nb: 2");
+});
+
+test("line 50", (t) => {
+  return t.is(toTAML([
+    1,
+    'abc',
+    {
+      a: 1
+    }
+  ]), "---\n- 1\n- abc\n-\n   a: 1");
+});
+
+test("line 52", (t) => {
+  return t.is(toTAML({
+    a: 1,
+    b: 2
+  }), `---
+a: 1
+b: 2`);
+});
+
+test("line 58", (t) => {
+  return t.is(toTAML(['a', 'b']), `---
+- a
+- b`);
+});
+
+test("line 64", (t) => {
+  return t.is(toTAML([
+    'a',
+    'b',
+    {
+      a: 1
+    },
+    ['x']
+  ]), untabify(`---
+- a
+- b
+-
+	a: 1
+-
+	- x`));
+});
+
+test("line 74", (t) => {
+  return t.is(toTAML(['xyz', 42, false, 'false', undef]), `---
+- xyz
+- 42
+- false
+- 'false'
+- undef`);
+});

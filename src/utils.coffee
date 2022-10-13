@@ -1,10 +1,8 @@
 # utils.coffee
 
-import yaml from 'js-yaml'
-
 import {strict as assert} from 'node:assert'
 
-`export const undef = undefined`
+`export const undef = void 0`
 
 # ---------------------------------------------------------------------------
 #   pass - do nothing
@@ -61,25 +59,6 @@ myReplacer = (name, value) ->
 		return value.tamlReplacer()
 	else
 		return value
-
-# ---------------------------------------------------------------------------
-# --- export only to allow unit tests
-
-export toTAML = (obj, hOptions={}) ->
-
-	{useTabs, sortKeys, escape, replacer} = hOptions
-	if notdefined(replacer)
-		replacer = myReplacer
-	str = yaml.dump(obj, {
-		skipInvalid: true
-		indent: 3
-		sortKeys: !!sortKeys
-		lineWidth: -1
-		replacer
-		})
-	if useTabs
-		str = str.replace(/   /g, "\t")
-	return "---\n" + chomp(str)
 
 # ---------------------------------------------------------------------------
 #   escapeStr - escape newlines, TAB chars, etc.

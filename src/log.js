@@ -15,7 +15,6 @@ import {
   hEsc,
   escapeStr,
   OL,
-  toTAML,
   blockToArray,
   arrayToBlock,
   isNumber,
@@ -29,6 +28,10 @@ import {
   hasChar,
   quoted
 } from '@jdeighan/exceptions/utils';
+
+import {
+  toTAML
+} from '@jdeighan/exceptions/taml';
 
 import {
   getPrefix

@@ -3,8 +3,9 @@
 import test from 'ava'
 
 import {
-	pass, toTAML, arrayToBlock, isNumber,
+	pass, arrayToBlock, isNumber,
 	} from '@jdeighan/exceptions/utils'
+import {toTAML} from '@jdeighan/exceptions/taml'
 import {
 	haltOnError, assert, croak,
 	} from '@jdeighan/exceptions'

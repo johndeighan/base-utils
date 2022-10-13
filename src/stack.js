@@ -3,9 +3,8 @@
 var doDebugStack;
 
 import {
-  assert,
-  croak
-} from '@jdeighan/exceptions';
+  strict as assert
+} from 'node:assert';
 
 import {
   undef,
@@ -13,7 +12,6 @@ import {
   defined,
   notdefined,
   untabify,
-  toTAML,
   escapeStr,
   OL,
   deepCopy,
@@ -37,14 +35,18 @@ import {
 } from '@jdeighan/exceptions/utils';
 
 import {
-  sep_dash,
-  sep_eq,
-  LOG
-} from '@jdeighan/exceptions/log';
+  toTAML
+} from '@jdeighan/exceptions/taml';
 
 import {
   getPrefix
 } from '@jdeighan/exceptions/prefix';
+
+import {
+  sep_dash,
+  sep_eq,
+  LOG
+} from '@jdeighan/exceptions/log';
 
 doDebugStack = false;
 

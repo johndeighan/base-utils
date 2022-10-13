@@ -1,10 +1,10 @@
 # taml.coffee
 
 import yaml from 'js-yaml'
+import {strict as assert} from 'node:assert'
 
-import {assert, croak} from '@jdeighan/exceptions'
 import {
-	defined, notdefined, isEmpty, isString, isObject,
+	undef, defined, notdefined, isEmpty, isString, isObject,
 	blockToArray, arrayToBlock,
 	hasChar, escapeStr, chomp, OL,
 	} from '@jdeighan/exceptions/utils'
@@ -51,10 +51,13 @@ export fromTAML = (text) ->
 
 myReplacer = (name, value) ->
 
+	if (value == undef)
+		# --- We need this, otherwise js-yaml will convert undef to null
+		return "<UNDEFINED_VALUE>"
 	if isString(value)
 		return escapeStr(value)
-	else if isObject(value, ['tamlReplacer'])
-		return value.tamlReplacer()
+#	else if isObject(value, ['tamlReplacer'])
+#		return value.tamlReplacer()
 	else
 		return value
 
@@ -62,6 +65,10 @@ myReplacer = (name, value) ->
 
 export toTAML = (obj, hOptions={}) ->
 
+	if (obj == undef)
+		return "---\nundef"
+	if (obj == null)
+		return "---\nnull"
 	{useTabs, sortKeys, escape, replacer} = hOptions
 	if notdefined(replacer)
 		replacer = myReplacer
@@ -72,6 +79,7 @@ export toTAML = (obj, hOptions={}) ->
 		lineWidth: -1
 		replacer
 		})
+	str = str.replace(/<UNDEFINED_VALUE>/g, 'undef')
 	if useTabs
 		str = str.replace(/   /g, "\t")
 	return "---\n" + chomp(str)

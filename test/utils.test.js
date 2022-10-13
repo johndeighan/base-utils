@@ -10,7 +10,6 @@ import {
   defined,
   notdefined,
   untabify,
-  toTAML,
   escapeStr,
   unescapeStr,
   OL,
@@ -115,70 +114,6 @@ ${prefix}second line
 ${prefix}${prefix}third line`);
   });
 })();
-
-// ---------------------------------------------------------------------------
-test("line 58", (t) => {
-  return t.is(toTAML(undef), "---\nundef");
-});
-
-test("line 59", (t) => {
-  return t.is(toTAML(null), "---\nnull");
-});
-
-test("line 60", (t) => {
-  return t.is(toTAML({
-    a: 1
-  }), "---\na: 1");
-});
-
-test("line 61", (t) => {
-  return t.is(toTAML({
-    a: 1,
-    b: 2
-  }), "---\na: 1\nb: 2");
-});
-
-test("line 62", (t) => {
-  return t.is(toTAML([
-    1,
-    'abc',
-    {
-      a: 1
-    }
-  ]), "---\n- 1\n- abc\n-\n   a: 1");
-});
-
-test("line 64", (t) => {
-  return t.is(toTAML({
-    a: 1,
-    b: 2
-  }), `---
-a: 1
-b: 2`);
-});
-
-test("line 70", (t) => {
-  return t.is(toTAML(['a', 'b']), `---
-- a
-- b`);
-});
-
-test("line 76", (t) => {
-  return t.is(toTAML([
-    'a',
-    'b',
-    {
-      a: 1
-    },
-    ['x']
-  ]), untabify(`---
-- a
-- b
--
-	a: 1
--
-	- x`));
-});
 
 // ---------------------------------------------------------------------------
 test("line 88", (t) => {

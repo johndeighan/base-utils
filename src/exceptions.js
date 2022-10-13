@@ -10,9 +10,13 @@ import {
   isString,
   isEmpty,
   untabify,
-  OL,
-  toTAML
+  OL
 } from '@jdeighan/exceptions/utils';
+
+import {
+  fromTAML,
+  toTAML
+} from '@jdeighan/exceptions/taml';
 
 import {
   LOG,
@@ -26,7 +30,9 @@ import {
 
 export {
   LOG,
-  debug
+  debug,
+  fromTAML,
+  toTAML
 };
 
 doHaltOnError = false;

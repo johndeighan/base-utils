@@ -4,12 +4,15 @@ var callStack, debug2, lFuncList, reMethod, strFuncList,
   indexOf = [].indexOf;
 
 import {
+  strict as assert
+} from 'node:assert';
+
+import {
   undef,
   pass,
   defined,
   notdefined,
   untabify,
-  toTAML,
   escapeStr,
   OL,
   jsType,
@@ -32,20 +35,19 @@ import {
 } from '@jdeighan/exceptions/utils';
 
 import {
-  LOG,
-  LOGVALUE,
-  sep_dash,
-  sep_eq
-} from '@jdeighan/exceptions/log';
+  toTAML
+} from '@jdeighan/exceptions/taml';
 
 import {
   getPrefix
 } from '@jdeighan/exceptions/prefix';
 
 import {
-  assert,
-  croak
-} from '@jdeighan/exceptions';
+  LOG,
+  LOGVALUE,
+  sep_dash,
+  sep_eq
+} from '@jdeighan/exceptions/log';
 
 import {
   CallStack
@@ -238,7 +240,7 @@ export var setDebugging = function(option) {
   } else if (isFunction(option)) {
     shouldLog = option;
   } else {
-    croak(`bad parameter ${OL(option)}`);
+    throw new Error(`setDebugging(): bad parameter ${OL(option)}`);
   }
 };
 
@@ -274,7 +276,7 @@ export var getFuncList = function(str) {
         });
       }
     } else {
-      croak(`Bad word in func list: ${OL(word)}`);
+      throw new Error(`getFuncList: bad word : ${OL(word)}`);
     }
   }
   return lFuncList;

@@ -5,11 +5,11 @@ var myReplacer, squote;
 import yaml from 'js-yaml';
 
 import {
-  assert,
-  croak
-} from '@jdeighan/exceptions';
+  strict as assert
+} from 'node:assert';
 
 import {
+  undef,
   defined,
   notdefined,
   isEmpty,
@@ -66,11 +66,15 @@ export var fromTAML = function(text) {
 // ---------------------------------------------------------------------------
 // --- a replacer is (key, value) -> newvalue
 myReplacer = function(name, value) {
+  if (value === undef) {
+    // --- We need this, otherwise js-yaml will convert undef to null
+    return "<UNDEFINED_VALUE>";
+  }
   if (isString(value)) {
     return escapeStr(value);
-  } else if (isObject(value, ['tamlReplacer'])) {
-    return value.tamlReplacer();
   } else {
+    //	else if isObject(value, ['tamlReplacer'])
+    //		return value.tamlReplacer()
     return value;
   }
 };
@@ -78,6 +82,12 @@ myReplacer = function(name, value) {
 // ---------------------------------------------------------------------------
 export var toTAML = function(obj, hOptions = {}) {
   var escape, replacer, sortKeys, str, useTabs;
+  if (obj === undef) {
+    return "---\nundef";
+  }
+  if (obj === null) {
+    return "---\nnull";
+  }
   ({useTabs, sortKeys, escape, replacer} = hOptions);
   if (notdefined(replacer)) {
     replacer = myReplacer;
@@ -89,6 +99,7 @@ export var toTAML = function(obj, hOptions = {}) {
     lineWidth: -1,
     replacer
   });
+  str = str.replace(/<UNDEFINED_VALUE>/g, 'undef');
   if (useTabs) {
     str = str.replace(/   /g, "\t");
   }
