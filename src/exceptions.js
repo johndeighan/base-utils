@@ -20,6 +20,7 @@ import {
 
 import {
   LOG,
+  LOGVALUE,
   sep_dash,
   sep_eq
 } from '@jdeighan/exceptions/log';
@@ -30,6 +31,7 @@ import {
 
 export {
   LOG,
+  LOGVALUE,
   debug,
   fromTAML,
   toTAML

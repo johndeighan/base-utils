@@ -27,28 +27,28 @@ test("line 12", (t) => {
   return t.truthy(isTAML("---\n- first\n- second"));
 });
 
-test("line 13", (t) => {
+test("line 15", (t) => {
   return t.falsy(isTAML("x---\n5"));
 });
 
-test("line 14", (t) => {
+test("line 18", (t) => {
   return t.falsy(isTAML("---x\n5"));
 });
 
-test("line 16", (t) => {
+test("line 21", (t) => {
   return t.is(toTAML({
     a: 1
   }), "---\na: 1");
 });
 
-test("line 17", (t) => {
+test("line 24", (t) => {
   return t.is(toTAML({
     a: 1,
     b: 2
   }), "---\na: 1\nb: 2");
 });
 
-test("line 18", (t) => {
+test("line 27", (t) => {
   return t.is(toTAML([
     1,
     'abc',
@@ -58,7 +58,7 @@ test("line 18", (t) => {
   ]), "---\n- 1\n- abc\n-\n   a: 1");
 });
 
-test("line 21", (t) => {
+test("line 31", (t) => {
   return t.is(toTAML({
     a: 1,
     b: 2
@@ -67,13 +67,13 @@ a: 1
 b: 2`);
 });
 
-test("line 27", (t) => {
+test("line 38", (t) => {
   return t.is(toTAML(['a', 'b']), `---
 - a
 - b`);
 });
 
-test("line 33", (t) => {
+test("line 45", (t) => {
   return t.is(toTAML([
     'a',
     'b',
@@ -90,11 +90,11 @@ test("line 33", (t) => {
 	- x`));
 });
 
-test("line 43", (t) => {
+test("line 56", (t) => {
   return t.deepEqual(fromTAML("---\n- a\n- b"), ['a', 'b']);
 });
 
-test("line 44", (t) => {
+test("line 59", (t) => {
   return t.deepEqual(fromTAML(`---
 title:
 \ten: Hello, she said.`), {
@@ -104,7 +104,7 @@ title:
   });
 });
 
-test("line 62", (t) => {
+test("line 71", (t) => {
   return t.deepEqual(fromTAML(`---
 a: 1
 b: 2`), {
@@ -113,28 +113,28 @@ b: 2`), {
   });
 });
 
-test("line 46", (t) => {
+test("line 83", (t) => {
   return t.is(toTAML(undef), "---\nundef");
 });
 
-test("line 47", (t) => {
+test("line 86", (t) => {
   return t.is(toTAML(null), "---\nnull");
 });
 
-test("line 48", (t) => {
+test("line 89", (t) => {
   return t.is(toTAML({
     a: 1
   }), "---\na: 1");
 });
 
-test("line 49", (t) => {
+test("line 92", (t) => {
   return t.is(toTAML({
     a: 1,
     b: 2
   }), "---\na: 1\nb: 2");
 });
 
-test("line 50", (t) => {
+test("line 95", (t) => {
   return t.is(toTAML([
     1,
     'abc',
@@ -144,7 +144,7 @@ test("line 50", (t) => {
   ]), "---\n- 1\n- abc\n-\n   a: 1");
 });
 
-test("line 52", (t) => {
+test("line 98", (t) => {
   return t.is(toTAML({
     a: 1,
     b: 2
@@ -153,13 +153,13 @@ a: 1
 b: 2`);
 });
 
-test("line 58", (t) => {
+test("line 105", (t) => {
   return t.is(toTAML(['a', 'b']), `---
 - a
 - b`);
 });
 
-test("line 64", (t) => {
+test("line 112", (t) => {
   return t.is(toTAML([
     'a',
     'b',
@@ -176,7 +176,7 @@ test("line 64", (t) => {
 	- x`));
 });
 
-test("line 74", (t) => {
+test("line 123", (t) => {
   return t.is(toTAML(['xyz', 42, false, 'false', undef]), `---
 - xyz
 - 42
