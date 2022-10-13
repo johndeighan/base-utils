@@ -32,35 +32,49 @@ export var isTAML = function(text) {
 // ---------------------------------------------------------------------------
 //   taml - convert valid TAML string to a JavaScript value
 export var fromTAML = function(text) {
-  var _, key, lLines, lMatches, level, line, newPrefix, prefix, str;
+  var _, i, j, lLines, len, line, prefix, ref, str;
   assert(defined(text), "text is undef");
   assert(isTAML(text), `string ${OL(text)} isn't TAML`);
-  lLines = (function() {
-    var i, len, ref, results;
-    ref = blockToArray(text);
-    results = [];
-    for (i = 0, len = ref.length; i < len; i++) {
-      line = ref[i];
-      [_, prefix, str] = line.match(/^(\s*)(.*)$/);
-      assert(!hasChar(prefix, ' '), `space char in prefix: ${OL(line)}`);
-      level = prefix.length;
-      newPrefix = ' '.repeat(level);
-      if (lMatches = line.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(.*)$/)) { // the key
-        [_, key, text] = lMatches;
-        if (isEmpty(text) || text.match(/\d+(?:\.\d*)$/)) {
-          results.push(newPrefix + str);
-        } else {
-          results.push(newPrefix + key + ':' + ' ' + squote(text));
-        }
-      } else {
-        results.push(newPrefix + str);
-      }
+  // --- TAML uses TAB characters for indentation
+  lLines = ['---'];
+  ref = blockToArray(text);
+  for (i = j = 0, len = ref.length; j < len; i = ++j) {
+    line = ref[i];
+    if (i === 0) {
+      continue;
     }
-    return results;
-  })();
+    [_, prefix, str] = line.match(/^(\s*)(.*)$/);
+    str = str.trim();
+    assert(!hasChar(prefix, ' '), `space char in prefix: ${OL(line)}`);
+    lLines.push(' '.repeat(prefix.length) + tamlFix(str));
+  }
   return yaml.load(arrayToBlock(lLines), {
     skipInvalid: true
   });
+};
+
+// ---------------------------------------------------------------------------
+export var tamlFix = (str) => {
+  var _, key, lMatches, valStr;
+  if (lMatches = str.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(.*)$/)) { // the key
+    [_, key, valStr] = lMatches;
+    if (isEmpty(valStr)) {
+      return `${key}:`;
+    } else {
+      return `${key}: ${fixValStr(valStr)}`;
+    }
+  } else {
+    return str;
+  }
+};
+
+// ---------------------------------------------------------------------------
+export var fixValStr = (valStr) => {
+  if (isEmpty(valStr) || valStr.match(/^\d+(?:\.\d*)?$/) || valStr.match(/^\".*\"$/) || valStr.match(/^\'.*\'$/)) {
+    return valStr;
+  } else {
+    return "'" + valStr.replace(/'/g, "''") + "'";
+  }
 };
 
 // ---------------------------------------------------------------------------

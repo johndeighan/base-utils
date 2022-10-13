@@ -24,27 +24,48 @@ export fromTAML = (text) ->
 	assert defined(text), "text is undef"
 	assert isTAML(text), "string #{OL(text)} isn't TAML"
 
-	lLines = for line in blockToArray(text)
+	# --- TAML uses TAB characters for indentation
+	lLines = ['---']
+	for line,i in blockToArray(text)
+		if (i == 0)
+			continue
 		[_, prefix, str] = line.match(/^(\s*)(.*)$/)
+		str = str.trim()
 		assert ! hasChar(prefix, ' '), "space char in prefix: #{OL(line)}"
-		level = prefix.length
-		newPrefix = ' '.repeat(level)
-		if lMatches = line.match(///^
-				([A-Za-z_][A-Za-z0-9_]*)    # the key
-				\s*
-				:
-				\s*
-				(.*)
-				$///)
-			[_, key, text] = lMatches
-			if isEmpty(text) || text.match(/\d+(?:\.\d*)$/)
-				newPrefix + str
-			else
-				newPrefix + key + ':' + ' ' + squote(text)
-		else
-			newPrefix + str
+		lLines.push ' '.repeat(prefix.length) + tamlFix(str)
 
 	return yaml.load(arrayToBlock(lLines), {skipInvalid: true})
+
+# ---------------------------------------------------------------------------
+
+export tamlFix = (str) =>
+
+	if lMatches = str.match(///^
+			([A-Za-z_][A-Za-z0-9_]*)    # the key
+			\s*
+			:
+			\s*
+			(.*)
+			$///)
+		[_, key, valStr] = lMatches
+		if isEmpty(valStr)
+			return "#{key}:"
+		else
+			return "#{key}: #{fixValStr(valStr)}"
+	else
+		return str
+
+# ---------------------------------------------------------------------------
+
+export fixValStr = (valStr) =>
+
+	if isEmpty(valStr) \
+			|| valStr.match(/^\d+(?:\.\d*)?$/) \
+			|| valStr.match(/^\".*\"$/) \
+			|| valStr.match(/^\'.*\'$/)
+		return valStr
+	else
+		return "'" + valStr.replace(/'/g, "''") + "'"
 
 # ---------------------------------------------------------------------------
 # --- a replacer is (key, value) -> newvalue

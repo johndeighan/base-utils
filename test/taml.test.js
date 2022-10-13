@@ -95,10 +95,21 @@ test("line 43", (t) => {
 });
 
 test("line 44", (t) => {
-  return t.deepEqual(fromTAML("---\ntitle:\n\ten: Hello, she said."), {
+  return t.deepEqual(fromTAML(`---
+title:
+\ten: Hello, she said.`), {
     title: {
       en: 'Hello, she said.'
     }
+  });
+});
+
+test("line 62", (t) => {
+  return t.deepEqual(fromTAML(`---
+a: 1
+b: 2`), {
+    a: 1,
+    b: 2
   });
 });
 

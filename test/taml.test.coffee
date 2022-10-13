@@ -57,7 +57,28 @@ test "line 43", (t) =>
 	t.deepEqual fromTAML("---\n- a\n- b"), ['a','b']
 
 test "line 44", (t) =>
-	t.deepEqual fromTAML("---\ntitle:\n\ten: Hello, she said."), { title: en: 'Hello, she said.' }
+	t.deepEqual fromTAML("""
+		---
+		title:
+		\ten: Hello, she said.
+		"""),
+	{
+		title: {
+			en: 'Hello, she said.'
+			}
+		}
+
+test "line 62", (t) =>
+	t.deepEqual fromTAML("""
+		---
+		a: 1
+		b: 2
+		"""),
+	{
+		a: 1
+		b: 2
+		}
+
 
 test "line 46", (t) =>
 	t.is(toTAML(undef), "---\nundef")
