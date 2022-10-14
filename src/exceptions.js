@@ -22,6 +22,7 @@ import {
 import {
   LOG,
   LOGVALUE,
+  setLogger,
   sep_dash,
   sep_eq
 } from '@jdeighan/exceptions/log';
@@ -34,6 +35,7 @@ import {
 export {
   LOG,
   LOGVALUE,
+  setLogger,
   setDebugging,
   debug,
   isTAML,

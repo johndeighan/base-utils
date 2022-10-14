@@ -4,11 +4,13 @@ import {
 	undef, defined, notdefined, isString, isEmpty, untabify, OL,
 	} from '@jdeighan/exceptions/utils'
 import {isTAML, fromTAML, toTAML} from '@jdeighan/exceptions/taml'
-import {LOG, LOGVALUE, sep_dash, sep_eq} from '@jdeighan/exceptions/log'
+import {
+	LOG, LOGVALUE, setLogger, sep_dash, sep_eq,
+	} from '@jdeighan/exceptions/log'
 import {setDebugging, debug} from '@jdeighan/exceptions/debug'
 
 export {
-	LOG, LOGVALUE,
+	LOG, LOGVALUE, setLogger,
 	setDebugging, debug,
 	isTAML, fromTAML, toTAML}
 

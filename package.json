@@ -1,28 +1,29 @@
 {
-  "name": "@jdeighan/exceptions",
-  "version": "1.0.8",
-  "type": "module",
-  "description": "utilities to generate and handle exceptions",
-  "main": "index.js",
-  "exports": {
-    ".": "./src/exceptions.js",
-    "./log": "./src/log.js",
-    "./debug": "./src/debug.js",
-    "./stack": "./src/stack.js",
-    "./prefix": "./src/prefix.js",
-    "./taml": "./src/taml.js",
-    "./utils": "./src/utils.js"
-  },
-  "scripts": {
-    "test": "coffee -c . && ava"
-  },
-  "keywords": [
-    "javascript"
-  ],
-  "author": "John Deighan",
-  "license": "MIT",
-  "dependencies": {
-    "ava": "^4.3.3",
-    "js-yaml": "^4.1.0"
-  }
+	"name": "@jdeighan/exceptions",
+	"version": "1.0.8",
+	"type": "module",
+	"description": "utilities to generate and handle exceptions",
+	"main": "index.js",
+	"exports": {
+		".": "./src/exceptions.js",
+		"./log": "./src/log.js",
+		"./debug": "./src/debug.js",
+		"./stack": "./src/stack.js",
+		"./prefix": "./src/prefix.js",
+		"./taml": "./src/taml.js",
+		"./utils": "./src/utils.js"
+	},
+	"scripts": {
+		"build": "cls && rm -f ./src/*.js && coffee -c ./src",
+		"test": "npm run build && ava ./test/*.test.js && git status"
+	},
+	"keywords": [
+		"javascript"
+	],
+	"author": "John Deighan",
+	"license": "MIT",
+	"dependencies": {
+		"ava": "^4.3.3",
+		"js-yaml": "^4.1.0"
+	}
 }
