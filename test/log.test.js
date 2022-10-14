@@ -90,82 +90,88 @@ test("line 61", (t) => {
   LOG("def", getPrefix(1));
   LOG("ghi", getPrefix(2));
   return t.is(utGetLog(), `abc
-˳˳˳˳def
-˳˳˳˳˳˳˳˳ghi`);
+    def
+        ghi`);
 });
 
 // ---------------------------------------------------------------------------
 test("line 74", (t) => {
   utReset();
   LOGVALUE('x', undef);
-  return t.is(utGetLog(), `x˳=˳undef`);
+  return t.is(utGetLog(), `x = undef`);
 });
 
 test("line 81", (t) => {
   utReset();
   LOGVALUE('x', null);
-  return t.is(utGetLog(), `x˳=˳null`);
+  return t.is(utGetLog(), `x = null`);
 });
 
 test("line 88", (t) => {
   utReset();
   LOGVALUE('x', 'abc');
-  return t.is(utGetLog(), `x˳=˳'abc'`);
+  return t.is(utGetLog(), `x = 'abc'`);
 });
 
 test("line 95", (t) => {
   utReset();
-  LOGVALUE('x', '"abc"');
-  return t.is(utGetLog(), `x˳=˳'"abc"'`);
+  LOGVALUE('x', 'abc def');
+  return t.is(utGetLog(), `x = 'abc˳def'`);
 });
 
 test("line 102", (t) => {
   utReset();
-  LOGVALUE('x', "'abc'");
-  return t.is(utGetLog(), `x˳=˳"'abc'"`);
+  LOGVALUE('x', '"abc"');
+  return t.is(utGetLog(), `x = '"abc"'`);
 });
 
 test("line 109", (t) => {
   utReset();
+  LOGVALUE('x', "'abc'");
+  return t.is(utGetLog(), `x = "'abc'"`);
+});
+
+test("line 116", (t) => {
+  utReset();
   LOGVALUE('x', "'\"abc\"'");
-  return t.is(utGetLog(), `x˳=˳<'"abc"'>`);
+  return t.is(utGetLog(), `x = <'"abc"'>`);
 });
 
 // --- long string
-test("line 118", (t) => {
+test("line 125", (t) => {
   utReset();
   LOGVALUE('x', 'a'.repeat(80));
-  return t.is(utGetLog(), `x˳=˳'${'a'.repeat(80)}'`);
+  return t.is(utGetLog(), `x = '${'a'.repeat(80)}'`);
 });
 
 // --- multi line string
-test("line 127", (t) => {
+test("line 134", (t) => {
   utReset();
   LOGVALUE('x', 'abc\ndef');
-  return t.is(utGetLog(), `x˳=˳'abc®def'`);
+  return t.is(utGetLog(), `x = 'abc®def'`);
 });
 
 // --- hash
-test("line 136", (t) => {
+test("line 143", (t) => {
   utReset();
   LOGVALUE('h', {
     xyz: 42,
     abc: 99
   });
-  return t.is(utGetLog(), `h˳=
+  return t.is(utGetLog(), `h =
 ---
-abc:˳99
-xyz:˳42`);
+abc: 99
+xyz: 42`);
 });
 
 // --- array
-test("line 148", (t) => {
+test("line 155", (t) => {
   utReset();
   LOGVALUE('l', ['xyz', 42, false, undef]);
-  return t.is(utGetLog(), `l˳=
+  return t.is(utGetLog(), `l =
 ---
--˳xyz
--˳42
--˳false
--˳undef`);
+- xyz
+- 42
+- false
+- undef`);
 });

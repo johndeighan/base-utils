@@ -15,7 +15,7 @@
 	},
 	"scripts": {
 		"build": "cls && rm -f ./src/*.js && coffee -c ./src",
-		"test": "npm run build && ava ./test/*.test.js && git status"
+		"test": "npm run build && rm -f ./test/*.js && coffee -c ./test && ava ./test/*.test.js && git status"
 	},
 	"keywords": [
 		"javascript"

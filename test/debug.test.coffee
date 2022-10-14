@@ -45,10 +45,10 @@ test 'line 39', (t) =>
 	resetDebugging()
 	t.is result, 12
 	t.is utGetLog(), """
-		enter˳double()
-		.˳˳˳arg[0]˳=˳3
-		└─>˳return˳from˳double()
-		˳˳˳˳ret[0]˳=˳6
+		enter double()
+		.   arg[0] = 3
+		└─> return from double()
+		    ret[0] = 6
 		"""
 
 test 'line 52', (t) =>
@@ -59,13 +59,13 @@ test 'line 52', (t) =>
 	resetDebugging()
 	t.is result, 12
 	t.is utGetLog(), """
-		enter˳quadruple()
-		.˳˳˳arg[0]˳=˳3
-		˳˳˳˳enter˳double()
-		│˳˳˳.˳˳˳arg[0]˳=˳3
-		│˳˳˳└─>˳return˳from˳double()
-		│˳˳˳˳˳˳˳ret[0]˳=˳6
-		└─>˳return˳from˳quadruple()
-		˳˳˳˳ret[0]˳=˳12
+		enter quadruple()
+		.   arg[0] = 3
+		    enter double()
+		│   .   arg[0] = 3
+		│   └─> return from double()
+		│       ret[0] = 6
+		└─> return from quadruple()
+		    ret[0] = 12
 		"""
 

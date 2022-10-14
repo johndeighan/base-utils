@@ -206,7 +206,7 @@ export var utReset = () => {
 };
 
 export var utGetLog = () => {
-  return arrayToBlock(lUTLog, hEscNoNL);
+  return arrayToBlock(lUTLog);
 };
 
 if (!loaded) {

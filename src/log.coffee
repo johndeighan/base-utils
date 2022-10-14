@@ -175,7 +175,7 @@ export utReset = () =>
 	setLogger (str) => lUTLog.push(str)
 
 export utGetLog = () =>
-	return arrayToBlock(lUTLog, hEscNoNL)
+	return arrayToBlock(lUTLog)
 
 # ---------------------------------------------------------------------------
 

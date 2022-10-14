@@ -65,8 +65,8 @@ test "line 61", (t) =>
 	LOG "ghi", getPrefix(2)
 	t.is utGetLog(), """
 		abc
-		˳˳˳˳def
-		˳˳˳˳˳˳˳˳ghi
+		    def
+		        ghi
 		"""
 
 # ---------------------------------------------------------------------------
@@ -75,84 +75,91 @@ test "line 74", (t) =>
 	utReset()
 	LOGVALUE 'x', undef
 	t.is utGetLog(), """
-		x˳=˳undef
+		x = undef
 		"""
 
 test "line 81", (t) =>
 	utReset()
 	LOGVALUE 'x', null
 	t.is utGetLog(), """
-		x˳=˳null
+		x = null
 		"""
 
 test "line 88", (t) =>
 	utReset()
 	LOGVALUE 'x', 'abc'
 	t.is utGetLog(), """
-		x˳=˳'abc'
+		x = 'abc'
 		"""
 
 test "line 95", (t) =>
 	utReset()
-	LOGVALUE 'x', '"abc"'
+	LOGVALUE 'x', 'abc def'
 	t.is utGetLog(), """
-		x˳=˳'"abc"'
+		x = 'abc˳def'
 		"""
 
 test "line 102", (t) =>
 	utReset()
-	LOGVALUE 'x', "'abc'"
+	LOGVALUE 'x', '"abc"'
 	t.is utGetLog(), """
-		x˳=˳"'abc'"
+		x = '"abc"'
 		"""
 
 test "line 109", (t) =>
 	utReset()
+	LOGVALUE 'x', "'abc'"
+	t.is utGetLog(), """
+		x = "'abc'"
+		"""
+
+test "line 116", (t) =>
+	utReset()
 	LOGVALUE 'x', "'\"abc\"'"
 	t.is utGetLog(), """
-		x˳=˳<'"abc"'>
+		x = <'"abc"'>
 		"""
 
 # --- long string
 
-test "line 118", (t) =>
+test "line 125", (t) =>
 	utReset()
 	LOGVALUE 'x', 'a'.repeat(80)
 	t.is utGetLog(), """
-		x˳=˳'#{'a'.repeat(80)}'
+		x = '#{'a'.repeat(80)}'
 		"""
 
 # --- multi line string
 
-test "line 127", (t) =>
+test "line 134", (t) =>
 	utReset()
 	LOGVALUE 'x', 'abc\ndef'
 	t.is utGetLog(), """
-		x˳=˳'abc®def'
+		x = 'abc®def'
 		"""
 
 # --- hash
 
-test "line 136", (t) =>
+test "line 143", (t) =>
 	utReset()
 	LOGVALUE 'h', {xyz: 42, abc: 99}
 	t.is utGetLog(), """
-		h˳=
+		h =
 		---
-		abc:˳99
-		xyz:˳42
+		abc: 99
+		xyz: 42
 		"""
 
 # --- array
 
-test "line 148", (t) =>
+test "line 155", (t) =>
 	utReset()
 	LOGVALUE 'l', ['xyz', 42, false, undef]
 	t.is utGetLog(), """
-		l˳=
+		l =
 		---
-		-˳xyz
-		-˳42
-		-˳false
-		-˳undef
+		- xyz
+		- 42
+		- false
+		- undef
 		"""
