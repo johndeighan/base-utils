@@ -4,7 +4,7 @@ import {strict as assert} from 'node:assert'
 
 import {
 	pass, undef, defined, notdefined, deepCopy,
-	hEsc, escapeStr, OL,
+	hEsc, escapeStr, OL, hasMethod,
 	blockToArray, arrayToBlock,
 	isNumber, isInteger, isString, isHash, isFunction,
 	nonEmpty, hEscNoNL, jsType, hasChar, quoted,
@@ -125,7 +125,6 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 		console.log "CALL LOGITEM(#{str1}, #{str2}), prefix=#{str3}"
 
 	[type, subtype] = jsType(value)
-	baselen = prefix.length + label.length
 	switch type
 		when undef
 			putstr "#{prefix}#{label} = #{subtype}"
@@ -135,7 +134,8 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 				putstr "#{prefix}#{label} = ''"
 			else
 				str = quoted(value, 'escape')
-				if (baselen + str.length + 3 <= logWidth)
+				len = prefix.length + label.length + str.length + 3
+				if (len <= logWidth)
 					putstr "#{prefix}#{label} = #{str}"
 				else
 					# --- escape, but not newlines
@@ -161,8 +161,17 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 			putstr "#{prefix}#{label} = <function>"
 
 		when 'object'
-			putstr "#{prefix}#{label} = <object>"
+			if hasMethod(value, 'toLogString')
+				str = value.toLogString()
+			else
+				str = toTAML(value)
 
+			if hasChar(str, "\n")
+				putstr "#{prefix}#{label} ="
+				for line in blockToArray(str)
+					putstr "#{itemPrefix}#{line}"
+			else
+				putstr "#{prefix}#{label} = #{str}"
 	return true
 
 # ---------------------------------------------------------------------------

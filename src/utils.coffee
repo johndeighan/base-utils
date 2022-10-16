@@ -251,6 +251,14 @@ export isObject = (x, lReqKeys=undef) ->
 
 # ---------------------------------------------------------------------------
 
+export hasMethod = (obj, name) =>
+
+	assert isObject(obj), "not an object"
+	assert isString(name), "name is not a string"
+	return typeof obj[name] == 'function'
+
+# ---------------------------------------------------------------------------
+
 export jsType = (x) ->
 
 	if (x == null)

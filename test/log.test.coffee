@@ -3,7 +3,7 @@
 import test from 'ava'
 
 import {
-	undef, defined, notdefined, pass,
+	undef, defined, notdefined, pass, jsType,
 	} from '@jdeighan/exceptions/utils'
 import {getPrefix} from '@jdeighan/exceptions/prefix'
 import {
@@ -162,4 +162,53 @@ test "line 155", (t) =>
 		- 42
 		- false
 		- undef
+		"""
+
+# --- object
+
+class Node1
+	constructor: (@str, @level) ->
+		@name = 'node1'
+node1 = new Node1('abc', 2)
+
+test "line 174", (t) =>
+	utReset()
+	LOGVALUE 'Node1', node1
+	t.is utGetLog(), """
+		Node1 =
+		---
+		level: 2
+		name: node1
+		str: abc
+		"""
+
+# --- object with toString method
+
+class Node2
+
+	constructor: (@str, @level) ->
+		@name = 'node2'
+
+	toLogString: () ->
+		return """
+			HERE IT IS
+			str is #{@str}
+			name is #{@name}
+			level is #{@level}
+			THAT'S ALL FOLKS!
+			"""
+
+node2 = new Node2('abc', 2)
+[type, subtype] = jsType(node2)
+
+test "line 200", (t) =>
+	utReset()
+	LOGVALUE 'Node2', node2
+	t.is utGetLog(), """
+		Node2 =
+		HERE IT IS
+		str is abc
+		name is node2
+		level is 2
+		THAT'S ALL FOLKS!
 		"""

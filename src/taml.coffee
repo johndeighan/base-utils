@@ -84,7 +84,7 @@ myReplacer = (name, value) ->
 
 # ---------------------------------------------------------------------------
 
-export toTAML = (obj, hOptions={}) ->
+export toTAML = (obj, hOptions={sortKeys: true}) ->
 
 	if (obj == undef)
 		return "---\nundef"

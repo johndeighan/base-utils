@@ -280,6 +280,13 @@ export var isObject = function(x, lReqKeys = undef) {
 };
 
 // ---------------------------------------------------------------------------
+export var hasMethod = (obj, name) => {
+  assert(isObject(obj), "not an object");
+  assert(isString(name), "name is not a string");
+  return typeof obj[name] === 'function';
+};
+
+// ---------------------------------------------------------------------------
 export var jsType = function(x) {
   var lKeys;
   if (x === null) {

@@ -94,7 +94,9 @@ myReplacer = function(name, value) {
 };
 
 // ---------------------------------------------------------------------------
-export var toTAML = function(obj, hOptions = {}) {
+export var toTAML = function(obj, hOptions = {
+    sortKeys: true
+  }) {
   var escape, replacer, sortKeys, str, useTabs;
   if (obj === undef) {
     return "---\nundef";

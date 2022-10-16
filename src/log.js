@@ -15,6 +15,7 @@ import {
   hEsc,
   escapeStr,
   OL,
+  hasMethod,
   blockToArray,
   arrayToBlock,
   isNumber,
@@ -133,7 +134,7 @@ export var LOG = (str = "", prefix = "") => {
 
 // ---------------------------------------------------------------------------
 export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
-  var baselen, i, len, ref, str, str1, str2, str3, subtype, type;
+  var i, j, len, len1, len2, line, ref, ref1, str, str1, str2, str3, subtype, type;
   assert(nonEmpty(label), "label is empty");
   if (notdefined(itemPrefix)) {
     itemPrefix = prefix;
@@ -145,7 +146,6 @@ export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
     console.log(`CALL LOGITEM(${str1}, ${str2}), prefix=${str3}`);
   }
   [type, subtype] = jsType(value);
-  baselen = prefix.length + label.length;
   switch (type) {
     case undef:
       putstr(`${prefix}${label} = ${subtype}`);
@@ -155,7 +155,8 @@ export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
         putstr(`${prefix}${label} = ''`);
       } else {
         str = quoted(value, 'escape');
-        if (baselen + str.length + 3 <= logWidth) {
+        len = prefix.length + label.length + str.length + 3;
+        if (len <= logWidth) {
           putstr(`${prefix}${label} = ${str}`);
         } else {
           // --- escape, but not newlines
@@ -177,7 +178,7 @@ export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
       });
       putstr(`${prefix}${label} =`);
       ref = blockToArray(str);
-      for (i = 0, len = ref.length; i < len; i++) {
+      for (i = 0, len1 = ref.length; i < len1; i++) {
         str = ref[i];
         putstr(`${itemPrefix}${str}`);
       }
@@ -189,7 +190,21 @@ export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
       putstr(`${prefix}${label} = <function>`);
       break;
     case 'object':
-      putstr(`${prefix}${label} = <object>`);
+      if (hasMethod(value, 'toLogString')) {
+        str = value.toLogString();
+      } else {
+        str = toTAML(value);
+      }
+      if (hasChar(str, "\n")) {
+        putstr(`${prefix}${label} =`);
+        ref1 = blockToArray(str);
+        for (j = 0, len2 = ref1.length; j < len2; j++) {
+          line = ref1[j];
+          putstr(`${itemPrefix}${line}`);
+        }
+      } else {
+        putstr(`${prefix}${label} = ${str}`);
+      }
   }
   return true;
 };
