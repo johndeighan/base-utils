@@ -61,6 +61,40 @@ myReplacer = (name, value) ->
 		return value
 
 # ---------------------------------------------------------------------------
+
+export OL = (obj) ->
+
+	if defined(obj)
+		if isString(obj)
+			return quoted(obj, 'escape')
+#			return "'#{escapeStr(obj)}'"
+		else
+			return JSON.stringify(obj)
+	else if (obj == null)
+		return 'null'
+	else
+		return 'undef'
+
+# ---------------------------------------------------------------------------
+
+export quoted = (str, escape=undef) =>
+
+	assert isString(str), "not a string"
+	switch escape
+		when 'escape'
+			str = escapeStr(str)
+		when 'escapeNoNL'
+			str = escapeStr(str, hEscNoNL)
+		else
+			pass
+
+	if ! hasChar(str, "'")
+		return "'" + str + "'"
+	if ! hasChar(str, '"')
+		return '"' + str + '"'
+	return '<' + str + '>'
+
+# ---------------------------------------------------------------------------
 #   escapeStr - escape newlines, TAB chars, etc.
 
 export hEsc = {
@@ -87,25 +121,6 @@ export hasChar = (str, ch) =>
 	return (str.indexOf(ch) >= 0)
 
 # ---------------------------------------------------------------------------
-
-export quoted = (str, escape=undef) =>
-
-	switch escape
-		when 'escape'
-			str = escapeStr(str)
-		when 'escapeNoNL'
-			str = escapeStr(str, hEscNoNL)
-		else
-			pass
-
-	assert isString(str), "not a string: #{OL(str)}"
-	if ! hasChar(str, "'")
-		return "'" + str + "'"
-	if ! hasChar(str, '"')
-		return '"' + str + '"'
-	return '<' + str + '>'
-
-# ---------------------------------------------------------------------------
 #   unescapeStr - unescape newlines, TAB chars, etc.
 
 export hUnesc = {
@@ -117,18 +132,6 @@ export hUnesc = {
 export unescapeStr = (str, hReplace=hUnesc) ->
 
 	return escapeStr(str, hReplace)
-
-# ---------------------------------------------------------------------------
-
-export OL = (obj) ->
-
-	if defined(obj)
-		if isString(obj)
-			return "'#{escapeStr(obj)}'"
-		else
-			return JSON.stringify(obj)
-	else
-		return 'undef'
 
 # ---------------------------------------------------------------------------
 

@@ -23,6 +23,7 @@ import {
   isString,
   isHash,
   isFunction,
+  isBoolean,
   nonEmpty,
   hEscNoNL,
   jsType,
@@ -135,21 +136,39 @@ export var LOG = (str = "", prefix = "") => {
 // ---------------------------------------------------------------------------
 export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
   var i, j, len, len1, len2, line, ref, ref1, str, str1, str2, str3, subtype, type;
-  assert(nonEmpty(label), "label is empty");
-  if (notdefined(itemPrefix)) {
-    itemPrefix = prefix;
-  }
   if (doDebugLogging) {
     str1 = OL(label);
     str2 = OL(value);
     str3 = OL(prefix);
     console.log(`CALL LOGITEM(${str1}, ${str2}), prefix=${str3}`);
   }
+  assert(nonEmpty(label), "label is empty");
+  // --- Handle some simple cases
+  if (value === undef) {
+    putstr(`${prefix}${label} = undef`);
+    return true;
+  } else if (value === null) {
+    putstr(`${prefix}${label} = null`);
+    return true;
+  } else if (isBoolean(value)) {
+    if (value) {
+      putstr(`${prefix}${label} = true`);
+    } else {
+      putstr(`${prefix}${label} = false`);
+    }
+    return true;
+  } else if (isNumber(value)) {
+    putstr(`${prefix}${label} = ${value}`);
+    return true;
+  }
+  // --- Try OL() - if it's short enough, use that
+  str = `${prefix}${label} = ${OL(value)}`;
+  if (str.length <= logWidth) {
+    putstr(str);
+    return true;
+  }
   [type, subtype] = jsType(value);
   switch (type) {
-    case undef:
-      putstr(`${prefix}${label} = ${subtype}`);
-      break;
     case 'string':
       if (subtype === 'empty') {
         putstr(`${prefix}${label} = ''`);
@@ -165,18 +184,15 @@ export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
         }
       }
       break;
-    case 'number':
-      putstr(`${prefix}${label} = ${value}`);
-      break;
-    case 'boolean':
-      putstr(`${prefix}${label} = ${subtype}`);
-      break;
     case 'hash':
     case 'array':
       str = toTAML(value, {
         sortKeys: true
       });
       putstr(`${prefix}${label} =`);
+      if (notdefined(itemPrefix)) {
+        itemPrefix = prefix;
+      }
       ref = blockToArray(str);
       for (i = 0, len1 = ref.length; i < len1; i++) {
         str = ref[i];
@@ -197,6 +213,9 @@ export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
       }
       if (hasChar(str, "\n")) {
         putstr(`${prefix}${label} =`);
+        if (notdefined(itemPrefix)) {
+          itemPrefix = prefix;
+        }
         ref1 = blockToArray(str);
         for (j = 0, len2 = ref1.length; j < len2; j++) {
           line = ref1[j];

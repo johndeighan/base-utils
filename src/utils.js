@@ -63,6 +63,44 @@ myReplacer = function(name, value) {
 };
 
 // ---------------------------------------------------------------------------
+export var OL = function(obj) {
+  if (defined(obj)) {
+    if (isString(obj)) {
+      return quoted(obj, 'escape');
+    } else {
+      //			return "'#{escapeStr(obj)}'"
+      return JSON.stringify(obj);
+    }
+  } else if (obj === null) {
+    return 'null';
+  } else {
+    return 'undef';
+  }
+};
+
+// ---------------------------------------------------------------------------
+export var quoted = (str, escape = undef) => {
+  assert(isString(str), "not a string");
+  switch (escape) {
+    case 'escape':
+      str = escapeStr(str);
+      break;
+    case 'escapeNoNL':
+      str = escapeStr(str, hEscNoNL);
+      break;
+    default:
+      pass;
+  }
+  if (!hasChar(str, "'")) {
+    return "'" + str + "'";
+  }
+  if (!hasChar(str, '"')) {
+    return '"' + str + '"';
+  }
+  return '<' + str + '>';
+};
+
+// ---------------------------------------------------------------------------
 //   escapeStr - escape newlines, TAB chars, etc.
 export var hEsc = {
   "\n": '®',
@@ -101,28 +139,6 @@ export var hasChar = (str, ch) => {
 };
 
 // ---------------------------------------------------------------------------
-export var quoted = (str, escape = undef) => {
-  switch (escape) {
-    case 'escape':
-      str = escapeStr(str);
-      break;
-    case 'escapeNoNL':
-      str = escapeStr(str, hEscNoNL);
-      break;
-    default:
-      pass;
-  }
-  assert(isString(str), `not a string: ${OL(str)}`);
-  if (!hasChar(str, "'")) {
-    return "'" + str + "'";
-  }
-  if (!hasChar(str, '"')) {
-    return '"' + str + '"';
-  }
-  return '<' + str + '>';
-};
-
-// ---------------------------------------------------------------------------
 //   unescapeStr - unescape newlines, TAB chars, etc.
 export var hUnesc = {
   '®': "\n",
@@ -132,19 +148,6 @@ export var hUnesc = {
 
 export var unescapeStr = function(str, hReplace = hUnesc) {
   return escapeStr(str, hReplace);
-};
-
-// ---------------------------------------------------------------------------
-export var OL = function(obj) {
-  if (defined(obj)) {
-    if (isString(obj)) {
-      return `'${escapeStr(obj)}'`;
-    } else {
-      return JSON.stringify(obj);
-    }
-  } else {
-    return 'undef';
-  }
 };
 
 // ---------------------------------------------------------------------------

@@ -152,29 +152,50 @@ test("line 134", (t) => {
   return t.is(utGetLog(), `x = 'abc®def'`);
 });
 
-// --- hash
+// --- hash (OL doesn't fit)
 test("line 143", (t) => {
   utReset();
+  setLogWidth(5);
   LOGVALUE('h', {
     xyz: 42,
     abc: 99
   });
+  resetLogWidth();
   return t.is(utGetLog(), `h =
 ---
 abc: 99
 xyz: 42`);
 });
 
-// --- array
-test("line 155", (t) => {
+// --- hash (OL fits)
+test("line 157", (t) => {
   utReset();
+  LOGVALUE('h', {
+    xyz: 42,
+    abc: 99
+  });
+  return t.is(utGetLog(), `h = {"xyz":42,"abc":99}`);
+});
+
+// --- array  (OL doesn't fit)
+test("line 166", (t) => {
+  utReset();
+  setLogWidth(5);
   LOGVALUE('l', ['xyz', 42, false, undef]);
+  resetLogWidth();
   return t.is(utGetLog(), `l =
 ---
 - xyz
 - 42
 - false
 - undef`);
+});
+
+// --- array (OL fits)
+test("line 182", (t) => {
+  utReset();
+  LOGVALUE('l', ['xyz', 42, false, undef]);
+  return t.is(utGetLog(), `l = ["xyz",42,false,null]`);
 });
 
 // --- object
@@ -189,7 +210,7 @@ Node1 = class Node1 {
 
 node1 = new Node1('abc', 2);
 
-test("line 174", (t) => {
+test("line 196", (t) => {
   utReset();
   LOGVALUE('Node1', node1);
   return t.is(utGetLog(), `Node1 =
@@ -221,7 +242,7 @@ node2 = new Node2('abc', 2);
 
 [type, subtype] = jsType(node2);
 
-test("line 200", (t) => {
+test("line 226", (t) => {
   utReset();
   LOGVALUE('Node2', node2);
   return t.is(utGetLog(), `Node2 =

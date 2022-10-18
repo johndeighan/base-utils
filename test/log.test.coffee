@@ -138,11 +138,13 @@ test "line 134", (t) =>
 		x = 'abc®def'
 		"""
 
-# --- hash
+# --- hash (OL doesn't fit)
 
 test "line 143", (t) =>
 	utReset()
+	setLogWidth 5
 	LOGVALUE 'h', {xyz: 42, abc: 99}
+	resetLogWidth()
 	t.is utGetLog(), """
 		h =
 		---
@@ -150,11 +152,22 @@ test "line 143", (t) =>
 		xyz: 42
 		"""
 
-# --- array
+# --- hash (OL fits)
 
-test "line 155", (t) =>
+test "line 157", (t) =>
 	utReset()
+	LOGVALUE 'h', {xyz: 42, abc: 99}
+	t.is utGetLog(), """
+		h = {"xyz":42,"abc":99}
+		"""
+
+# --- array  (OL doesn't fit)
+
+test "line 166", (t) =>
+	utReset()
+	setLogWidth 5
 	LOGVALUE 'l', ['xyz', 42, false, undef]
+	resetLogWidth()
 	t.is utGetLog(), """
 		l =
 		---
@@ -164,6 +177,15 @@ test "line 155", (t) =>
 		- undef
 		"""
 
+# --- array (OL fits)
+
+test "line 182", (t) =>
+	utReset()
+	LOGVALUE 'l', ['xyz', 42, false, undef]
+	t.is utGetLog(), """
+		l = ["xyz",42,false,null]
+		"""
+
 # --- object
 
 class Node1
@@ -171,7 +193,7 @@ class Node1
 		@name = 'node1'
 node1 = new Node1('abc', 2)
 
-test "line 174", (t) =>
+test "line 196", (t) =>
 	utReset()
 	LOGVALUE 'Node1', node1
 	t.is utGetLog(), """
@@ -201,7 +223,7 @@ class Node2
 node2 = new Node2('abc', 2)
 [type, subtype] = jsType(node2)
 
-test "line 200", (t) =>
+test "line 226", (t) =>
 	utReset()
 	LOGVALUE 'Node2', node2
 	t.is utGetLog(), """

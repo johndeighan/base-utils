@@ -6,7 +6,7 @@ import {
 	pass, undef, defined, notdefined, deepCopy,
 	hEsc, escapeStr, OL, hasMethod,
 	blockToArray, arrayToBlock,
-	isNumber, isInteger, isString, isHash, isFunction,
+	isNumber, isInteger, isString, isHash, isFunction, isBoolean,
 	nonEmpty, hEscNoNL, jsType, hasChar, quoted,
 	} from '@jdeighan/exceptions/utils'
 import {toTAML} from '@jdeighan/exceptions/taml'
@@ -114,21 +114,38 @@ export LOG = (str="", prefix="") =>
 
 export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 
-	assert nonEmpty(label), "label is empty"
-	if notdefined(itemPrefix)
-		itemPrefix = prefix
-
 	if doDebugLogging
 		str1 = OL(label)
 		str2 = OL(value)
 		str3 = OL(prefix)
 		console.log "CALL LOGITEM(#{str1}, #{str2}), prefix=#{str3}"
+	assert nonEmpty(label), "label is empty"
+
+	# --- Handle some simple cases
+	if (value == undef)
+		putstr "#{prefix}#{label} = undef"
+		return true
+	else if (value == null)
+		putstr "#{prefix}#{label} = null"
+		return true
+	else if isBoolean(value)
+		if value
+			putstr "#{prefix}#{label} = true"
+		else
+			putstr "#{prefix}#{label} = false"
+		return true
+	else if isNumber(value)
+		putstr "#{prefix}#{label} = #{value}"
+		return true
+
+	# --- Try OL() - if it's short enough, use that
+	str = "#{prefix}#{label} = #{OL(value)}"
+	if (str.length <= logWidth)
+		putstr str
+		return true
 
 	[type, subtype] = jsType(value)
 	switch type
-		when undef
-			putstr "#{prefix}#{label} = #{subtype}"
-
 		when 'string'
 			if (subtype == 'empty')
 				putstr "#{prefix}#{label} = ''"
@@ -142,15 +159,11 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 					str = quoted(value, 'escapeNoNL')
 					putstr "#{prefix}#{label} = #{str}"
 
-		when 'number'
-			putstr "#{prefix}#{label} = #{value}"
-
-		when 'boolean'
-			putstr "#{prefix}#{label} = #{subtype}"
-
 		when 'hash', 'array'
 			str = toTAML(value, {sortKeys: true})
 			putstr "#{prefix}#{label} ="
+			if notdefined(itemPrefix)
+				itemPrefix = prefix
 			for str in blockToArray(str)
 				putstr "#{itemPrefix}#{str}"
 
@@ -168,6 +181,8 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 
 			if hasChar(str, "\n")
 				putstr "#{prefix}#{label} ="
+				if notdefined(itemPrefix)
+					itemPrefix = prefix
 				for line in blockToArray(str)
 					putstr "#{itemPrefix}#{line}"
 			else
