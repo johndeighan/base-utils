@@ -5,6 +5,7 @@ import {strict as assert} from 'node:assert'
 
 import {
 	undef, defined, notdefined, isEmpty, isString, isObject,
+	isFunction, isBoolean, isArray,
 	blockToArray, arrayToBlock,
 	hasChar, escapeStr, chomp, OL,
 	} from '@jdeighan/exceptions/utils'
@@ -88,15 +89,37 @@ export toTAML = (obj, hOptions={sortKeys: true}) ->
 
 	if (obj == undef)
 		return "---\nundef"
+
 	if (obj == null)
 		return "---\nnull"
+
 	{useTabs, sortKeys, escape, replacer} = hOptions
+
 	if notdefined(replacer)
 		replacer = myReplacer
+
+	if isArray(sortKeys)
+		h = {}
+		for key,i in sortKeys
+			h[key] = i+1
+		sortKeys = (a, b) ->
+			if defined(h[a])
+				if defined(h[b])
+					return compareFunc(h[a], h[b])
+				else
+					return -1
+			else
+				if defined(h[b])
+					return 1
+				else
+					# --- compare keys alphabetically
+					return compareFunc(a, b)
+	assert isBoolean(sortKeys) || isFunction(sortKeys),
+		"option sortKeys must be boolean, array or function"
 	str = yaml.dump(obj, {
 		skipInvalid: true
 		indent: 3
-		sortKeys: !!sortKeys
+		sortKeys: sortKeys
 		lineWidth: -1
 		replacer
 		})
@@ -104,6 +127,17 @@ export toTAML = (obj, hOptions={sortKeys: true}) ->
 	if useTabs
 		str = str.replace(/   /g, "\t")
 	return "---\n" + chomp(str)
+
+# ---------------------------------------------------------------------------
+
+compareFunc = (a, b) =>
+
+	if (a < b)
+		return -1
+	else if (a > b)
+		return 1
+	else
+		return 0
 
 # ---------------------------------------------------------------------------
 

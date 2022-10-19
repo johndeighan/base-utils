@@ -184,3 +184,63 @@ test("line 123", (t) => {
 - 'false'
 - undef`);
 });
+
+// ---------------------------------------------------------------------------
+// Test sorting keys
+
+// --- Default is to sort keys
+test("line 138", (t) => {
+  return t.is(toTAML({
+    c: 3,
+    b: 2,
+    a: 1
+  }), `---
+a: 1
+b: 2
+c: 3`);
+});
+
+// --- sortKeys array specifies order
+test("line 148", (t) => {
+  return t.is(toTAML({
+    c: 3,
+    b: 2,
+    a: 1
+  }, {
+    sortKeys: ['b', 'a', 'c']
+  }), `---
+b: 2
+a: 1
+c: 3`);
+});
+
+test("line 156", (t) => {
+  return t.is(toTAML({
+    c: 3,
+    b: 2,
+    a: 1
+  }, {
+    sortKeys: ['c', 'b', 'a']
+  }), `---
+c: 3
+b: 2
+a: 1`);
+});
+
+// --- Keys not in the sortKeys array are put at end alphabetically
+test("line 166", (t) => {
+  return t.is(toTAML({
+    e: 5,
+    d: 4,
+    c: 3,
+    b: 2,
+    a: 1
+  }, {
+    sortKeys: ['c', 'b', 'a']
+  }), `---
+c: 3
+b: 2
+a: 1
+d: 4
+e: 5`);
+});
