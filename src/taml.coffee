@@ -78,8 +78,6 @@ myReplacer = (name, value) ->
 		return "<UNDEFINED_VALUE>"
 	if isString(value)
 		return escapeStr(value)
-#	else if isObject(value, ['tamlReplacer'])
-#		return value.tamlReplacer()
 	else
 		return value
 
@@ -119,7 +117,7 @@ export toTAML = (obj, hOptions={sortKeys: true}) ->
 	str = yaml.dump(obj, {
 		skipInvalid: true
 		indent: 3
-		sortKeys: sortKeys
+		sortKeys
 		lineWidth: -1
 		replacer
 		})

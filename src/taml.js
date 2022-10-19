@@ -90,8 +90,6 @@ myReplacer = function(name, value) {
   if (isString(value)) {
     return escapeStr(value);
   } else {
-    //	else if isObject(value, ['tamlReplacer'])
-    //		return value.tamlReplacer()
     return value;
   }
 };
@@ -138,7 +136,7 @@ export var toTAML = function(obj, hOptions = {
   str = yaml.dump(obj, {
     skipInvalid: true,
     indent: 3,
-    sortKeys: sortKeys,
+    sortKeys,
     lineWidth: -1,
     replacer
   });
