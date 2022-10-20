@@ -51,14 +51,14 @@ quadruple = (x) => {
 };
 
 // ---------------------------------------------------------------------------
-test('line 33', (t) => {
+test("line 34", (t) => {
   var result;
   utReset();
   result = quadruple(3);
   return t.is(result, 12);
 });
 
-test('line 39', (t) => {
+test("line 40", (t) => {
   var result;
   utReset();
   setDebugging('double');
@@ -66,12 +66,12 @@ test('line 39', (t) => {
   resetDebugging();
   t.is(result, 12);
   return t.is(utGetLog(), `enter double()
-.   arg[0] = 3
+│   arg[0] = 3
 └─> return from double()
     ret[0] = 6`);
 });
 
-test('line 52', (t) => {
+test("line 54", (t) => {
   var result;
   utReset();
   setDebugging('double quadruple');
@@ -79,11 +79,32 @@ test('line 52', (t) => {
   resetDebugging();
   t.is(result, 12);
   return t.is(utGetLog(), `enter quadruple()
-.   arg[0] = 3
-    enter double()
-│   .   arg[0] = 3
+│   arg[0] = 3
+│   enter double()
+│   │   arg[0] = 3
 │   └─> return from double()
 │       ret[0] = 6
 └─> return from quadruple()
     ret[0] = 12`);
+});
+
+test("line 72", (t) => {
+  var result;
+  utReset();
+  setDebugging('double quadruple');
+  result = double(quadruple(3));
+  resetDebugging();
+  t.is(result, 24);
+  return t.is(utGetLog(), `enter quadruple()
+│   arg[0] = 3
+│   enter double()
+│   │   arg[0] = 3
+│   └─> return from double()
+│       ret[0] = 6
+└─> return from quadruple()
+    ret[0] = 12
+enter double()
+│   arg[0] = 12
+└─> return from double()
+    ret[0] = 24`);
 });

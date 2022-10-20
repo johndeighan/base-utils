@@ -40,10 +40,6 @@ export getPrefix = (level, option='none') ->
 			assert (level >= 2),
 				"getPrefix(), noLast2Vbars but level=#{OL(level)}"
 			return oneIndent.repeat(level-2) + fourSpaces + fourSpaces
-		when 'dotLastVbar'
-			assert (level >= 1),
-				"getPrefix(), dotLastVbar but level=#{OL(level)}"
-			return oneIndent.repeat(level-1) + dotIndent
 		when 'dotLast2Vbars'
 			assert (level >= 2),
 				"getPrefix(), dotLast2Vbars but level=#{OL(level)}"

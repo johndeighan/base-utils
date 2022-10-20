@@ -112,8 +112,8 @@ export doTheLogging = (type, label, lObjects) ->
 	switch type
 
 		when 'enter'
-			LOG label, getPrefix(level)
-			pre = getPrefix(level+1, 'dotLastVbar')
+			LOG label, getPrefix(level, 'plain')
+			pre = getPrefix(level+1, 'plain')
 			itemPre = getPrefix(level+2, 'dotLast2Vbars')
 			for obj,i in lObjects
 				LOGVALUE "arg[#{i}]", obj, pre, itemPre

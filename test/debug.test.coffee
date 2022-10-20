@@ -31,13 +31,13 @@ quadruple = (x) =>
 
 # ---------------------------------------------------------------------------
 
-test 'line 33', (t) =>
+test "line 34", (t) =>
 
 	utReset()
 	result = quadruple(3)
 	t.is result, 12
 
-test 'line 39', (t) =>
+test "line 40", (t) =>
 
 	utReset()
 	setDebugging 'double'
@@ -46,12 +46,12 @@ test 'line 39', (t) =>
 	t.is result, 12
 	t.is utGetLog(), """
 		enter double()
-		.   arg[0] = 3
+		│   arg[0] = 3
 		└─> return from double()
 		    ret[0] = 6
 		"""
 
-test 'line 52', (t) =>
+test "line 54", (t) =>
 
 	utReset()
 	setDebugging 'double quadruple'
@@ -60,12 +60,33 @@ test 'line 52', (t) =>
 	t.is result, 12
 	t.is utGetLog(), """
 		enter quadruple()
-		.   arg[0] = 3
-		    enter double()
-		│   .   arg[0] = 3
+		│   arg[0] = 3
+		│   enter double()
+		│   │   arg[0] = 3
 		│   └─> return from double()
 		│       ret[0] = 6
 		└─> return from quadruple()
 		    ret[0] = 12
 		"""
 
+test "line 72", (t) =>
+
+	utReset()
+	setDebugging 'double quadruple'
+	result = double(quadruple(3))
+	resetDebugging()
+	t.is result, 24
+	t.is utGetLog(), """
+		enter quadruple()
+		│   arg[0] = 3
+		│   enter double()
+		│   │   arg[0] = 3
+		│   └─> return from double()
+		│       ret[0] = 6
+		└─> return from quadruple()
+		    ret[0] = 12
+		enter double()
+		│   arg[0] = 12
+		└─> return from double()
+		    ret[0] = 24
+		"""
