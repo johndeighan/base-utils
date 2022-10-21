@@ -285,10 +285,12 @@ test "line 284", (t) => t.is(quoted("'\"<abc>\"'"), "<'\"<abc>\"'>")
 
 # ---------------------------------------------------------------------------
 
-test "line 288", (t) => t.deepEqual(getOptions('asText'), {asText: true})
-test "line 289", (t) => t.deepEqual(getOptions('!binary'), {binary: false})
-test "line 290", (t) => t.deepEqual(getOptions('label=this'), {label: 'this'})
-test "line 291", (t) => t.deepEqual(getOptions('asText !binary label=this'), {
+test "line 288", (t) => t.deepEqual(getOptions(), {})
+test "line 289", (t) => t.deepEqual(getOptions(undef, {x:1}), {x:1})
+test "line 290", (t) => t.deepEqual(getOptions('asText'), {asText: true})
+test "line 291", (t) => t.deepEqual(getOptions('!binary'), {binary: false})
+test "line 292", (t) => t.deepEqual(getOptions('label=this'), {label: 'this'})
+test "line 293", (t) => t.deepEqual(getOptions('asText !binary label=this'), {
 	asText: true
 	binary: false
 	label: 'this'

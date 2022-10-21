@@ -498,9 +498,12 @@ export var words = function(str) {
 };
 
 // ---------------------------------------------------------------------------
-export var getOptions = function(options) {
+export var getOptions = function(options = undef, hDefault = {}) {
   var _, eq, hOptions, i, ident, lMatches, len1, neg, ref, str;
-  if (isHash(options)) {
+  if (options === undef) {
+    assert(isHash(hDefault), `hDefault is ${OL(hDefault)}`);
+    return hDefault;
+  } else if (isHash(options)) {
     return options;
   } else if (isString(options)) {
     hOptions = {};

@@ -650,24 +650,36 @@ test("line 284", (t) => {
 
 // ---------------------------------------------------------------------------
 test("line 288", (t) => {
+  return t.deepEqual(getOptions(), {});
+});
+
+test("line 289", (t) => {
+  return t.deepEqual(getOptions(undef, {
+    x: 1
+  }), {
+    x: 1
+  });
+});
+
+test("line 290", (t) => {
   return t.deepEqual(getOptions('asText'), {
     asText: true
   });
 });
 
-test("line 289", (t) => {
+test("line 291", (t) => {
   return t.deepEqual(getOptions('!binary'), {
     binary: false
   });
 });
 
-test("line 290", (t) => {
+test("line 292", (t) => {
   return t.deepEqual(getOptions('label=this'), {
     label: 'this'
   });
 });
 
-test("line 291", (t) => {
+test("line 293", (t) => {
   return t.deepEqual(getOptions('asText !binary label=this'), {
     asText: true,
     binary: false,

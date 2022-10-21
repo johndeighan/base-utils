@@ -444,9 +444,12 @@ export words = (str) ->
 
 # ---------------------------------------------------------------------------
 
-export getOptions = (options) ->
+export getOptions = (options=undef, hDefault={}) ->
 
-	if isHash(options)
+	if (options == undef)
+		assert isHash(hDefault), "hDefault is #{OL(hDefault)}"
+		return hDefault
+	else if isHash(options)
 		return options
 	else if isString(options)
 		hOptions = {}
