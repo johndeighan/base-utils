@@ -68,7 +68,6 @@ export var OL = function(obj) {
     if (isString(obj)) {
       return quoted(obj, 'escape');
     } else {
-      //			return "'#{escapeStr(obj)}'"
       return JSON.stringify(obj);
     }
   } else if (obj === null) {
@@ -115,6 +114,21 @@ export var hEscNoNL = {
 
 export var escapeStr = function(str, hReplace = hEsc) {
   var ch, lParts;
+  // --- hReplace can also be a string:
+  //        'esc'     - escape space, newline, tab
+  //        'escNoNL' - escape space, tab
+  if (isString(hReplace)) {
+    switch (hReplace) {
+      case 'esc':
+        hReplace = hEsc;
+        break;
+      case 'escNoNL':
+        hReplace = hExcNoNL;
+        break;
+      default:
+        croak("Invalid hReplace string value");
+    }
+  }
   assert(isString(str), "escapeStr(): not a string");
   lParts = (function() {
     var i, len1, ref, results;
@@ -481,4 +495,35 @@ export var words = function(str) {
     return [];
   }
   return str.split(/\s+/);
+};
+
+// ---------------------------------------------------------------------------
+export var getOptions = function(options) {
+  var _, eq, hOptions, i, ident, lMatches, len1, neg, ref, str;
+  if (isHash(options)) {
+    return options;
+  } else if (isString(options)) {
+    hOptions = {};
+    ref = words(options);
+    for (i = 0, len1 = ref.length; i < len1; i++) {
+      str = ref[i];
+      if (lMatches = str.match(/^(\!)?([A-Za-z][A-Za-z_0-9]*)(?:(=)(.*))?$/)) { // negate value
+        // identifier
+        [_, neg, ident, eq, str] = lMatches;
+        if (nonEmpty(eq)) {
+          assert(isEmpty(neg), "negation with string value");
+          hOptions[ident] = str;
+        } else if (neg) {
+          hOptions[ident] = false;
+        } else {
+          hOptions[ident] = true;
+        }
+      } else {
+        croak(`Invalid option string ${OL(str)}`);
+      }
+    }
+    return hOptions;
+  } else {
+    return croak(`options must be hash or string, found ${OL(options)}`);
+  }
 };

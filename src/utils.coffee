@@ -67,7 +67,6 @@ export OL = (obj) ->
 	if defined(obj)
 		if isString(obj)
 			return quoted(obj, 'escape')
-#			return "'#{escapeStr(obj)}'"
 		else
 			return JSON.stringify(obj)
 	else if (obj == null)
@@ -108,6 +107,18 @@ export hEscNoNL = {
 	}
 
 export escapeStr = (str, hReplace=hEsc) ->
+	# --- hReplace can also be a string:
+	#        'esc'     - escape space, newline, tab
+	#        'escNoNL' - escape space, tab
+
+	if isString(hReplace)
+		switch hReplace
+			when 'esc'
+				hReplace = hEsc
+			when 'escNoNL'
+				hReplace = hExcNoNL
+			else
+				croak "Invalid hReplace string value"
 
 	assert isString(str), "escapeStr(): not a string"
 	lParts = for ch in str.split('')
@@ -430,3 +441,34 @@ export words = (str) ->
 	if (str == '')
 		return []
 	return str.split(/\s+/)
+
+# ---------------------------------------------------------------------------
+
+export getOptions = (options) ->
+
+	if isHash(options)
+		return options
+	else if isString(options)
+		hOptions = {}
+		for str in words(options)
+			if lMatches = str.match(///^
+					(\!)?                    # negate value
+					([A-Za-z][A-Za-z_0-9]*)  # identifier
+					(?:
+						(=)
+						(.*)
+						)?
+					$///)
+				[_, neg, ident, eq, str] = lMatches
+				if nonEmpty(eq)
+					assert isEmpty(neg), "negation with string value"
+					hOptions[ident] = str
+				else if neg
+					hOptions[ident] = false
+				else
+					hOptions[ident] = true
+			else
+				croak "Invalid option string #{OL(str)}"
+		return hOptions
+	else
+		croak "options must be hash or string, found #{OL(options)}"
