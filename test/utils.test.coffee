@@ -268,29 +268,33 @@ test "line 267", (t) => t.is(setCharsAt('abc', 1, 'xyz'), 'axyz')
 
 # ---------------------------------------------------------------------------
 
-test "line 271", (t) => t.deepEqual(words('a b c'), ['a', 'b', 'c'])
-test "line 272", (t) => t.deepEqual(words('  a   b   c  '), ['a', 'b', 'c'])
+test "line 271", (t) => t.deepEqual(words(''), [])
+test "line 272", (t) => t.deepEqual(words('  \t\t'), [])
+test "line 273", (t) => t.deepEqual(words('a b c'), ['a', 'b', 'c'])
+test "line 274", (t) => t.deepEqual(words('  a   b   c  '), ['a', 'b', 'c'])
+test "line 275", (t) => t.deepEqual(words('a b', 'c d'), ['a', 'b', 'c', 'd'])
+test "line 276", (t) => t.deepEqual(words(' my word ', ' is  word  '), ['my', 'word', 'is', 'word'])
 
-test "line 274", (t) => t.truthy hasChar('abc', 'b')
-test "line 275", (t) => t.falsy  hasChar('abc', 'x')
-test "line 276", (t) => t.falsy  hasChar("\t\t", ' ')
-
-# ---------------------------------------------------------------------------
-
-test "line 280", (t) => t.is(quoted('abc'), "'abc'")
-test "line 281", (t) => t.is(quoted('"abc"'), "'\"abc\"'")
-test "line 282", (t) => t.is(quoted("'abc'"), "\"'abc'\"")
-test "line 283", (t) => t.is(quoted("'\"abc\"'"), "<'\"abc\"'>")
-test "line 284", (t) => t.is(quoted("'\"<abc>\"'"), "<'\"<abc>\"'>")
+test "line 278", (t) => t.truthy hasChar('abc', 'b')
+test "line 279", (t) => t.falsy  hasChar('abc', 'x')
+test "line 280", (t) => t.falsy  hasChar("\t\t", ' ')
 
 # ---------------------------------------------------------------------------
 
-test "line 288", (t) => t.deepEqual(getOptions(), {})
-test "line 289", (t) => t.deepEqual(getOptions(undef, {x:1}), {x:1})
-test "line 290", (t) => t.deepEqual(getOptions('asText'), {asText: true})
-test "line 291", (t) => t.deepEqual(getOptions('!binary'), {binary: false})
-test "line 292", (t) => t.deepEqual(getOptions('label=this'), {label: 'this'})
-test "line 293", (t) => t.deepEqual(getOptions('asText !binary label=this'), {
+test "line 284", (t) => t.is(quoted('abc'), "'abc'")
+test "line 285", (t) => t.is(quoted('"abc"'), "'\"abc\"'")
+test "line 286", (t) => t.is(quoted("'abc'"), "\"'abc'\"")
+test "line 287", (t) => t.is(quoted("'\"abc\"'"), "<'\"abc\"'>")
+test "line 288", (t) => t.is(quoted("'\"<abc>\"'"), "<'\"<abc>\"'>")
+
+# ---------------------------------------------------------------------------
+
+test "line 292", (t) => t.deepEqual(getOptions(), {})
+test "line 293", (t) => t.deepEqual(getOptions(undef, {x:1}), {x:1})
+test "line 294", (t) => t.deepEqual(getOptions('asText'), {asText: true})
+test "line 295", (t) => t.deepEqual(getOptions('!binary'), {binary: false})
+test "line 296", (t) => t.deepEqual(getOptions('label=this'), {label: 'this'})
+test "line 297", (t) => t.deepEqual(getOptions('asText !binary label=this'), {
 	asText: true
 	binary: false
 	label: 'this'

@@ -489,12 +489,21 @@ export var setCharsAt = function(str, pos, str2) {
 };
 
 // ---------------------------------------------------------------------------
-export var words = function(str) {
-  str = str.trim();
-  if (str === '') {
-    return [];
+export var words = function(...lStrings) {
+  var i, j, lWords, len1, len2, ref, str, word;
+  lWords = [];
+  for (i = 0, len1 = lStrings.length; i < len1; i++) {
+    str = lStrings[i];
+    str = str.trim();
+    if (str !== '') {
+      ref = str.split(/\s+/);
+      for (j = 0, len2 = ref.length; j < len2; j++) {
+        word = ref[j];
+        lWords.push(word);
+      }
+    }
   }
-  return str.split(/\s+/);
+  return lWords;
 };
 
 // ---------------------------------------------------------------------------

@@ -435,12 +435,15 @@ export setCharsAt = (str, pos, str2) ->
 
 # ---------------------------------------------------------------------------
 
-export words = (str) ->
+export words = (lStrings...) ->
 
-	str = str.trim()
-	if (str == '')
-		return []
-	return str.split(/\s+/)
+	lWords = []
+	for str in lStrings
+		str = str.trim()
+		if (str != '')
+			for word in str.split(/\s+/)
+				lWords.push word
+	return lWords
 
 # ---------------------------------------------------------------------------
 

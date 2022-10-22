@@ -608,52 +608,68 @@ test("line 267", (t) => {
 
 // ---------------------------------------------------------------------------
 test("line 271", (t) => {
-  return t.deepEqual(words('a b c'), ['a', 'b', 'c']);
+  return t.deepEqual(words(''), []);
 });
 
 test("line 272", (t) => {
-  return t.deepEqual(words('  a   b   c  '), ['a', 'b', 'c']);
+  return t.deepEqual(words('  \t\t'), []);
+});
+
+test("line 273", (t) => {
+  return t.deepEqual(words('a b c'), ['a', 'b', 'c']);
 });
 
 test("line 274", (t) => {
-  return t.truthy(hasChar('abc', 'b'));
+  return t.deepEqual(words('  a   b   c  '), ['a', 'b', 'c']);
 });
 
 test("line 275", (t) => {
-  return t.falsy(hasChar('abc', 'x'));
+  return t.deepEqual(words('a b', 'c d'), ['a', 'b', 'c', 'd']);
 });
 
 test("line 276", (t) => {
+  return t.deepEqual(words(' my word ', ' is  word  '), ['my', 'word', 'is', 'word']);
+});
+
+test("line 278", (t) => {
+  return t.truthy(hasChar('abc', 'b'));
+});
+
+test("line 279", (t) => {
+  return t.falsy(hasChar('abc', 'x'));
+});
+
+test("line 280", (t) => {
   return t.falsy(hasChar("\t\t", ' '));
 });
 
 // ---------------------------------------------------------------------------
-test("line 280", (t) => {
+test("line 284", (t) => {
   return t.is(quoted('abc'), "'abc'");
 });
 
-test("line 281", (t) => {
+test("line 285", (t) => {
   return t.is(quoted('"abc"'), "'\"abc\"'");
 });
 
-test("line 282", (t) => {
+test("line 286", (t) => {
   return t.is(quoted("'abc'"), "\"'abc'\"");
 });
 
-test("line 283", (t) => {
+test("line 287", (t) => {
   return t.is(quoted("'\"abc\"'"), "<'\"abc\"'>");
 });
 
-test("line 284", (t) => {
+test("line 288", (t) => {
   return t.is(quoted("'\"<abc>\"'"), "<'\"<abc>\"'>");
 });
 
 // ---------------------------------------------------------------------------
-test("line 288", (t) => {
+test("line 292", (t) => {
   return t.deepEqual(getOptions(), {});
 });
 
-test("line 289", (t) => {
+test("line 293", (t) => {
   return t.deepEqual(getOptions(undef, {
     x: 1
   }), {
@@ -661,25 +677,25 @@ test("line 289", (t) => {
   });
 });
 
-test("line 290", (t) => {
+test("line 294", (t) => {
   return t.deepEqual(getOptions('asText'), {
     asText: true
   });
 });
 
-test("line 291", (t) => {
+test("line 295", (t) => {
   return t.deepEqual(getOptions('!binary'), {
     binary: false
   });
 });
 
-test("line 292", (t) => {
+test("line 296", (t) => {
   return t.deepEqual(getOptions('label=this'), {
     label: 'this'
   });
 });
 
-test("line 293", (t) => {
+test("line 297", (t) => {
   return t.deepEqual(getOptions('asText !binary label=this'), {
     asText: true,
     binary: false,
