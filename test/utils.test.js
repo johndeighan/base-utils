@@ -678,24 +678,36 @@ test("line 293", (t) => {
 });
 
 test("line 294", (t) => {
+  return t.deepEqual(getOptions({
+    x: 1
+  }, {
+    x: 3,
+    y: 4
+  }), {
+    x: 1,
+    y: 4
+  });
+});
+
+test("line 295", (t) => {
   return t.deepEqual(getOptions('asText'), {
     asText: true
   });
 });
 
-test("line 295", (t) => {
+test("line 296", (t) => {
   return t.deepEqual(getOptions('!binary'), {
     binary: false
   });
 });
 
-test("line 296", (t) => {
+test("line 297", (t) => {
   return t.deepEqual(getOptions('label=this'), {
     label: 'this'
   });
 });
 
-test("line 297", (t) => {
+test("line 298", (t) => {
   return t.deepEqual(getOptions('asText !binary label=this'), {
     asText: true,
     binary: false,

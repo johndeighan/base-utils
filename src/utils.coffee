@@ -40,7 +40,7 @@ export deepCopy = (obj) ->
 	try
 		newObj = JSON.parse(objStr)
 	catch err
-		croak "ERROR: err.message", objStr
+		throw new Error("ERROR: err.message")
 
 	return newObj
 
@@ -118,7 +118,7 @@ export escapeStr = (str, hReplace=hEsc) ->
 			when 'escNoNL'
 				hReplace = hExcNoNL
 			else
-				croak "Invalid hReplace string value"
+				throw new Error("Invalid hReplace string value")
 
 	assert isString(str), "escapeStr(): not a string"
 	lParts = for ch in str.split('')
@@ -447,34 +447,49 @@ export words = (lStrings...) ->
 
 # ---------------------------------------------------------------------------
 
+export hashFromString = (str) ->
+
+	assert isString(str), "not a string: #{OL(str)}"
+	h = {}
+	for word in words(str)
+		if lMatches = word.match(///^
+				(\!)?                    # negate value
+				([A-Za-z][A-Za-z_0-9]*)  # identifier
+				(?:
+					(=)
+					(.*)
+					)?
+				$///)
+			[_, neg, ident, eq, str] = lMatches
+			if nonEmpty(eq)
+				assert isEmpty(neg), "negation with string value"
+				h[ident] = str
+			else if neg
+				h[ident] = false
+			else
+				h[ident] = true
+		else
+			throw new Error("Invalid word #{OL(word)}")
+	return h
+
+# ---------------------------------------------------------------------------
+
 export getOptions = (options=undef, hDefault={}) ->
 
-	if (options == undef)
-		assert isHash(hDefault), "hDefault is #{OL(hDefault)}"
-		return hDefault
-	else if isHash(options)
-		return options
-	else if isString(options)
-		hOptions = {}
-		for str in words(options)
-			if lMatches = str.match(///^
-					(\!)?                    # negate value
-					([A-Za-z][A-Za-z_0-9]*)  # identifier
-					(?:
-						(=)
-						(.*)
-						)?
-					$///)
-				[_, neg, ident, eq, str] = lMatches
-				if nonEmpty(eq)
-					assert isEmpty(neg), "negation with string value"
-					hOptions[ident] = str
-				else if neg
-					hOptions[ident] = false
-				else
-					hOptions[ident] = true
-			else
-				croak "Invalid option string #{OL(str)}"
-		return hOptions
-	else
-		croak "options must be hash or string, found #{OL(options)}"
+	[type, subtype] = jsType(options)
+	switch type
+		when undef
+			hOptions = {}
+		when 'hash'
+			hOptions = options
+		when 'string'
+			hOptions = hashFromString(options)
+		else
+			throw new Error("options not hash or string: #{OL(options)}")
+
+	# --- Fill in defaults for missing values
+	for own key,value of hDefault
+		if ! hOptions.hasOwnProperty(key)
+			hOptions[key] = value
+
+	return hOptions
