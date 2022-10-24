@@ -3,7 +3,7 @@
 import {strict as assert} from 'node:assert'
 
 import {
-	undef, defined, notdefined, OL, isString,
+	undef, defined, notdefined, OL, isString, isFunction,
 	isEmpty, nonEmpty, words,
 	} from '@jdeighan/exceptions/utils'
 import {toTAML} from '@jdeighan/exceptions/taml'
@@ -15,6 +15,29 @@ callStack = new CallStack()
 lFuncList = undef           # array of {funcName, objName, plus}
 internalDebugging = false   # set true on setDebugging('debug')
 
+customLogEnter = undef
+customLogReturn = undef
+customLogValue = undef
+customLogString = undef
+
+# ---------------------------------------------------------------------------
+
+export setCustomDebugLogger = (type, func) ->
+
+	assert isFunction(func), "Not a function"
+	switch type
+		when 'enter'
+			customLogEnter = func
+		when 'return'
+			customLogReturn = func
+		when 'value'
+			customLogValue = func
+		when 'string'
+			customLogString = func
+		else
+			throw new error("Unknown type: #{OL(type)}")
+	return
+
 # ---------------------------------------------------------------------------
 
 export resetDebugging = () ->
@@ -22,6 +45,10 @@ export resetDebugging = () ->
 	callStack.reset()
 	lFuncList = undef
 	internalDebugging = false
+	customLogEnter = undef
+	customLogReturn = undef
+	customLogValue = undef
+	customLogString = undef
 	return
 
 # ---------------------------------------------------------------------------
@@ -81,7 +108,7 @@ export debug = (label, lObjects...) ->
 	if internalDebugging
 		console.log "call debug('#{label}')"
 
-	[type, funcName, objName] = getType(label)
+	[type, funcName, objName] = getType(label, lObjects)
 	if internalDebugging
 		console.log "   - type = #{OL(type)}, func = #{OL(funcName)}, obj = #{OL(objName)}"
 
@@ -89,7 +116,7 @@ export debug = (label, lObjects...) ->
 		when 'enter','return'
 			assert nonEmpty(funcName), "enter without funcName"
 			doLog = funcMatch(funcName, objName)
-		when 'string'
+		when 'value','string'
 			assert isEmpty(funcName), "string with funcName"
 			doLog = funcMatch(callStack.curFunc()...)
 		else
@@ -98,26 +125,85 @@ export debug = (label, lObjects...) ->
 	if internalDebugging
 		console.log "   - doLog = #{OL(doLog)}"
 
+	level = callStack.getLevel()
+	handled = false
 	switch type
 		when 'enter'
 			if doLog
-				doTheLogging type, label, lObjects
+				if defined(customLogEnter)
+					handled = customLogEnter label, lObjects, level, funcName, objName
+				if ! handled
+					logEnter label, lObjects, level
 			callStack.enter funcName, objName, lObjects, doLog
 
 		when 'return'
 			if doLog
-				doTheLogging type, label, lObjects
+				if defined(customLogReturn)
+					handled = customLogReturn label, lObjects, level, funcName, objName
+				if ! handled
+					logReturn label, lObjects, level
+
 			callStack.returnFrom funcName, objName
+
+		when 'value'
+			if doLog
+				if defined(customLogValue)
+					handled = customLogValue label, lObjects[0], level
+				if ! handled
+					logValue label, lObjects[0], level
 
 		when 'string'
 			if doLog
-				doTheLogging type, label, lObjects
+				if defined(customLogString)
+					handled = customLogString label, level
+				if ! handled
+					logString label, level
 
 	return true   # allow use in boolean expressions
 
 # ---------------------------------------------------------------------------
 
-export getType = (label) ->
+export logEnter = (label, lObjects, level) ->
+
+	labelPre = getPrefix(level, 'plain')
+	idPre = getPrefix(level+1, 'plain')
+	itemPre = getPrefix(level+2, 'dotLast2Vbars')
+	LOG label, labelPre
+	for obj,i in lObjects
+		LOGVALUE "arg[#{i}]", obj, idPre, itemPre
+	return
+
+# ---------------------------------------------------------------------------
+
+export logReturn = (label, lObjects, level) ->
+
+	labelPre = getPrefix(level, 'withArrow')
+	idPre = getPrefix(level, 'noLastVbar')
+	itemPre = getPrefix(level, 'noLast2Vbars')
+	LOG label, labelPre
+	for obj,i in lObjects
+		LOGVALUE "ret[#{i}]", obj, idPre, itemPre
+	return
+
+# ---------------------------------------------------------------------------
+
+export logValue = (label, obj, level) ->
+
+	labelPre = getPrefix(level, 'plain')
+	LOGVALUE label, obj, labelPre
+	return
+
+# ---------------------------------------------------------------------------
+
+export logString = (label, level) ->
+
+	labelPre = getPrefix(level, 'plain')
+	LOG label, labelPre
+	return
+
+# ---------------------------------------------------------------------------
+
+export getType = (label, lObjects=[]) ->
 
 	# --- If lFuncList is undef, all debugging is turned off
 	if notdefined(lFuncList)
@@ -146,8 +232,12 @@ export getType = (label) ->
 			return ['enter', funcName, objName]
 		else
 			return ['return', funcName, objName]
-	else
+	else if (lObjects.length == 1)
+		return ['value', undef, undef]
+	else if (lObjects.length == 0)
 		return ['string', undef, undef]
+	else
+		throw new Error("More than 1 object not allowed")
 
 # ---------------------------------------------------------------------------
 
@@ -166,39 +256,5 @@ export funcMatch = (funcName, objName) ->
 		if h.plus && callStack.isActive(h.funcName, h.objName)
 			return true
 	return false
-
-# ---------------------------------------------------------------------------
-
-export doTheLogging = (type, label, lObjects) ->
-
-	assert isString(label), "non-string label #{OL(label)}"
-	level = callStack.getLevel()
-
-	switch type
-
-		when 'enter'
-			LOG label, getPrefix(level, 'plain')
-			pre = getPrefix(level+1, 'plain')
-			itemPre = getPrefix(level+2, 'dotLast2Vbars')
-			for obj,i in lObjects
-				LOGVALUE "arg[#{i}]", obj, pre, itemPre
-
-		when 'return'
-			LOG label, getPrefix(level, 'withArrow')
-			pre = getPrefix(level, 'noLastVbar')
-			itemPre = getPrefix(level, 'noLast2Vbars')
-			for obj,i in lObjects
-				LOGVALUE "ret[#{i}]", obj, pre, itemPre
-
-		when 'string'
-			pre = getPrefix(level, 'plain')
-			itemPre = getPrefix(level+1, 'noLastVbar')
-			nVals = lObjects.length
-			if (nVals == 0)
-				LOG label, pre
-			else
-				assert (nVals == 1), "Only 1 value allowed, #{nVals} found"
-				LOGVALUE label, lObjects[0], pre
-	return
 
 # ---------------------------------------------------------------------------

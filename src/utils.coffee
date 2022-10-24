@@ -25,6 +25,12 @@ export notdefined = (obj) =>
 
 # ---------------------------------------------------------------------------
 
+export spaces = (n) =>
+
+	return " ".repeat(n)
+
+# ---------------------------------------------------------------------------
+
 export untabify = (str, numSpaces=3) =>
 
 	return str.replace(/\t/g, ' '.repeat(numSpaces))

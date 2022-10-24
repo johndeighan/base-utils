@@ -3,15 +3,16 @@
 import test from 'ava'
 
 import {
-	undef, pass, arrayToBlock, isNumber,
+	undef, pass, arrayToBlock, isNumber, spaces,
 	} from '@jdeighan/exceptions/utils'
 import {toTAML} from '@jdeighan/exceptions/taml'
 import {
 	haltOnError, assert, croak,
 	} from '@jdeighan/exceptions'
+import {getPrefix} from '@jdeighan/exceptions/prefix'
 import {utReset, LOG, utGetLog} from '@jdeighan/exceptions/log'
 import {
-	setDebugging, resetDebugging, debug, getType,
+	setDebugging, resetDebugging, setCustomDebugLogger, debug, getType,
 	} from '@jdeighan/exceptions/debug'
 
 # ---------------------------------------------------------------------------
@@ -134,7 +135,62 @@ test "line 115", (t) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 137", (t) =>
+class Class1
+	constructor: () ->
+		@lStrings = []
+	add: (str) ->
+		debug "enter Class1.add()", str
+		@lStrings.push str
+		debug "return from Class1.add()"
+		return
+
+class Class2
+	constructor: () ->
+		@lStrings = []
+	add: (str) ->
+		debug "enter Class2.add()", str
+		@lStrings.push str
+		debug "return from Class2.add()"
+		return
+
+# ---------------------------------------------------------------------------
+
+test "line 157", (t) =>
+
+	utReset()
+	setDebugging 'add'
+	new Class1().add('abc')
+	new Class2().add('def')
+	resetDebugging()
+
+	t.is utGetLog(), """
+		enter Class1.add()
+		│   arg[0] = 'abc'
+		└─> return from Class1.add()
+		enter Class2.add()
+		│   arg[0] = 'def'
+		└─> return from Class2.add()
+		"""
+
+# ---------------------------------------------------------------------------
+
+test "line 176", (t) =>
+
+	utReset()
+	setDebugging 'Class2.add'
+	new Class1().add('abc')
+	new Class2().add('def')
+	resetDebugging()
+
+	t.is utGetLog(), """
+		enter Class2.add()
+		│   arg[0] = 'def'
+		└─> return from Class2.add()
+		"""
+
+# ---------------------------------------------------------------------------
+
+test "line 192", (t) =>
 
 	utReset()
 	setDebugging 'double quadruple'
@@ -160,56 +216,28 @@ test "line 137", (t) =>
 		"""
 
 # ---------------------------------------------------------------------------
+# Test custom loggers
 
-class Class1
-	constructor: () ->
-		@lStrings = []
-	add: (str) ->
-		debug "enter Class1.add()", str
-		@lStrings.push str
-		debug "return from Class1.add()"
-		return
-
-class Class2
-	constructor: () ->
-		@lStrings = []
-	add: (str) ->
-		debug "enter Class2.add()", str
-		@lStrings.push str
-		debug "return from Class2.add()"
-		return
-
-# ---------------------------------------------------------------------------
-
-test "line 184", (t) =>
+test "line 220", (t) =>
 
 	utReset()
-	setDebugging 'add'
-	new Class1().add('abc')
-	new Class2().add('def')
+	setDebugging 'double quadruple'
+
+	setCustomDebugLogger 'enter', (label, lObjects, level, funcName, objName) ->
+		LOG getPrefix(level, 'plain') + funcName
+		return true
+
+	setCustomDebugLogger 'return', (label, lObjects, level, funcName, objName) ->
+		return true
+
+	result = double(quadruple(3))
 	resetDebugging()
-
+	t.is result, 24
 	t.is utGetLog(), """
-		enter Class1.add()
-		│   arg[0] = 'abc'
-		└─> return from Class1.add()
-		enter Class2.add()
-		│   arg[0] = 'def'
-		└─> return from Class2.add()
-		"""
-
-# ---------------------------------------------------------------------------
-
-test "line 203", (t) =>
-
-	utReset()
-	setDebugging 'Class2.add'
-	new Class1().add('abc')
-	new Class2().add('def')
-	resetDebugging()
-
-	t.is utGetLog(), """
-		enter Class2.add()
-		│   arg[0] = 'def'
-		└─> return from Class2.add()
+		quadruple
+		│   inside quadruple()
+		│   double
+		│   │   inside double()
+		double
+		│   inside double()
 		"""

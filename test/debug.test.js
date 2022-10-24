@@ -8,7 +8,8 @@ import {
   undef,
   pass,
   arrayToBlock,
-  isNumber
+  isNumber,
+  spaces
 } from '@jdeighan/exceptions/utils';
 
 import {
@@ -22,6 +23,10 @@ import {
 } from '@jdeighan/exceptions';
 
 import {
+  getPrefix
+} from '@jdeighan/exceptions/prefix';
+
+import {
   utReset,
   LOG,
   utGetLog
@@ -30,6 +35,7 @@ import {
 import {
   setDebugging,
   resetDebugging,
+  setCustomDebugLogger,
   debug,
   getType
 } from '@jdeighan/exceptions/debug';
@@ -145,31 +151,6 @@ test("line 115", (t) => {
 });
 
 // ---------------------------------------------------------------------------
-test("line 137", (t) => {
-  var result;
-  utReset();
-  setDebugging('double quadruple');
-  result = double(quadruple(3));
-  resetDebugging();
-  t.is(result, 24);
-  return t.is(utGetLog(), `enter quadruple()
-│   arg[0] = 3
-│   inside quadruple()
-│   enter double()
-│   │   arg[0] = 3
-│   │   inside double()
-│   └─> return from double()
-│       ret[0] = 6
-└─> return from quadruple()
-    ret[0] = 12
-enter double()
-│   arg[0] = 12
-│   inside double()
-└─> return from double()
-    ret[0] = 24`);
-});
-
-// ---------------------------------------------------------------------------
 Class1 = class Class1 {
   constructor() {
     this.lStrings = [];
@@ -197,7 +178,7 @@ Class2 = class Class2 {
 };
 
 // ---------------------------------------------------------------------------
-test("line 184", (t) => {
+test("line 157", (t) => {
   utReset();
   setDebugging('add');
   new Class1().add('abc');
@@ -212,7 +193,7 @@ enter Class2.add()
 });
 
 // ---------------------------------------------------------------------------
-test("line 203", (t) => {
+test("line 176", (t) => {
   utReset();
   setDebugging('Class2.add');
   new Class1().add('abc');
@@ -221,4 +202,53 @@ test("line 203", (t) => {
   return t.is(utGetLog(), `enter Class2.add()
 │   arg[0] = 'def'
 └─> return from Class2.add()`);
+});
+
+// ---------------------------------------------------------------------------
+test("line 192", (t) => {
+  var result;
+  utReset();
+  setDebugging('double quadruple');
+  result = double(quadruple(3));
+  resetDebugging();
+  t.is(result, 24);
+  return t.is(utGetLog(), `enter quadruple()
+│   arg[0] = 3
+│   inside quadruple()
+│   enter double()
+│   │   arg[0] = 3
+│   │   inside double()
+│   └─> return from double()
+│       ret[0] = 6
+└─> return from quadruple()
+    ret[0] = 12
+enter double()
+│   arg[0] = 12
+│   inside double()
+└─> return from double()
+    ret[0] = 24`);
+});
+
+// ---------------------------------------------------------------------------
+// Test custom loggers
+test("line 220", (t) => {
+  var result;
+  utReset();
+  setDebugging('double quadruple');
+  setCustomDebugLogger('enter', function(label, lObjects, level, funcName, objName) {
+    LOG(getPrefix(level, 'plain') + funcName);
+    return true;
+  });
+  setCustomDebugLogger('return', function(label, lObjects, level, funcName, objName) {
+    return true;
+  });
+  result = double(quadruple(3));
+  resetDebugging();
+  t.is(result, 24);
+  return t.is(utGetLog(), `quadruple
+│   inside quadruple()
+│   double
+│   │   inside double()
+double
+│   inside double()`);
 });

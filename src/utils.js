@@ -26,6 +26,11 @@ export var notdefined = (obj) => {
 };
 
 // ---------------------------------------------------------------------------
+export var spaces = (n) => {
+  return " ".repeat(n);
+};
+
+// ---------------------------------------------------------------------------
 export var untabify = (str, numSpaces = 3) => {
   return str.replace(/\t/g, ' '.repeat(numSpaces));
 };
