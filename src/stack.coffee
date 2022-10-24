@@ -3,15 +3,11 @@
 import {strict as assert} from 'node:assert'
 
 import {
-	undef, pass, defined, notdefined, untabify,
-	escapeStr, OL, deepCopy,
-	jsType, isString, isNumber, isInteger, isHash, isArray, isBoolean,
-	isConstructor, isFunction, isRegExp, isObject,
-	isEmpty, nonEmpty, blockToArray, arrayToBlock, chomp, words,
+	undef, defined, OL, deepCopy, isArray, isBoolean,
+	isEmpty, nonEmpty,
 	} from '@jdeighan/exceptions/utils'
-import {toTAML} from '@jdeighan/exceptions/taml'
+import {LOG} from '@jdeighan/exceptions/log'
 import {getPrefix} from '@jdeighan/exceptions/prefix'
-import {sep_dash, sep_eq, LOG} from '@jdeighan/exceptions/log'
 
 doDebugStack = false
 
@@ -42,45 +38,65 @@ export class CallStack
 	# ........................................................................
 
 	indent: () ->
+		# --- Only used in debugging the stack
 
 		return getPrefix(@lStack.length)
 
 	# ........................................................................
 
-	enter: (funcName, lArgs=[], isLogged) ->
+	enter: (funcName, objName, lArgs=[], isLogged) ->
 		# --- funcName might be <object>.<method>
 
-		assert isArray(lArgs), "missing lArgs"
-		assert isBoolean(isLogged), "missing isLogged"
+		assert isArray(lArgs),      "bad lArgs"
+		assert isBoolean(isLogged), "bad isLogged"
 
 		if doDebugStack
 			console.log @indent() + "[--> ENTER #{funcName}]"
 
-		lMatches = funcName.match(///^
-				([A-Za-z_][A-Za-z0-9_]*)
-				(?:
-					\.
-					([A-Za-z_][A-Za-z0-9_]*)
-					)?
-				$///)
-		assert defined(lMatches), "Bad funcName: #{OL(funcName)}"
-		[_, ident1, ident2] = lMatches
-		if ident2
-			hStackItem = {
-				fullName: funcName     #    "#{ident1}.#{ident2}"
-				funcName: ident2
-				isLogged
-				lArgs: deepCopy(lArgs)
-				}
+		if nonEmpty(objName)
+			fullName = "#{objName}.#{funcName}"
 		else
-			hStackItem = {
-				fullName: funcName
-				funcName: ident1
-				isLogged
-				lArgs: deepCopy(lArgs)
-				}
-		@lStack.push hStackItem
-		return hStackItem
+			fullName = funcName
+
+		@lStack.push {
+			fullName
+			funcName
+			objName
+			isLogged
+			lArgs: deepCopy(lArgs)
+			}
+		return
+
+	# ........................................................................
+	# --- if stack is empty, log the error, but continue
+
+	returnFrom: (funcName, objName) ->
+
+		if objName
+			fullReturnName = "#{objName}.#{funcName}"
+		else
+			fullReturnName = funcName
+
+		if @lStack.length == 0
+			LOG "ERROR: returnFrom('#{fullReturnName}') but stack is empty"
+			return
+		{fullName, isLogged} = @lStack.pop()
+		if doDebugStack
+			console.log @indent() + "[<-- BACK #{fullReturnName}]"
+		if (fullName != fullReturnName)
+			LOG "ERROR: returnFrom('#{fullReturnName}') but TOS is #{fullName}"
+			return
+
+		return
+
+	# ........................................................................
+
+	isLogging: () ->
+
+		if (@lStack.length == 0)
+			return false
+		else
+			return @lStack[@lStack.length - 1].isLogged
 
 	# ........................................................................
 
@@ -94,55 +110,40 @@ export class CallStack
 
 	# ........................................................................
 
-	isLogging: () ->
-
-		if (@lStack.length == 0)
-			return false
-		else
-			return @lStack[@lStack.length - 1].isLogged
-
-	# ........................................................................
-	# --- if stack is empty, log the error, but continue
-
-	returnFrom: (fName) ->
-
-		if @lStack.length == 0
-			LOG "ERROR: returnFrom('#{fName}') but stack is empty"
-			return
-		{fullName, isLogged} = @lStack.pop()
-		if doDebugStack
-			console.log @indent() + "[<-- BACK #{fName}]"
-		if (fullName != fName)
-			LOG "ERROR: returnFrom('#{fName}') but TOS is #{fullName}"
-			return
-
-		return
-
-	# ........................................................................
-
 	curFunc: () ->
 
 		if (@lStack.length == 0)
-			return 'main'
+			return ['main', undef]
 		else
-			return @lStack[@lStack.length - 1].funcName
+			h = @TOS()
+			if defined(h)
+				return [h.funcName, h.objName]
+			else
+				return [undef, undef]
 
 	# ........................................................................
 
-	isActive: (funcName) ->
-		# --- funcName won't be <obj>.<method>
-		#     but the stack might contain that form
+	TOS: () ->
+
+		if (@lStack.length == 0)
+			return undef
+		else
+			return @lStack[@lStack.length - 1]
+
+	# ........................................................................
+
+	isActive: (funcName, objName) ->
 
 		for h in @lStack
-			if (h.funcName == funcName)
+			if (h.funcName == funcName) && (h.objName == objName)
 				return true
 		return false
 
 	# ........................................................................
 
-	dump: (label="CALL STACK") ->
+	dump: () ->
 
-		lLines = [label]
+		lLines = ['CALL STACK']
 		if @lStack.length == 0
 			lLines.push "   <EMPTY>"
 		else

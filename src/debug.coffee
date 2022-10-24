@@ -3,39 +3,74 @@
 import {strict as assert} from 'node:assert'
 
 import {
-	undef, pass, defined, notdefined, untabify,
-	escapeStr, OL,
-	jsType, isString, isNumber, isInteger, isHash, isArray, isBoolean,
-	isConstructor, isFunction, isRegExp, isObject,
-	isEmpty, nonEmpty, blockToArray, arrayToBlock, chomp, words,
+	undef, defined, notdefined, OL, isString,
+	isEmpty, nonEmpty, words,
 	} from '@jdeighan/exceptions/utils'
 import {toTAML} from '@jdeighan/exceptions/taml'
 import {getPrefix} from '@jdeighan/exceptions/prefix'
-import {
-	LOG, LOGVALUE, sep_dash, sep_eq,
-	} from '@jdeighan/exceptions/log'
+import {LOG, LOGVALUE} from '@jdeighan/exceptions/log'
 import {CallStack} from '@jdeighan/exceptions/stack'
 
 callStack = new CallStack()
-
-# --- set in resetDebugging() and setDebugging()
-#     returns undef for no logging, or a label to log
-export shouldLog = () -> undef
-
-lFuncList = []          # names of functions being debugged
-strFuncList = undef     # original string
+lFuncList = undef           # array of {funcName, objName, plus}
+internalDebugging = false   # set true on setDebugging('debug')
 
 # ---------------------------------------------------------------------------
 
-export interp = (label) ->
+export resetDebugging = () ->
 
-	return label.replace(/// \$ (\@)? ([A-Za-z_][A-Za-z0-9_]*) ///g,
-			(_, atSign, varName) ->
-				if atSign
-					return "\#{OL(@#{varName})\}"
-				else
-					return "\#{OL(#{varName})\}"
-			)
+	callStack.reset()
+	lFuncList = undef
+	internalDebugging = false
+	return
+
+# ---------------------------------------------------------------------------
+
+export setDebugging = (funcNameStr) ->
+
+	callStack.reset()
+	if isEmpty(funcNameStr)
+		resetDebugging()
+	else
+		assert isString(funcNameStr), "not a string: #{OL(funcNameStr)}"
+		lFuncList = getFuncList(funcNameStr)
+		if internalDebugging
+			console.log 'lFuncList:'
+			console.log toTAML(lFuncList)
+	return
+
+# ---------------------------------------------------------------------------
+
+export getFuncList = (str) ->
+
+	lFuncList = []
+	for word in words(str)
+		if (word == 'debug')
+			internalDebugging = true
+		if lMatches = word.match(///^
+				([A-Za-z_][A-Za-z0-9_]*)
+				(?:
+					\.
+					([A-Za-z_][A-Za-z0-9_]*)
+					)?
+				(\+)?
+				$///)
+			[_, ident1, ident2, plus] = lMatches
+			if ident2
+				lFuncList.push {
+					funcName: ident2
+					objName: ident1
+					plus: (plus == '+')
+					}
+			else
+				lFuncList.push {
+					funcName: ident1
+					objName: undef
+					plus: (plus == '+')
+					}
+		else
+			throw new Error("getFuncList: bad word : #{OL(word)}")
+	return lFuncList
 
 # ---------------------------------------------------------------------------
 
@@ -43,8 +78,28 @@ export debug = (orgLabel, lObjects...) ->
 
 	assert isString(orgLabel), "1st arg #{OL(orgLabel)} should be a string"
 
-	[type, funcName] = getType(orgLabel, lObjects)
-	label = shouldLog(orgLabel, type, funcName, callStack)
+	if internalDebugging
+		console.log "call debug('#{orgLabel}')"
+
+	[type, funcName, objName] = getType(orgLabel)
+	if internalDebugging
+		console.log "   - type = #{OL(type)}, func = #{OL(funcName)}, obj = #{OL(objName)}"
+	switch type
+		when 'enter'
+			assert nonEmpty(funcName), "enter without funcName"
+			label = shouldLogEnter(orgLabel, funcName, objName)
+		when 'return'
+			assert nonEmpty(funcName), "return without funcName"
+			label = shouldLogReturn(orgLabel, funcName, objName)
+		when 'string'
+			assert isEmpty(funcName), "string with funcName"
+			label = shouldLogString(orgLabel)
+		else
+			label = undef   # debugging is turned off, i.e. lFuncList == undef
+
+	if internalDebugging
+		console.log "   - label = #{OL(label)}"
+
 	if defined(label)
 		label = interp(label)
 
@@ -53,54 +108,108 @@ export debug = (orgLabel, lObjects...) ->
 		when 'enter'
 			if defined(label)
 				doTheLogging type, label, lObjects
-			callStack.enter funcName, lObjects, defined(label)
-
-			debug2 "enter debug()", orgLabel, lObjects
-			debug2 "type = #{OL(type)}, funcName = #{OL(funcName)}"
-			debug2 "return from debug()"
+			callStack.enter funcName, objName, lObjects, defined(label)
 
 		when 'return'
-			debug2 "enter debug()", orgLabel, lObjects
-			debug2 "type = #{OL(type)}, funcName = #{OL(funcName)}"
-			debug2 "return from debug()"
-
 			if defined(label)
 				doTheLogging type, label, lObjects
-			callStack.returnFrom funcName
+			callStack.returnFrom funcName, objName
 
 		when 'string'
-			debug2 "enter debug()", orgLabel, lObjects
-			debug2 "type = #{OL(type)}, funcName = #{OL(funcName)}"
-
 			if defined(label)
 				doTheLogging type, label, lObjects
-			debug2 "return from debug()"
 
 	return true   # allow use in boolean expressions
 
 # ---------------------------------------------------------------------------
 
-debug2 = (orgLabel, lObjects...) ->
+export getType = (label) ->
 
-	[type, funcName] = getType(orgLabel, lObjects)
-	label = shouldLog(orgLabel, type, funcName, callStack)
+	# --- If lFuncList is undef, all debugging is turned off
+	if notdefined(lFuncList)
+		return [undef, undef, undef]
 
-	switch type
-		when 'enter'
-			if defined(label)
-				doTheLogging 'enter', label, lObjects
-			callStack.enter funcName, lObjects, defined(label)
+	if lMatches = label.match(///^
+			\s*
+			( enter | (?: return .+ from ) )
+			\s+
+			([A-Za-z_][A-Za-z0-9_]*)
+			(?:
+				\.
+				([A-Za-z_][A-Za-z0-9_]*)
+				)?
+			///)
+		[_, type, ident1, ident2] = lMatches
 
-		when 'return'
-			if defined(label)
-				doTheLogging 'return', label, lObjects
-			callStack.returnFrom funcName
+		if ident2
+			objName  = ident1
+			funcName = ident2
+		else
+			objName = undef
+			funcName = ident1
 
-		when 'string'
-			if defined(label)
-				doTheLogging 'string', label, lObjects
+		if (type == 'enter')
+			return ['enter', funcName, objName]
+		else
+			return ['return', funcName, objName]
+	else
+		return ['string', undef, undef]
 
-	return true   # allow use in boolean expressions
+# ---------------------------------------------------------------------------
+
+export shouldLogEnter = (label, funcName, objName) ->
+	# --- funcName won't be on the stack yet
+	#     returns the (possibly modified) label to log
+
+	if funcMatch(funcName, objName)
+		return label
+
+	# --- As a special case, if we enter a function where we will not
+	#     be logging, but we were logging in the calling function,
+	#     we'll log out the call itself
+
+	if funcMatch(callStack.curFunc()...)
+		result = label.replace('enter', 'call')
+		return result
+	return undef
+
+# ---------------------------------------------------------------------------
+
+export shouldLogReturn = (label, funcName, objName) ->
+	#     returns the (possibly modified) label to log
+
+	if funcMatch(funcName, objName)
+		return label
+	else
+		return undef
+
+# ---------------------------------------------------------------------------
+
+export shouldLogString = (label) ->
+	#     returns the (possibly modified) label to log
+
+	if funcMatch(callStack.curFunc()...)
+		return label
+	else
+		return undef
+
+# ---------------------------------------------------------------------------
+
+export funcMatch = (funcName, objName) ->
+
+	if internalDebugging
+		console.log "funcMatch(#{OL(funcName)}, #{OL(objName)})"
+
+	for h in lFuncList
+		if defined(h.objName)
+			if (funcName == h.funcName) && (objName == h.objName)
+				return true
+		else
+			if (h.funcName == funcName)
+				return true
+		if h.plus && callStack.isActive(h.funcName, h.objName)
+			return true
+	return false
 
 # ---------------------------------------------------------------------------
 
@@ -138,174 +247,14 @@ export doTheLogging = (type, label, lObjects) ->
 
 # ---------------------------------------------------------------------------
 
-export stdShouldLog = (label, type, funcName, stack) ->
-	# --- if type is 'enter', then funcName won't be on the stack yet
-	#     returns the (possibly modified) label to log
+export interp = (label) ->
 
-	assert isString(label), "label #{OL(label)} not a string"
-	assert isString(type),  "type #{OL(type)} not a string"
-	assert stack instanceof CallStack, "not a call stack object"
-	if (type == 'enter') || (type == 'return')
-		assert isString(funcName), "func name #{OL(funcName)} not a string"
-	else
-		assert funcName == undef, "func name #{OL(funcName)} not undef"
-
-	if funcMatch(funcName || stack.curFunc())
-		return label
-
-	if (type == 'enter') && ! isMyFunc(funcName)
-		# --- As a special case, if we enter a function where we will not
-		#     be logging, but we were logging in the calling function,
-		#     we'll log out the call itself
-
-		if funcMatch(stack.curFunc())
-			result = label.replace('enter', 'call')
-			return result
-	return undef
-
-# ---------------------------------------------------------------------------
-
-export isMyFunc = (funcName) ->
-
-	return funcName in words('debug debug2 doTheLogging
-			stdShouldLog setDebugging resetDebugging getFuncList
-			funcMatch getType dumpCallStack')
-
-# ---------------------------------------------------------------------------
-
-export trueShouldLog = (label, type, funcName, stack) ->
-
-	if isMyFunc(funcName || stack.curFunc())
-		return undef
-	else
-		return label
-
-# ---------------------------------------------------------------------------
-
-export setDebugging = (option) ->
-
-	callStack.reset()
-	if isBoolean(option)
-		if option
-			shouldLog = trueShouldLog
-		else
-			shouldLog = () -> return undef
-	else if isString(option)
-		lFuncList = getFuncList(option)
-		shouldLog = stdShouldLog
-	else if isFunction(option)
-		shouldLog = option
-	else
-		throw new Error("setDebugging(): bad parameter #{OL(option)}")
-	return
-
-# ---------------------------------------------------------------------------
-
-export resetDebugging = () ->
-
-	callStack.reset()
-	shouldLog = () -> return undef
-	return
-
-# ---------------------------------------------------------------------------
-# --- export only to allow unit tests
-
-export getFuncList = (str) ->
-
-	strFuncList = str     # store original string for debugging
-	lFuncList = []
-	for word in words(str)
-		if lMatches = word.match(///^
-				([A-Za-z_][A-Za-z0-9_]*)
-				(?:
-					\.
-					([A-Za-z_][A-Za-z0-9_]*)
-					)?
-				(\+)?
-				$///)
-			[_, ident1, ident2, plus] = lMatches
-			if ident2
-				lFuncList.push {
-					name: ident2
-					object: ident1
-					plus: (plus == '+')
-					}
-			else
-				lFuncList.push {
-					name: ident1
-					plus: (plus == '+')
-					}
-		else
-			throw new Error("getFuncList: bad word : #{OL(word)}")
-	return lFuncList
-
-# ---------------------------------------------------------------------------
-# --- export only to allow unit tests
-
-export funcMatch = (funcName) ->
-
-	assert isArray(lFuncList), "not an array #{OL(lFuncList)}"
-	for h in lFuncList
-		{name, object, plus} = h
-		if (name == funcName)
-			return true
-		if plus && callStack.isActive(name)
-			return true
-	return false
-
-# ---------------------------------------------------------------------------
-# --- type is one of: 'enter', 'return', 'string'
-
-export getType = (str, lObjects) ->
-
-	if lMatches = str.match(///^
-			\s*
-			( enter | (?: return .+ from ) )
-			\s+
-			([A-Za-z_][A-Za-z0-9_]*)
-			(?:
-				\.
-				([A-Za-z_][A-Za-z0-9_]*)
-				)?
-			///)
-		[_, type, ident1, ident2] = lMatches
-
-		if ident2
-			funcName = ident2
-		else
-			funcName = ident1
-
-		if (type == 'enter')
-			return ['enter', funcName]
-		else
-			return ['return', funcName]
-	else
-		return ['string', undef]
-
-# ---------------------------------------------------------------------------
-
-reMethod = ///^
-	([A-Za-z_][A-Za-z0-9_]*)
-	\.
-	([A-Za-z_][A-Za-z0-9_]*)
-	$///
-
-# ---------------------------------------------------------------------------
-
-export dumpDebugGlobals = () ->
-
-	LOG '='.repeat(40)
-	LOG callStack.dump()
-	if shouldLog == stdShouldLog
-		LOG "using stdShouldLog"
-	else if shouldLog == trueShouldLog
-		LOG "using trueShouldLog"
-	else
-		LOG "using custom shouldLog"
-	LOG "lFuncList:"
-	for funcName in lFuncList
-		LOG "   #{OL(funcName)}"
-	LOG '='.repeat(40)
-	return
+	return label.replace(/// \$ (\@)? ([A-Za-z_][A-Za-z0-9_]*) ///g,
+			(_, atSign, varName) ->
+				if atSign
+					return "\#{OL(@#{varName})\}"
+				else
+					return "\#{OL(#{varName})\}"
+			)
 
 # ---------------------------------------------------------------------------

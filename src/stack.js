@@ -8,45 +8,22 @@ import {
 
 import {
   undef,
-  pass,
   defined,
-  notdefined,
-  untabify,
-  escapeStr,
   OL,
   deepCopy,
-  jsType,
-  isString,
-  isNumber,
-  isInteger,
-  isHash,
   isArray,
   isBoolean,
-  isConstructor,
-  isFunction,
-  isRegExp,
-  isObject,
   isEmpty,
-  nonEmpty,
-  blockToArray,
-  arrayToBlock,
-  chomp,
-  words
+  nonEmpty
 } from '@jdeighan/exceptions/utils';
 
 import {
-  toTAML
-} from '@jdeighan/exceptions/taml';
+  LOG
+} from '@jdeighan/exceptions/log';
 
 import {
   getPrefix
 } from '@jdeighan/exceptions/prefix';
-
-import {
-  sep_dash,
-  sep_eq,
-  LOG
-} from '@jdeighan/exceptions/log';
 
 doDebugStack = false;
 
@@ -71,38 +48,63 @@ export var CallStack = class CallStack {
 
   // ........................................................................
   indent() {
+    // --- Only used in debugging the stack
     return getPrefix(this.lStack.length);
   }
 
   // ........................................................................
-  enter(funcName, lArgs = [], isLogged) {
-    var _, hStackItem, ident1, ident2, lMatches;
+  enter(funcName, objName, lArgs = [], isLogged) {
+    var fullName;
     // --- funcName might be <object>.<method>
-    assert(isArray(lArgs), "missing lArgs");
-    assert(isBoolean(isLogged), "missing isLogged");
+    assert(isArray(lArgs), "bad lArgs");
+    assert(isBoolean(isLogged), "bad isLogged");
     if (doDebugStack) {
       console.log(this.indent() + `[--> ENTER ${funcName}]`);
     }
-    lMatches = funcName.match(/^([A-Za-z_][A-Za-z0-9_]*)(?:\.([A-Za-z_][A-Za-z0-9_]*))?$/);
-    assert(defined(lMatches), `Bad funcName: ${OL(funcName)}`);
-    [_, ident1, ident2] = lMatches;
-    if (ident2) {
-      hStackItem = {
-        fullName: funcName, //    "#{ident1}.#{ident2}"
-        funcName: ident2,
-        isLogged,
-        lArgs: deepCopy(lArgs)
-      };
+    if (nonEmpty(objName)) {
+      fullName = `${objName}.${funcName}`;
     } else {
-      hStackItem = {
-        fullName: funcName,
-        funcName: ident1,
-        isLogged,
-        lArgs: deepCopy(lArgs)
-      };
+      fullName = funcName;
     }
-    this.lStack.push(hStackItem);
-    return hStackItem;
+    this.lStack.push({
+      fullName,
+      funcName,
+      objName,
+      isLogged,
+      lArgs: deepCopy(lArgs)
+    });
+  }
+
+  // ........................................................................
+  // --- if stack is empty, log the error, but continue
+  returnFrom(funcName, objName) {
+    var fullName, fullReturnName, isLogged;
+    if (objName) {
+      fullReturnName = `${objName}.${funcName}`;
+    } else {
+      fullReturnName = funcName;
+    }
+    if (this.lStack.length === 0) {
+      LOG(`ERROR: returnFrom('${fullReturnName}') but stack is empty`);
+      return;
+    }
+    ({fullName, isLogged} = this.lStack.pop());
+    if (doDebugStack) {
+      console.log(this.indent() + `[<-- BACK ${fullReturnName}]`);
+    }
+    if (fullName !== fullReturnName) {
+      LOG(`ERROR: returnFrom('${fullReturnName}') but TOS is ${fullName}`);
+      return;
+    }
+  }
+
+  // ........................................................................
+  isLogging() {
+    if (this.lStack.length === 0) {
+      return false;
+    } else {
+      return this.lStack[this.lStack.length - 1].isLogged;
+    }
   }
 
   // ........................................................................
@@ -120,50 +122,36 @@ export var CallStack = class CallStack {
   }
 
   // ........................................................................
-  isLogging() {
-    if (this.lStack.length === 0) {
-      return false;
-    } else {
-      return this.lStack[this.lStack.length - 1].isLogged;
-    }
-  }
-
-  // ........................................................................
-  // --- if stack is empty, log the error, but continue
-  returnFrom(fName) {
-    var fullName, isLogged;
-    if (this.lStack.length === 0) {
-      LOG(`ERROR: returnFrom('${fName}') but stack is empty`);
-      return;
-    }
-    ({fullName, isLogged} = this.lStack.pop());
-    if (doDebugStack) {
-      console.log(this.indent() + `[<-- BACK ${fName}]`);
-    }
-    if (fullName !== fName) {
-      LOG(`ERROR: returnFrom('${fName}') but TOS is ${fullName}`);
-      return;
-    }
-  }
-
-  // ........................................................................
   curFunc() {
+    var h;
     if (this.lStack.length === 0) {
-      return 'main';
+      return ['main', undef];
     } else {
-      return this.lStack[this.lStack.length - 1].funcName;
+      h = this.TOS();
+      if (defined(h)) {
+        return [h.funcName, h.objName];
+      } else {
+        return [undef, undef];
+      }
     }
   }
 
   // ........................................................................
-  isActive(funcName) {
+  TOS() {
+    if (this.lStack.length === 0) {
+      return undef;
+    } else {
+      return this.lStack[this.lStack.length - 1];
+    }
+  }
+
+  // ........................................................................
+  isActive(funcName, objName) {
     var h, j, len, ref;
     ref = this.lStack;
-    // --- funcName won't be <obj>.<method>
-    //     but the stack might contain that form
     for (j = 0, len = ref.length; j < len; j++) {
       h = ref[j];
-      if (h.funcName === funcName) {
+      if ((h.funcName === funcName) && (h.objName === objName)) {
         return true;
       }
     }
@@ -171,9 +159,9 @@ export var CallStack = class CallStack {
   }
 
   // ........................................................................
-  dump(label = "CALL STACK") {
+  dump() {
     var i, item, j, lLines, len, ref;
-    lLines = [label];
+    lLines = ['CALL STACK'];
     if (this.lStack.length === 0) {
       lLines.push("   <EMPTY>");
     } else {
