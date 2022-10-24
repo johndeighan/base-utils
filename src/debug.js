@@ -96,53 +96,47 @@ export var getFuncList = function(str) {
 };
 
 // ---------------------------------------------------------------------------
-export var debug = function(orgLabel, ...lObjects) {
-  var funcName, label, objName, type;
-  assert(isString(orgLabel), `1st arg ${OL(orgLabel)} should be a string`);
+export var debug = function(label, ...lObjects) {
+  var doLog, funcName, objName, type;
+  assert(isString(label), `1st arg ${OL(label)} should be a string`);
   if (internalDebugging) {
-    console.log(`call debug('${orgLabel}')`);
+    console.log(`call debug('${label}')`);
   }
-  [type, funcName, objName] = getType(orgLabel);
+  [type, funcName, objName] = getType(label);
   if (internalDebugging) {
     console.log(`   - type = ${OL(type)}, func = ${OL(funcName)}, obj = ${OL(objName)}`);
   }
   switch (type) {
     case 'enter':
-      assert(nonEmpty(funcName), "enter without funcName");
-      label = shouldLogEnter(orgLabel, funcName, objName);
-      break;
     case 'return':
-      assert(nonEmpty(funcName), "return without funcName");
-      label = shouldLogReturn(orgLabel, funcName, objName);
+      assert(nonEmpty(funcName), "enter without funcName");
+      doLog = funcMatch(funcName, objName);
       break;
     case 'string':
       assert(isEmpty(funcName), "string with funcName");
-      label = shouldLogString(orgLabel);
+      doLog = funcMatch(...callStack.curFunc());
       break;
     default:
-      label = undef; // debugging is turned off, i.e. lFuncList == undef
+      doLog = false; // debugging is turned off, i.e. lFuncList == undef
   }
   if (internalDebugging) {
-    console.log(`   - label = ${OL(label)}`);
-  }
-  if (defined(label)) {
-    label = interp(label);
+    console.log(`   - doLog = ${OL(doLog)}`);
   }
   switch (type) {
     case 'enter':
-      if (defined(label)) {
+      if (doLog) {
         doTheLogging(type, label, lObjects);
       }
-      callStack.enter(funcName, objName, lObjects, defined(label));
+      callStack.enter(funcName, objName, lObjects, doLog);
       break;
     case 'return':
-      if (defined(label)) {
+      if (doLog) {
         doTheLogging(type, label, lObjects);
       }
       callStack.returnFrom(funcName, objName);
       break;
     case 'string':
-      if (defined(label)) {
+      if (doLog) {
         doTheLogging(type, label, lObjects);
       }
   }
@@ -173,44 +167,6 @@ export var getType = function(label) {
     }
   } else {
     return ['string', undef, undef];
-  }
-};
-
-// ---------------------------------------------------------------------------
-export var shouldLogEnter = function(label, funcName, objName) {
-  var result;
-  // --- funcName won't be on the stack yet
-  //     returns the (possibly modified) label to log
-  if (funcMatch(funcName, objName)) {
-    return label;
-  }
-  // --- As a special case, if we enter a function where we will not
-  //     be logging, but we were logging in the calling function,
-  //     we'll log out the call itself
-  if (funcMatch(...callStack.curFunc())) {
-    result = label.replace('enter', 'call');
-    return result;
-  }
-  return undef;
-};
-
-// ---------------------------------------------------------------------------
-export var shouldLogReturn = function(label, funcName, objName) {
-  //     returns the (possibly modified) label to log
-  if (funcMatch(funcName, objName)) {
-    return label;
-  } else {
-    return undef;
-  }
-};
-
-// ---------------------------------------------------------------------------
-export var shouldLogString = function(label) {
-  //     returns the (possibly modified) label to log
-  if (funcMatch(...callStack.curFunc())) {
-    return label;
-  } else {
-    return undef;
   }
 };
 
@@ -273,17 +229,6 @@ export var doTheLogging = function(type, label, lObjects) {
         LOGVALUE(label, lObjects[0], pre);
       }
   }
-};
-
-// ---------------------------------------------------------------------------
-export var interp = function(label) {
-  return label.replace(/\$(\@)?([A-Za-z_][A-Za-z0-9_]*)/g, function(_, atSign, varName) {
-    if (atSign) {
-      return `\#{OL(@${varName})\}`;
-    } else {
-      return `\#{OL(${varName})\}`;
-    }
-  });
 };
 
 // ---------------------------------------------------------------------------

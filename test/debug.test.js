@@ -93,14 +93,15 @@ quadruple = (x) => {
 };
 
 // ---------------------------------------------------------------------------
-test("line 79", (t) => {
+test("line 81", (t) => {
   var result;
   utReset();
   result = quadruple(3);
   return t.is(result, 12);
 });
 
-test("line 85", (t) => {
+// ---------------------------------------------------------------------------
+test("line 89", (t) => {
   var result;
   utReset();
   setDebugging('double');
@@ -109,7 +110,8 @@ test("line 85", (t) => {
   return t.is(result, 12);
 });
 
-test("line 93", (t) => {
+// ---------------------------------------------------------------------------
+test("line 99", (t) => {
   var result;
   utReset();
   setDebugging('double');
@@ -122,7 +124,8 @@ test("line 93", (t) => {
     ret[0] = 6`);
 });
 
-test("line 106", (t) => {
+// ---------------------------------------------------------------------------
+test("line 115", (t) => {
   var result;
   utReset();
   setDebugging('double quadruple');
@@ -141,7 +144,8 @@ test("line 106", (t) => {
     ret[0] = 12`);
 });
 
-test("line 124", (t) => {
+// ---------------------------------------------------------------------------
+test("line 137", (t) => {
   var result;
   utReset();
   setDebugging('double quadruple');
@@ -192,7 +196,8 @@ Class2 = class Class2 {
 
 };
 
-test("line 166", (t) => {
+// ---------------------------------------------------------------------------
+test("line 184", (t) => {
   utReset();
   setDebugging('add');
   new Class1().add('abc');
@@ -206,7 +211,8 @@ enter Class2.add()
 └─> return from Class2.add()`);
 });
 
-test("line 183", (t) => {
+// ---------------------------------------------------------------------------
+test("line 203", (t) => {
   utReset();
   setDebugging('Class2.add');
   new Class1().add('abc');

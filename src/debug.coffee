@@ -74,49 +74,43 @@ export getFuncList = (str) ->
 
 # ---------------------------------------------------------------------------
 
-export debug = (orgLabel, lObjects...) ->
+export debug = (label, lObjects...) ->
 
-	assert isString(orgLabel), "1st arg #{OL(orgLabel)} should be a string"
+	assert isString(label), "1st arg #{OL(label)} should be a string"
 
 	if internalDebugging
-		console.log "call debug('#{orgLabel}')"
+		console.log "call debug('#{label}')"
 
-	[type, funcName, objName] = getType(orgLabel)
+	[type, funcName, objName] = getType(label)
 	if internalDebugging
 		console.log "   - type = #{OL(type)}, func = #{OL(funcName)}, obj = #{OL(objName)}"
+
 	switch type
-		when 'enter'
+		when 'enter','return'
 			assert nonEmpty(funcName), "enter without funcName"
-			label = shouldLogEnter(orgLabel, funcName, objName)
-		when 'return'
-			assert nonEmpty(funcName), "return without funcName"
-			label = shouldLogReturn(orgLabel, funcName, objName)
+			doLog = funcMatch(funcName, objName)
 		when 'string'
 			assert isEmpty(funcName), "string with funcName"
-			label = shouldLogString(orgLabel)
+			doLog = funcMatch(callStack.curFunc()...)
 		else
-			label = undef   # debugging is turned off, i.e. lFuncList == undef
+			doLog = false   # debugging is turned off, i.e. lFuncList == undef
 
 	if internalDebugging
-		console.log "   - label = #{OL(label)}"
-
-	if defined(label)
-		label = interp(label)
+		console.log "   - doLog = #{OL(doLog)}"
 
 	switch type
-
 		when 'enter'
-			if defined(label)
+			if doLog
 				doTheLogging type, label, lObjects
-			callStack.enter funcName, objName, lObjects, defined(label)
+			callStack.enter funcName, objName, lObjects, doLog
 
 		when 'return'
-			if defined(label)
+			if doLog
 				doTheLogging type, label, lObjects
 			callStack.returnFrom funcName, objName
 
 		when 'string'
-			if defined(label)
+			if doLog
 				doTheLogging type, label, lObjects
 
 	return true   # allow use in boolean expressions
@@ -154,44 +148,6 @@ export getType = (label) ->
 			return ['return', funcName, objName]
 	else
 		return ['string', undef, undef]
-
-# ---------------------------------------------------------------------------
-
-export shouldLogEnter = (label, funcName, objName) ->
-	# --- funcName won't be on the stack yet
-	#     returns the (possibly modified) label to log
-
-	if funcMatch(funcName, objName)
-		return label
-
-	# --- As a special case, if we enter a function where we will not
-	#     be logging, but we were logging in the calling function,
-	#     we'll log out the call itself
-
-	if funcMatch(callStack.curFunc()...)
-		result = label.replace('enter', 'call')
-		return result
-	return undef
-
-# ---------------------------------------------------------------------------
-
-export shouldLogReturn = (label, funcName, objName) ->
-	#     returns the (possibly modified) label to log
-
-	if funcMatch(funcName, objName)
-		return label
-	else
-		return undef
-
-# ---------------------------------------------------------------------------
-
-export shouldLogString = (label) ->
-	#     returns the (possibly modified) label to log
-
-	if funcMatch(callStack.curFunc()...)
-		return label
-	else
-		return undef
 
 # ---------------------------------------------------------------------------
 
@@ -244,17 +200,5 @@ export doTheLogging = (type, label, lObjects) ->
 				assert (nVals == 1), "Only 1 value allowed, #{nVals} found"
 				LOGVALUE label, lObjects[0], pre
 	return
-
-# ---------------------------------------------------------------------------
-
-export interp = (label) ->
-
-	return label.replace(/// \$ (\@)? ([A-Za-z_][A-Za-z0-9_]*) ///g,
-			(_, atSign, varName) ->
-				if atSign
-					return "\#{OL(@#{varName})\}"
-				else
-					return "\#{OL(#{varName})\}"
-			)
 
 # ---------------------------------------------------------------------------

@@ -78,13 +78,15 @@ quadruple = (x) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 79", (t) =>
+test "line 81", (t) =>
 
 	utReset()
 	result = quadruple(3)
 	t.is result, 12
 
-test "line 85", (t) =>
+# ---------------------------------------------------------------------------
+
+test "line 89", (t) =>
 
 	utReset()
 	setDebugging 'double'
@@ -92,7 +94,9 @@ test "line 85", (t) =>
 	resetDebugging()
 	t.is result, 12
 
-test "line 93", (t) =>
+# ---------------------------------------------------------------------------
+
+test "line 99", (t) =>
 
 	utReset()
 	setDebugging 'double'
@@ -106,7 +110,9 @@ test "line 93", (t) =>
 		    ret[0] = 6
 		"""
 
-test "line 106", (t) =>
+# ---------------------------------------------------------------------------
+
+test "line 115", (t) =>
 
 	utReset()
 	setDebugging 'double quadruple'
@@ -126,7 +132,9 @@ test "line 106", (t) =>
 		    ret[0] = 12
 		"""
 
-test "line 124", (t) =>
+# ---------------------------------------------------------------------------
+
+test "line 137", (t) =>
 
 	utReset()
 	setDebugging 'double quadruple'
@@ -171,7 +179,9 @@ class Class2
 		debug "return from Class2.add()"
 		return
 
-test "line 166", (t) =>
+# ---------------------------------------------------------------------------
+
+test "line 184", (t) =>
 
 	utReset()
 	setDebugging 'add'
@@ -188,7 +198,9 @@ test "line 166", (t) =>
 		└─> return from Class2.add()
 		"""
 
-test "line 183", (t) =>
+# ---------------------------------------------------------------------------
+
+test "line 203", (t) =>
 
 	utReset()
 	setDebugging 'Class2.add'
