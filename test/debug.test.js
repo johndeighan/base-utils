@@ -44,35 +44,35 @@ import {
 
 // --- Until setDebugging() is called with a nonEmpty string,
 //     all debugging is turned off
-test("line 22", (t) => {
+test("line 23", (t) => {
   return t.deepEqual(getType("something"), [undef, undef, undef]);
 });
 
-test("line 27", (t) => {
+test("line 28", (t) => {
   setDebugging("myfunc");
   t.deepEqual(getType("something"), ["string", undef, undef]);
   return resetDebugging();
 });
 
-test("line 34", (t) => {
+test("line 35", (t) => {
   setDebugging("myfunc");
   t.deepEqual(getType("enter myfunc"), ["enter", "myfunc", undef]);
   return resetDebugging();
 });
 
-test("line 41", (t) => {
+test("line 42", (t) => {
   setDebugging("myfunc");
   t.deepEqual(getType("enter obj.method()"), ["enter", "method", "obj"]);
   return resetDebugging();
 });
 
-test("line 48", (t) => {
+test("line 49", (t) => {
   setDebugging("myfunc");
   t.deepEqual(getType("return from myfunc"), ["return", "myfunc", undef]);
   return resetDebugging();
 });
 
-test("line 55", (t) => {
+test("line 56", (t) => {
   setDebugging("myfunc");
   t.deepEqual(getType("return 42 from myobj.mymethod"), ["return", "mymethod", "myobj"]);
   return resetDebugging();
@@ -99,7 +99,7 @@ quadruple = (x) => {
 };
 
 // ---------------------------------------------------------------------------
-test("line 81", (t) => {
+test("line 82", (t) => {
   var result;
   utReset();
   result = quadruple(3);
@@ -107,7 +107,7 @@ test("line 81", (t) => {
 });
 
 // ---------------------------------------------------------------------------
-test("line 89", (t) => {
+test("line 90", (t) => {
   var result;
   utReset();
   setDebugging('double');
@@ -117,7 +117,7 @@ test("line 89", (t) => {
 });
 
 // ---------------------------------------------------------------------------
-test("line 99", (t) => {
+test("line 100", (t) => {
   var result;
   utReset();
   setDebugging('double');
@@ -131,10 +131,30 @@ test("line 99", (t) => {
 });
 
 // ---------------------------------------------------------------------------
-test("line 115", (t) => {
+test("line 116", (t) => {
   var result;
   utReset();
   setDebugging('double quadruple');
+  result = quadruple(3);
+  resetDebugging();
+  t.is(result, 12);
+  return t.is(utGetLog(), `enter quadruple()
+│   arg[0] = 3
+│   inside quadruple()
+│   enter double()
+│   │   arg[0] = 3
+│   │   inside double()
+│   └─> return from double()
+│       ret[0] = 6
+└─> return from quadruple()
+    ret[0] = 12`);
+});
+
+// ---------------------------------------------------------------------------
+test("line 138", (t) => {
+  var result;
+  utReset();
+  setDebugging('double', 'quadruple');
   result = quadruple(3);
   resetDebugging();
   t.is(result, 12);
@@ -178,7 +198,7 @@ Class2 = class Class2 {
 };
 
 // ---------------------------------------------------------------------------
-test("line 157", (t) => {
+test("line 180", (t) => {
   utReset();
   setDebugging('add');
   new Class1().add('abc');
@@ -193,7 +213,7 @@ enter Class2.add()
 });
 
 // ---------------------------------------------------------------------------
-test("line 176", (t) => {
+test("line 199", (t) => {
   utReset();
   setDebugging('Class2.add');
   new Class1().add('abc');
@@ -205,7 +225,7 @@ test("line 176", (t) => {
 });
 
 // ---------------------------------------------------------------------------
-test("line 192", (t) => {
+test("line 215", (t) => {
   var result;
   utReset();
   setDebugging('double quadruple');
@@ -231,7 +251,7 @@ enter double()
 
 // ---------------------------------------------------------------------------
 // Test custom loggers
-test("line 220", (t) => {
+test("line 243", (t) => {
   var result;
   utReset();
   setDebugging('double quadruple');

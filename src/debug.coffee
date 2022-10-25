@@ -59,9 +59,10 @@ export setDebugging = (lStrings...) ->
 	if isEmpty(lStrings)
 		resetDebugging()
 		return
+	lFuncList = []
 	for funcNameStr in lStrings
 		assert isString(funcNameStr), "not a string: #{OL(funcNameStr)}"
-		lFuncList = getFuncList(funcNameStr)
+		lFuncList = lFuncList.concat(getFuncList(funcNameStr))
 		if internalDebugging
 			console.log 'lFuncList:'
 			console.log toTAML(lFuncList)

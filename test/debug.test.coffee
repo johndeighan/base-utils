@@ -20,40 +20,40 @@ import {
 # --- Until setDebugging() is called with a nonEmpty string,
 #     all debugging is turned off
 
-test "line 22", (t) => t.deepEqual(
+test "line 23", (t) => t.deepEqual(
 	getType("something"),
 	[undef, undef, undef])
 
 
-test "line 27", (t) =>
+test "line 28", (t) =>
 	setDebugging "myfunc"
 	t.deepEqual(
 		getType("something"),
 		["string", undef, undef])
 	resetDebugging()
 
-test "line 34", (t) =>
+test "line 35", (t) =>
 	setDebugging "myfunc"
 	t.deepEqual(
 		getType("enter myfunc"),
 		["enter", "myfunc", undef])
 	resetDebugging()
 
-test "line 41", (t) =>
+test "line 42", (t) =>
 	setDebugging "myfunc"
 	t.deepEqual(
 		getType("enter obj.method()"),
 		["enter", "method", "obj"])
 	resetDebugging()
 
-test "line 48", (t) =>
+test "line 49", (t) =>
 	setDebugging "myfunc"
 	t.deepEqual(
 		getType("return from myfunc"),
 		["return", "myfunc", undef])
 	resetDebugging()
 
-test "line 55", (t) =>
+test "line 56", (t) =>
 	setDebugging "myfunc"
 	t.deepEqual(
 		getType("return 42 from myobj.mymethod"),
@@ -79,7 +79,7 @@ quadruple = (x) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 81", (t) =>
+test "line 82", (t) =>
 
 	utReset()
 	result = quadruple(3)
@@ -87,7 +87,7 @@ test "line 81", (t) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 89", (t) =>
+test "line 90", (t) =>
 
 	utReset()
 	setDebugging 'double'
@@ -97,7 +97,7 @@ test "line 89", (t) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 99", (t) =>
+test "line 100", (t) =>
 
 	utReset()
 	setDebugging 'double'
@@ -113,10 +113,32 @@ test "line 99", (t) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 115", (t) =>
+test "line 116", (t) =>
 
 	utReset()
 	setDebugging 'double quadruple'
+	result = quadruple(3)
+	resetDebugging()
+	t.is result, 12
+	t.is utGetLog(), """
+		enter quadruple()
+		│   arg[0] = 3
+		│   inside quadruple()
+		│   enter double()
+		│   │   arg[0] = 3
+		│   │   inside double()
+		│   └─> return from double()
+		│       ret[0] = 6
+		└─> return from quadruple()
+		    ret[0] = 12
+		"""
+
+# ---------------------------------------------------------------------------
+
+test "line 138", (t) =>
+
+	utReset()
+	setDebugging 'double', 'quadruple'
 	result = quadruple(3)
 	resetDebugging()
 	t.is result, 12
@@ -155,7 +177,7 @@ class Class2
 
 # ---------------------------------------------------------------------------
 
-test "line 157", (t) =>
+test "line 180", (t) =>
 
 	utReset()
 	setDebugging 'add'
@@ -174,7 +196,7 @@ test "line 157", (t) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 176", (t) =>
+test "line 199", (t) =>
 
 	utReset()
 	setDebugging 'Class2.add'
@@ -190,7 +212,7 @@ test "line 176", (t) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 192", (t) =>
+test "line 215", (t) =>
 
 	utReset()
 	setDebugging 'double quadruple'
@@ -218,7 +240,7 @@ test "line 192", (t) =>
 # ---------------------------------------------------------------------------
 # Test custom loggers
 
-test "line 220", (t) =>
+test "line 243", (t) =>
 
 	utReset()
 	setDebugging 'double quadruple'

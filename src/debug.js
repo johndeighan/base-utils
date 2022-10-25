@@ -89,10 +89,11 @@ export var setDebugging = function(...lStrings) {
     resetDebugging();
     return;
   }
+  lFuncList = [];
   for (j = 0, len = lStrings.length; j < len; j++) {
     funcNameStr = lStrings[j];
     assert(isString(funcNameStr), `not a string: ${OL(funcNameStr)}`);
-    lFuncList = getFuncList(funcNameStr);
+    lFuncList = lFuncList.concat(getFuncList(funcNameStr));
     if (internalDebugging) {
       console.log('lFuncList:');
       console.log(toTAML(lFuncList));
