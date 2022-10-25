@@ -1,6 +1,6 @@
 {
 	"name": "@jdeighan/exceptions",
-	"version": "1.0.22",
+	"version": "1.0.23",
 	"type": "module",
 	"description": "utilities to generate and handle exceptions",
 	"main": "index.js",
