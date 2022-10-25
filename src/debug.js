@@ -82,11 +82,15 @@ export var resetDebugging = function() {
 };
 
 // ---------------------------------------------------------------------------
-export var setDebugging = function(funcNameStr) {
+export var setDebugging = function(...lStrings) {
+  var funcNameStr, j, len;
   callStack.reset();
-  if (isEmpty(funcNameStr)) {
+  if (isEmpty(lStrings)) {
     resetDebugging();
-  } else {
+    return;
+  }
+  for (j = 0, len = lStrings.length; j < len; j++) {
+    funcNameStr = lStrings[j];
     assert(isString(funcNameStr), `not a string: ${OL(funcNameStr)}`);
     lFuncList = getFuncList(funcNameStr);
     if (internalDebugging) {

@@ -53,12 +53,13 @@ export resetDebugging = () ->
 
 # ---------------------------------------------------------------------------
 
-export setDebugging = (funcNameStr) ->
+export setDebugging = (lStrings...) ->
 
 	callStack.reset()
-	if isEmpty(funcNameStr)
+	if isEmpty(lStrings)
 		resetDebugging()
-	else
+		return
+	for funcNameStr in lStrings
 		assert isString(funcNameStr), "not a string: #{OL(funcNameStr)}"
 		lFuncList = getFuncList(funcNameStr)
 		if internalDebugging

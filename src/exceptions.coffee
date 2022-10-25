@@ -7,11 +7,13 @@ import {isTAML, fromTAML, toTAML} from '@jdeighan/exceptions/taml'
 import {
 	LOG, LOGVALUE, setLogger, sep_dash, sep_eq,
 	} from '@jdeighan/exceptions/log'
-import {setDebugging, debug} from '@jdeighan/exceptions/debug'
+import {
+	setDebugging, resetDebugging, debug, setCustomDebugLogger,
+	} from '@jdeighan/exceptions/debug'
 
 export {
 	LOG, LOGVALUE, setLogger,
-	setDebugging, debug,
+	setDebugging, resetDebugging, debug, setCustomDebugLogger,
 	isTAML, fromTAML, toTAML}
 
 doHaltOnError = false

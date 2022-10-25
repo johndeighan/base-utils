@@ -29,7 +29,9 @@ import {
 
 import {
   setDebugging,
-  debug
+  resetDebugging,
+  debug,
+  setCustomDebugLogger
 } from '@jdeighan/exceptions/debug';
 
 export {
@@ -37,7 +39,9 @@ export {
   LOGVALUE,
   setLogger,
   setDebugging,
+  resetDebugging,
   debug,
+  setCustomDebugLogger,
   isTAML,
   fromTAML,
   toTAML
