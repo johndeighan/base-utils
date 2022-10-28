@@ -172,3 +172,17 @@ test "line 166", (t) =>
 		d: 4
 		e: 5
 		"""
+
+test "line 176", (t) =>
+	hProc = {
+		code:   (block) -> return "#{block};"
+		html:   (block) -> return block.replace('<p>', '<p> ')
+		Script: (block) -> return elem('script', undef, block, "\t")
+		}
+
+	t.is toTAML(hProc), """
+		---
+		Script: '[Function: Script]'
+		code: '[Function: code]'
+		html: '[Function: html]'
+		"""

@@ -163,7 +163,11 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 			str = toTAML(value, {sortKeys: true})
 			putstr "#{prefix}#{label} ="
 			if notdefined(itemPrefix)
-				itemPrefix = prefix
+				if (putstr == console.log)
+					oneIndent = '   '
+				else
+					oneIndent = "\t"
+				itemPrefix = prefix + oneIndent
 			for str in blockToArray(str)
 				putstr "#{itemPrefix}#{str}"
 

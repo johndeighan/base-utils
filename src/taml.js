@@ -86,9 +86,10 @@ myReplacer = function(name, value) {
   if (value === undef) {
     // --- We need this, otherwise js-yaml will convert undef to null
     return "<UNDEFINED_VALUE>";
-  }
-  if (isString(value)) {
+  } else if (isString(value)) {
     return escapeStr(value);
+  } else if (isFunction(value)) {
+    return `[Function: ${value.name}]`;
   } else {
     return value;
   }

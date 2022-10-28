@@ -135,7 +135,7 @@ export var LOG = (str = "", prefix = "") => {
 
 // ---------------------------------------------------------------------------
 export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
-  var i, j, len, len1, len2, line, ref, ref1, str, str1, str2, str3, subtype, type;
+  var i, j, len, len1, len2, line, oneIndent, ref, ref1, str, str1, str2, str3, subtype, type;
   if (doDebugLogging) {
     str1 = OL(label);
     str2 = OL(value);
@@ -191,7 +191,12 @@ export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
       });
       putstr(`${prefix}${label} =`);
       if (notdefined(itemPrefix)) {
-        itemPrefix = prefix;
+        if (putstr === console.log) {
+          oneIndent = '   ';
+        } else {
+          oneIndent = "\t";
+        }
+        itemPrefix = prefix + oneIndent;
       }
       ref = blockToArray(str);
       for (i = 0, len1 = ref.length; i < len1; i++) {

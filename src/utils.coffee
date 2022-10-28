@@ -56,13 +56,13 @@ export deepCopy = (obj) ->
 myReplacer = (name, value) ->
 
 	if (value == undef)
-		return 'undef'
+		return undef
 	else if (value == null)
 		return null
 	else if isString(value)
 		return escapeStr(value)
-	else if isObject(value, ['tamlReplacer'])
-		return value.tamlReplacer()
+	else if (typeof value == 'function')
+		return "[Function: #{value.name}]"
 	else
 		return value
 
@@ -74,7 +74,7 @@ export OL = (obj) ->
 		if isString(obj)
 			return quoted(obj, 'escape')
 		else
-			return JSON.stringify(obj)
+			return JSON.stringify(obj, myReplacer)
 	else if (obj == null)
 		return 'null'
 	else

@@ -244,3 +244,22 @@ a: 1
 d: 4
 e: 5`);
 });
+
+test("line 176", (t) => {
+  var hProc;
+  hProc = {
+    code: function(block) {
+      return `${block};`;
+    },
+    html: function(block) {
+      return block.replace('<p>', '<p> ');
+    },
+    Script: function(block) {
+      return elem('script', undef, block, "\t");
+    }
+  };
+  return t.is(toTAML(hProc), `---
+Script: '[Function: Script]'
+code: '[Function: code]'
+html: '[Function: html]'`);
+});

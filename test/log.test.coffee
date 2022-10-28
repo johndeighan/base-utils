@@ -147,9 +147,9 @@ test "line 143", (t) =>
 	resetLogWidth()
 	t.is utGetLog(), """
 		h =
-		---
-		abc: 99
-		xyz: 42
+			---
+			abc: 99
+			xyz: 42
 		"""
 
 # --- hash (OL fits)
@@ -170,11 +170,11 @@ test "line 166", (t) =>
 	resetLogWidth()
 	t.is utGetLog(), """
 		l =
-		---
-		- xyz
-		- 42
-		- false
-		- undef
+			---
+			- xyz
+			- 42
+			- false
+			- undef
 		"""
 
 # --- array (OL fits)
@@ -233,4 +233,23 @@ test "line 226", (t) =>
 		name is node2
 		level is 2
 		THAT'S ALL FOLKS!
+		"""
+
+test "line 238", (t) =>
+	utReset()
+
+	hProc = {
+		code:   (block) -> return "#{block};"
+		html:   (block) -> return block.replace('<p>', '<p> ').replace('</p>', ' </p>')
+		Script: (block) -> return elem('script', undef, block, "\t")
+		}
+
+	LOGVALUE 'hProc', hProc
+
+	t.is utGetLog(), """
+		hProc =
+			---
+			Script: '[Function: Script]'
+			code: '[Function: code]'
+			html: '[Function: html]'
 		"""

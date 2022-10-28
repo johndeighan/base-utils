@@ -162,9 +162,9 @@ test("line 143", (t) => {
   });
   resetLogWidth();
   return t.is(utGetLog(), `h =
----
-abc: 99
-xyz: 42`);
+	---
+	abc: 99
+	xyz: 42`);
 });
 
 // --- hash (OL fits)
@@ -184,11 +184,11 @@ test("line 166", (t) => {
   LOGVALUE('l', ['xyz', 42, false, undef]);
   resetLogWidth();
   return t.is(utGetLog(), `l =
----
-- xyz
-- 42
-- false
-- undef`);
+	---
+	- xyz
+	- 42
+	- false
+	- undef`);
 });
 
 // --- array (OL fits)
@@ -251,4 +251,26 @@ str is abc
 name is node2
 level is 2
 THAT'S ALL FOLKS!`);
+});
+
+test("line 238", (t) => {
+  var hProc;
+  utReset();
+  hProc = {
+    code: function(block) {
+      return `${block};`;
+    },
+    html: function(block) {
+      return block.replace('<p>', '<p> ').replace('</p>', ' </p>');
+    },
+    Script: function(block) {
+      return elem('script', undef, block, "\t");
+    }
+  };
+  LOGVALUE('hProc', hProc);
+  return t.is(utGetLog(), `hProc =
+	---
+	Script: '[Function: Script]'
+	code: '[Function: code]'
+	html: '[Function: html]'`);
 });
