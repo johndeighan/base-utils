@@ -5,7 +5,7 @@ import {strict as assert} from 'node:assert'
 import {
 	pass, undef, defined, notdefined, deepCopy,
 	hEsc, escapeStr, OL, hasMethod,
-	blockToArray, arrayToBlock,
+	blockToArray, arrayToBlock, prefixBlock,
 	isNumber, isInteger, isString, isHash, isFunction, isBoolean,
 	nonEmpty, hEscNoNL, jsType, hasChar, quoted,
 	} from '@jdeighan/exceptions/utils'
@@ -118,7 +118,7 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 		str1 = OL(label)
 		str2 = OL(value)
 		str3 = OL(prefix)
-		console.log "CALL LOGITEM(#{str1}, #{str2}), prefix=#{str3}"
+		console.log "CALL LOGVALUE(#{str1}, #{str2}), prefix=#{str3}"
 	assert nonEmpty(label), "label is empty"
 
 	# --- Handle some simple cases
@@ -140,9 +140,18 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 
 	# --- Try OL() - if it's short enough, use that
 	str = "#{prefix}#{label} = #{OL(value)}"
+	if doDebugLogging
+		console.log "Using OL(), strlen = #{str.length}, logWidth = #{logWidth}"
 	if (str.length <= logWidth)
 		putstr str
 		return true
+
+	if notdefined(itemPrefix)
+		if (putstr == console.log)
+			oneIndent = '   '
+		else
+			oneIndent = "\t"
+		itemPrefix = prefix + oneIndent
 
 	[type, subtype] = jsType(value)
 	switch type
@@ -150,24 +159,21 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 			if (subtype == 'empty')
 				putstr "#{prefix}#{label} = ''"
 			else
-				str = quoted(value, 'escape')
-				len = prefix.length + label.length + str.length + 3
-				if (len <= logWidth)
-					putstr "#{prefix}#{label} = #{str}"
+				str = "#{prefix}#{label} = #{quoted(value, 'escape')}"
+				if (str.length <= logWidth)
+					putstr str
 				else
 					# --- escape, but not newlines
-					str = quoted(value, 'escapeNoNL')
-					putstr "#{prefix}#{label} = #{str}"
+					escaped = escapeStr(value, hEscNoNL)
+					putstr """
+						#{prefix}#{label} = \"\"\"
+						#{prefixBlock(escaped, itemPrefix)}
+						#{prefixBlock('"""', itemPrefix)}
+						"""
 
 		when 'hash', 'array'
 			str = toTAML(value, {sortKeys: true})
 			putstr "#{prefix}#{label} ="
-			if notdefined(itemPrefix)
-				if (putstr == console.log)
-					oneIndent = '   '
-				else
-					oneIndent = "\t"
-				itemPrefix = prefix + oneIndent
 			for str in blockToArray(str)
 				putstr "#{itemPrefix}#{str}"
 

@@ -20,10 +20,14 @@ export var defined = (obj) => {
   return (obj !== undef) && (obj !== null);
 };
 
+export var def = defined;
+
 // ---------------------------------------------------------------------------
 export var notdefined = (obj) => {
   return (obj === undef) || (obj === null);
 };
+
+export var notdef = notdefined;
 
 // ---------------------------------------------------------------------------
 export var spaces = (n) => {
@@ -33,6 +37,22 @@ export var spaces = (n) => {
 // ---------------------------------------------------------------------------
 export var untabify = (str, numSpaces = 3) => {
   return str.replace(/\t/g, ' '.repeat(numSpaces));
+};
+
+// ---------------------------------------------------------------------------
+export var prefixBlock = (block, prefix) => {
+  var lLines, line;
+  lLines = (function() {
+    var i, len1, ref, results;
+    ref = blockToArray(block);
+    results = [];
+    for (i = 0, len1 = ref.length; i < len1; i++) {
+      line = ref[i];
+      results.push(`${prefix}${line}`);
+    }
+    return results;
+  })();
+  return arrayToBlock(lLines);
 };
 
 // ---------------------------------------------------------------------------

@@ -17,11 +17,15 @@ export defined = (obj) =>
 
 	return (obj != undef) && (obj != null)
 
+export def = defined
+
 # ---------------------------------------------------------------------------
 
 export notdefined = (obj) =>
 
 	return (obj == undef) || (obj == null)
+
+export notdef = notdefined
 
 # ---------------------------------------------------------------------------
 
@@ -34,6 +38,14 @@ export spaces = (n) =>
 export untabify = (str, numSpaces=3) =>
 
 	return str.replace(/\t/g, ' '.repeat(numSpaces))
+
+# ---------------------------------------------------------------------------
+
+export prefixBlock = (block, prefix) =>
+
+	lLines = for line in blockToArray(block)
+		"#{prefix}#{line}"
+	return arrayToBlock(lLines)
 
 # ---------------------------------------------------------------------------
 #   deepCopy - deep copy an array or object

@@ -18,6 +18,7 @@ import {
   hasMethod,
   blockToArray,
   arrayToBlock,
+  prefixBlock,
   isNumber,
   isInteger,
   isString,
@@ -135,12 +136,12 @@ export var LOG = (str = "", prefix = "") => {
 
 // ---------------------------------------------------------------------------
 export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
-  var i, j, len, len1, len2, line, oneIndent, ref, ref1, str, str1, str2, str3, subtype, type;
+  var escaped, i, j, len, len1, line, oneIndent, ref, ref1, str, str1, str2, str3, subtype, type;
   if (doDebugLogging) {
     str1 = OL(label);
     str2 = OL(value);
     str3 = OL(prefix);
-    console.log(`CALL LOGITEM(${str1}, ${str2}), prefix=${str3}`);
+    console.log(`CALL LOGVALUE(${str1}, ${str2}), prefix=${str3}`);
   }
   assert(nonEmpty(label), "label is empty");
   // --- Handle some simple cases
@@ -163,9 +164,20 @@ export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
   }
   // --- Try OL() - if it's short enough, use that
   str = `${prefix}${label} = ${OL(value)}`;
+  if (doDebugLogging) {
+    console.log(`Using OL(), strlen = ${str.length}, logWidth = ${logWidth}`);
+  }
   if (str.length <= logWidth) {
     putstr(str);
     return true;
+  }
+  if (notdefined(itemPrefix)) {
+    if (putstr === console.log) {
+      oneIndent = '   ';
+    } else {
+      oneIndent = "\t";
+    }
+    itemPrefix = prefix + oneIndent;
   }
   [type, subtype] = jsType(value);
   switch (type) {
@@ -173,14 +185,15 @@ export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
       if (subtype === 'empty') {
         putstr(`${prefix}${label} = ''`);
       } else {
-        str = quoted(value, 'escape');
-        len = prefix.length + label.length + str.length + 3;
-        if (len <= logWidth) {
-          putstr(`${prefix}${label} = ${str}`);
+        str = `${prefix}${label} = ${quoted(value, 'escape')}`;
+        if (str.length <= logWidth) {
+          putstr(str);
         } else {
           // --- escape, but not newlines
-          str = quoted(value, 'escapeNoNL');
-          putstr(`${prefix}${label} = ${str}`);
+          escaped = escapeStr(value, hEscNoNL);
+          putstr(`${prefix}${label} = \"\"\"
+${prefixBlock(escaped, itemPrefix)}
+${prefixBlock('"""', itemPrefix)}`);
         }
       }
       break;
@@ -190,16 +203,8 @@ export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
         sortKeys: true
       });
       putstr(`${prefix}${label} =`);
-      if (notdefined(itemPrefix)) {
-        if (putstr === console.log) {
-          oneIndent = '   ';
-        } else {
-          oneIndent = "\t";
-        }
-        itemPrefix = prefix + oneIndent;
-      }
       ref = blockToArray(str);
-      for (i = 0, len1 = ref.length; i < len1; i++) {
+      for (i = 0, len = ref.length; i < len; i++) {
         str = ref[i];
         putstr(`${itemPrefix}${str}`);
       }
@@ -222,7 +227,7 @@ export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
           itemPrefix = prefix;
         }
         ref1 = blockToArray(str);
-        for (j = 0, len2 = ref1.length; j < len2; j++) {
+        for (j = 0, len1 = ref1.length; j < len1; j++) {
           line = ref1[j];
           putstr(`${itemPrefix}${line}`);
         }

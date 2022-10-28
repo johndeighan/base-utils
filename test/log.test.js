@@ -142,7 +142,9 @@ test("line 116", (t) => {
 test("line 125", (t) => {
   utReset();
   LOGVALUE('x', 'a'.repeat(80));
-  return t.is(utGetLog(), `x = '${'a'.repeat(80)}'`);
+  return t.is(utGetLog(), `x = \"\"\"
+	${'a'.repeat(80)}
+	\"\"\"`);
 });
 
 // --- multi line string
@@ -214,10 +216,10 @@ test("line 196", (t) => {
   utReset();
   LOGVALUE('Node1', node1);
   return t.is(utGetLog(), `Node1 =
----
-level: 2
-name: node1
-str: abc`);
+	---
+	level: 2
+	name: node1
+	str: abc`);
 });
 
 // --- object with toString method
@@ -246,11 +248,11 @@ test("line 226", (t) => {
   utReset();
   LOGVALUE('Node2', node2);
   return t.is(utGetLog(), `Node2 =
-HERE IT IS
-str is abc
-name is node2
-level is 2
-THAT'S ALL FOLKS!`);
+	HERE IT IS
+	str is abc
+	name is node2
+	level is 2
+	THAT'S ALL FOLKS!`);
 });
 
 test("line 238", (t) => {
