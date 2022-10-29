@@ -5,14 +5,14 @@ import {
 	} from '@jdeighan/exceptions/utils'
 import {isTAML, fromTAML, toTAML} from '@jdeighan/exceptions/taml'
 import {
-	LOG, LOGVALUE, setLogger, sep_dash, sep_eq,
+	LOG, LOGVALUE, LOGTAML, setLogger, sep_dash, sep_eq,
 	} from '@jdeighan/exceptions/log'
 import {
 	setDebugging, resetDebugging, debug, setCustomDebugLogger,
 	} from '@jdeighan/exceptions/debug'
 
 export {
-	LOG, LOGVALUE, setLogger,
+	LOG, LOGVALUE, LOGTAML, setLogger,
 	setDebugging, resetDebugging, debug, setCustomDebugLogger,
 	isTAML, fromTAML, toTAML}
 

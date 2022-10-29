@@ -22,6 +22,7 @@ import {
 import {
   LOG,
   LOGVALUE,
+  LOGTAML,
   setLogger,
   sep_dash,
   sep_eq
@@ -37,6 +38,7 @@ import {
 export {
   LOG,
   LOGVALUE,
+  LOGTAML,
   setLogger,
   setDebugging,
   resetDebugging,

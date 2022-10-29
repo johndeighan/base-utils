@@ -4,7 +4,7 @@ import {strict as assert} from 'node:assert'
 
 import {
 	pass, undef, defined, notdefined, deepCopy,
-	hEsc, escapeStr, OL, hasMethod,
+	hEsc, escapeStr, OL, hasMethod, untabify,
 	blockToArray, arrayToBlock, prefixBlock,
 	isNumber, isInteger, isString, isHash, isFunction, isBoolean,
 	nonEmpty, hEscNoNL, jsType, hasChar, quoted,
@@ -112,6 +112,29 @@ export LOG = (str="", prefix="") =>
 
 # ---------------------------------------------------------------------------
 
+export LOGTAML = (label, value, prefix="", itemPrefix=undef) =>
+
+	if doDebugLogging
+		str1 = OL(label)
+		str2 = OL(value)
+		str3 = OL(prefix)
+		console.log "CALL LOGTAML(#{str1}, #{str2}), prefix=#{str3}"
+	assert nonEmpty(label), "label is empty"
+
+	if handleSimpleCase(label, value, prefix)
+		return true
+
+	if notdefined(itemPrefix)
+		itemPrefix = getItemPrefix(prefix)
+
+	str = toTAML(value, {sortKeys: true})
+	putstr "#{prefix}#{label} ="
+	for str in blockToArray(str)
+		putstr "#{itemPrefix}#{str}"
+	return true
+
+# ---------------------------------------------------------------------------
+
 export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 
 	if doDebugLogging
@@ -121,21 +144,7 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 		console.log "CALL LOGVALUE(#{str1}, #{str2}), prefix=#{str3}"
 	assert nonEmpty(label), "label is empty"
 
-	# --- Handle some simple cases
-	if (value == undef)
-		putstr "#{prefix}#{label} = undef"
-		return true
-	else if (value == null)
-		putstr "#{prefix}#{label} = null"
-		return true
-	else if isBoolean(value)
-		if value
-			putstr "#{prefix}#{label} = true"
-		else
-			putstr "#{prefix}#{label} = false"
-		return true
-	else if isNumber(value)
-		putstr "#{prefix}#{label} = #{value}"
+	if handleSimpleCase(label, value, prefix)
 		return true
 
 	# --- Try OL() - if it's short enough, use that
@@ -147,11 +156,7 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 		return true
 
 	if notdefined(itemPrefix)
-		if (putstr == console.log)
-			oneIndent = '   '
-		else
-			oneIndent = "\t"
-		itemPrefix = prefix + oneIndent
+		itemPrefix = getItemPrefix(prefix)
 
 	[type, subtype] = jsType(value)
 	switch type
@@ -198,6 +203,39 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 			else
 				putstr "#{prefix}#{label} = #{str}"
 	return true
+
+# ---------------------------------------------------------------------------
+
+handleSimpleCase = (label, value, prefix) =>
+	# --- Returns true if handled, else false
+
+	# --- Handle some simple cases
+	if (value == undef)
+		putstr "#{prefix}#{label} = undef"
+		return true
+	else if (value == null)
+		putstr "#{prefix}#{label} = null"
+		return true
+	else if isBoolean(value)
+		if value
+			putstr "#{prefix}#{label} = true"
+		else
+			putstr "#{prefix}#{label} = false"
+		return true
+	else if isNumber(value)
+		putstr "#{prefix}#{label} = #{value}"
+		return true
+	else
+		return false
+
+# ---------------------------------------------------------------------------
+
+getItemPrefix = (prefix) =>
+
+	if (putstr == console.log)
+		return untabify(prefix + "\t")
+	else
+		return prefix + "\t"
 
 # ---------------------------------------------------------------------------
 # simple redirect to an array - useful in unit tests

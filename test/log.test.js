@@ -32,6 +32,7 @@ import {
   orderedStringify,
   LOG,
   LOGVALUE,
+  LOGTAML,
   utReset,
   utGetLog
 } from '@jdeighan/exceptions/log';
@@ -148,14 +149,14 @@ test("line 125", (t) => {
 });
 
 // --- multi line string
-test("line 134", (t) => {
+test("line 136", (t) => {
   utReset();
   LOGVALUE('x', 'abc\ndef');
   return t.is(utGetLog(), `x = 'abc®def'`);
 });
 
 // --- hash (OL doesn't fit)
-test("line 143", (t) => {
+test("line 145", (t) => {
   utReset();
   setLogWidth(5);
   LOGVALUE('h', {
@@ -170,7 +171,7 @@ test("line 143", (t) => {
 });
 
 // --- hash (OL fits)
-test("line 157", (t) => {
+test("line 159", (t) => {
   utReset();
   LOGVALUE('h', {
     xyz: 42,
@@ -180,7 +181,7 @@ test("line 157", (t) => {
 });
 
 // --- array  (OL doesn't fit)
-test("line 166", (t) => {
+test("line 168", (t) => {
   utReset();
   setLogWidth(5);
   LOGVALUE('l', ['xyz', 42, false, undef]);
@@ -194,7 +195,7 @@ test("line 166", (t) => {
 });
 
 // --- array (OL fits)
-test("line 182", (t) => {
+test("line 184", (t) => {
   utReset();
   LOGVALUE('l', ['xyz', 42, false, undef]);
   return t.is(utGetLog(), `l = ["xyz",42,false,null]`);
@@ -212,7 +213,7 @@ Node1 = class Node1 {
 
 node1 = new Node1('abc', 2);
 
-test("line 196", (t) => {
+test("line 198", (t) => {
   utReset();
   LOGVALUE('Node1', node1);
   return t.is(utGetLog(), `Node1 =
@@ -244,7 +245,7 @@ node2 = new Node2('abc', 2);
 
 [type, subtype] = jsType(node2);
 
-test("line 226", (t) => {
+test("line 228", (t) => {
   utReset();
   LOGVALUE('Node2', node2);
   return t.is(utGetLog(), `Node2 =
@@ -255,7 +256,7 @@ test("line 226", (t) => {
 	THAT'S ALL FOLKS!`);
 });
 
-test("line 238", (t) => {
+test("line 240", (t) => {
   var hProc;
   utReset();
   hProc = {
@@ -275,4 +276,17 @@ test("line 238", (t) => {
 	Script: '[Function: Script]'
 	code: '[Function: code]'
 	html: '[Function: html]'`);
+});
+
+test("line 259", (t) => {
+  utReset();
+  setLogWidth(5);
+  LOGTAML('lItems', ['xyz', 42, false, undef]);
+  resetLogWidth();
+  return t.is(utGetLog(), `lItems =
+	---
+	- xyz
+	- 42
+	- false
+	- undef`);
 });
