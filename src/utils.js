@@ -191,6 +191,11 @@ export var unescapeStr = function(str, hReplace = hUnesc) {
 };
 
 // ---------------------------------------------------------------------------
+export var inList = (item, ...lStrings) => {
+  return lStrings.indexOf(item) >= 0;
+};
+
+// ---------------------------------------------------------------------------
 export var isString = (x) => {
   return (typeof x === 'string') || (x instanceof String);
 };

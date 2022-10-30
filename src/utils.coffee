@@ -164,6 +164,12 @@ export unescapeStr = (str, hReplace=hUnesc) ->
 
 # ---------------------------------------------------------------------------
 
+export inList = (item, lStrings...) =>
+
+	return (lStrings.indexOf(item) >= 0)
+
+# ---------------------------------------------------------------------------
+
 export isString = (x) =>
 
 	return (typeof x == 'string') || (x instanceof String)

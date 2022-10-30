@@ -3,7 +3,7 @@
 import test from 'ava'
 
 import {
-	undef, pass, arrayToBlock, isNumber, spaces,
+	undef, pass, arrayToBlock, isNumber, isArray, spaces,
 	} from '@jdeighan/exceptions/utils'
 import {toTAML} from '@jdeighan/exceptions/taml'
 import {
@@ -17,47 +17,39 @@ import {
 
 # ---------------------------------------------------------------------------
 
-# --- Until setDebugging() is called with a nonEmpty string,
-#     all debugging is turned off
-
-test "line 23", (t) => t.deepEqual(
-	getType("something"),
-	[undef, undef, undef])
-
-
-test "line 28", (t) =>
+test "line 20", (t) =>
 	setDebugging "myfunc"
 	t.deepEqual(
 		getType("something"),
-		["string", undef, undef])
+		["string", undef])
 	resetDebugging()
 
-test "line 35", (t) =>
+test "line 27", (t) =>
 	setDebugging "myfunc"
 	t.deepEqual(
-		getType("enter myfunc"),
-		["enter", "myfunc", undef])
+		getType("enter myfunc()"),
+		["enter", "myfunc"])
 	resetDebugging()
 
-test "line 42", (t) =>
+test "line 34", (t) =>
 	setDebugging "myfunc"
 	t.deepEqual(
 		getType("enter obj.method()"),
-		["enter", "method", "obj"])
+		["enter", "obj.method"])
 	resetDebugging()
 
-test "line 49", (t) =>
+test "line 41", (t) =>
 	setDebugging "myfunc"
 	t.deepEqual(
-		getType("return from myfunc"),
-		["return", "myfunc", undef])
+		getType("return from myfunc()"),
+		["return", "myfunc"])
 	resetDebugging()
 
-test "line 56", (t) =>
+test "line 48", (t) =>
 	setDebugging "myfunc"
 	t.deepEqual(
-		getType("return 42 from myobj.mymethod"),
-		["return", "mymethod", "myobj"])
+		getType("return 42 from myobj.mymethod()"),
+		["return", "myobj.mymethod"])
 	resetDebugging()
 
 # ---------------------------------------------------------------------------
@@ -79,7 +71,7 @@ quadruple = (x) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 82", (t) =>
+test "line 74", (t) =>
 
 	utReset()
 	result = quadruple(3)
@@ -87,7 +79,7 @@ test "line 82", (t) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 90", (t) =>
+test "line 82", (t) =>
 
 	utReset()
 	setDebugging 'double'
@@ -97,7 +89,7 @@ test "line 90", (t) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 100", (t) =>
+test "line 92", (t) =>
 
 	utReset()
 	setDebugging 'double'
@@ -113,7 +105,7 @@ test "line 100", (t) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 116", (t) =>
+test "line 108", (t) =>
 
 	utReset()
 	setDebugging 'double quadruple'
@@ -135,7 +127,7 @@ test "line 116", (t) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 138", (t) =>
+test "line 130", (t) =>
 
 	utReset()
 	setDebugging 'double', 'quadruple'
@@ -177,10 +169,10 @@ class Class2
 
 # ---------------------------------------------------------------------------
 
-test "line 180", (t) =>
+test "line 172", (t) =>
 
 	utReset()
-	setDebugging 'add'
+	setDebugging 'Class1.add Class2.add'
 	new Class1().add('abc')
 	new Class2().add('def')
 	resetDebugging()
@@ -196,7 +188,7 @@ test "line 180", (t) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 199", (t) =>
+test "line 191", (t) =>
 
 	utReset()
 	setDebugging 'Class2.add'
@@ -212,7 +204,7 @@ test "line 199", (t) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 215", (t) =>
+test "line 207", (t) =>
 
 	utReset()
 	setDebugging 'double quadruple'
@@ -238,18 +230,43 @@ test "line 215", (t) =>
 		"""
 
 # ---------------------------------------------------------------------------
+# Test using generators
+
+allNumbers = (lItems) ->
+
+	debug "enter allNumbers()"
+	for item in lItems
+		if isNumber(item)
+			debug "yield allNumbers()"
+			yield item
+			debug "continue allNumbers()"
+		else if isArray(item)
+			debug "yield allNumbers()"
+			yield from allNumbers(item)
+			debug "continue allNumbers()"
+	debug "return from allNumbers()"
+	return
+
+test "line 250", (t) =>
+	lItems = ['a', 2, ['b', 3], 5]
+	total = 0
+	for i from allNumbers(lItems)
+		total += i
+	t.is total, 10
+
+# ---------------------------------------------------------------------------
 # Test custom loggers
 
-test "line 243", (t) =>
+test "line 260", (t) =>
 
 	utReset()
 	setDebugging 'double quadruple'
 
-	setCustomDebugLogger 'enter', (label, lObjects, level, funcName, objName) ->
+	setCustomDebugLogger 'enter', (label, lObjects, level, funcName) ->
 		LOG getPrefix(level, 'plain') + funcName
 		return true
 
-	setCustomDebugLogger 'return', (label, lObjects, level, funcName, objName) ->
+	setCustomDebugLogger 'return', (label, lObjects, level, funcName) ->
 		return true
 
 	result = double(quadruple(3))

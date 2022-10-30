@@ -11,6 +11,16 @@ import {
   CallStack
 } from '@jdeighan/exceptions/stack';
 
+import {
+  LOG,
+  utReset,
+  utGetLog
+} from '@jdeighan/exceptions/log';
+
+import {
+  debug
+} from '@jdeighan/exceptions/debug';
+
 // ---------------------------------------------------------------------------
 test("line 10", (t) => {
   var stack;
@@ -24,58 +34,105 @@ test("line 14", (t) => {
   return t.is(stack.isLogging(), false);
 });
 
-// .............................................................
+// ---------------------------------------------------------------------------
 test("line 20", (t) => {
   var stack;
   stack = new CallStack();
-  stack.enter('callme', undef, [1, 'abc'], true);
+  stack.enter('callme', [1, 'abc'], true);
   return t.is(stack.getLevel(), 1);
 });
 
 test("line 25", (t) => {
   var stack;
   stack = new CallStack();
-  stack.enter('callme', undef, [1, 'abc'], true);
+  stack.enter('callme', [1, 'abc'], true);
   return t.is(stack.isLogging(), true);
 });
 
-// .............................................................
+// ---------------------------------------------------------------------------
 test("line 32", (t) => {
   var stack;
   stack = new CallStack();
-  stack.enter('sub', undef, [], false);
+  stack.enter('sub', [], false);
   return t.is(stack.getLevel(), 0);
 });
 
 test("line 37", (t) => {
   var stack;
   stack = new CallStack();
-  stack.enter('sub', undef, [], true);
+  stack.enter('sub', [], true);
   return t.is(stack.getLevel(), 1);
 });
 
 test("line 42", (t) => {
   var stack;
   stack = new CallStack();
-  stack.enter('sub', undef, [], false);
+  stack.enter('sub', [], false);
   return t.is(stack.isLogging(), false);
 });
 
-// .............................................................
+// ---------------------------------------------------------------------------
 test("line 49", (t) => {
   var stack;
   stack = new CallStack();
-  stack.enter('callme', undef, [1, 'abc'], true);
-  stack.enter('sub', undef, [], false);
-  stack.returnFrom('sub', undef);
+  stack.enter('callme', [1, 'abc'], true);
+  stack.enter('sub', [], false);
+  stack.returnFrom('sub');
   return t.is(stack.getLevel(), 1);
 });
 
 test("line 56", (t) => {
   var stack;
   stack = new CallStack();
-  stack.enter('callme', undef, [1, 'abc'], true);
-  stack.enter('sub', undef, [], false);
-  stack.returnFrom('sub', undef);
+  stack.enter('callme', [1, 'abc'], true);
+  stack.enter('sub', [], false);
+  stack.returnFrom('sub');
   return t.is(stack.isLogging(), true);
 });
+
+// ---------------------------------------------------------------------------
+(function() {
+  var A, B, C, main;
+  main = function() {
+    A();
+  };
+  A = function() {
+    var ref, x;
+    debug("enter A()");
+    ref = B();
+    for (x of ref) {
+      LOG(x);
+      C();
+    }
+    debug("return from A()");
+  };
+  B = function*() {
+    var i, len, n, ref;
+    debug("enter B()");
+    LOG(13);
+    ref = [5, 6];
+    for (i = 0, len = ref.length; i < len; i++) {
+      n = ref[i];
+      debug("yield from B()", n);
+      yield n;
+      debug("continue B()");
+    }
+    C();
+    debug("return from B()");
+  };
+  C = function() {
+    debug("enter C()");
+    LOG("here");
+    debug("return from C()");
+  };
+  return test("line 90", (t) => {
+    utReset();
+    main();
+    return t.is(utGetLog(), `13
+5
+here
+6
+here
+here`);
+  });
+})();

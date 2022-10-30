@@ -9,13 +9,13 @@ import {
 import {LOG} from '@jdeighan/exceptions/log'
 import {getPrefix} from '@jdeighan/exceptions/prefix'
 
-doDebugStack = false
+internalDebugging = false
 
 # ---------------------------------------------------------------------------
 
 export debugStack = (flag=true) ->
 
-	doDebugStack = flag
+	internalDebugging = flag
 	return
 
 # ---------------------------------------------------------------------------
@@ -30,7 +30,7 @@ export class CallStack
 
 	reset: () ->
 
-		if doDebugStack
+		if internalDebugging
 			console.log "RESET STACK"
 		@lStack = []
 		return
@@ -44,48 +44,69 @@ export class CallStack
 
 	# ........................................................................
 
-	enter: (funcName, objName, lArgs=[], isLogged) ->
-		# --- funcName might be <object>.<method>
+	enter: (funcName, lArgs, isLogged) ->
 
 		assert isArray(lArgs),      "bad lArgs"
 		assert isBoolean(isLogged), "bad isLogged"
 
-		if doDebugStack
+		if internalDebugging
 			console.log @indent() + "[--> ENTER #{funcName}]"
 
-		if nonEmpty(objName)
-			fullName = "#{objName}.#{funcName}"
-		else
-			fullName = funcName
-
 		@lStack.push {
-			fullName
 			funcName
-			objName
-			isLogged
 			lArgs: deepCopy(lArgs)
+			isLogged
 			}
 		return
 
 	# ........................................................................
 	# --- if stack is empty, log the error, but continue
 
-	returnFrom: (funcName, objName) ->
-
-		if objName
-			fullReturnName = "#{objName}.#{funcName}"
-		else
-			fullReturnName = funcName
+	returnFrom: (funcName) ->
 
 		if @lStack.length == 0
-			LOG "ERROR: returnFrom('#{fullReturnName}') but stack is empty"
+			LOG "ERROR: returnFrom('#{funcName}') but stack is empty"
 			return
-		{fullName, isLogged} = @lStack.pop()
-		if doDebugStack
-			console.log @indent() + "[<-- BACK #{fullReturnName}]"
-		if (fullName != fullReturnName)
-			LOG "ERROR: returnFrom('#{fullReturnName}') but TOS is #{fullName}"
+		if (@TOS().funcName != funcName)
+			LOG "ERROR: returnFrom('#{funcName}') but TOS is #{@TOS().funcName}"
 			return
+		{funcName, isLogged} = @lStack.pop()
+		if internalDebugging
+			console.log @indent() + "[<-- RETURN FROM #{funcName}]"
+
+		return
+
+	# ........................................................................
+
+	yield: (funcName, lArgs=[], isLogged) ->
+
+		assert isArray(lArgs),      "bad lArgs"
+		assert isBoolean(isLogged), "bad isLogged"
+
+		if internalDebugging
+			console.log @indent() + "[--> YIELD #{funcName}]"
+
+		@lStack.push {
+			funcName
+			lArgs: deepCopy(lArgs)
+			isLogged
+			}
+		return
+
+	# ........................................................................
+	# --- if stack is empty, log the error, but continue
+
+	continue: (funcName) ->
+
+		if (@lStack.length == 0)
+			LOG "ERROR: continue('#{funcName}') but stack is empty"
+			return
+		if (@TOS().funcName != funcName)
+			LOG "ERROR: continue('#{funcName}') but TOS is #{@TOS().funcName}"
+			return
+		{funcName, isLogged} = @lStack.pop()
+		if internalDebugging
+			console.log @indent() + "[<-- CONTINUE #{funcName}]"
 
 		return
 
@@ -96,7 +117,7 @@ export class CallStack
 		if (@lStack.length == 0)
 			return false
 		else
-			return @lStack[@lStack.length - 1].isLogged
+			return @TOS().isLogged
 
 	# ........................................................................
 
@@ -113,13 +134,9 @@ export class CallStack
 	curFunc: () ->
 
 		if (@lStack.length == 0)
-			return ['main', undef]
+			return 'main'
 		else
-			h = @TOS()
-			if defined(h)
-				return [h.funcName, h.objName]
-			else
-				return [undef, undef]
+			return @TOS().funcName
 
 	# ........................................................................
 
@@ -132,10 +149,10 @@ export class CallStack
 
 	# ........................................................................
 
-	isActive: (funcName, objName) ->
+	isActive: (funcName) ->
 
 		for h in @lStack
-			if (h.funcName == funcName) && (h.objName == objName)
+			if (h.funcName == funcName)
 				return true
 		return false
 
@@ -156,7 +173,7 @@ export class CallStack
 	callStr: (i, item) ->
 
 		sym = if item.isLogged then '*' else '-'
-		str = "#{i}: #{sym}#{item.fullName}"
+		str = "#{i}: #{sym}#{item.funcName}"
 		for arg in item.lArgs
 			str += " #{OL(arg)}"
 		return str
@@ -168,9 +185,9 @@ export class CallStack
 		lFuncNames = []
 		for item in @lStack
 			if item.isLogged
-				lFuncNames.push '*' + item.fullName
+				lFuncNames.push '*' + item.funcName
 			else
-				lFuncNames.push item.fullName
+				lFuncNames.push item.funcName
 		if @lStack.length == 0
 			return "#{label} <EMPTY>"
 		else
