@@ -9,8 +9,13 @@ import {
 import {
   undef,
   defined,
+  notdefined,
   OL,
   deepCopy,
+  warn,
+  oneof,
+  spaces,
+  isString,
   isArray,
   isBoolean,
   isEmpty,
@@ -34,16 +39,27 @@ export var debugStack = function(flag = true) {
 
 // ---------------------------------------------------------------------------
 export var CallStack = class CallStack {
-  constructor() {
+  constructor(debugFlag = false) {
+    // --- Items on stack have keys:
+    //        funcName
+    //        lArgs
+    //        doLog
+    //        isYielded
+    debugStack(debugFlag);
     this.lStack = [];
   }
 
   // ........................................................................
+  dbg(str) {
+    console.log(this.indent() + str);
+  }
+
+  // ........................................................................
   reset() {
-    if (internalDebugging) {
-      console.log("RESET STACK");
-    }
     this.lStack = [];
+    if (internalDebugging) {
+      this.dbg("RESET STACK");
+    }
   }
 
   // ........................................................................
@@ -53,86 +69,102 @@ export var CallStack = class CallStack {
   }
 
   // ........................................................................
-  enter(funcName, lArgs, isLogged) {
-    assert(isArray(lArgs), "bad lArgs");
-    assert(isBoolean(isLogged), "bad isLogged");
+  stackErr(cond, msg) {
+    if (!cond) {
+      warn(`${msg}\n${this.dump()}`);
+    }
+  }
+
+  // ........................................................................
+  // ........................................................................
+  enter(funcName, lArgs = [], doLog = false) {
+    var nArgs;
+    assert(isArray(lArgs), "not an array");
     if (internalDebugging) {
-      console.log(this.indent() + `[--> ENTER ${funcName}]`);
+      nArgs = lArgs.length;
+      if (nArgs === 0) {
+        this.dbg(`[--> ENTER ${funcName}]`);
+      } else {
+        this.dbg(`[--> ENTER ${funcName} ${nArgs} args]`);
+      }
     }
     this.lStack.push({
       funcName,
       lArgs: deepCopy(lArgs),
-      isLogged
+      doLog,
+      isYielded: false
     });
   }
 
   // ........................................................................
   // --- if stack is empty, log the error, but continue
-  returnFrom(funcName) {
-    var isLogged;
-    if (this.lStack.length === 0) {
-      LOG(`ERROR: returnFrom('${funcName}') but stack is empty`);
-      return;
-    }
-    if (this.TOS().funcName !== funcName) {
-      LOG(`ERROR: returnFrom('${funcName}') but TOS is ${this.TOS().funcName}`);
-      return;
-    }
-    ({funcName, isLogged} = this.lStack.pop());
+  returnFrom(funcName, lVals = []) {
+    var nVals, rec;
+    assert(isArray(lVals), "not an array");
+    rec = this.currentFuncRec();
+    this.stackErr(funcName === rec.funcName, `returnFrom('${funcName}') but current func is ${rec.funcName}`);
+    this.stackErr(!this.TOS.isYielded, `returnFrom('${funcName}') but ${this.TOS().funcName} at TOS is yielded`);
     if (internalDebugging) {
-      console.log(this.indent() + `[<-- RETURN FROM ${funcName}]`);
+      nVals = this.lVals.length;
+      if (nVals === 0) {
+        this.dbg(`[<-- RETURN FROM ${funcName}]`);
+      } else {
+        this.dbg(`[<-- RETURN FROM ${funcName} ${nVals} vals]`);
+      }
     }
+    this.lStack.pop();
   }
 
   // ........................................................................
-  yield(funcName, lArgs = [], isLogged) {
-    assert(isArray(lArgs), "bad lArgs");
-    assert(isBoolean(isLogged), "bad isLogged");
+  yield(funcName, lVals = []) {
+    var nVals, rec;
+    assert(isString(funcName), "not a string");
+    assert(isArray(lVals), "not an array");
     if (internalDebugging) {
-      console.log(this.indent() + `[--> YIELD ${funcName}]`);
+      nVals = this.lVals.length;
+      if (nVals === 0) {
+        this.dbg("[--> YIELD]");
+      } else {
+        this.dbg(`[--> YIELD ${funcName} ${nVals} vals]`);
+      }
     }
-    this.lStack.push({
-      funcName,
-      lArgs: deepCopy(lArgs),
-      isLogged
-    });
+    rec = this.currentFuncRec();
+    this.stackErr(funcName === rec.funcName, `yield ${funcName}, but current func is ${rec.funcName}`);
+    rec.isYielded = true;
   }
 
   // ........................................................................
   // --- if stack is empty, log the error, but continue
-  continue(funcName) {
-    var isLogged;
-    if (this.lStack.length === 0) {
-      LOG(`ERROR: continue('${funcName}') but stack is empty`);
-      return;
-    }
-    if (this.TOS().funcName !== funcName) {
-      LOG(`ERROR: continue('${funcName}') but TOS is ${this.TOS().funcName}`);
-      return;
-    }
-    ({funcName, isLogged} = this.lStack.pop());
+  resume(funcName) {
+    var rec;
+    rec = this.TOS();
+    this.stackErr(rec.isYielded, `resume('${funcName}') but ${funcName} is not yielded`);
+    rec.isYielded = false;
     if (internalDebugging) {
-      console.log(this.indent() + `[<-- CONTINUE ${funcName}]`);
+      this.dbg(`[<-- RESUME ${funcName}]`);
     }
   }
 
+  // ........................................................................
   // ........................................................................
   isLogging() {
-    if (this.lStack.length === 0) {
-      return false;
+    var rec;
+    rec = this.currentFuncRec();
+    if (defined(rec)) {
+      return rec.doLog;
     } else {
-      return this.TOS().isLogged;
+      return false;
     }
   }
 
   // ........................................................................
-  getLevel() {
-    var item, j, len, level, ref;
+  getIndentLevel() {
+    var i, item, len, level, ref;
     level = 0;
     ref = this.lStack;
-    for (j = 0, len = ref.length; j < len; j++) {
-      item = ref[j];
-      if (item.isLogged) {
+    for (i = 0, len = ref.length; i < len; i++) {
+      item = ref[i];
+      if (item.doLog) {
         level += 1;
       }
     }
@@ -140,12 +172,21 @@ export var CallStack = class CallStack {
   }
 
   // ........................................................................
-  curFunc() {
-    if (this.lStack.length === 0) {
-      return 'main';
+  currentFunc() {
+    var rec;
+    rec = this.currentFuncRec();
+    if (defined(rec)) {
+      return rec.funcName;
     } else {
-      return this.TOS().funcName;
+      return 'main';
     }
+  }
+
+  // ........................................................................
+  currentFuncRec() {
+    return this.lStack.findLast(function(rec) {
+      return !rec.isYielded;
+    });
   }
 
   // ........................................................................
@@ -158,11 +199,16 @@ export var CallStack = class CallStack {
   }
 
   // ........................................................................
+  size() {
+    return this.lStack.length;
+  }
+
+  // ........................................................................
   isActive(funcName) {
-    var h, j, len, ref;
+    var h, i, len, ref;
     ref = this.lStack;
-    for (j = 0, len = ref.length; j < len; j++) {
-      h = ref[j];
+    for (i = 0, len = ref.length; i < len; i++) {
+      h = ref[i];
       if (h.funcName === funcName) {
         return true;
       }
@@ -172,50 +218,28 @@ export var CallStack = class CallStack {
 
   // ........................................................................
   dump() {
-    var i, item, j, lLines, len, ref;
-    lLines = ['CALL STACK'];
+    var lLines, pos;
+    lLines = ['-- CALL STACK --'];
     if (this.lStack.length === 0) {
-      lLines.push("   <EMPTY>");
+      lLines.push("\t<EMPTY>");
     } else {
-      ref = this.lStack;
-      for (i = j = 0, len = ref.length; j < len; i = ++j) {
-        item = ref[i];
-        lLines.push("   " + this.callStr(i, item));
+      pos = this.lStack.length;
+      while (pos > 0) {
+        pos -= 1;
+        lLines.push("\t" + this.callStr(this.lStack[pos]));
       }
     }
     return lLines.join("\n");
   }
 
   // ........................................................................
-  callStr(i, item) {
-    var arg, j, len, ref, str, sym;
-    sym = item.isLogged ? '*' : '-';
-    str = `${i}: ${sym}${item.funcName}`;
-    ref = item.lArgs;
-    for (j = 0, len = ref.length; j < len; j++) {
-      arg = ref[j];
-      str += ` ${OL(arg)}`;
-    }
-    return str;
-  }
-
-  // ........................................................................
-  sdump(label = 'CALL STACK') {
-    var item, j, lFuncNames, len, ref;
-    lFuncNames = [];
-    ref = this.lStack;
-    for (j = 0, len = ref.length; j < len; j++) {
-      item = ref[j];
-      if (item.isLogged) {
-        lFuncNames.push('*' + item.funcName);
-      } else {
-        lFuncNames.push(item.funcName);
-      }
-    }
-    if (this.lStack.length === 0) {
-      return `${label} <EMPTY>`;
+  callStr(item) {
+    var sym;
+    sym = item.doLog ? 'L' : '-';
+    if (item.isYielded) {
+      return `${sym} ${item.funcName}*`;
     } else {
-      return `${label} ${lFuncNames.join(' ')}`;
+      return `${sym} ${item.funcName}`;
     }
   }
 

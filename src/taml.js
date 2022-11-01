@@ -12,18 +12,17 @@ import {
   undef,
   defined,
   notdefined,
+  OL,
+  chomp,
+  hasChar,
+  escapeStr,
   isEmpty,
   isString,
-  isObject,
   isFunction,
   isBoolean,
   isArray,
   blockToArray,
-  arrayToBlock,
-  hasChar,
-  escapeStr,
-  chomp,
-  OL
+  arrayToBlock
 } from '@jdeighan/exceptions/utils';
 
 // ---------------------------------------------------------------------------

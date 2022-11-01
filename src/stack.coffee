@@ -3,8 +3,8 @@
 import {strict as assert} from 'node:assert'
 
 import {
-	undef, defined, OL, deepCopy, isArray, isBoolean,
-	isEmpty, nonEmpty,
+	undef, defined, notdefined, OL, deepCopy, warn, oneof, spaces,
+	isString, isArray, isBoolean, isEmpty, nonEmpty,
 	} from '@jdeighan/exceptions/utils'
 import {LOG} from '@jdeighan/exceptions/log'
 import {getPrefix} from '@jdeighan/exceptions/prefix'
@@ -22,17 +22,30 @@ export debugStack = (flag=true) ->
 
 export class CallStack
 
-	constructor: () ->
+	constructor: (debugFlag=false) ->
 
+		# --- Items on stack have keys:
+		#        funcName
+		#        lArgs
+		#        doLog
+		#        isYielded
+		debugStack(debugFlag)
 		@lStack = []
+
+	# ........................................................................
+
+	dbg: (str) ->
+
+		console.log @indent() + str
+		return
 
 	# ........................................................................
 
 	reset: () ->
 
-		if internalDebugging
-			console.log "RESET STACK"
 		@lStack = []
+		if internalDebugging
+			@dbg "RESET STACK"
 		return
 
 	# ........................................................................
@@ -44,99 +57,123 @@ export class CallStack
 
 	# ........................................................................
 
-	enter: (funcName, lArgs, isLogged) ->
+	stackErr: (cond, msg) ->
+		# --- We don't really want to throw exceptions here
 
-		assert isArray(lArgs),      "bad lArgs"
-		assert isBoolean(isLogged), "bad isLogged"
+		if !cond
+			warn "#{msg}\n#{@dump()}"
+		return
 
+	# ........................................................................
+	# ........................................................................
+
+	enter: (funcName, lArgs=[], doLog=false) ->
+
+		assert isArray(lArgs), "not an array"
 		if internalDebugging
-			console.log @indent() + "[--> ENTER #{funcName}]"
+			nArgs = lArgs.length
+			if (nArgs == 0)
+				@dbg "[--> ENTER #{funcName}]"
+			else
+				@dbg "[--> ENTER #{funcName} #{nArgs} args]"
 
 		@lStack.push {
 			funcName
 			lArgs: deepCopy(lArgs)
-			isLogged
+			doLog
+			isYielded: false
 			}
 		return
 
 	# ........................................................................
 	# --- if stack is empty, log the error, but continue
 
-	returnFrom: (funcName) ->
+	returnFrom: (funcName, lVals=[]) ->
 
-		if @lStack.length == 0
-			LOG "ERROR: returnFrom('#{funcName}') but stack is empty"
-			return
-		if (@TOS().funcName != funcName)
-			LOG "ERROR: returnFrom('#{funcName}') but TOS is #{@TOS().funcName}"
-			return
-		{funcName, isLogged} = @lStack.pop()
+		assert isArray(lVals), "not an array"
+		rec = @currentFuncRec()
+		@stackErr (funcName == rec.funcName),
+			"returnFrom('#{funcName}') but current func is #{rec.funcName}"
+		@stackErr ! @TOS.isYielded,
+			"returnFrom('#{funcName}') but #{@TOS().funcName} at TOS is yielded"
 		if internalDebugging
-			console.log @indent() + "[<-- RETURN FROM #{funcName}]"
-
+			nVals = @lVals.length
+			if (nVals == 0)
+				@dbg "[<-- RETURN FROM #{funcName}]"
+			else
+				@dbg "[<-- RETURN FROM #{funcName} #{nVals} vals]"
+		@lStack.pop()
 		return
 
 	# ........................................................................
 
-	yield: (funcName, lArgs=[], isLogged) ->
+	yield: (funcName, lVals=[]) ->
 
-		assert isArray(lArgs),      "bad lArgs"
-		assert isBoolean(isLogged), "bad isLogged"
-
+		assert isString(funcName), "not a string"
+		assert isArray(lVals), "not an array"
 		if internalDebugging
-			console.log @indent() + "[--> YIELD #{funcName}]"
+			nVals = @lVals.length
+			if (nVals == 0)
+				@dbg "[--> YIELD]"
+			else
+				@dbg "[--> YIELD #{funcName} #{nVals} vals]"
 
-		@lStack.push {
-			funcName
-			lArgs: deepCopy(lArgs)
-			isLogged
-			}
+		rec = @currentFuncRec()
+		@stackErr (funcName == rec.funcName),
+			"yield #{funcName}, but current func is #{rec.funcName}"
+		rec.isYielded = true
 		return
 
 	# ........................................................................
 	# --- if stack is empty, log the error, but continue
 
-	continue: (funcName) ->
+	resume: (funcName) ->
 
-		if (@lStack.length == 0)
-			LOG "ERROR: continue('#{funcName}') but stack is empty"
-			return
-		if (@TOS().funcName != funcName)
-			LOG "ERROR: continue('#{funcName}') but TOS is #{@TOS().funcName}"
-			return
-		{funcName, isLogged} = @lStack.pop()
+		rec = @TOS()
+		@stackErr (rec.isYielded),
+			"resume('#{funcName}') but #{funcName} is not yielded"
+		rec.isYielded = false
+
 		if internalDebugging
-			console.log @indent() + "[<-- CONTINUE #{funcName}]"
-
+			@dbg "[<-- RESUME #{funcName}]"
 		return
 
+	# ........................................................................
 	# ........................................................................
 
 	isLogging: () ->
 
-		if (@lStack.length == 0)
-			return false
+		rec = @currentFuncRec()
+		if defined(rec)
+			return rec.doLog
 		else
-			return @TOS().isLogged
+			return false
 
 	# ........................................................................
 
-	getLevel: () ->
+	getIndentLevel: () ->
 
 		level = 0
 		for item in @lStack
-			if item.isLogged
+			if item.doLog
 				level += 1
 		return level
 
 	# ........................................................................
 
-	curFunc: () ->
+	currentFunc: () ->
 
-		if (@lStack.length == 0)
-			return 'main'
+		rec = @currentFuncRec()
+		if defined(rec)
+			return rec.funcName
 		else
-			return @TOS().funcName
+			return 'main'
+
+	# ........................................................................
+
+	currentFuncRec: () ->
+
+		return @lStack.findLast((rec) -> ! rec.isYielded)
 
 	# ........................................................................
 
@@ -146,6 +183,12 @@ export class CallStack
 			return undef
 		else
 			return @lStack[@lStack.length - 1]
+
+	# ........................................................................
+
+	size: () ->
+
+		return @lStack.length
 
 	# ........................................................................
 
@@ -160,35 +203,22 @@ export class CallStack
 
 	dump: () ->
 
-		lLines = ['CALL STACK']
+		lLines = ['-- CALL STACK --']
 		if @lStack.length == 0
-			lLines.push "   <EMPTY>"
+			lLines.push "\t<EMPTY>"
 		else
-			for item, i in @lStack
-				lLines.push "   " + @callStr(i, item)
+			pos = @lStack.length
+			while (pos > 0)
+				pos -= 1
+				lLines.push "\t" + @callStr(@lStack[pos])
 		return lLines.join("\n")
 
 	# ........................................................................
 
-	callStr: (i, item) ->
+	callStr: (item) ->
 
-		sym = if item.isLogged then '*' else '-'
-		str = "#{i}: #{sym}#{item.funcName}"
-		for arg in item.lArgs
-			str += " #{OL(arg)}"
-		return str
-
-	# ........................................................................
-
-	sdump: (label='CALL STACK') ->
-
-		lFuncNames = []
-		for item in @lStack
-			if item.isLogged
-				lFuncNames.push '*' + item.funcName
-			else
-				lFuncNames.push item.funcName
-		if @lStack.length == 0
-			return "#{label} <EMPTY>"
+		sym = if item.doLog then 'L' else '-'
+		if item.isYielded
+			return "#{sym} #{item.funcName}*"
 		else
-			return "#{label} #{lFuncNames.join(' ')}"
+			return "#{sym} #{item.funcName}"

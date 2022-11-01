@@ -20,14 +20,10 @@ export var defined = (obj) => {
   return (obj !== undef) && (obj !== null);
 };
 
-export var def = defined;
-
 // ---------------------------------------------------------------------------
 export var notdefined = (obj) => {
   return (obj === undef) || (obj === null);
 };
-
-export var notdef = notdefined;
 
 // ---------------------------------------------------------------------------
 export var spaces = (n) => {
@@ -37,6 +33,11 @@ export var spaces = (n) => {
 // ---------------------------------------------------------------------------
 export var untabify = (str, numSpaces = 3) => {
   return str.replace(/\t/g, ' '.repeat(numSpaces));
+};
+
+// ---------------------------------------------------------------------------
+export var oneof = function(word, ...lWords) {
+  return lWords.indexOf(word) >= 0;
 };
 
 // ---------------------------------------------------------------------------
@@ -335,6 +336,11 @@ export var hasMethod = (obj, name) => {
 };
 
 // ---------------------------------------------------------------------------
+export var isScalar = function(x) {
+  return isNumber(x) || isString(x) || isBoolean(x);
+};
+
+// ---------------------------------------------------------------------------
 export var jsType = function(x) {
   var lKeys;
   if (x === null) {
@@ -538,6 +544,17 @@ export var words = function(...lStrings) {
 };
 
 // ---------------------------------------------------------------------------
+export var firstWord = (str) => {
+  var pos;
+  pos = str.indexOf(' ');
+  if (pos === -1) {
+    return str;
+  } else {
+    return str.substring(0, pos);
+  }
+};
+
+// ---------------------------------------------------------------------------
 export var hashFromString = function(str) {
   var _, eq, h, i, ident, lMatches, len1, neg, ref, word;
   assert(isString(str), `not a string: ${OL(str)}`);
@@ -588,4 +605,9 @@ export var getOptions = function(options = undef, hDefault = {}) {
     }
   }
   return hOptions;
+};
+
+// ---------------------------------------------------------------------------
+export var warn = (msg) => {
+  console.log(`WARNING: ${msg}`);
 };

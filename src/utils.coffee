@@ -17,15 +17,11 @@ export defined = (obj) =>
 
 	return (obj != undef) && (obj != null)
 
-export def = defined
-
 # ---------------------------------------------------------------------------
 
 export notdefined = (obj) =>
 
 	return (obj == undef) || (obj == null)
-
-export notdef = notdefined
 
 # ---------------------------------------------------------------------------
 
@@ -38,6 +34,12 @@ export spaces = (n) =>
 export untabify = (str, numSpaces=3) =>
 
 	return str.replace(/\t/g, ' '.repeat(numSpaces))
+
+# ---------------------------------------------------------------------------
+
+export oneof = (word, lWords...) ->
+
+	return (lWords.indexOf(word) >= 0)
 
 # ---------------------------------------------------------------------------
 
@@ -297,6 +299,12 @@ export hasMethod = (obj, name) =>
 
 # ---------------------------------------------------------------------------
 
+export isScalar = (x) ->
+
+	return isNumber(x) || isString(x) || isBoolean(x)
+
+# ---------------------------------------------------------------------------
+
 export jsType = (x) ->
 
 	if (x == null)
@@ -471,6 +479,16 @@ export words = (lStrings...) ->
 
 # ---------------------------------------------------------------------------
 
+export firstWord = (str) =>
+
+	pos = str.indexOf(' ')
+	if (pos == -1)
+		return str
+	else
+		return str.substring(0, pos)
+
+# ---------------------------------------------------------------------------
+
 export hashFromString = (str) ->
 
 	assert isString(str), "not a string: #{OL(str)}"
@@ -517,3 +535,10 @@ export getOptions = (options=undef, hDefault={}) ->
 			hOptions[key] = value
 
 	return hOptions
+
+# ---------------------------------------------------------------------------
+
+export warn = (msg) =>
+
+	console.log "WARNING: #{msg}"
+	return

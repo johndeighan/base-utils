@@ -4,10 +4,9 @@ import yaml from 'js-yaml'
 import {strict as assert} from 'node:assert'
 
 import {
-	undef, defined, notdefined, isEmpty, isString, isObject,
-	isFunction, isBoolean, isArray,
+	undef, defined, notdefined, OL, chomp, hasChar, escapeStr,
+	isEmpty, isString, isFunction, isBoolean, isArray,
 	blockToArray, arrayToBlock,
-	hasChar, escapeStr, chomp, OL,
 	} from '@jdeighan/exceptions/utils'
 
 # ---------------------------------------------------------------------------
