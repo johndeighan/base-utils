@@ -134,11 +134,11 @@ export debug = (label, lValues...) ->
 	[type, funcName] = getType(label, lValues)
 	switch type
 		when 'enter'
-			dbgEnter funcName, lValues
+			dbgEnter funcName, lValues...
 		when 'returnFrom'
-			dbgReturn funcName, lValues
+			dbgReturn funcName, lValues...
 		when 'yield'
-			dbgYield funcName, lValues
+			dbgYield funcName, lValues...
 		when 'resume'
 			dbgResume funcName
 		when 'value'
@@ -150,7 +150,7 @@ export debug = (label, lValues...) ->
 
 # ---------------------------------------------------------------------------
 
-export dbgEnter = (funcName, lValues) ->
+export dbgEnter = (funcName, lValues...) ->
 
 	assert isString(funcName), "not a string"
 	doLog = funcMatch(funcName)
@@ -166,7 +166,7 @@ export dbgEnter = (funcName, lValues) ->
 
 # ---------------------------------------------------------------------------
 
-export dbgReturn = (funcName, lValues) ->
+export dbgReturn = (funcName, lValues...) ->
 
 	assert isString(funcName), "not a string"
 	doLog = callStack.isLogging()
@@ -181,7 +181,7 @@ export dbgReturn = (funcName, lValues) ->
 
 # ---------------------------------------------------------------------------
 
-export dbgYield = (funcName, lValues) ->
+export dbgYield = (funcName, lValues...) ->
 
 	assert isString(funcName), "not a string"
 	doLog = callStack.isLogging()

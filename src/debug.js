@@ -172,13 +172,13 @@ export var debug = function(label, ...lValues) {
   [type, funcName] = getType(label, lValues);
   switch (type) {
     case 'enter':
-      dbgEnter(funcName, lValues);
+      dbgEnter(funcName, ...lValues);
       break;
     case 'returnFrom':
-      dbgReturn(funcName, lValues);
+      dbgReturn(funcName, ...lValues);
       break;
     case 'yield':
-      dbgYield(funcName, lValues);
+      dbgYield(funcName, ...lValues);
       break;
     case 'resume':
       dbgResume(funcName);
@@ -194,7 +194,7 @@ export var debug = function(label, ...lValues) {
 
 
 // ---------------------------------------------------------------------------
-export var dbgEnter = function(funcName, lValues) {
+export var dbgEnter = function(funcName, ...lValues) {
   var doLog, nVals;
   assert(isString(funcName), "not a string");
   doLog = funcMatch(funcName);
@@ -211,7 +211,7 @@ export var dbgEnter = function(funcName, lValues) {
 };
 
 // ---------------------------------------------------------------------------
-export var dbgReturn = function(funcName, lValues) {
+export var dbgReturn = function(funcName, ...lValues) {
   var doLog, nVals;
   assert(isString(funcName), "not a string");
   doLog = callStack.isLogging();
@@ -228,7 +228,7 @@ export var dbgReturn = function(funcName, lValues) {
 };
 
 // ---------------------------------------------------------------------------
-export var dbgYield = function(funcName, lValues) {
+export var dbgYield = function(funcName, ...lValues) {
   var doLog, nVals;
   assert(isString(funcName), "not a string");
   doLog = callStack.isLogging();
