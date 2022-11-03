@@ -82,14 +82,16 @@ export setDebugging = (lParms...) ->
 
 	lFuncList = []   # a package global
 	customSet = false
+	if internalDebugging
+		console.log "setDebugging() with #{lParms.length} parms"
 	for parm,i in lParms
 		if isString(parm)
 			if internalDebugging
-				console.log "lParms[#i] is string #{OL(parm)}"
+				console.log "lParms[#{i}] is string #{OL(parm)}"
 			lFuncList = lFuncList.concat(getFuncList(parm))
 		else if isHash(parm)
 			if internalDebugging
-				console.log "lParms[#i] is hash #{OL(parm)}"
+				console.log "lParms[#{i}] is hash #{OL(parm)}"
 			customSet = true
 			for key,value of parm
 				setCustomDebugLogger key, value

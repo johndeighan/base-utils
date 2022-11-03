@@ -113,16 +113,19 @@ export var setDebugging = function(...lParms) {
   // --- pass a hash to set custom loggers
   lFuncList = []; // a package global
   customSet = false;
+  if (internalDebugging) {
+    console.log(`setDebugging() with ${lParms.length} parms`);
+  }
   for (i = j = 0, len = lParms.length; j < len; i = ++j) {
     parm = lParms[i];
     if (isString(parm)) {
       if (internalDebugging) {
-        console.log(`lParms[#i] is string ${OL(parm)}`);
+        console.log(`lParms[${i}] is string ${OL(parm)}`);
       }
       lFuncList = lFuncList.concat(getFuncList(parm));
     } else if (isHash(parm)) {
       if (internalDebugging) {
-        console.log(`lParms[#i] is hash ${OL(parm)}`);
+        console.log(`lParms[${i}] is hash ${OL(parm)}`);
       }
       customSet = true;
       for (key in parm) {
