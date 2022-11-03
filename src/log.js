@@ -284,17 +284,21 @@ getItemPrefix = (prefix) => {
 
 // ---------------------------------------------------------------------------
 // simple redirect to an array - useful in unit tests
-lUTLog = [];
+lUTLog = undef;
 
 export var utReset = () => {
   lUTLog = [];
-  return setLogger((str) => {
+  setLogger((str) => {
     return lUTLog.push(str);
   });
 };
 
 export var utGetLog = () => {
-  return arrayToBlock(lUTLog);
+  var result;
+  result = arrayToBlock(lUTLog);
+  lUTLog = undef;
+  resetLogger();
+  return result;
 };
 
 if (!loaded) {

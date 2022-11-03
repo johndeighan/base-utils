@@ -240,14 +240,18 @@ getItemPrefix = (prefix) =>
 # ---------------------------------------------------------------------------
 # simple redirect to an array - useful in unit tests
 
-lUTLog = []
+lUTLog = undef
 
 export utReset = () =>
 	lUTLog = []
 	setLogger (str) => lUTLog.push(str)
+	return
 
 export utGetLog = () =>
-	return arrayToBlock(lUTLog)
+	result = arrayToBlock(lUTLog)
+	lUTLog = undef
+	resetLogger()
+	return result
 
 # ---------------------------------------------------------------------------
 

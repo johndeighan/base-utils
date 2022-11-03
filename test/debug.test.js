@@ -28,18 +28,25 @@ import {
 } from '@jdeighan/exceptions/prefix';
 
 import {
-  utReset,
   LOG,
+  LOGVALUE,
+  utReset,
   utGetLog
 } from '@jdeighan/exceptions/log';
 
 import {
   setDebugging,
   resetDebugging,
-  setCustomDebugLogger,
   debug,
   getType,
-  dumpDebugLoggers
+  dumpDebugLoggers,
+  dbgEnter,
+  dbgReturn,
+  dbgYield,
+  dbgResume,
+  dbg,
+  dbgReset,
+  dbgGetLog
 } from '@jdeighan/exceptions/debug';
 
 // ---------------------------------------------------------------------------
@@ -268,16 +275,27 @@ test("line 236", (t) => {
 test("line 246", (t) => {
   var result;
   utReset();
-  setDebugging('double quadruple');
-  // --- on debug('enter <func>'), just log the function name
-  setCustomDebugLogger('enter', function(funcName, lObjects, level) {
-    LOG(getPrefix(level, 'plain') + funcName);
-    return true;
+  setDebugging('double quadruple', {
+    // --- on debug('enter <func>'), just log the function name
+    enter: function(funcName, lObjects, level) {
+      LOG(getPrefix(level, 'plain') + funcName);
+      return true;
+    },
+    // --- on debug('return from <func>'), don't log anything at all
+    returnFrom: function(funcName, lObjects, level) {
+      return true;
+    }
   });
-  // --- on debug('return from <func>'), don't log anything at all
-  setCustomDebugLogger('returnFrom', function(funcName, lObjects, level) {
-    return true;
-  });
+  //	# --- on debug('enter <func>'), just log the function name
+  //	setCustomDebugLogger 'enter',
+  //		(funcName, lObjects, level) ->
+  //			LOG getPrefix(level, 'plain') + funcName
+  //			return true
+
+  //	# --- on debug('return from <func>'), don't log anything at all
+  //	setCustomDebugLogger 'returnFrom',
+  //		(funcName, lObjects, level) ->
+  //			return true
   result = double(quadruple(3));
   t.is(result, 24);
   return t.is(utGetLog(), `quadruple
@@ -473,6 +491,42 @@ enter D
 │   │   └─> return from D
 │   │   resume B
 │   └─> return from B
+└─> return from A`);
+  });
+})();
+
+// ---------------------------------------------------------------------------
+// --- We want to separate debug and normal logging
+(function() {
+  var A, dbgOutput, hCustomLoggers, logOutput, main;
+  utReset(); // sets a custom logger for calls to LOG, LOGVALUE
+  dbgReset(); // sets a custom logger for calls to debug functions
+  main = function() {
+    dbgEnter('main');
+    LOG('in main()');
+    A();
+    dbgReturn('main');
+  };
+  A = function() {
+    dbgEnter('A');
+    LOG('in A()');
+    dbgReturn('A');
+  };
+  hCustomLoggers = {
+    enter: function(funcName, lVals, level) {
+      return LOG(`ENTERING ${funcName}`);
+    }
+  };
+  setDebugging('A', hCustomLoggers);
+  main();
+  dbgOutput = dbgGetLog();
+  logOutput = utGetLog();
+  test("line 533", (t) => {
+    return t.is(logOutput, `in main()
+in A()`);
+  });
+  return test("line 538", (t) => {
+    return t.is(dbgOutput, `ENTERING A
 └─> return from A`);
   });
 })();

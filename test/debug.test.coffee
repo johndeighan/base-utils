@@ -10,10 +10,13 @@ import {
 	haltOnError, assert, croak,
 	} from '@jdeighan/exceptions'
 import {getPrefix} from '@jdeighan/exceptions/prefix'
-import {utReset, LOG, utGetLog} from '@jdeighan/exceptions/log'
 import {
-	setDebugging, resetDebugging, setCustomDebugLogger,
+	LOG, LOGVALUE, utReset, utGetLog} from '@jdeighan/exceptions/log'
+import {
+	setDebugging, resetDebugging,
 	debug, getType, dumpDebugLoggers,
+	dbgEnter, dbgReturn, dbgYield, dbgResume, dbg,
+	dbgReset, dbgGetLog,
 	} from '@jdeighan/exceptions/debug'
 
 # ---------------------------------------------------------------------------
@@ -247,18 +250,29 @@ test "line 236", (t) =>
 test "line 246", (t) =>
 
 	utReset()
-	setDebugging 'double quadruple'
+	setDebugging 'double quadruple', {
 
-	# --- on debug('enter <func>'), just log the function name
-	setCustomDebugLogger 'enter',
-		(funcName, lObjects, level) ->
+		# --- on debug('enter <func>'), just log the function name
+		enter: (funcName, lObjects, level) ->
 			LOG getPrefix(level, 'plain') + funcName
 			return true
 
-	# --- on debug('return from <func>'), don't log anything at all
-	setCustomDebugLogger 'returnFrom',
-		(funcName, lObjects, level) ->
+		# --- on debug('return from <func>'), don't log anything at all
+		returnFrom: (funcName, lObjects, level) ->
 			return true
+
+		}
+
+#	# --- on debug('enter <func>'), just log the function name
+#	setCustomDebugLogger 'enter',
+#		(funcName, lObjects, level) ->
+#			LOG getPrefix(level, 'plain') + funcName
+#			return true
+#
+#	# --- on debug('return from <func>'), don't log anything at all
+#	setCustomDebugLogger 'returnFrom',
+#		(funcName, lObjects, level) ->
+#			return true
 
 	result = double(quadruple(3))
 	t.is result, 24
@@ -479,4 +493,48 @@ test "line 246", (t) =>
 			└─> return from A
 		"""
 
+	)()
+
+# ---------------------------------------------------------------------------
+# --- We want to separate debug and normal logging
+
+(() ->
+	utReset()   # sets a custom logger for calls to LOG, LOGVALUE
+	dbgReset()  # sets a custom logger for calls to debug functions
+
+	main = () ->
+		dbgEnter 'main'
+		LOG 'in main()'
+		A()
+		dbgReturn 'main'
+		return
+
+	A = () ->
+		dbgEnter 'A'
+		LOG 'in A()'
+		dbgReturn 'A'
+		return
+
+	hCustomLoggers = {
+		enter: (funcName, lVals, level) ->
+			LOG "ENTERING #{funcName}"
+		}
+
+	setDebugging 'A', hCustomLoggers
+
+	main()
+
+	dbgOutput = dbgGetLog()
+	logOutput = utGetLog()
+
+	test "line 533", (t) =>
+		t.is logOutput, """
+			in main()
+			in A()
+			"""
+	test "line 538", (t) =>
+		t.is dbgOutput, """
+		   ENTERING A
+		   └─> return from A
+			"""
 	)()
