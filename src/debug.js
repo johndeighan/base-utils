@@ -61,7 +61,7 @@ logValue = undef;
 logString = undef;
 
 // ---------------------------------------------------------------------------
-export var debugDebug = (debugFlag = false) => {
+export var debugDebug = (debugFlag = true) => {
   internalDebugging = debugFlag;
 };
 
@@ -109,22 +109,28 @@ logType = function(cur, std) {
 
 // ---------------------------------------------------------------------------
 export var setDebugging = function(...lParms) {
-  var customSet, j, key, len, parm, value;
+  var customSet, i, j, key, len, parm, value;
   // --- pass a hash to set custom loggers
   lFuncList = []; // a package global
   customSet = false;
-  for (j = 0, len = lParms.length; j < len; j++) {
-    parm = lParms[j];
+  for (i = j = 0, len = lParms.length; j < len; i = ++j) {
+    parm = lParms[i];
     if (isString(parm)) {
+      if (internalDebugging) {
+        console.log(`lParms[#i] is string ${OL(parm)}`);
+      }
       lFuncList = lFuncList.concat(getFuncList(parm));
     } else if (isHash(parm)) {
+      if (internalDebugging) {
+        console.log(`lParms[#i] is hash ${OL(parm)}`);
+      }
       customSet = true;
       for (key in parm) {
         value = parm[key];
         setCustomDebugLogger(key, value);
       }
     } else {
-      croak("Invalid parm to setDebugging()");
+      croak(`Invalid parm to setDebugging(): ${OL(parm)}`);
     }
   }
   if (internalDebugging) {
