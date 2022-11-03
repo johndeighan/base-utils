@@ -12,9 +12,6 @@ import {
 import {toTAML} from '@jdeighan/exceptions/taml'
 import {getPrefix} from '@jdeighan/exceptions/prefix'
 
-# --- This logger only ever gets passed a single string argument
-putstr = undef
-
 export logWidth = 42
 export sep_dash = '-'.repeat(logWidth)
 export sep_eq = '='.repeat(logWidth)
@@ -22,6 +19,20 @@ export sep_eq = '='.repeat(logWidth)
 export stringify = undef
 doDebugLogging = false
 threeSpaces  = '   '
+
+# --- This logger only ever gets passed a single string argument
+#     ONLY called directly in PUTSTR
+putstr = undef
+
+# ---------------------------------------------------------------------------
+
+export PUTSTR = (str) ->
+
+	if (putstr == console.log) || notdefined(putstr)
+		console.log untabify(str)
+	else
+		putstr str
+	return
 
 # ---------------------------------------------------------------------------
 
@@ -104,13 +115,10 @@ export LOG = (str="", prefix="") =>
 
 	if doDebugLogging
 		console.log "CALL LOG(#{OL(str)}), prefix=#{OL(prefix)}"
-		if (putstr != console.log)
+		if defined(putstr) && (putstr != console.log)
 			console.log "   - use custom logger"
 
-	if (putstr == console.log)
-		prefix = untabify prefix
-
-	putstr "#{prefix}#{str}"
+	PUTSTR "#{prefix}#{str}"
 	return true   # to allow use in boolean expressions
 
 # ---------------------------------------------------------------------------
@@ -125,18 +133,14 @@ export LOGTAML = (label, value, prefix="", itemPrefix=undef) =>
 	assert nonEmpty(label), "label is empty"
 
 	if notdefined(itemPrefix)
-		# --- getItemPrefix untabifies if putstr is console.log
-		itemPrefix = getItemPrefix(prefix)
-
-	if (putstr == console.log)
-		prefix = untabify prefix
+		itemPrefix = prefix + "\t"
 
 	if handleSimpleCase(label, value, prefix)
 		return true
 
-	putstr "#{prefix}#{label} ="
+	PUTSTR "#{prefix}#{label} ="
 	for str in blockToArray(toTAML(value, {sortKeys: true}))
-		putstr "#{itemPrefix}#{str}"
+		PUTSTR "#{itemPrefix}#{str}"
 	return true
 
 # ---------------------------------------------------------------------------
@@ -150,9 +154,6 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 		console.log "CALL LOGVALUE(#{str1}, #{str2}), prefix=#{str3}"
 	assert nonEmpty(label), "label is empty"
 
-	if (putstr == console.log)
-		prefix = untabify prefix
-
 	if handleSimpleCase(label, value, prefix)
 		return true
 
@@ -161,26 +162,25 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 	if doDebugLogging
 		console.log "Using OL(), strlen = #{str.length}, logWidth = #{logWidth}"
 	if (str.length <= logWidth)
-		putstr str
+		PUTSTR str
 		return true
 
 	if notdefined(itemPrefix)
-		# --- getItemPrefix untabifies if putstr is console.log
-		itemPrefix = getItemPrefix(prefix)
+		itemPrefix = prefix + "\t"
 
 	[type, subtype] = jsType(value)
 	switch type
 		when 'string'
 			if (subtype == 'empty')
-				putstr "#{prefix}#{label} = ''"
+				PUTSTR "#{prefix}#{label} = ''"
 			else
 				str = "#{prefix}#{label} = #{quoted(value, 'escape')}"
 				if (str.length <= logWidth)
-					putstr str
+					PUTSTR str
 				else
 					# --- escape, but not newlines
 					escaped = escapeStr(value, hEscNoNL)
-					putstr """
+					PUTSTR """
 						#{prefix}#{label} = \"\"\"
 						#{prefixBlock(escaped, itemPrefix)}
 						#{prefixBlock('"""', itemPrefix)}
@@ -188,15 +188,15 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 
 		when 'hash', 'array'
 			str = toTAML(value, {sortKeys: true})
-			putstr "#{prefix}#{label} ="
+			PUTSTR "#{prefix}#{label} ="
 			for str in blockToArray(str)
-				putstr "#{itemPrefix}#{str}"
+				PUTSTR "#{itemPrefix}#{str}"
 
 		when 'regexp'
-			putstr "#{prefix}#{label} = <regexp>"
+			PUTSTR "#{prefix}#{label} = <regexp>"
 
 		when 'function'
-			putstr "#{prefix}#{label} = <function>"
+			PUTSTR "#{prefix}#{label} = <function>"
 
 		when 'object'
 			if hasMethod(value, 'toLogString')
@@ -205,13 +205,13 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 				str = toTAML(value)
 
 			if hasChar(str, "\n")
-				putstr "#{prefix}#{label} ="
+				PUTSTR "#{prefix}#{label} ="
 				if notdefined(itemPrefix)
 					itemPrefix = prefix
 				for line in blockToArray(str)
-					putstr "#{itemPrefix}#{line}"
+					PUTSTR "#{itemPrefix}#{line}"
 			else
-				putstr "#{prefix}#{label} = #{str}"
+				PUTSTR "#{prefix}#{label} = #{str}"
 	return true
 
 # ---------------------------------------------------------------------------
@@ -221,31 +221,22 @@ handleSimpleCase = (label, value, prefix) =>
 
 	# --- Handle some simple cases
 	if (value == undef)
-		putstr "#{prefix}#{label} = undef"
+		PUTSTR "#{prefix}#{label} = undef"
 		return true
 	else if (value == null)
-		putstr "#{prefix}#{label} = null"
+		PUTSTR "#{prefix}#{label} = null"
 		return true
 	else if isBoolean(value)
 		if value
-			putstr "#{prefix}#{label} = true"
+			PUTSTR "#{prefix}#{label} = true"
 		else
-			putstr "#{prefix}#{label} = false"
+			PUTSTR "#{prefix}#{label} = false"
 		return true
 	else if isNumber(value)
-		putstr "#{prefix}#{label} = #{value}"
+		PUTSTR "#{prefix}#{label} = #{value}"
 		return true
 	else
 		return false
-
-# ---------------------------------------------------------------------------
-
-getItemPrefix = (prefix) =>
-
-	if (putstr == console.log)
-		return untabify(prefix + "\t")
-	else
-		return prefix + "\t"
 
 # ---------------------------------------------------------------------------
 # simple redirect to an array - useful in unit tests
