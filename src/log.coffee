@@ -107,6 +107,9 @@ export LOG = (str="", prefix="") =>
 		if (putstr != console.log)
 			console.log "   - use custom logger"
 
+	if (putstr == console.log)
+		prefix = untabify prefix
+
 	putstr "#{prefix}#{str}"
 	return true   # to allow use in boolean expressions
 
@@ -121,15 +124,18 @@ export LOGTAML = (label, value, prefix="", itemPrefix=undef) =>
 		console.log "CALL LOGTAML(#{str1}, #{str2}), prefix=#{str3}"
 	assert nonEmpty(label), "label is empty"
 
+	if notdefined(itemPrefix)
+		# --- getItemPrefix untabifies if putstr is console.log
+		itemPrefix = getItemPrefix(prefix)
+
+	if (putstr == console.log)
+		prefix = untabify prefix
+
 	if handleSimpleCase(label, value, prefix)
 		return true
 
-	if notdefined(itemPrefix)
-		itemPrefix = getItemPrefix(prefix)
-
-	str = toTAML(value, {sortKeys: true})
 	putstr "#{prefix}#{label} ="
-	for str in blockToArray(str)
+	for str in blockToArray(toTAML(value, {sortKeys: true}))
 		putstr "#{itemPrefix}#{str}"
 	return true
 
@@ -144,6 +150,9 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 		console.log "CALL LOGVALUE(#{str1}, #{str2}), prefix=#{str3}"
 	assert nonEmpty(label), "label is empty"
 
+	if (putstr == console.log)
+		prefix = untabify prefix
+
 	if handleSimpleCase(label, value, prefix)
 		return true
 
@@ -156,6 +165,7 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 		return true
 
 	if notdefined(itemPrefix)
+		# --- getItemPrefix untabifies if putstr is console.log
 		itemPrefix = getItemPrefix(prefix)
 
 	[type, subtype] = jsType(value)

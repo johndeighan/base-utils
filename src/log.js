@@ -130,6 +130,9 @@ export var LOG = (str = "", prefix = "") => {
       console.log("   - use custom logger");
     }
   }
+  if (putstr === console.log) {
+    prefix = untabify(prefix);
+  }
   putstr(`${prefix}${str}`);
   return true; // to allow use in boolean expressions
 };
@@ -145,17 +148,20 @@ export var LOGTAML = (label, value, prefix = "", itemPrefix = undef) => {
     console.log(`CALL LOGTAML(${str1}, ${str2}), prefix=${str3}`);
   }
   assert(nonEmpty(label), "label is empty");
+  if (notdefined(itemPrefix)) {
+    // --- getItemPrefix untabifies if putstr is console.log
+    itemPrefix = getItemPrefix(prefix);
+  }
+  if (putstr === console.log) {
+    prefix = untabify(prefix);
+  }
   if (handleSimpleCase(label, value, prefix)) {
     return true;
   }
-  if (notdefined(itemPrefix)) {
-    itemPrefix = getItemPrefix(prefix);
-  }
-  str = toTAML(value, {
-    sortKeys: true
-  });
   putstr(`${prefix}${label} =`);
-  ref = blockToArray(str);
+  ref = blockToArray(toTAML(value, {
+    sortKeys: true
+  }));
   for (i = 0, len = ref.length; i < len; i++) {
     str = ref[i];
     putstr(`${itemPrefix}${str}`);
@@ -173,6 +179,9 @@ export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
     console.log(`CALL LOGVALUE(${str1}, ${str2}), prefix=${str3}`);
   }
   assert(nonEmpty(label), "label is empty");
+  if (putstr === console.log) {
+    prefix = untabify(prefix);
+  }
   if (handleSimpleCase(label, value, prefix)) {
     return true;
   }
@@ -186,6 +195,7 @@ export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
     return true;
   }
   if (notdefined(itemPrefix)) {
+    // --- getItemPrefix untabifies if putstr is console.log
     itemPrefix = getItemPrefix(prefix);
   }
   [type, subtype] = jsType(value);
