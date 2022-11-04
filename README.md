@@ -1,10 +1,10 @@
-Creating the exceptions project
+Creating the base-utils project
 ===============================
 
 1.-
 ```bash
-$ mkdir exceptions
-$ cd exceptions
+$ mkdir base-utils
+$ cd base-utils
 $ git init -b main
 $ npm init
 $ mkdir src
@@ -13,10 +13,10 @@ $ npm install js-yaml
 $ npm install ava
 ```
 
-NOTE: During 'npm init', make the package name '@jdeighan/exceptions'
+NOTE: During 'npm init', make the package name '@jdeighan/base-utils'
       using your npm user name in place of 'jdeighan'
 
-In the src/ folder, add your library, e.g. exceptions.coffee
+In the src/ folder, add your library, e.g. base-utils.coffee
 In the test/ folder, add your unit tests, e.g.
 
 ```coffeescript
@@ -25,7 +25,7 @@ import test from 'ava'
 import {
 	haltOnError, logErrors, LOG, DEBUG, error, assert, croak,
 	normalize, super_normalize,
-	} from '@jdeighan/exceptions'
+	} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
 
@@ -45,10 +45,11 @@ test 'super_normalize', (t) => t.is(snorm, "abc def abc def")
 
 In your package.json file:
 
-1. Add key to 'scripts' section: "test": "ava"
+1. Add key to 'scripts' section:
+	"test": "npm run build && rm -f ./test/*.js && coffee -c ./test && ava ./test/*.test.js && git status"
 2. Add key "type": "module"
 3. Add key "exports":
-	{ ".": "./src/exceptions.js"}
+	{ ".": "./src/base-utils.js"}
 
 Add a .gitignore file:
 
