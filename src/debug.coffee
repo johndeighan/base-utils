@@ -5,11 +5,11 @@ import {strict as assert} from 'node:assert'
 import {
 	undef, defined, notdefined, OL, isString, isFunction, isHash,
 	isEmpty, nonEmpty, words, firstWord, inList, oneof, arrayToBlock,
-	} from '@jdeighan/exceptions/utils'
-import {toTAML} from '@jdeighan/exceptions/taml'
-import {getPrefix} from '@jdeighan/exceptions/prefix'
-import {LOG, LOGVALUE, setLogger} from '@jdeighan/exceptions/log'
-import {CallStack, debugStack} from '@jdeighan/exceptions/stack'
+	} from '@jdeighan/base-utils/utils'
+import {toTAML} from '@jdeighan/base-utils/taml'
+import {getPrefix} from '@jdeighan/base-utils/prefix'
+import {LOG, LOGVALUE, setLogger} from '@jdeighan/base-utils/log'
+import {CallStack, debugStack} from '@jdeighan/base-utils/stack'
 
 export callStack = new CallStack()
 

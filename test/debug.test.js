@@ -11,28 +11,28 @@ import {
   isNumber,
   isArray,
   spaces
-} from '@jdeighan/exceptions/utils';
+} from '@jdeighan/base-utils/utils';
 
 import {
   toTAML
-} from '@jdeighan/exceptions/taml';
+} from '@jdeighan/base-utils/taml';
 
 import {
   haltOnError,
   assert,
   croak
-} from '@jdeighan/exceptions';
+} from '@jdeighan/base-utils';
 
 import {
   getPrefix
-} from '@jdeighan/exceptions/prefix';
+} from '@jdeighan/base-utils/prefix';
 
 import {
   LOG,
   LOGVALUE,
   utReset,
   utGetLog
-} from '@jdeighan/exceptions/log';
+} from '@jdeighan/base-utils/log';
 
 import {
   setDebugging,
@@ -47,7 +47,7 @@ import {
   dbg,
   dbgReset,
   dbgGetLog
-} from '@jdeighan/exceptions/debug';
+} from '@jdeighan/base-utils/debug';
 
 // ---------------------------------------------------------------------------
 test("line 20", (t) => {

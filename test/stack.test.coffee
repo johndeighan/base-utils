@@ -2,9 +2,9 @@
 
 import test from 'ava'
 
-import {pass, undef} from '@jdeighan/exceptions/utils'
-import {LOG, utReset, utGetLog} from '@jdeighan/exceptions/log'
-import {CallStack} from '@jdeighan/exceptions/stack'
+import {pass, undef} from '@jdeighan/base-utils/utils'
+import {LOG, utReset, utGetLog} from '@jdeighan/base-utils/log'
+import {CallStack} from '@jdeighan/base-utils/stack'
 
 # ---------------------------------------------------------------------------
 

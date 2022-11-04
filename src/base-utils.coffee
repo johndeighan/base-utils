@@ -1,15 +1,15 @@
-# exceptions.coffee
+# base-utils.coffee
 
 import {
 	undef, defined, notdefined, isString, isEmpty, untabify, OL,
-	} from '@jdeighan/exceptions/utils'
-import {isTAML, fromTAML, toTAML} from '@jdeighan/exceptions/taml'
+	} from '@jdeighan/base-utils/utils'
+import {isTAML, fromTAML, toTAML} from '@jdeighan/base-utils/taml'
 import {
 	LOG, LOGVALUE, LOGTAML, setLogger, sep_dash, sep_eq,
-	} from '@jdeighan/exceptions/log'
+	} from '@jdeighan/base-utils/log'
 import {
 	setDebugging, resetDebugging, debug, setCustomDebugLogger,
-	} from '@jdeighan/exceptions/debug'
+	} from '@jdeighan/base-utils/debug'
 
 export {
 	LOG, LOGVALUE, LOGTAML, setLogger,

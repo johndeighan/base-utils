@@ -2,10 +2,10 @@
 
 import test from 'ava'
 
-import {assert, croak} from '@jdeighan/exceptions'
-import {undef} from '@jdeighan/exceptions/utils'
-import {LOG} from '@jdeighan/exceptions/log'
-import {tamlFix, fixValStr} from '@jdeighan/exceptions/taml'
+import {assert, croak} from '@jdeighan/base-utils'
+import {undef} from '@jdeighan/base-utils/utils'
+import {LOG} from '@jdeighan/base-utils/log'
+import {tamlFix, fixValStr} from '@jdeighan/base-utils/taml'
 
 # ---------------------------------------------------------------------------
 

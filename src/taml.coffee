@@ -7,7 +7,7 @@ import {
 	undef, defined, notdefined, OL, chomp, hasChar, escapeStr,
 	isEmpty, isString, isFunction, isBoolean, isArray,
 	blockToArray, arrayToBlock,
-	} from '@jdeighan/exceptions/utils'
+	} from '@jdeighan/base-utils/utils'
 
 # ---------------------------------------------------------------------------
 #   isTAML - is the string valid TAML?

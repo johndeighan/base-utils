@@ -4,20 +4,20 @@ import test from 'ava'
 
 import {
 	undef, pass, arrayToBlock, isNumber, isArray, spaces,
-	} from '@jdeighan/exceptions/utils'
-import {toTAML} from '@jdeighan/exceptions/taml'
+	} from '@jdeighan/base-utils/utils'
+import {toTAML} from '@jdeighan/base-utils/taml'
 import {
 	haltOnError, assert, croak,
-	} from '@jdeighan/exceptions'
-import {getPrefix} from '@jdeighan/exceptions/prefix'
+	} from '@jdeighan/base-utils'
+import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {
-	LOG, LOGVALUE, utReset, utGetLog} from '@jdeighan/exceptions/log'
+	LOG, LOGVALUE, utReset, utGetLog} from '@jdeighan/base-utils/log'
 import {
 	setDebugging, resetDebugging,
 	debug, getType, dumpDebugLoggers,
 	dbgEnter, dbgReturn, dbgYield, dbgResume, dbg,
 	dbgReset, dbgGetLog,
-	} from '@jdeighan/exceptions/debug'
+	} from '@jdeighan/base-utils/debug'
 
 # ---------------------------------------------------------------------------
 

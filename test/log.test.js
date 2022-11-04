@@ -10,11 +10,11 @@ import {
   notdefined,
   pass,
   jsType
-} from '@jdeighan/exceptions/utils';
+} from '@jdeighan/base-utils/utils';
 
 import {
   getPrefix
-} from '@jdeighan/exceptions/prefix';
+} from '@jdeighan/base-utils/prefix';
 
 import {
   logWidth,
@@ -35,7 +35,7 @@ import {
   LOGTAML,
   utReset,
   utGetLog
-} from '@jdeighan/exceptions/log';
+} from '@jdeighan/base-utils/log';
 
 fourSpaces = '    ';
 

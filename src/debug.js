@@ -21,26 +21,26 @@ import {
   inList,
   oneof,
   arrayToBlock
-} from '@jdeighan/exceptions/utils';
+} from '@jdeighan/base-utils/utils';
 
 import {
   toTAML
-} from '@jdeighan/exceptions/taml';
+} from '@jdeighan/base-utils/taml';
 
 import {
   getPrefix
-} from '@jdeighan/exceptions/prefix';
+} from '@jdeighan/base-utils/prefix';
 
 import {
   LOG,
   LOGVALUE,
   setLogger
-} from '@jdeighan/exceptions/log';
+} from '@jdeighan/base-utils/log';
 
 import {
   CallStack,
   debugStack
-} from '@jdeighan/exceptions/stack';
+} from '@jdeighan/base-utils/stack';
 
 export var callStack = new CallStack();
 

@@ -8,9 +8,9 @@ import {
 	blockToArray, arrayToBlock, prefixBlock,
 	isNumber, isInteger, isString, isHash, isFunction, isBoolean,
 	nonEmpty, hEscNoNL, jsType, hasChar, quoted,
-	} from '@jdeighan/exceptions/utils'
-import {toTAML} from '@jdeighan/exceptions/taml'
-import {getPrefix} from '@jdeighan/exceptions/prefix'
+	} from '@jdeighan/base-utils/utils'
+import {toTAML} from '@jdeighan/base-utils/taml'
+import {getPrefix} from '@jdeighan/base-utils/prefix'
 
 export logWidth = 42
 export sep_dash = '-'.repeat(logWidth)

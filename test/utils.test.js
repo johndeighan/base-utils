@@ -38,7 +38,7 @@ import {
   hasChar,
   quoted,
   getOptions
-} from '@jdeighan/exceptions/utils';
+} from '@jdeighan/base-utils/utils';
 
 // ---------------------------------------------------------------------------
 test("line 19", (t) => {

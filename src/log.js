@@ -31,15 +31,15 @@ import {
   jsType,
   hasChar,
   quoted
-} from '@jdeighan/exceptions/utils';
+} from '@jdeighan/base-utils/utils';
 
 import {
   toTAML
-} from '@jdeighan/exceptions/taml';
+} from '@jdeighan/base-utils/taml';
 
 import {
   getPrefix
-} from '@jdeighan/exceptions/prefix';
+} from '@jdeighan/base-utils/prefix';
 
 export var logWidth = 42;
 

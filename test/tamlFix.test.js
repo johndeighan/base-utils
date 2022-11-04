@@ -5,20 +5,20 @@ import test from 'ava';
 import {
   assert,
   croak
-} from '@jdeighan/exceptions';
+} from '@jdeighan/base-utils';
 
 import {
   undef
-} from '@jdeighan/exceptions/utils';
+} from '@jdeighan/base-utils/utils';
 
 import {
   LOG
-} from '@jdeighan/exceptions/log';
+} from '@jdeighan/base-utils/log';
 
 import {
   tamlFix,
   fixValStr
-} from '@jdeighan/exceptions/taml';
+} from '@jdeighan/base-utils/taml';
 
 // ---------------------------------------------------------------------------
 test("line 12", (t) => {

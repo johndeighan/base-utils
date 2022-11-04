@@ -20,15 +20,15 @@ import {
   isBoolean,
   isEmpty,
   nonEmpty
-} from '@jdeighan/exceptions/utils';
+} from '@jdeighan/base-utils/utils';
 
 import {
   LOG
-} from '@jdeighan/exceptions/log';
+} from '@jdeighan/base-utils/log';
 
 import {
   getPrefix
-} from '@jdeighan/exceptions/prefix';
+} from '@jdeighan/base-utils/prefix';
 
 internalDebugging = false;
 

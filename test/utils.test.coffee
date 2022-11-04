@@ -12,7 +12,7 @@ import {
 
 	chomp, rtrim, setCharsAt, words, firstWord,
 	hasChar, quoted, getOptions,
-	} from '@jdeighan/exceptions/utils'
+	} from '@jdeighan/base-utils/utils'
 
 # ---------------------------------------------------------------------------
 

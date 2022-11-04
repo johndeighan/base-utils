@@ -1,16 +1,16 @@
-# exceptions.test.coffee
+# base-utils.test.coffee
 
 import test from 'ava'
 
 import {
 	pass, isNumber, arrayToBlock,
-	} from '@jdeighan/exceptions/utils'
+	} from '@jdeighan/base-utils/utils'
 import {
 	haltOnError, assert, croak,
-	} from '@jdeighan/exceptions'
+	} from '@jdeighan/base-utils'
 import {
 	setLogger, debugLogging, LOG, sep_dash,
-	} from '@jdeighan/exceptions/log'
+	} from '@jdeighan/base-utils/log'
 
 # ---------------------------------------------------------------------------
 

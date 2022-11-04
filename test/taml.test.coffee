@@ -2,10 +2,10 @@
 
 import test from 'ava'
 
-import {assert, croak} from '@jdeighan/exceptions'
-import {undef, untabify} from '@jdeighan/exceptions/utils'
-import {LOG} from '@jdeighan/exceptions/log'
-import {isTAML, toTAML, fromTAML} from '@jdeighan/exceptions/taml'
+import {assert, croak} from '@jdeighan/base-utils'
+import {undef, untabify} from '@jdeighan/base-utils/utils'
+import {LOG} from '@jdeighan/base-utils/log'
+import {isTAML, toTAML, fromTAML} from '@jdeighan/base-utils/taml'
 
 # ---------------------------------------------------------------------------
 

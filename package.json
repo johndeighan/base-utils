@@ -1,11 +1,11 @@
 {
-	"name": "@jdeighan/exceptions",
-	"version": "2.0.5",
+	"name": "@jdeighan/base-utils",
+	"version": "1.0.0",
 	"type": "module",
-	"description": "utilities to generate and handle exceptions",
+	"description": "low level utilities",
 	"main": "index.js",
 	"exports": {
-		".": "./src/exceptions.js",
+		".": "./src/base-utils.js",
 		"./log": "./src/log.js",
 		"./debug": "./src/debug.js",
 		"./stack": "./src/stack.js",

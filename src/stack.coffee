@@ -5,9 +5,9 @@ import {strict as assert} from 'node:assert'
 import {
 	undef, defined, notdefined, OL, deepCopy, warn, oneof, spaces,
 	isString, isArray, isBoolean, isEmpty, nonEmpty,
-	} from '@jdeighan/exceptions/utils'
-import {LOG} from '@jdeighan/exceptions/log'
-import {getPrefix} from '@jdeighan/exceptions/prefix'
+	} from '@jdeighan/base-utils/utils'
+import {LOG} from '@jdeighan/base-utils/log'
+import {getPrefix} from '@jdeighan/base-utils/prefix'
 
 internalDebugging = false
 
@@ -58,7 +58,7 @@ export class CallStack
 	# ........................................................................
 
 	stackErr: (cond, msg) ->
-		# --- We don't really want to throw exceptions here
+		# --- We don't really want to throw base-utils here
 
 		if !cond
 			warn "#{msg}\n#{@dump()}"

@@ -5,17 +5,17 @@ import test from 'ava';
 import {
   pass,
   undef
-} from '@jdeighan/exceptions/utils';
+} from '@jdeighan/base-utils/utils';
 
 import {
   LOG,
   utReset,
   utGetLog
-} from '@jdeighan/exceptions/log';
+} from '@jdeighan/base-utils/log';
 
 import {
   CallStack
-} from '@jdeighan/exceptions/stack';
+} from '@jdeighan/base-utils/stack';
 
 // ---------------------------------------------------------------------------
 test("line 12", (t) => {

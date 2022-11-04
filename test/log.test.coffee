@@ -4,8 +4,8 @@ import test from 'ava'
 
 import {
 	undef, defined, notdefined, pass, jsType,
-	} from '@jdeighan/exceptions/utils'
-import {getPrefix} from '@jdeighan/exceptions/prefix'
+	} from '@jdeighan/base-utils/utils'
+import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {
 	logWidth, sep_dash, sep_eq, stringify,
 	setLogWidth, resetLogWidth, debugLogging,
@@ -14,7 +14,7 @@ import {
 	tamlStringify, orderedStringify,
 	LOG, LOGVALUE, LOGTAML,
 	utReset, utGetLog,
-	} from '@jdeighan/exceptions/log'
+	} from '@jdeighan/base-utils/log'
 
 fourSpaces = '    '
 

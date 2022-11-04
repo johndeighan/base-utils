@@ -10,11 +10,11 @@ import {
   notdefined,
   pass,
   unescapeStr
-} from '@jdeighan/exceptions/utils';
+} from '@jdeighan/base-utils/utils';
 
 import {
   getPrefix
-} from '@jdeighan/exceptions/prefix';
+} from '@jdeighan/base-utils/prefix';
 
 un = unescapeStr;
 
