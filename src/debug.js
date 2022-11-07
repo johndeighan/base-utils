@@ -46,7 +46,7 @@ export var callStack = new CallStack();
 
 lFuncList = []; // array of {funcName, plus}
 
-internalDebugging = false; // set true on setDebugging('debug')
+internalDebugging = false;
 
 logEnter = undef;
 
@@ -206,36 +206,6 @@ export var dbgGetLog = () => {
   lUTLog = undef;
   return result;
 };
-
-// ---------------------------------------------------------------------------
-export var debug = function(label, ...lValues) {
-  var funcName, type;
-  if (internalDebugging) {
-    console.log(`call debug('${label}')`);
-  }
-  [type, funcName] = getType(label, lValues);
-  switch (type) {
-    case 'enter':
-      dbgEnter(funcName, ...lValues);
-      break;
-    case 'returnFrom':
-      dbgReturn(funcName, ...lValues);
-      break;
-    case 'yield':
-      dbgYield(funcName, ...lValues);
-      break;
-    case 'resume':
-      dbgResume(funcName);
-      break;
-    case 'value':
-      dbgValue(label, lValues[0]);
-      break;
-    case 'string':
-      dbgString(label);
-  }
-  return true; // allow use in boolean expressions
-};
-
 
 // ---------------------------------------------------------------------------
 export var dbgEnter = function(funcName, ...lValues) {

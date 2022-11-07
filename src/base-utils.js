@@ -31,7 +31,6 @@ import {
 import {
   setDebugging,
   resetDebugging,
-  debug,
   setCustomDebugLogger
 } from '@jdeighan/base-utils/debug';
 
@@ -42,7 +41,6 @@ export {
   setLogger,
   setDebugging,
   resetDebugging,
-  debug,
   setCustomDebugLogger,
   isTAML,
   fromTAML,

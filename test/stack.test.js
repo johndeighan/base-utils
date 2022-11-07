@@ -95,40 +95,40 @@ test("line 58", (t) => {
 	return
 
 A = () ->
-	debug "enter A()"
+	dbgEnter "A"
 	C()
 	for x from B()
 		LOG x
 		C()
-	debug "return from A()"
+	dbgReturn "A"
 	return
 
 B = () ->
-	debug "enter B()"
+	dbgEnter "B"
 	LOG 13
-	debug "yield B()", 5
+	dbgYield "B", 5
 	yield 5
-	debug "resume B()"
+	dbgResume "B"
 	C()
 	yield from E()
-	debug "return from B()"
+	dbgReturn "B"
 	return
 
 C = () ->
-	debug "enter C()"
+	dbgEnter "C"
 	LOG 'here'
-	debug "return from C()"
+	dbgReturn "C"
 	return
 
 D = () ->
-	debug "enter D()"
-	debug "yield D()", 1
+	dbgEnter "D"
+	dbgYield "D", 1
 	yield 1
-	debug "resume D()"
-	debug "yield D()", 2
+	dbgResume "D"
+	dbgYield "D", 2
 	yield 2
-	debug "resume D()"
-	debug "return from D()"
+	dbgResume "D"
+	dbgReturn "D"
 	return`;
   // --- Simulate executing main() and check state at each step:
   return test("line 227", (t) => {
@@ -137,91 +137,91 @@ D = () ->
     stack = new CallStack();
     t.is(stack.size(), 0);
     t.is(stack.currentFunc(), 'main');
-    // --- debug "enter A"
+    // --- dbgEnter "A"
     stack.enter('A');
     t.is(stack.size(), 1);
     t.is(stack.currentFunc(), 'A');
-    // --- debug "enter C"
+    // --- dbgEnter "C"
     stack.enter('C');
     t.is(stack.size(), 2);
     t.is(stack.currentFunc(), 'C');
-    // --- debug "return from C"
+    // --- dbgReturn "C"
     stack.returnFrom('C');
     t.is(stack.size(), 1);
     t.is(stack.currentFunc(), 'A');
-    // --- debug "enter B"
+    // --- dbgEnter "B"
     stack.enter('B');
     t.is(stack.size(), 2);
     t.is(stack.currentFunc(), 'B');
-    // --- debug "yield B", 5
+    // --- dbgYield "B", 5
     stack.yield('B', [5]);
     t.is(stack.size(), 2);
     t.is(stack.currentFunc(), 'A');
-    // --- debug "enter C"
+    // --- dbgEnter "C"
     stack.enter('C');
     t.is(stack.size(), 3);
     t.is(stack.currentFunc(), 'C');
-    // --- debug "return from C"
+    // --- dbgReturn "C"
     stack.returnFrom('C');
     t.is(stack.size(), 2);
     t.is(stack.currentFunc(), 'A');
-    // --- debug "resume B"
+    // --- dbgResume "B"
     stack.resume('B');
     t.is(stack.size(), 2);
     t.is(stack.currentFunc(), 'B');
-    // --- debug "enter C"
+    // --- dbgEnter "C"
     stack.enter('C');
     t.is(stack.size(), 3);
     t.is(stack.currentFunc(), 'C');
-    // --- debug "return from C"
+    // --- dbgReturn "C"
     stack.returnFrom('C');
     t.is(stack.size(), 2);
     t.is(stack.currentFunc(), 'B');
-    // --- debug "yield B"
+    // --- dbgYield "B"
     stack.yield('B');
     t.is(stack.size(), 2);
     t.is(stack.currentFunc(), 'A');
-    // --- debug "enter D"
+    // --- dbgEnter "D"
     stack.enter('D');
     t.is(stack.size(), 3);
     t.is(stack.currentFunc(), 'D');
-    // --- debug "yield D", 1
+    // --- dbgYield "D", 1
     stack.yield('D', [1]);
     t.is(stack.size(), 3);
     t.is(stack.currentFunc(), 'A');
-    // --- debug "resume D"
+    // --- dbgResume "D"
     stack.resume('D');
     t.is(stack.size(), 3);
     t.is(stack.currentFunc(), 'D');
-    // --- debug "yield D", 2
+    // --- dbgYield "D", 2
     stack.yield('D', [2]);
     t.is(stack.size(), 3);
     t.is(stack.currentFunc(), 'A');
-    // --- debug "resume D"
+    // --- dbgResume "D"
     stack.resume('D');
     t.is(stack.size(), 3);
     t.is(stack.currentFunc(), 'D');
-    // --- debug "return from D"
+    // --- dbgReturn "D"
     stack.returnFrom('D');
     t.is(stack.size(), 2);
     t.is(stack.currentFunc(), 'A');
-    // --- debug "enter C"
+    // --- dbgEnter "C"
     stack.enter('C');
     t.is(stack.size(), 3);
     t.is(stack.currentFunc(), 'C');
-    // --- debug "return from C"
+    // --- dbgReturn "C"
     stack.returnFrom('C');
     t.is(stack.size(), 2);
     t.is(stack.currentFunc(), 'A');
-    // --- debug "resume B"
+    // --- dbgResume "B"
     stack.resume('B');
     t.is(stack.size(), 2);
     t.is(stack.currentFunc(), 'B');
-    // --- debug "return from B"
+    // --- dbgReturn "B"
     stack.returnFrom('B');
     t.is(stack.size(), 1);
     t.is(stack.currentFunc(), 'A');
-    // --- debug "return from A"
+    // --- dbgReturn "A"
     stack.returnFrom('A');
     t.is(stack.size(), 0);
     return t.is(stack.currentFunc(), 'main');

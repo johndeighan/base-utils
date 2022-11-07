@@ -123,6 +123,7 @@ Publishing on npm
 =================
 
 ```bash
+$ cd base-utils
 $ publish
 ```
 

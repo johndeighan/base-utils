@@ -8,12 +8,12 @@ import {
 	LOG, LOGVALUE, LOGTAML, setLogger, sep_dash, sep_eq,
 	} from '@jdeighan/base-utils/log'
 import {
-	setDebugging, resetDebugging, debug, setCustomDebugLogger,
+	setDebugging, resetDebugging, setCustomDebugLogger,
 	} from '@jdeighan/base-utils/debug'
 
 export {
 	LOG, LOGVALUE, LOGTAML, setLogger,
-	setDebugging, resetDebugging, debug, setCustomDebugLogger,
+	setDebugging, resetDebugging, setCustomDebugLogger,
 	isTAML, fromTAML, toTAML}
 
 doHaltOnError = false

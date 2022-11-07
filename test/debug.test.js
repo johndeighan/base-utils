@@ -37,7 +37,6 @@ import {
 import {
   setDebugging,
   resetDebugging,
-  debug,
   getType,
   dumpDebugLoggers,
   dbgEnter,
@@ -71,20 +70,20 @@ test("line 34", (t) => {
 // ---------------------------------------------------------------------------
 double = (x) => {
   var result;
-  debug("enter double", x);
+  dbgEnter("double", x);
   assert(isNumber(x), "not a number");
-  debug("inside double");
+  dbg("inside double");
   result = 2 * x;
-  debug("return from double", result);
+  dbgReturn("double", result);
   return result;
 };
 
 quadruple = (x) => {
   var result;
-  debug("enter quadruple", x);
-  debug("inside quadruple");
+  dbgEnter("quadruple", x);
+  dbg("inside quadruple");
   result = 2 * double(x);
-  debug("return from quadruple", result);
+  dbgReturn("quadruple", result);
   return result;
 };
 
@@ -167,9 +166,9 @@ Class1 = class Class1 {
   }
 
   add(str) {
-    debug("enter Class1.add", str);
+    dbgEnter("Class1.add", str);
     this.lStrings.push(str);
-    debug("return from Class1.add");
+    dbgReturn("Class1.add");
   }
 
 };
@@ -180,9 +179,9 @@ Class2 = class Class2 {
   }
 
   add(str) {
-    debug("enter Class2.add", str);
+    dbgEnter("Class2.add", str);
     this.lStrings.push(str);
-    debug("return from Class2.add");
+    dbgReturn("Class2.add");
   }
 
 };
@@ -243,20 +242,20 @@ enter double
 // Test using generators
 allNumbers = function*(lItems) {
   var item, j, len;
-  debug("enter allNumbers");
+  dbgEnter("allNumbers");
   for (j = 0, len = lItems.length; j < len; j++) {
     item = lItems[j];
     if (isNumber(item)) {
-      debug("yield allNumbers", item);
+      dbgYield("allNumbers", item);
       yield item;
-      debug("resume allNumbers");
+      dbgResume("allNumbers");
     } else if (isArray(item)) {
-      debug("yield allNumbers", item);
+      dbgYield("allNumbers", item);
       yield* allNumbers(item);
-      debug("resume allNumbers");
+      dbgResume("allNumbers");
     }
   }
-  debug("return from allNumbers");
+  dbgReturn("allNumbers");
 };
 
 test("line 236", (t) => {
@@ -276,26 +275,16 @@ test("line 246", (t) => {
   var result;
   utReset();
   setDebugging('double quadruple', {
-    // --- on debug('enter <func>'), just log the function name
+    // --- on dbgEnter('<func>'), just log the function name
     enter: function(funcName, lObjects, level) {
       LOG(getPrefix(level, 'plain') + funcName);
       return true;
     },
-    // --- on debug('return from <func>'), don't log anything at all
+    // --- on dbgReturn('<func>'), don't log anything at all
     returnFrom: function(funcName, lObjects, level) {
       return true;
     }
   });
-  //	# --- on debug('enter <func>'), just log the function name
-  //	setCustomDebugLogger 'enter',
-  //		(funcName, lObjects, level) ->
-  //			LOG getPrefix(level, 'plain') + funcName
-  //			return true
-
-  //	# --- on debug('return from <func>'), don't log anything at all
-  //	setCustomDebugLogger 'returnFrom',
-  //		(funcName, lObjects, level) ->
-  //			return true
   result = double(quadruple(3));
   t.is(result, 24);
   return t.is(utGetLog(), `quadruple
@@ -318,43 +307,43 @@ double
   };
   A = function() {
     var ref, x;
-    debug("enter A()");
+    dbgEnter("A");
     C();
     ref = B();
     for (x of ref) {
       output(x);
       C();
     }
-    debug("return from A()");
+    dbgReturn("A");
   };
   B = function*() {
-    debug("enter B()");
+    dbgEnter("B");
     output(13);
-    debug("yield B()", 5);
+    dbgYield("B", 5);
     yield 5;
-    debug("resume B()");
+    dbgResume("B");
     C();
-    debug("yield B");
+    dbgYield("B");
     yield* D();
-    debug("resume B");
-    debug("return from B()");
+    dbgResume("B");
+    dbgReturn("B");
   };
   C = function() {
-    debug("enter C()");
+    dbgEnter("C");
     output('here');
-    debug("here");
-    debug("x", 9);
-    debug("return from C()");
+    dbg("here");
+    dbg("x", 9);
+    dbgReturn("C");
   };
   D = function*() {
-    debug("enter D()");
-    debug("yield D()", 1);
+    dbgEnter("D");
+    dbgYield("D", 1);
     yield 1;
-    debug("resume D()");
-    debug("yield D()", 2);
+    dbgResume("D");
+    dbgYield("D", 2);
     yield 2;
-    debug("resume D()");
-    debug("return from D()");
+    dbgResume("D");
+    dbgReturn("D");
   };
   test("line 69", (t) => {
     lOutput = [];

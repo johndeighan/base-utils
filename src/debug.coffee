@@ -14,7 +14,7 @@ import {CallStack, debugStack} from '@jdeighan/base-utils/stack'
 export callStack = new CallStack()
 
 lFuncList = []             # array of {funcName, plus}
-internalDebugging = false  # set true on setDebugging('debug')
+internalDebugging = false
 
 
 logEnter  = undef
@@ -156,30 +156,6 @@ export dbgGetLog = () =>
 	result = arrayToBlock(lUTLog)
 	lUTLog = undef
 	return result
-
-# ---------------------------------------------------------------------------
-
-export debug = (label, lValues...) ->
-
-	if internalDebugging
-		console.log "call debug('#{label}')"
-
-	[type, funcName] = getType(label, lValues)
-	switch type
-		when 'enter'
-			dbgEnter funcName, lValues...
-		when 'returnFrom'
-			dbgReturn funcName, lValues...
-		when 'yield'
-			dbgYield funcName, lValues...
-		when 'resume'
-			dbgResume funcName
-		when 'value'
-			dbgValue label, lValues[0]
-		when 'string'
-			dbgString label
-
-	return true   # allow use in boolean expressions
 
 # ---------------------------------------------------------------------------
 

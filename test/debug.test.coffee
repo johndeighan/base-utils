@@ -14,7 +14,7 @@ import {
 	LOG, LOGVALUE, utReset, utGetLog} from '@jdeighan/base-utils/log'
 import {
 	setDebugging, resetDebugging,
-	debug, getType, dumpDebugLoggers,
+	getType, dumpDebugLoggers,
 	dbgEnter, dbgReturn, dbgYield, dbgResume, dbg,
 	dbgReset, dbgGetLog,
 	} from '@jdeighan/base-utils/debug'
@@ -45,18 +45,18 @@ test "line 34", (t) =>
 # ---------------------------------------------------------------------------
 
 double = (x) =>
-	debug "enter double", x
+	dbgEnter "double", x
 	assert isNumber(x), "not a number"
-	debug "inside double"
+	dbg "inside double"
 	result = 2 * x
-	debug "return from double", result
+	dbgReturn "double", result
 	return result
 
 quadruple = (x) =>
-	debug "enter quadruple", x
-	debug "inside quadruple"
+	dbgEnter "quadruple", x
+	dbg "inside quadruple"
 	result = 2 * double(x)
-	debug "return from quadruple", result
+	dbgReturn "quadruple", result
 	return result
 
 # ---------------------------------------------------------------------------
@@ -143,18 +143,18 @@ class Class1
 	constructor: () ->
 		@lStrings = []
 	add: (str) ->
-		debug "enter Class1.add", str
+		dbgEnter "Class1.add", str
 		@lStrings.push str
-		debug "return from Class1.add"
+		dbgReturn "Class1.add"
 		return
 
 class Class2
 	constructor: () ->
 		@lStrings = []
 	add: (str) ->
-		debug "enter Class2.add", str
+		dbgEnter "Class2.add", str
 		@lStrings.push str
-		debug "return from Class2.add"
+		dbgReturn "Class2.add"
 		return
 
 # ---------------------------------------------------------------------------
@@ -224,17 +224,17 @@ test "line 193", (t) =>
 
 allNumbers = (lItems) ->
 
-	debug "enter allNumbers"
+	dbgEnter "allNumbers"
 	for item in lItems
 		if isNumber(item)
-			debug "yield allNumbers", item
+			dbgYield "allNumbers", item
 			yield item
-			debug "resume allNumbers"
+			dbgResume "allNumbers"
 		else if isArray(item)
-			debug "yield allNumbers", item
+			dbgYield "allNumbers", item
 			yield from allNumbers(item)
-			debug "resume allNumbers"
-	debug "return from allNumbers"
+			dbgResume "allNumbers"
+	dbgReturn "allNumbers"
 	return
 
 test "line 236", (t) =>
@@ -252,27 +252,16 @@ test "line 246", (t) =>
 	utReset()
 	setDebugging 'double quadruple', {
 
-		# --- on debug('enter <func>'), just log the function name
+		# --- on dbgEnter('<func>'), just log the function name
 		enter: (funcName, lObjects, level) ->
 			LOG getPrefix(level, 'plain') + funcName
 			return true
 
-		# --- on debug('return from <func>'), don't log anything at all
+		# --- on dbgReturn('<func>'), don't log anything at all
 		returnFrom: (funcName, lObjects, level) ->
 			return true
 
 		}
-
-#	# --- on debug('enter <func>'), just log the function name
-#	setCustomDebugLogger 'enter',
-#		(funcName, lObjects, level) ->
-#			LOG getPrefix(level, 'plain') + funcName
-#			return true
-#
-#	# --- on debug('return from <func>'), don't log anything at all
-#	setCustomDebugLogger 'returnFrom',
-#		(funcName, lObjects, level) ->
-#			return true
 
 	result = double(quadruple(3))
 	t.is result, 24
@@ -297,44 +286,44 @@ test "line 246", (t) =>
 		return
 
 	A = () ->
-		debug "enter A()"
+		dbgEnter "A"
 		C()
 		for x from B()
 			output x
 			C()
-		debug "return from A()"
+		dbgReturn "A"
 		return
 
 	B = () ->
-		debug "enter B()"
+		dbgEnter "B"
 		output 13
-		debug "yield B()", 5
+		dbgYield "B", 5
 		yield 5
-		debug "resume B()"
+		dbgResume "B"
 		C()
-		debug "yield B"
+		dbgYield "B"
 		yield from D()
-		debug "resume B"
-		debug "return from B()"
+		dbgResume "B"
+		dbgReturn "B"
 		return
 
 	C = () ->
-		debug "enter C()"
+		dbgEnter "C"
 		output 'here'
-		debug "here"
-		debug "x", 9
-		debug "return from C()"
+		dbg "here"
+		dbg "x", 9
+		dbgReturn "C"
 		return
 
 	D = () ->
-		debug "enter D()"
-		debug "yield D()", 1
+		dbgEnter "D"
+		dbgYield "D", 1
 		yield 1
-		debug "resume D()"
-		debug "yield D()", 2
+		dbgResume "D"
+		dbgYield "D", 2
 		yield 2
-		debug "resume D()"
-		debug "return from D()"
+		dbgResume "D"
+		dbgReturn "D"
 		return
 
 	test "line 69", (t) =>
