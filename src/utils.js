@@ -307,32 +307,30 @@ export var isRegExp = function(x) {
 
 // ---------------------------------------------------------------------------
 export var isObject = function(x, lReqKeys = undef) {
-  var i, key, len1, result;
-  result = (typeof x === 'object') && !isString(x) && !isArray(x) && !isHash(x) && !isNumber(x);
-  if (result) {
-    if (defined(lReqKeys)) {
-      if (!isArray(lReqKeys)) {
-        LOG("lReqKeys is not an array");
-        process.exit();
-      }
-      for (i = 0, len1 = lReqKeys.length; i < len1; i++) {
-        key = lReqKeys[i];
-        if (!x.hasOwnProperty(key)) {
-          return false;
-        }
-      }
-    }
-    return true;
-  } else {
+  var _, i, key, lMatches, len1, type;
+  if ((typeof x !== 'object') || isString(x) || isArray(x) || isHash(x) || isNumber(x)) {
     return false;
   }
-};
-
-// ---------------------------------------------------------------------------
-export var hasMethod = (obj, name) => {
-  assert(isObject(obj), "not an object");
-  assert(isString(name), "name is not a string");
-  return typeof obj[name] === 'function';
+  if (defined(lReqKeys)) {
+    if (isString(lReqKeys)) {
+      lReqKeys = words(lReqKeys);
+    }
+    assert(isArray(lReqKeys), `lReqKeys not an array: ${OL(lReqKeys)}`);
+    for (i = 0, len1 = lReqKeys.length; i < len1; i++) {
+      key = lReqKeys[i];
+      type = undef;
+      if (lMatches = key.match(/^(\&)(.*)$/)) {
+        [_, type, key] = lMatches;
+      }
+      if (notdefined(x[key])) {
+        return false;
+      }
+      if ((type === '&') && (typeof x[key] !== 'function')) {
+        return false;
+      }
+    }
+  }
+  return true;
 };
 
 // ---------------------------------------------------------------------------

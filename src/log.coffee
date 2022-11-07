@@ -4,7 +4,7 @@ import {strict as assert} from 'node:assert'
 
 import {
 	pass, undef, defined, notdefined, deepCopy,
-	hEsc, escapeStr, OL, hasMethod, untabify,
+	hEsc, escapeStr, OL, untabify, isObject,
 	blockToArray, arrayToBlock, prefixBlock,
 	isNumber, isInteger, isString, isHash, isFunction, isBoolean,
 	nonEmpty, hEscNoNL, jsType, hasChar, quoted,
@@ -199,7 +199,7 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 			PUTSTR "#{prefix}#{label} = <function>"
 
 		when 'object'
-			if hasMethod(value, 'toLogString')
+			if isObject(value, '&toLogString')
 				str = value.toLogString()
 			else
 				str = toTAML(value)

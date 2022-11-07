@@ -15,8 +15,8 @@ import {
   hEsc,
   escapeStr,
   OL,
-  hasMethod,
   untabify,
+  isObject,
   blockToArray,
   arrayToBlock,
   prefixBlock,
@@ -234,7 +234,7 @@ ${prefixBlock('"""', itemPrefix)}`);
       PUTSTR(`${prefix}${label} = <function>`);
       break;
     case 'object':
-      if (hasMethod(value, 'toLogString')) {
+      if (isObject(value, '&toLogString')) {
         str = value.toLogString();
       } else {
         str = toTAML(value);
