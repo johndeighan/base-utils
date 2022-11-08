@@ -47,7 +47,7 @@ export {
   toTAML
 };
 
-doHaltOnError = false;
+doHaltOnError = true;
 
 // ---------------------------------------------------------------------------
 export var haltOnError = function(flag = true) {

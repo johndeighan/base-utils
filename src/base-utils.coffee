@@ -16,7 +16,7 @@ export {
 	setDebugging, resetDebugging, setCustomDebugLogger,
 	isTAML, fromTAML, toTAML}
 
-doHaltOnError = false
+doHaltOnError = true
 
 # ---------------------------------------------------------------------------
 
