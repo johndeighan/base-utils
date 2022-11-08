@@ -12,6 +12,8 @@ import {
 	setLogger, debugLogging, LOG, sep_dash,
 	} from '@jdeighan/base-utils/log'
 
+haltOnError false
+
 # ---------------------------------------------------------------------------
 
 double = (x) =>
@@ -30,18 +32,18 @@ getLog = () => return arrayToBlock(lLog)
 
 # ---------------------------------------------------------------------------
 
-test "line 31", (t) =>
+test "line 33", (t) =>
 	lLog = []
 	LOG 'abc'
 	LOG 'def'
 	t.is getLog(), "abc\ndef"
 
-test "line 37", (t) =>
+test "line 39", (t) =>
 	x = 5
 	t.is(quadruple(x), 20)
 
 
-test "line 41", (t) =>
+test "line 44", (t) =>
 	lLog = []
 	try
 		result = quadruple('abc')

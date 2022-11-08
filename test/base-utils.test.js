@@ -23,6 +23,8 @@ import {
   sep_dash
 } from '@jdeighan/base-utils/log';
 
+haltOnError(false);
+
 // ---------------------------------------------------------------------------
 double = (x) => {
   assert(isNumber(x), "not a number");
@@ -47,20 +49,20 @@ getLog = () => {
 };
 
 // ---------------------------------------------------------------------------
-test("line 31", (t) => {
+test("line 33", (t) => {
   lLog = [];
   LOG('abc');
   LOG('def');
   return t.is(getLog(), "abc\ndef");
 });
 
-test("line 37", (t) => {
+test("line 39", (t) => {
   var x;
   x = 5;
   return t.is(quadruple(x), 20);
 });
 
-test("line 41", (t) => {
+test("line 44", (t) => {
   var result;
   lLog = [];
   try {
