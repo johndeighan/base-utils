@@ -39,13 +39,12 @@ export var debugStack = function(flag = true) {
 
 // ---------------------------------------------------------------------------
 export var CallStack = class CallStack {
-  constructor(debugFlag = false) {
+  constructor() {
     // --- Items on stack have keys:
     //        funcName
     //        lArgs
     //        doLog
     //        isYielded
-    debugStack(debugFlag);
     this.lStack = [];
   }
 
@@ -69,7 +68,7 @@ export var CallStack = class CallStack {
   }
 
   // ........................................................................
-  stackErr(cond, msg) {
+  stackAssert(cond, msg) {
     if (!cond) {
       warn(`${msg}\n${this.dump()}`);
     }
@@ -83,9 +82,9 @@ export var CallStack = class CallStack {
     if (internalDebugging) {
       nArgs = lArgs.length;
       if (nArgs === 0) {
-        this.dbg(`[--> ENTER ${funcName}]`);
+        this.dbg(`[--> ENTER ${OL(funcName)}]`);
       } else {
-        this.dbg(`[--> ENTER ${funcName} ${nArgs} args]`);
+        this.dbg(`[--> ENTER ${OL(funcName)} ${nArgs} args]`);
       }
     }
     this.lStack.push({
@@ -99,17 +98,19 @@ export var CallStack = class CallStack {
   // ........................................................................
   // --- if stack is empty, log the error, but continue
   returnFrom(funcName, lVals = []) {
-    var nVals, rec;
+    var nVals, rec, str;
+    assert(isString(funcName), "not a string");
+    str = OL(funcName);
     assert(isArray(lVals), "not an array");
     rec = this.currentFuncRec();
-    this.stackErr(funcName === rec.funcName, `returnFrom('${funcName}') but current func is ${rec.funcName}`);
-    this.stackErr(!this.TOS.isYielded, `returnFrom('${funcName}') but ${this.TOS().funcName} at TOS is yielded`);
+    this.stackAssert(funcName === rec.funcName, `returnFrom(${str}) but current func is ${OL(rec.funcName)}`);
+    this.stackAssert(!this.TOS.isYielded, `returnFrom(${str}) but ${OL(this.TOS().funcName)} at TOS is yielded`);
     if (internalDebugging) {
-      nVals = this.lVals.length;
+      nVals = lVals.length;
       if (nVals === 0) {
-        this.dbg(`[<-- RETURN FROM ${funcName}]`);
+        this.dbg(`[<-- RETURN FROM ${str}]`);
       } else {
-        this.dbg(`[<-- RETURN FROM ${funcName} ${nVals} vals]`);
+        this.dbg(`[<-- RETURN FROM ${str} ${nVals} vals]`);
       }
     }
     this.lStack.pop();
@@ -117,19 +118,20 @@ export var CallStack = class CallStack {
 
   // ........................................................................
   yield(funcName, lVals = []) {
-    var nVals, rec;
+    var nVals, rec, str;
     assert(isString(funcName), "not a string");
+    str = OL(funcName);
     assert(isArray(lVals), "not an array");
     if (internalDebugging) {
-      nVals = this.lVals.length;
+      nVals = lVals.length;
       if (nVals === 0) {
         this.dbg("[--> YIELD]");
       } else {
-        this.dbg(`[--> YIELD ${funcName} ${nVals} vals]`);
+        this.dbg(`[--> YIELD ${str} ${nVals} vals]`);
       }
     }
     rec = this.currentFuncRec();
-    this.stackErr(funcName === rec.funcName, `yield ${funcName}, but current func is ${rec.funcName}`);
+    this.stackAssert(funcName === rec.funcName, `yield ${str}, but current func is ${rec.funcName}`);
     rec.isYielded = true;
   }
 
@@ -138,7 +140,7 @@ export var CallStack = class CallStack {
   resume(funcName) {
     var rec;
     rec = this.TOS();
-    this.stackErr(rec.isYielded, `resume('${funcName}') but ${funcName} is not yielded`);
+    this.stackAssert(rec.isYielded, `resume('${funcName}') but ${funcName} is not yielded`);
     rec.isYielded = false;
     if (internalDebugging) {
       this.dbg(`[<-- RESUME ${funcName}]`);

@@ -22,14 +22,13 @@ export debugStack = (flag=true) ->
 
 export class CallStack
 
-	constructor: (debugFlag=false) ->
+	constructor: () ->
 
 		# --- Items on stack have keys:
 		#        funcName
 		#        lArgs
 		#        doLog
 		#        isYielded
-		debugStack(debugFlag)
 		@lStack = []
 
 	# ........................................................................
@@ -57,8 +56,8 @@ export class CallStack
 
 	# ........................................................................
 
-	stackErr: (cond, msg) ->
-		# --- We don't really want to throw base-utils here
+	stackAssert: (cond, msg) ->
+		# --- We don't really want to throw exceptions here
 
 		if !cond
 			warn "#{msg}\n#{@dump()}"
@@ -73,9 +72,9 @@ export class CallStack
 		if internalDebugging
 			nArgs = lArgs.length
 			if (nArgs == 0)
-				@dbg "[--> ENTER #{funcName}]"
+				@dbg "[--> ENTER #{OL(funcName)}]"
 			else
-				@dbg "[--> ENTER #{funcName} #{nArgs} args]"
+				@dbg "[--> ENTER #{OL(funcName)} #{nArgs} args]"
 
 		@lStack.push {
 			funcName
@@ -90,18 +89,20 @@ export class CallStack
 
 	returnFrom: (funcName, lVals=[]) ->
 
+		assert isString(funcName), "not a string"
+		str = OL(funcName)
 		assert isArray(lVals), "not an array"
 		rec = @currentFuncRec()
-		@stackErr (funcName == rec.funcName),
-			"returnFrom('#{funcName}') but current func is #{rec.funcName}"
-		@stackErr ! @TOS.isYielded,
-			"returnFrom('#{funcName}') but #{@TOS().funcName} at TOS is yielded"
+		@stackAssert (funcName == rec.funcName),
+			"returnFrom(#{str}) but current func is #{OL(rec.funcName)}"
+		@stackAssert ! @TOS.isYielded,
+			"returnFrom(#{str}) but #{OL(@TOS().funcName)} at TOS is yielded"
 		if internalDebugging
-			nVals = @lVals.length
+			nVals = lVals.length
 			if (nVals == 0)
-				@dbg "[<-- RETURN FROM #{funcName}]"
+				@dbg "[<-- RETURN FROM #{str}]"
 			else
-				@dbg "[<-- RETURN FROM #{funcName} #{nVals} vals]"
+				@dbg "[<-- RETURN FROM #{str} #{nVals} vals]"
 		@lStack.pop()
 		return
 
@@ -110,17 +111,18 @@ export class CallStack
 	yield: (funcName, lVals=[]) ->
 
 		assert isString(funcName), "not a string"
+		str = OL(funcName)
 		assert isArray(lVals), "not an array"
 		if internalDebugging
-			nVals = @lVals.length
+			nVals = lVals.length
 			if (nVals == 0)
 				@dbg "[--> YIELD]"
 			else
-				@dbg "[--> YIELD #{funcName} #{nVals} vals]"
+				@dbg "[--> YIELD #{str} #{nVals} vals]"
 
 		rec = @currentFuncRec()
-		@stackErr (funcName == rec.funcName),
-			"yield #{funcName}, but current func is #{rec.funcName}"
+		@stackAssert (funcName == rec.funcName),
+			"yield #{str}, but current func is #{rec.funcName}"
 		rec.isYielded = true
 		return
 
@@ -130,7 +132,7 @@ export class CallStack
 	resume: (funcName) ->
 
 		rec = @TOS()
-		@stackErr (rec.isYielded),
+		@stackAssert (rec.isYielded),
 			"resume('#{funcName}') but #{funcName} is not yielded"
 		rec.isYielded = false
 
