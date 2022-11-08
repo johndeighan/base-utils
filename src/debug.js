@@ -34,13 +34,19 @@ import {
 import {
   LOG,
   LOGVALUE,
-  setLogger
+  setLogger,
+  debugLogging
 } from '@jdeighan/base-utils/log';
 
 import {
   CallStack,
   debugStack
 } from '@jdeighan/base-utils/stack';
+
+export {
+  debugStack,
+  debugLogging
+};
 
 export var callStack = new CallStack();
 

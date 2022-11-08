@@ -8,8 +8,12 @@ import {
 	} from '@jdeighan/base-utils/utils'
 import {toTAML} from '@jdeighan/base-utils/taml'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
-import {LOG, LOGVALUE, setLogger} from '@jdeighan/base-utils/log'
+import {
+	LOG, LOGVALUE, setLogger, debugLogging,
+	} from '@jdeighan/base-utils/log'
 import {CallStack, debugStack} from '@jdeighan/base-utils/stack'
+
+export {debugStack, debugLogging}
 
 export callStack = new CallStack()
 

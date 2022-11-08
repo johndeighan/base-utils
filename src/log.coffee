@@ -17,7 +17,7 @@ export sep_dash = '-'.repeat(logWidth)
 export sep_eq = '='.repeat(logWidth)
 
 export stringify = undef
-doDebugLogging = false
+internalDebugging = false
 threeSpaces  = '   '
 
 # --- This logger only ever gets passed a single string argument
@@ -54,9 +54,9 @@ export resetLogWidth = () =>
 
 export debugLogging = (flag=true) =>
 
-	doDebugLogging = flag
-	if doDebugLogging
-		console.log "doDebugLogging = #{flag}"
+	internalDebugging = flag
+	if internalDebugging
+		console.log "internalDebugging = #{flag}"
 	return
 
 # ---------------------------------------------------------------------------
@@ -113,7 +113,7 @@ export orderedStringify = (obj, escape=false) =>
 
 export LOG = (str="", prefix="") =>
 
-	if doDebugLogging
+	if internalDebugging
 		console.log "CALL LOG(#{OL(str)}), prefix=#{OL(prefix)}"
 		if defined(putstr) && (putstr != console.log)
 			console.log "   - use custom logger"
@@ -125,7 +125,7 @@ export LOG = (str="", prefix="") =>
 
 export LOGTAML = (label, value, prefix="", itemPrefix=undef) =>
 
-	if doDebugLogging
+	if internalDebugging
 		str1 = OL(label)
 		str2 = OL(value)
 		str3 = OL(prefix)
@@ -147,7 +147,7 @@ export LOGTAML = (label, value, prefix="", itemPrefix=undef) =>
 
 export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 
-	if doDebugLogging
+	if internalDebugging
 		str1 = OL(label)
 		str2 = OL(value)
 		str3 = OL(prefix)
@@ -159,7 +159,7 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 
 	# --- Try OL() - if it's short enough, use that
 	str = "#{prefix}#{label} = #{OL(value)}"
-	if doDebugLogging
+	if internalDebugging
 		console.log "Using OL(), strlen = #{str.length}, logWidth = #{logWidth}"
 	if (str.length <= logWidth)
 		PUTSTR str
