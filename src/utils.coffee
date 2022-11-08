@@ -249,12 +249,9 @@ export isBoolean = (x) ->
 
 export isConstructor = (f) ->
 
-	try
-		new f()
-	catch err
-		if (err.message.indexOf('is not a constructor') >= 0)
-			return false
-	return true
+	return (typeof f == 'function') \
+		&& !!f.prototype \
+		&& (f.prototype.constructor == f)
 
 # ---------------------------------------------------------------------------
 

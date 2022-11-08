@@ -283,16 +283,7 @@ export var isBoolean = function(x) {
 
 // ---------------------------------------------------------------------------
 export var isConstructor = function(f) {
-  var err;
-  try {
-    new f();
-  } catch (error) {
-    err = error;
-    if (err.message.indexOf('is not a constructor') >= 0) {
-      return false;
-    }
-  }
-  return true;
+  return (typeof f === 'function') && !!f.prototype && (f.prototype.constructor === f);
 };
 
 // ---------------------------------------------------------------------------
