@@ -1,7 +1,6 @@
 # log.coffee
 
-import {strict as assert} from 'node:assert'
-
+import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	pass, undef, defined, notdefined, deepCopy,
 	hEsc, escapeStr, OL, untabify, isObject,
@@ -145,6 +144,12 @@ export LOGTAML = (label, value, prefix="", itemPrefix=undef) =>
 
 # ---------------------------------------------------------------------------
 
+export stringFits = (str) =>
+
+	return (str.length <= logWidth)
+
+# ---------------------------------------------------------------------------
+
 export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 
 	if internalDebugging
@@ -161,7 +166,7 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 	str = "#{prefix}#{label} = #{OL(value)}"
 	if internalDebugging
 		console.log "Using OL(), strlen = #{str.length}, logWidth = #{logWidth}"
-	if (str.length <= logWidth)
+	if stringFits(str)
 		PUTSTR str
 		return true
 
@@ -175,7 +180,7 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 				PUTSTR "#{prefix}#{label} = ''"
 			else
 				str = "#{prefix}#{label} = #{quoted(value, 'escape')}"
-				if (str.length <= logWidth)
+				if stringFits(str)
 					PUTSTR str
 				else
 					# --- escape, but not newlines

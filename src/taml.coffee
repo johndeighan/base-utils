@@ -1,12 +1,12 @@
 # taml.coffee
 
 import yaml from 'js-yaml'
-import {strict as assert} from 'node:assert'
 
+import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
-	undef, defined, notdefined, OL, chomp, hasChar, escapeStr,
+	undef, defined, notdefined, OL, chomp, hasChar,
 	isEmpty, isString, isFunction, isBoolean, isArray,
-	blockToArray, arrayToBlock,
+	blockToArray, arrayToBlock, escapeStr,
 	} from '@jdeighan/base-utils/utils'
 
 # ---------------------------------------------------------------------------

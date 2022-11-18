@@ -3,227 +3,240 @@
 import test from 'ava';
 
 import {
+  haltOnError
+} from '@jdeighan/base-utils/exceptions';
+
+import {
   pass,
-  undef
+  undef,
+  OL
 } from '@jdeighan/base-utils/utils';
 
 import {
   LOG,
+  LOGVALUE,
   utReset,
   utGetLog
 } from '@jdeighan/base-utils/log';
 
 import {
-  CallStack
+  CallStack,
+  throwOnError,
+  debugStack
 } from '@jdeighan/base-utils/stack';
 
-// ---------------------------------------------------------------------------
-test("line 12", (t) => {
-  var stack;
-  stack = new CallStack();
-  return t.is(stack.getIndentLevel(), 0);
-});
+haltOnError(false);
 
-test("line 16", (t) => {
-  var stack;
-  stack = new CallStack();
-  return t.is(stack.isLogging(), false);
-});
-
-// ---------------------------------------------------------------------------
-test("line 22", (t) => {
-  var stack;
-  stack = new CallStack();
-  stack.enter('callme', [1, 'abc'], true);
-  return t.is(stack.getIndentLevel(), 1);
-});
-
-test("line 27", (t) => {
-  var stack;
-  stack = new CallStack();
-  stack.enter('callme', [1, 'abc'], true);
-  return t.is(stack.isLogging(), true);
-});
-
-// ---------------------------------------------------------------------------
-test("line 34", (t) => {
-  var stack;
-  stack = new CallStack();
-  stack.enter('sub', [], false);
-  return t.is(stack.getIndentLevel(), 0);
-});
-
-test("line 39", (t) => {
-  var stack;
-  stack = new CallStack();
-  stack.enter('sub', [], true);
-  return t.is(stack.getIndentLevel(), 1);
-});
-
-test("line 44", (t) => {
-  var stack;
-  stack = new CallStack();
-  stack.enter('sub', [], false);
-  return t.is(stack.isLogging(), false);
-});
-
-// ---------------------------------------------------------------------------
-test("line 51", (t) => {
-  var stack;
-  stack = new CallStack();
-  stack.enter('callme', [1, 'abc'], true);
-  stack.enter('sub', [], false);
-  stack.returnFrom('sub');
-  return t.is(stack.getIndentLevel(), 1);
-});
-
-test("line 58", (t) => {
-  var stack;
-  stack = new CallStack();
-  stack.enter('callme', [1, 'abc'], true);
-  stack.enter('sub', [], false);
-  stack.returnFrom('sub');
-  return t.is(stack.isLogging(), true);
-});
+throwOnError(true);
 
 // ---------------------------------------------------------------------------
 (function() {
-  var coffeeCode;
-  // --- Simulate calling main() with these functions in effect
-  coffeeCode = `main = () ->
-	A()
-	return
-
-A = () ->
-	dbgEnter "A"
-	C()
-	for x from B()
-		LOG x
-		C()
-	dbgReturn "A"
-	return
-
-B = () ->
-	dbgEnter "B"
-	LOG 13
-	dbgYield "B", 5
-	yield 5
-	dbgResume "B"
-	C()
-	yield from E()
-	dbgReturn "B"
-	return
-
-C = () ->
-	dbgEnter "C"
-	LOG 'here'
-	dbgReturn "C"
-	return
-
-D = () ->
-	dbgEnter "D"
-	dbgYield "D", 1
-	yield 1
-	dbgResume "D"
-	dbgYield "D", 2
-	yield 2
-	dbgResume "D"
-	dbgReturn "D"
-	return`;
-  // --- Simulate executing main() and check state at each step:
-  return test("line 227", (t) => {
-    var stack;
-    utReset();
-    stack = new CallStack();
-    t.is(stack.size(), 0);
-    t.is(stack.currentFunc(), 'main');
-    // --- dbgEnter "A"
-    stack.enter('A');
-    t.is(stack.size(), 1);
-    t.is(stack.currentFunc(), 'A');
-    // --- dbgEnter "C"
-    stack.enter('C');
-    t.is(stack.size(), 2);
-    t.is(stack.currentFunc(), 'C');
-    // --- dbgReturn "C"
-    stack.returnFrom('C');
-    t.is(stack.size(), 1);
-    t.is(stack.currentFunc(), 'A');
-    // --- dbgEnter "B"
-    stack.enter('B');
-    t.is(stack.size(), 2);
-    t.is(stack.currentFunc(), 'B');
-    // --- dbgYield "B", 5
-    stack.yield('B', [5]);
-    t.is(stack.size(), 2);
-    t.is(stack.currentFunc(), 'A');
-    // --- dbgEnter "C"
-    stack.enter('C');
-    t.is(stack.size(), 3);
-    t.is(stack.currentFunc(), 'C');
-    // --- dbgReturn "C"
-    stack.returnFrom('C');
-    t.is(stack.size(), 2);
-    t.is(stack.currentFunc(), 'A');
-    // --- dbgResume "B"
-    stack.resume('B');
-    t.is(stack.size(), 2);
-    t.is(stack.currentFunc(), 'B');
-    // --- dbgEnter "C"
-    stack.enter('C');
-    t.is(stack.size(), 3);
-    t.is(stack.currentFunc(), 'C');
-    // --- dbgReturn "C"
-    stack.returnFrom('C');
-    t.is(stack.size(), 2);
-    t.is(stack.currentFunc(), 'B');
-    // --- dbgYield "B"
-    stack.yield('B');
-    t.is(stack.size(), 2);
-    t.is(stack.currentFunc(), 'A');
-    // --- dbgEnter "D"
-    stack.enter('D');
-    t.is(stack.size(), 3);
-    t.is(stack.currentFunc(), 'D');
-    // --- dbgYield "D", 1
-    stack.yield('D', [1]);
-    t.is(stack.size(), 3);
-    t.is(stack.currentFunc(), 'A');
-    // --- dbgResume "D"
-    stack.resume('D');
-    t.is(stack.size(), 3);
-    t.is(stack.currentFunc(), 'D');
-    // --- dbgYield "D", 2
-    stack.yield('D', [2]);
-    t.is(stack.size(), 3);
-    t.is(stack.currentFunc(), 'A');
-    // --- dbgResume "D"
-    stack.resume('D');
-    t.is(stack.size(), 3);
-    t.is(stack.currentFunc(), 'D');
-    // --- dbgReturn "D"
-    stack.returnFrom('D');
-    t.is(stack.size(), 2);
-    t.is(stack.currentFunc(), 'A');
-    // --- dbgEnter "C"
-    stack.enter('C');
-    t.is(stack.size(), 3);
-    t.is(stack.currentFunc(), 'C');
-    // --- dbgReturn "C"
-    stack.returnFrom('C');
-    t.is(stack.size(), 2);
-    t.is(stack.currentFunc(), 'A');
-    // --- dbgResume "B"
-    stack.resume('B');
-    t.is(stack.size(), 2);
-    t.is(stack.currentFunc(), 'B');
-    // --- dbgReturn "B"
-    stack.returnFrom('B');
-    t.is(stack.size(), 1);
-    t.is(stack.currentFunc(), 'A');
-    // --- dbgReturn "A"
-    stack.returnFrom('A');
-    t.is(stack.size(), 0);
-    return t.is(stack.currentFunc(), 'main');
+  var stack;
+  stack = new CallStack();
+  test("line 20", (t) => {
+    t.is(stack.level, 0);
+    t.is(stack.logLevel, 0);
+    t.is(stack.isLogging(), false);
+    t.is(stack.currentFunc(), undef);
+    t.is(stack.TOS(), undef);
+    return t.is(stack.isActive('dummy'), false);
   });
+  test("line 28", (t) => {
+    stack.enter('A');
+    t.is(stack.level, 1);
+    t.is(stack.logLevel, 0);
+    t.is(stack.isLogging(), false);
+    t.is(stack.currentFunc(), 'A');
+    t.is(stack.isActive('dummy'), false);
+    return t.is(stack.isActive('A'), true);
+  });
+  test("line 38", (t) => {
+    stack.enter('B', [], true);
+    t.is(stack.level, 2);
+    t.is(stack.logLevel, 1);
+    t.is(stack.isLogging(), true);
+    t.is(stack.currentFunc(), 'B');
+    t.is(stack.isActive('dummy'), false);
+    t.is(stack.isActive('A'), true);
+    return t.is(stack.isActive('B'), true);
+  });
+  test("line 49", (t) => {
+    stack.returnFrom('B');
+    t.is(stack.level, 1);
+    t.is(stack.logLevel, 0);
+    t.is(stack.isLogging(), false);
+    t.is(stack.currentFunc(), 'A');
+    t.is(stack.isActive('dummy'), false);
+    t.is(stack.isActive('A'), true);
+    return t.is(stack.isActive('B'), false);
+  });
+  test("line 60", (t) => {
+    stack.enter('B', [], true);
+    t.is(stack.level, 2);
+    t.is(stack.logLevel, 1);
+    t.is(stack.isLogging(), true);
+    t.is(stack.currentFunc(), 'B');
+    t.is(stack.isActive('dummy'), false);
+    t.is(stack.isActive('A'), true);
+    return t.is(stack.isActive('B'), true);
+  });
+  test("line 71", (t) => {
+    stack.yield('A', 1);
+    t.is(stack.level, 2);
+    t.is(stack.logLevel, 1);
+    t.is(stack.isLogging(), false);
+    t.is(stack.currentFunc(), 'A');
+    t.is(stack.isActive('dummy'), false);
+    t.is(stack.isActive('A'), true);
+    return t.is(stack.isActive('B'), true);
+  });
+  test("line 82", (t) => {
+    stack.resume('B');
+    t.is(stack.level, 2);
+    t.is(stack.logLevel, 1);
+    t.is(stack.isLogging(), true);
+    t.is(stack.currentFunc(), 'B');
+    t.is(stack.isActive('dummy'), false);
+    t.is(stack.isActive('A'), true);
+    return t.is(stack.isActive('B'), true);
+  });
+  return test("line 93", (t) => {
+    stack.yieldFrom('C');
+    stack.enter('C', [], true);
+    t.is(stack.level, 3);
+    t.is(stack.logLevel, 2);
+    t.is(stack.isLogging(), true);
+    t.is(stack.currentFunc(), 'C');
+    t.is(stack.isActive('dummy'), false);
+    t.is(stack.isActive('A'), true);
+    t.is(stack.isActive('B'), true);
+    return t.is(stack.isActive('C'), true);
+  });
+})();
+
+// ---------------------------------------------------------------------------
+(function() {
+  var prev, stack, theLog;
+  utReset();
+  prev = debugStack(true);
+  stack = new CallStack();
+  stack.enter('A');
+  stack.enter('B', [], true);
+  stack.returnFrom('B');
+  stack.enter('B', [], true);
+  stack.yield('B', 1);
+  stack.resume('B');
+  stack.yield('B', 2);
+  stack.resume('B');
+  stack.returnFrom('B');
+  stack.enter('C', [], true);
+  theLog = utGetLog();
+  test("line 126", (t) => {
+    return t.is(theLog, `RESET STACK => <undef>
+ENTER A => A
+	ENTER B => B
+		RETURN FROM B => A
+	ENTER B => B
+		YIELD 1 - in B => A
+		RESUME B => B
+		YIELD 2 - in B => A
+		RESUME B => B
+		RETURN FROM B => A
+	ENTER C => C`);
+  });
+  return debugStack(prev);
+})();
+
+// ---------------------------------------------------------------------------
+(function() {
+  var A, B, C, prev, stack, theLog;
+  // --- What we're simulating
+  A = function() {
+    var i, j, len, ref;
+    dbgEnter('A');
+    ref = B();
+    for (j = 0, len = ref.length; j < len; j++) {
+      i = ref[j];
+      LOG(i);
+    }
+    return dbgReturn('A');
+  };
+  B = function*() {
+    dbgEnter('B');
+    dbgYieldFrom('B');
+    yield* C();
+    dbgResume('B');
+    return dbgReturn('B');
+  };
+  C = function*() {
+    dbgEnter('C');
+    dbgYield('C', 42);
+    yield 42;
+    dbgResume('C');
+    dbgYield('C', 99);
+    yield 99;
+    dbgResume('C');
+    return dbgReturn('C');
+  };
+  utReset();
+  prev = debugStack(true);
+  stack = new CallStack();
+  stack.enter('A');
+  stack.enter('B');
+  stack.yieldFrom('B');
+  stack.enter('C');
+  stack.yield('C', 42);
+  stack.resume('C');
+  stack.yield('C', 99);
+  stack.resume('C');
+  stack.returnFrom('C');
+  stack.resume('B');
+  stack.returnFrom('B');
+  stack.returnFrom('A');
+  theLog = utGetLog();
+  test("line 196", (t) => {
+    return t.is(theLog, `RESET STACK => <undef>
+ENTER A => A
+	ENTER B => B
+		YIELD FROM - in B => A
+		ENTER C => C
+			YIELD 42 - in C => A
+			RESUME C => C
+			YIELD 99 - in C => A
+			RESUME C => C
+			RETURN FROM C => A
+		RESUME B => B
+		RETURN FROM B => A
+	RETURN FROM A => <undef>`);
+  });
+  return debugStack(prev);
+})();
+
+// ---------------------------------------------------------------------------
+(function() {
+  var prev, stack, theLog;
+  utReset();
+  prev = debugStack(true);
+  stack = new CallStack();
+  stack.enter('A');
+  stack.enter('B', [], true);
+  stack.returnFrom('B');
+  stack.enter('B', [], true);
+  stack.yield('B', 1);
+  stack.resume('B');
+  stack.yieldFrom('B');
+  stack.enter('C', [], true);
+  theLog = utGetLog();
+  test("line 96", (t) => {
+    return t.is(theLog, `RESET STACK => <undef>
+ENTER A => A
+	ENTER B => B
+		RETURN FROM B => A
+	ENTER B => B
+		YIELD 1 - in B => A
+		RESUME B => B
+		YIELD FROM - in B => A
+		ENTER C => C`);
+  });
+  return debugStack(prev);
 })();

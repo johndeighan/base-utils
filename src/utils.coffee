@@ -1,6 +1,6 @@
 # utils.coffee
 
-import {strict as assert} from 'node:assert'
+import {assert, croak} from '@jdeighan/base-utils/exceptions'
 
 `export const undef = void 0`
 
@@ -28,6 +28,12 @@ export notdefined = (obj) =>
 export spaces = (n) =>
 
 	return " ".repeat(n)
+
+# ---------------------------------------------------------------------------
+
+export tabs = (n) =>
+
+	return "\t".repeat(n)
 
 # ---------------------------------------------------------------------------
 
@@ -93,6 +99,16 @@ export OL = (obj) ->
 		return 'null'
 	else
 		return 'undef'
+
+# ---------------------------------------------------------------------------
+
+export OLS = (lObjects, sep=',') ->
+
+	assert isArray(lObjects), "not an array"
+	lParts = []
+	for obj in lObjects
+		lParts.push OL(obj)
+	return lParts.join(sep)
 
 # ---------------------------------------------------------------------------
 
@@ -178,6 +194,35 @@ export isString = (x) =>
 
 # ---------------------------------------------------------------------------
 
+export isNonEmptyString = (x) =>
+
+	return isString(x) && ! x.match(/^\s*$/)
+
+# ---------------------------------------------------------------------------
+
+export isIdentifier = (x) =>
+
+	return !! (isString(x) && x.match(///^
+			[A-Za-z_]
+			[A-Za-z0-9_]*
+			$///))
+
+# ---------------------------------------------------------------------------
+
+export isFunctionName = (x) =>
+
+	return !! (isString(x) && x.match(///^
+			[A-Za-z_]
+			[A-Za-z0-9_]*
+			(?:
+				\.             # allow class method names
+				[A-Za-z_]
+				[A-Za-z0-9_]*
+				)?
+			$///))
+
+# ---------------------------------------------------------------------------
+
 export isNumber = (x, hOptions=undef) ->
 
 	result = (typeof x == 'number') || (x instanceof Number)
@@ -225,9 +270,10 @@ export isHash = (x, lKeys) ->
 	if ! x || (getClassName(x) != 'Object')
 		return false
 	if defined(lKeys)
-		if ! isArray(lKeys)
-			LOG "isHash(): lKeys not an array"
-			process.exit()
+		if isString(lKeys)
+			lKeys = words(lKeys)
+		else if ! isArray(lKeys)
+			croak "lKeys not an array: #{OL(lKeys)}"
 		for key in lKeys
 			if ! x.hasOwnProperty(key)
 				return false
@@ -364,7 +410,7 @@ export isEmpty = (x) ->
 
 export nonEmpty = (x) ->
 
-	if ! x?
+	if notdefined(x)
 		return false
 	if isString(x)
 		return ! x.match(/^\s*$/)

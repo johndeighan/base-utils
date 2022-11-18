@@ -5,8 +5,9 @@ var compareFunc, myReplacer, squote;
 import yaml from 'js-yaml';
 
 import {
-  strict as assert
-} from 'node:assert';
+  assert,
+  croak
+} from '@jdeighan/base-utils/exceptions';
 
 import {
   undef,
@@ -15,14 +16,14 @@ import {
   OL,
   chomp,
   hasChar,
-  escapeStr,
   isEmpty,
   isString,
   isFunction,
   isBoolean,
   isArray,
   blockToArray,
-  arrayToBlock
+  arrayToBlock,
+  escapeStr
 } from '@jdeighan/base-utils/utils';
 
 // ---------------------------------------------------------------------------

@@ -5,7 +5,7 @@ import test from 'ava';
 import {
   assert,
   croak
-} from '@jdeighan/base-utils';
+} from '@jdeighan/base-utils/exceptions';
 
 import {
   undef

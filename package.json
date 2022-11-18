@@ -6,12 +6,13 @@
 	"main": "index.js",
 	"exports": {
 		".": "./src/base-utils.js",
+		"./utils": "./src/utils.js",
 		"./log": "./src/log.js",
 		"./debug": "./src/debug.js",
 		"./stack": "./src/stack.js",
 		"./prefix": "./src/prefix.js",
 		"./taml": "./src/taml.js",
-		"./utils": "./src/utils.js"
+		"./exceptions": "./src/exceptions.js"
 	},
 	"scripts": {
 		"build": "cls && coffee -c .",

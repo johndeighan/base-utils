@@ -2,254 +2,246 @@
 
 import test from 'ava'
 
-import {pass, undef} from '@jdeighan/base-utils/utils'
-import {LOG, utReset, utGetLog} from '@jdeighan/base-utils/log'
-import {CallStack} from '@jdeighan/base-utils/stack'
+import {haltOnError} from '@jdeighan/base-utils/exceptions'
+import {pass, undef, OL} from '@jdeighan/base-utils/utils'
+import {
+	LOG, LOGVALUE, utReset, utGetLog,
+	} from '@jdeighan/base-utils/log'
+import {
+	CallStack, throwOnError, debugStack,
+	} from '@jdeighan/base-utils/stack'
+
+haltOnError false
+throwOnError true
 
 # ---------------------------------------------------------------------------
 
-test "line 12", (t) =>
+(() ->
 	stack = new CallStack()
-	t.is stack.getIndentLevel(), 0
 
-test "line 16", (t) =>
-	stack = new CallStack()
-	t.is stack.isLogging(), false
+	test "line 20", (t) =>
+		t.is stack.level, 0
+		t.is stack.logLevel, 0
+		t.is stack.isLogging(), false
+		t.is stack.currentFunc(), undef
+		t.is stack.TOS(), undef
+		t.is stack.isActive('dummy'), false
+
+	test "line 28", (t) =>
+		stack.enter 'A'
+
+		t.is stack.level, 1
+		t.is stack.logLevel, 0
+		t.is stack.isLogging(), false
+		t.is stack.currentFunc(), 'A'
+		t.is stack.isActive('dummy'), false
+		t.is stack.isActive('A'), true
+
+	test "line 38", (t) =>
+		stack.enter 'B', [], true
+
+		t.is stack.level, 2
+		t.is stack.logLevel, 1
+		t.is stack.isLogging(), true
+		t.is stack.currentFunc(), 'B'
+		t.is stack.isActive('dummy'), false
+		t.is stack.isActive('A'), true
+		t.is stack.isActive('B'), true
+
+	test "line 49", (t) =>
+		stack.returnFrom 'B'
+
+		t.is stack.level, 1
+		t.is stack.logLevel, 0
+		t.is stack.isLogging(), false
+		t.is stack.currentFunc(), 'A'
+		t.is stack.isActive('dummy'), false
+		t.is stack.isActive('A'), true
+		t.is stack.isActive('B'), false
+
+	test "line 60", (t) =>
+		stack.enter 'B', [], true
+
+		t.is stack.level, 2
+		t.is stack.logLevel, 1
+		t.is stack.isLogging(), true
+		t.is stack.currentFunc(), 'B'
+		t.is stack.isActive('dummy'), false
+		t.is stack.isActive('A'), true
+		t.is stack.isActive('B'), true
+
+	test "line 71", (t) =>
+		stack.yield 'A', 1
+
+		t.is stack.level, 2
+		t.is stack.logLevel, 1
+		t.is stack.isLogging(), false
+		t.is stack.currentFunc(), 'A'
+		t.is stack.isActive('dummy'), false
+		t.is stack.isActive('A'), true
+		t.is stack.isActive('B'), true
+
+	test "line 82", (t) =>
+		stack.resume 'B'
+
+		t.is stack.level, 2
+		t.is stack.logLevel, 1
+		t.is stack.isLogging(), true
+		t.is stack.currentFunc(), 'B'
+		t.is stack.isActive('dummy'), false
+		t.is stack.isActive('A'), true
+		t.is stack.isActive('B'), true
+
+	test "line 93", (t) =>
+		stack.yieldFrom 'C'
+		stack.enter 'C', [], true
+
+		t.is stack.level, 3
+		t.is stack.logLevel, 2
+		t.is stack.isLogging(), true
+		t.is stack.currentFunc(), 'C'
+		t.is stack.isActive('dummy'), false
+		t.is stack.isActive('A'), true
+		t.is stack.isActive('B'), true
+		t.is stack.isActive('C'), true
+	)()
 
 # ---------------------------------------------------------------------------
 
-test "line 22", (t) =>
+(() ->
+	utReset()
+	prev = debugStack true
+
 	stack = new CallStack()
-	stack.enter 'callme', [1, 'abc'], true
-	t.is stack.getIndentLevel(), 1
 
-test "line 27", (t) =>
-	stack = new CallStack()
-	stack.enter 'callme', [1, 'abc'], true
-	t.is stack.isLogging(), true
+	stack.enter 'A'
+	stack.enter 'B', [], true
+	stack.returnFrom 'B'
+	stack.enter 'B', [], true
+	stack.yield 'B', 1
+	stack.resume 'B'
+	stack.yield 'B', 2
+	stack.resume 'B'
+	stack.returnFrom 'B'
+	stack.enter 'C', [], true
 
-# ---------------------------------------------------------------------------
+	theLog = utGetLog()
 
-test "line 34", (t) =>
-	stack = new CallStack()
-	stack.enter 'sub', [], false
-	t.is stack.getIndentLevel(), 0
-
-test "line 39", (t) =>
-	stack = new CallStack()
-	stack.enter 'sub', [], true
-	t.is stack.getIndentLevel(), 1
-
-test "line 44", (t) =>
-	stack = new CallStack()
-	stack.enter 'sub', [], false
-	t.is stack.isLogging(), false
-
-# ---------------------------------------------------------------------------
-
-test "line 51", (t) =>
-	stack = new CallStack()
-	stack.enter 'callme', [1, 'abc'], true
-	stack.enter 'sub', [], false
-	stack.returnFrom 'sub'
-	t.is stack.getIndentLevel(), 1
-
-test "line 58", (t) =>
-	stack = new CallStack()
-	stack.enter 'callme', [1, 'abc'], true
-	stack.enter 'sub', [], false
-	stack.returnFrom 'sub'
-	t.is stack.isLogging(), true
+	test "line 126", (t) =>
+		t.is theLog, """
+			RESET STACK => <undef>
+			ENTER A => A
+				ENTER B => B
+					RETURN FROM B => A
+				ENTER B => B
+					YIELD 1 - in B => A
+					RESUME B => B
+					YIELD 2 - in B => A
+					RESUME B => B
+					RETURN FROM B => A
+				ENTER C => C
+			"""
+	debugStack prev
+	)()
 
 # ---------------------------------------------------------------------------
 
 (() ->
 
-	# --- Simulate calling main() with these functions in effect
+	# --- What we're simulating
 
-	coffeeCode = """
-		main = () ->
-			A()
-			return
+	A = () ->
+		dbgEnter 'A'
+		for i in B()
+			LOG i
+		dbgReturn 'A'
 
-		A = () ->
-			dbgEnter "A"
-			C()
-			for x from B()
-				LOG x
-				C()
-			dbgReturn "A"
-			return
+	B = () ->
+		dbgEnter 'B'
+		dbgYieldFrom 'B'
+		yield from C()
+		dbgResume 'B'
+		dbgReturn 'B'
 
-		B = () ->
-			dbgEnter "B"
-			LOG 13
-			dbgYield "B", 5
-			yield 5
-			dbgResume "B"
-			C()
-			yield from E()
-			dbgReturn "B"
-			return
+	C = () ->
+		dbgEnter 'C'
+		dbgYield 'C', 42
+		yield 42
+		dbgResume 'C'
+		dbgYield 'C', 99
+		yield 99
+		dbgResume 'C'
+		dbgReturn 'C'
 
-		C = () ->
-			dbgEnter "C"
-			LOG 'here'
-			dbgReturn "C"
-			return
+	utReset()
+	prev = debugStack true
 
-		D = () ->
-			dbgEnter "D"
-			dbgYield "D", 1
-			yield 1
-			dbgResume "D"
-			dbgYield "D", 2
-			yield 2
-			dbgResume "D"
-			dbgReturn "D"
-			return
-		"""
+	stack = new CallStack()
 
-	# --- Simulate executing main() and check state at each step:
+	stack.enter 'A'
+	stack.enter 'B'
+	stack.yieldFrom 'B'
+	stack.enter 'C'
+	stack.yield 'C', 42
+	stack.resume 'C'
+	stack.yield 'C', 99
+	stack.resume 'C'
+	stack.returnFrom 'C'
+	stack.resume 'B'
+	stack.returnFrom 'B'
+	stack.returnFrom 'A'
 
-	test "line 227", (t) =>
-		utReset()
+	theLog = utGetLog()
 
-		stack = new CallStack()
+	test "line 196", (t) =>
+		t.is theLog, """
+			RESET STACK => <undef>
+			ENTER A => A
+				ENTER B => B
+					YIELD FROM - in B => A
+					ENTER C => C
+						YIELD 42 - in C => A
+						RESUME C => C
+						YIELD 99 - in C => A
+						RESUME C => C
+						RETURN FROM C => A
+					RESUME B => B
+					RETURN FROM B => A
+				RETURN FROM A => <undef>
+			"""
+	debugStack prev
+	)()
 
-		t.is stack.size(), 0
-		t.is stack.currentFunc(), 'main'
+# ---------------------------------------------------------------------------
 
-		# --- dbgEnter "A"
-		stack.enter('A')
+(() ->
+	utReset()
+	prev = debugStack true
 
-		t.is stack.size(), 1
-		t.is stack.currentFunc(), 'A'
+	stack = new CallStack()
 
-		# --- dbgEnter "C"
-		stack.enter('C')
+	stack.enter 'A'
+	stack.enter 'B', [], true
+	stack.returnFrom 'B'
+	stack.enter 'B', [], true
+	stack.yield 'B', 1
+	stack.resume 'B'
+	stack.yieldFrom 'B'
+	stack.enter 'C', [], true
 
-		t.is stack.size(), 2
-		t.is stack.currentFunc(), 'C'
+	theLog = utGetLog()
 
-		# --- dbgReturn "C"
-		stack.returnFrom('C')
-
-		t.is stack.size(), 1
-		t.is stack.currentFunc(), 'A'
-
-		# --- dbgEnter "B"
-		stack.enter('B')
-
-		t.is stack.size(), 2
-		t.is stack.currentFunc(), 'B'
-
-		# --- dbgYield "B", 5
-		stack.yield('B', [5])
-
-		t.is stack.size(), 2
-		t.is stack.currentFunc(), 'A'
-
-		# --- dbgEnter "C"
-		stack.enter('C')
-
-		t.is stack.size(), 3
-		t.is stack.currentFunc(), 'C'
-
-		# --- dbgReturn "C"
-		stack.returnFrom('C')
-
-		t.is stack.size(), 2
-		t.is stack.currentFunc(), 'A'
-
-		# --- dbgResume "B"
-		stack.resume('B')
-
-		t.is stack.size(), 2
-		t.is stack.currentFunc(), 'B'
-
-		# --- dbgEnter "C"
-		stack.enter('C')
-
-		t.is stack.size(), 3
-		t.is stack.currentFunc(), 'C'
-
-		# --- dbgReturn "C"
-		stack.returnFrom('C')
-
-		t.is stack.size(), 2
-		t.is stack.currentFunc(), 'B'
-
-		# --- dbgYield "B"
-		stack.yield('B')
-
-		t.is stack.size(), 2
-		t.is stack.currentFunc(), 'A'
-
-		# --- dbgEnter "D"
-		stack.enter('D')
-
-		t.is stack.size(), 3
-		t.is stack.currentFunc(), 'D'
-
-		# --- dbgYield "D", 1
-		stack.yield('D', [1])
-
-		t.is stack.size(), 3
-		t.is stack.currentFunc(), 'A'
-
-		# --- dbgResume "D"
-		stack.resume('D')
-
-		t.is stack.size(), 3
-		t.is stack.currentFunc(), 'D'
-
-		# --- dbgYield "D", 2
-		stack.yield('D', [2])
-
-		t.is stack.size(), 3
-		t.is stack.currentFunc(), 'A'
-
-		# --- dbgResume "D"
-		stack.resume('D')
-
-		t.is stack.size(), 3
-		t.is stack.currentFunc(), 'D'
-
-		# --- dbgReturn "D"
-		stack.returnFrom('D')
-
-		t.is stack.size(), 2
-		t.is stack.currentFunc(), 'A'
-
-		# --- dbgEnter "C"
-		stack.enter('C')
-
-		t.is stack.size(), 3
-		t.is stack.currentFunc(), 'C'
-
-		# --- dbgReturn "C"
-		stack.returnFrom('C')
-
-		t.is stack.size(), 2
-		t.is stack.currentFunc(), 'A'
-
-		# --- dbgResume "B"
-		stack.resume('B')
-
-		t.is stack.size(), 2
-		t.is stack.currentFunc(), 'B'
-
-		# --- dbgReturn "B"
-		stack.returnFrom('B')
-
-		t.is stack.size(), 1
-		t.is stack.currentFunc(), 'A'
-
-		# --- dbgReturn "A"
-		stack.returnFrom('A')
-
-		t.is stack.size(), 0
-		t.is stack.currentFunc(), 'main'
-
+	test "line 96", (t) =>
+		t.is theLog, """
+			RESET STACK => <undef>
+			ENTER A => A
+				ENTER B => B
+					RETURN FROM B => A
+				ENTER B => B
+					YIELD 1 - in B => A
+					RESUME B => B
+					YIELD FROM - in B => A
+					ENTER C => C
+			"""
+	debugStack prev
 	)()

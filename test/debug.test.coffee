@@ -3,44 +3,44 @@
 import test from 'ava'
 
 import {
+	haltOnError, assert, croak,
+	} from '@jdeighan/base-utils/exceptions'
+import {
 	undef, pass, arrayToBlock, isNumber, isArray, spaces,
 	} from '@jdeighan/base-utils/utils'
 import {toTAML} from '@jdeighan/base-utils/taml'
-import {
-	haltOnError, assert, croak,
-	} from '@jdeighan/base-utils'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {
-	LOG, LOGVALUE, utReset, utGetLog} from '@jdeighan/base-utils/log'
+	LOG, LOGVALUE, utReset, utGetLog,
+	} from '@jdeighan/base-utils/log'
 import {
-	setDebugging, resetDebugging,
-	getType, dumpDebugLoggers,
-	dbgEnter, dbgReturn, dbgYield, dbgResume, dbg,
+	setDebugging, getType, dumpDebugLoggers,
+	dbgEnter, dbgReturn, dbgReturnVal,
+	dbgYield, dbgYieldFrom, dbgResume, dbg,
 	dbgReset, dbgGetLog,
 	} from '@jdeighan/base-utils/debug'
 
-# ---------------------------------------------------------------------------
+haltOnError false
 
-test "line 20", (t) =>
-	setDebugging "myfunc"
-	t.deepEqual(
-		getType("something"),
-		["string", undef])
-	resetDebugging()
+# ---------------------------------------------------------------------------
 
 test "line 27", (t) =>
 	setDebugging "myfunc"
 	t.deepEqual(
+		getType("something"),
+		["string", undef])
+
+test "line 33", (t) =>
+	setDebugging "myfunc"
+	t.deepEqual(
 		getType("enter myfunc"),
 		["enter", "myfunc"])
-	resetDebugging()
 
-test "line 34", (t) =>
+test "line 39", (t) =>
 	setDebugging "myfunc"
 	t.deepEqual(
 		getType("return from X"),
 		["returnFrom", 'X'])
-	resetDebugging()
 
 # ---------------------------------------------------------------------------
 
@@ -49,19 +49,19 @@ double = (x) =>
 	assert isNumber(x), "not a number"
 	dbg "inside double"
 	result = 2 * x
-	dbgReturn "double", result
+	dbgReturnVal "double", result
 	return result
 
 quadruple = (x) =>
 	dbgEnter "quadruple", x
 	dbg "inside quadruple"
 	result = 2 * double(x)
-	dbgReturn "quadruple", result
+	dbgReturnVal "quadruple", result
 	return result
 
 # ---------------------------------------------------------------------------
 
-test "line 60", (t) =>
+test "line 64", (t) =>
 
 	utReset()
 	result = quadruple(3)
@@ -69,28 +69,24 @@ test "line 60", (t) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 68", (t) =>
+test "line 72", (t) =>
 
 	utReset()
 	setDebugging 'double'
 	result = quadruple(3)
-	resetDebugging()
 	t.is result, 12
 
 # ---------------------------------------------------------------------------
 
-test "line 78", (t) =>
+test "line 81", (t) =>
 
 	utReset()
 	setDebugging 'double'
 	result = quadruple(3)
-	resetDebugging()
 	t.is utGetLog(), """
-		enter double
-		│   arg[0] = 3
+		enter double 3
 		│   inside double
-		└─> return from double
-		    ret[0] = 6
+		└─> return 6 from double
 		"""
 
 # ---------------------------------------------------------------------------
@@ -100,41 +96,31 @@ test "line 94", (t) =>
 	utReset()
 	setDebugging 'double quadruple'
 	result = quadruple(3)
-	resetDebugging()
 	t.is result, 12
 	t.is utGetLog(), """
-		enter quadruple
-		│   arg[0] = 3
+		enter quadruple 3
 		│   inside quadruple
-		│   enter double
-		│   │   arg[0] = 3
+		│   enter double 3
 		│   │   inside double
-		│   └─> return from double
-		│       ret[0] = 6
-		└─> return from quadruple
-		    ret[0] = 12
+		│   └─> return 6 from double
+		└─> return 12 from quadruple
 		"""
 
 # ---------------------------------------------------------------------------
 
-test "line 116", (t) =>
+test "line 111", (t) =>
 
 	utReset()
 	setDebugging 'double', 'quadruple'
 	result = quadruple(3)
-	resetDebugging()
 	t.is result, 12
 	t.is utGetLog(), """
-		enter quadruple
-		│   arg[0] = 3
+		enter quadruple 3
 		│   inside quadruple
-		│   enter double
-		│   │   arg[0] = 3
+		│   enter double 3
 		│   │   inside double
-		│   └─> return from double
-		│       ret[0] = 6
-		└─> return from quadruple
-		    ret[0] = 12
+		│   └─> return 6 from double
+		└─> return 12 from quadruple
 		"""
 
 # ---------------------------------------------------------------------------
@@ -159,64 +145,52 @@ class Class2
 
 # ---------------------------------------------------------------------------
 
-test "line 158", (t) =>
+test "line 148", (t) =>
 
 	utReset()
 	setDebugging 'Class1.add Class2.add'
 	new Class1().add('abc')
 	new Class2().add('def')
-	resetDebugging()
 
 	t.is utGetLog(), """
-		enter Class1.add
-		│   arg[0] = 'abc'
+		enter Class1.add 'abc'
 		└─> return from Class1.add
-		enter Class2.add
-		│   arg[0] = 'def'
+		enter Class2.add 'def'
 		└─> return from Class2.add
 		"""
 
 # ---------------------------------------------------------------------------
 
-test "line 177", (t) =>
+test "line 164", (t) =>
 
 	utReset()
 	setDebugging 'Class2.add'
 	new Class1().add('abc')
 	new Class2().add('def')
-	resetDebugging()
 
 	t.is utGetLog(), """
-		enter Class2.add
-		│   arg[0] = 'def'
+		enter Class2.add 'def'
 		└─> return from Class2.add
 		"""
 
 # ---------------------------------------------------------------------------
 
-test "line 193", (t) =>
+test "line 178", (t) =>
 
 	utReset()
 	setDebugging 'double quadruple'
 	result = double(quadruple(3))
-	resetDebugging()
 	t.is result, 24
 	t.is utGetLog(), """
-		enter quadruple
-		│   arg[0] = 3
+		enter quadruple 3
 		│   inside quadruple
-		│   enter double
-		│   │   arg[0] = 3
+		│   enter double 3
 		│   │   inside double
-		│   └─> return from double
-		│       ret[0] = 6
-		└─> return from quadruple
-		    ret[0] = 12
-		enter double
-		│   arg[0] = 12
+		│   └─> return 6 from double
+		└─> return 12 from quadruple
+		enter double 12
 		│   inside double
-		└─> return from double
-		    ret[0] = 24
+		└─> return 24 from double
 		"""
 
 # ---------------------------------------------------------------------------
@@ -231,13 +205,13 @@ allNumbers = (lItems) ->
 			yield item
 			dbgResume "allNumbers"
 		else if isArray(item)
-			dbgYield "allNumbers", item
+			dbgYieldFrom "allNumbers"
 			yield from allNumbers(item)
 			dbgResume "allNumbers"
 	dbgReturn "allNumbers"
 	return
 
-test "line 236", (t) =>
+test "line 214", (t) =>
 	lItems = ['a', 2, ['b', 3], 5]
 	total = 0
 	for i from allNumbers(lItems)
@@ -247,7 +221,7 @@ test "line 236", (t) =>
 # ---------------------------------------------------------------------------
 # Test custom loggers
 
-test "line 246", (t) =>
+test "line 224", (t) =>
 
 	utReset()
 	setDebugging 'double quadruple', {
@@ -258,7 +232,11 @@ test "line 246", (t) =>
 			return true
 
 		# --- on dbgReturn('<func>'), don't log anything at all
-		returnFrom: (funcName, lObjects, level) ->
+		returnFrom: (funcName, level) ->
+			return true
+
+		# --- on dbgReturnVal('<func>', <val>), don't log anything at all
+		returnVal: (funcName, val, level) ->
 			return true
 
 		}
@@ -301,7 +279,7 @@ test "line 246", (t) =>
 		yield 5
 		dbgResume "B"
 		C()
-		dbgYield "B"
+		dbgYieldFrom "B"
 		yield from D()
 		dbgResume "B"
 		dbgReturn "B"
@@ -326,7 +304,7 @@ test "line 246", (t) =>
 		dbgReturn "D"
 		return
 
-	test "line 69", (t) =>
+	test "line 307", (t) =>
 		lOutput = []
 		utReset()
 		main()
@@ -345,10 +323,9 @@ test "line 246", (t) =>
 
 	# --- Try with various settings of setDebugging()
 
-	test "line 88", (t) =>
+	test "line 326", (t) =>
 		lOutput = []
 		utReset()
-		resetDebugging()
 		setDebugging "C"
 		main()
 
@@ -377,10 +354,9 @@ test "line 246", (t) =>
 			└─> return from C
 		"""
 
-	test "line 109", (t) =>
+	test "line 357", (t) =>
 		lOutput = []
 		utReset()
-		resetDebugging()
 		setDebugging "D"
 		main()
 
@@ -388,17 +364,14 @@ test "line 246", (t) =>
 
 		t.is utGetLog(), """
 			enter D
-			│   yield D
-			│   │   arg[0] = 1
-			│   yield D
-			│   │   arg[0] = 2
+			├── yield 1
+			├── yield 2
 			└─> return from D
 		"""
 
-	test "line 126", (t) =>
+	test "line 372", (t) =>
 		lOutput = []
 		utReset()
-		resetDebugging()
 		setDebugging "C D"
 		main()
 
@@ -418,14 +391,12 @@ test "line 246", (t) =>
 			│   x = 9
 			└─> return from C
 			enter D
-			│   yield D
-			│   │   arg[0] = 1
+			├── yield 1
 			│   enter C
 			│   │   here
 			│   │   x = 9
 			│   └─> return from C
-			│   yield D
-			│   │   arg[0] = 2
+			├── yield 2
 			│   enter C
 			│   │   here
 			│   │   x = 9
@@ -433,11 +404,10 @@ test "line 246", (t) =>
 			└─> return from D
 		"""
 
-	test "line 153", (t) =>
+	test "line 407", (t) =>
 		lOutput = []
 		utReset()
-		resetDebugging()
-		setDebugging "A B C D"
+		setDebugging true
 		main()
 
 		# --- debug all
@@ -449,35 +419,28 @@ test "line 246", (t) =>
 			│   │   x = 9
 			│   └─> return from C
 			│   enter B
-			│   │   yield B
-			│   │   │   arg[0] = 5
+			│   ├── yield 5
 			│   │   enter C
 			│   │   │   here
 			│   │   │   x = 9
 			│   │   └─> return from C
-			│   │   resume B
 			│   │   enter C
 			│   │   │   here
 			│   │   │   x = 9
 			│   │   └─> return from C
-			│   │   yield B
+			│   ├── yieldFrom
 			│   │   enter D
-			│   │   │   yield D
-			│   │   │   │   arg[0] = 1
+			│   │   ├── yield 1
 			│   │   │   enter C
 			│   │   │   │   here
 			│   │   │   │   x = 9
 			│   │   │   └─> return from C
-			│   │   │   resume D
-			│   │   │   yield D
-			│   │   │   │   arg[0] = 2
+			│   │   ├── yield 2
 			│   │   │   enter C
 			│   │   │   │   here
 			│   │   │   │   x = 9
 			│   │   │   └─> return from C
-			│   │   │   resume D
 			│   │   └─> return from D
-			│   │   resume B
 			│   └─> return from B
 			└─> return from A
 		"""
@@ -516,12 +479,12 @@ test "line 246", (t) =>
 	dbgOutput = dbgGetLog()
 	logOutput = utGetLog()
 
-	test "line 533", (t) =>
+	test "line 489", (t) =>
 		t.is logOutput, """
 			in main()
 			in A()
 			"""
-	test "line 538", (t) =>
+	test "line 494", (t) =>
 		t.is dbgOutput, """
 		   ENTERING A
 		   └─> return from A

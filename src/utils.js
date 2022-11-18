@@ -4,8 +4,9 @@ var myReplacer,
   hasProp = {}.hasOwnProperty;
 
 import {
-  strict as assert
-} from 'node:assert';
+  assert,
+  croak
+} from '@jdeighan/base-utils/exceptions';
 
 export const undef = void 0;
 
@@ -28,6 +29,11 @@ export var notdefined = (obj) => {
 // ---------------------------------------------------------------------------
 export var spaces = (n) => {
   return " ".repeat(n);
+};
+
+// ---------------------------------------------------------------------------
+export var tabs = (n) => {
+  return "\t".repeat(n);
 };
 
 // ---------------------------------------------------------------------------
@@ -102,6 +108,18 @@ export var OL = function(obj) {
   } else {
     return 'undef';
   }
+};
+
+// ---------------------------------------------------------------------------
+export var OLS = function(lObjects, sep = ',') {
+  var i, lParts, len1, obj;
+  assert(isArray(lObjects), "not an array");
+  lParts = [];
+  for (i = 0, len1 = lObjects.length; i < len1; i++) {
+    obj = lObjects[i];
+    lParts.push(OL(obj));
+  }
+  return lParts.join(sep);
 };
 
 // ---------------------------------------------------------------------------
@@ -202,6 +220,21 @@ export var isString = (x) => {
 };
 
 // ---------------------------------------------------------------------------
+export var isNonEmptyString = (x) => {
+  return isString(x) && !x.match(/^\s*$/);
+};
+
+// ---------------------------------------------------------------------------
+export var isIdentifier = (x) => {
+  return !!(isString(x) && x.match(/^[A-Za-z_][A-Za-z0-9_]*$/));
+};
+
+// ---------------------------------------------------------------------------
+export var isFunctionName = (x) => {
+  return !!(isString(x) && x.match(/^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)?$/)); // allow class method names
+};
+
+// ---------------------------------------------------------------------------
 export var isNumber = function(x, hOptions = undef) {
   var max, min, result;
   result = (typeof x === 'number') || (x instanceof Number);
@@ -257,9 +290,10 @@ export var isHash = function(x, lKeys) {
     return false;
   }
   if (defined(lKeys)) {
-    if (!isArray(lKeys)) {
-      LOG("isHash(): lKeys not an array");
-      process.exit();
+    if (isString(lKeys)) {
+      lKeys = words(lKeys);
+    } else if (!isArray(lKeys)) {
+      croak(`lKeys not an array: ${OL(lKeys)}`);
     }
     for (i = 0, len1 = lKeys.length; i < len1; i++) {
       key = lKeys[i];
@@ -404,7 +438,7 @@ export var isEmpty = function(x) {
 //   nonEmpty
 //      - string has non-whitespace, array has elements, hash has keys
 export var nonEmpty = function(x) {
-  if (x == null) {
+  if (notdefined(x)) {
     return false;
   }
   if (isString(x)) {

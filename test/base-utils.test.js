@@ -5,23 +5,33 @@ var double, getLog, lLog, quadruple;
 import test from 'ava';
 
 import {
+  assert,
+  croak,
+  haltOnError,
+  exReset,
+  exGetLog
+} from '@jdeighan/base-utils/exceptions';
+
+import {
+  undef,
   pass,
   isNumber,
   arrayToBlock
 } from '@jdeighan/base-utils/utils';
 
 import {
-  haltOnError,
-  assert,
-  croak
-} from '@jdeighan/base-utils';
-
-import {
   setLogger,
   debugLogging,
   LOG,
-  sep_dash
+  sep_dash,
+  utReset,
+  utGetLog
 } from '@jdeighan/base-utils/log';
+
+import {
+  dbgReset,
+  dbgGetLog
+} from '@jdeighan/base-utils/debug';
 
 haltOnError(false);
 
@@ -64,15 +74,15 @@ test("line 39", (t) => {
 
 test("line 44", (t) => {
   var result;
-  lLog = [];
+  exReset();
   try {
     result = quadruple('abc');
   } catch (error) {}
-  return t.is(getLog(), `${sep_dash}
+  return t.is(exGetLog(), `-------------------------
 JavaScript CALL STACK:
    double
    quadruple
-${sep_dash}
+-------------------------
 ERROR: not a number (in double())`);
 });
 

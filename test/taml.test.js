@@ -5,7 +5,7 @@ import test from 'ava';
 import {
   assert,
   croak
-} from '@jdeighan/base-utils';
+} from '@jdeighan/base-utils/exceptions';
 
 import {
   undef,
@@ -23,32 +23,32 @@ import {
 } from '@jdeighan/base-utils/taml';
 
 // ---------------------------------------------------------------------------
-test("line 12", (t) => {
+test("line 13", (t) => {
   return t.truthy(isTAML("---\n- first\n- second"));
 });
 
-test("line 15", (t) => {
+test("line 16", (t) => {
   return t.falsy(isTAML("x---\n5"));
 });
 
-test("line 18", (t) => {
+test("line 19", (t) => {
   return t.falsy(isTAML("---x\n5"));
 });
 
-test("line 21", (t) => {
+test("line 22", (t) => {
   return t.is(toTAML({
     a: 1
   }), "---\na: 1");
 });
 
-test("line 24", (t) => {
+test("line 25", (t) => {
   return t.is(toTAML({
     a: 1,
     b: 2
   }), "---\na: 1\nb: 2");
 });
 
-test("line 27", (t) => {
+test("line 28", (t) => {
   return t.is(toTAML([
     1,
     'abc',
@@ -58,7 +58,7 @@ test("line 27", (t) => {
   ]), "---\n- 1\n- abc\n-\n   a: 1");
 });
 
-test("line 31", (t) => {
+test("line 32", (t) => {
   return t.is(toTAML({
     a: 1,
     b: 2
@@ -67,13 +67,13 @@ a: 1
 b: 2`);
 });
 
-test("line 38", (t) => {
+test("line 39", (t) => {
   return t.is(toTAML(['a', 'b']), `---
 - a
 - b`);
 });
 
-test("line 45", (t) => {
+test("line 46", (t) => {
   return t.is(toTAML([
     'a',
     'b',
@@ -90,11 +90,11 @@ test("line 45", (t) => {
 	- x`));
 });
 
-test("line 56", (t) => {
+test("line 57", (t) => {
   return t.deepEqual(fromTAML("---\n- a\n- b"), ['a', 'b']);
 });
 
-test("line 59", (t) => {
+test("line 60", (t) => {
   return t.deepEqual(fromTAML(`---
 title:
 \ten: Hello, she said.`), {
@@ -104,7 +104,7 @@ title:
   });
 });
 
-test("line 71", (t) => {
+test("line 72", (t) => {
   return t.deepEqual(fromTAML(`---
 a: 1
 b: 2`), {
@@ -113,28 +113,28 @@ b: 2`), {
   });
 });
 
-test("line 83", (t) => {
+test("line 84", (t) => {
   return t.is(toTAML(undef), "---\nundef");
 });
 
-test("line 86", (t) => {
+test("line 87", (t) => {
   return t.is(toTAML(null), "---\nnull");
 });
 
-test("line 89", (t) => {
+test("line 90", (t) => {
   return t.is(toTAML({
     a: 1
   }), "---\na: 1");
 });
 
-test("line 92", (t) => {
+test("line 93", (t) => {
   return t.is(toTAML({
     a: 1,
     b: 2
   }), "---\na: 1\nb: 2");
 });
 
-test("line 95", (t) => {
+test("line 96", (t) => {
   return t.is(toTAML([
     1,
     'abc',
@@ -144,7 +144,7 @@ test("line 95", (t) => {
   ]), "---\n- 1\n- abc\n-\n   a: 1");
 });
 
-test("line 98", (t) => {
+test("line 99", (t) => {
   return t.is(toTAML({
     a: 1,
     b: 2
@@ -153,13 +153,13 @@ a: 1
 b: 2`);
 });
 
-test("line 105", (t) => {
+test("line 106", (t) => {
   return t.is(toTAML(['a', 'b']), `---
 - a
 - b`);
 });
 
-test("line 112", (t) => {
+test("line 113", (t) => {
   return t.is(toTAML([
     'a',
     'b',
@@ -176,7 +176,7 @@ test("line 112", (t) => {
 	- x`));
 });
 
-test("line 123", (t) => {
+test("line 124", (t) => {
   return t.is(toTAML(['xyz', 42, false, 'false', undef]), `---
 - xyz
 - 42
@@ -189,7 +189,7 @@ test("line 123", (t) => {
 // Test sorting keys
 
 // --- Default is to sort keys
-test("line 138", (t) => {
+test("line 139", (t) => {
   return t.is(toTAML({
     c: 3,
     b: 2,
@@ -201,7 +201,7 @@ c: 3`);
 });
 
 // --- sortKeys array specifies order
-test("line 148", (t) => {
+test("line 149", (t) => {
   return t.is(toTAML({
     c: 3,
     b: 2,
@@ -214,7 +214,7 @@ a: 1
 c: 3`);
 });
 
-test("line 156", (t) => {
+test("line 157", (t) => {
   return t.is(toTAML({
     c: 3,
     b: 2,
@@ -228,7 +228,7 @@ a: 1`);
 });
 
 // --- Keys not in the sortKeys array are put at end alphabetically
-test("line 166", (t) => {
+test("line 167", (t) => {
   return t.is(toTAML({
     e: 5,
     d: 4,
@@ -245,7 +245,7 @@ d: 4
 e: 5`);
 });
 
-test("line 176", (t) => {
+test("line 177", (t) => {
   var hProc;
   hProc = {
     code: function(block) {

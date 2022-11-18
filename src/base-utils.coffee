@@ -1,99 +1,24 @@
 # base-utils.coffee
 
 import {
-	undef, defined, notdefined, isString, isEmpty, untabify, OL,
+	undef, pass, defined, notdefined,
 	} from '@jdeighan/base-utils/utils'
-import {isTAML, fromTAML, toTAML} from '@jdeighan/base-utils/taml'
 import {
 	LOG, LOGVALUE, LOGTAML, setLogger, sep_dash, sep_eq,
 	} from '@jdeighan/base-utils/log'
 import {
-	setDebugging, resetDebugging, setCustomDebugLogger,
+	setDebugging, setCustomDebugLogger,
 	} from '@jdeighan/base-utils/debug'
+import {isTAML, fromTAML, toTAML} from '@jdeighan/base-utils/taml'
+import {
+	haltOnError, assert, croak,
+	} from '@jdeighan/base-utils/exceptions'
 
 export {
-	LOG, LOGVALUE, LOGTAML, setLogger,
-	setDebugging, resetDebugging, setCustomDebugLogger,
-	isTAML, fromTAML, toTAML}
+	undef, pass, defined, notdefined,
+	LOG, LOGVALUE, LOGTAML, setLogger, sep_dash, sep_eq,
+	setDebugging, setCustomDebugLogger,
+	isTAML, fromTAML, toTAML,
+	haltOnError, assert, croak,
+	}
 
-doHaltOnError = true
-
-# ---------------------------------------------------------------------------
-
-export haltOnError = (flag=true) ->
-	# --- return existing setting
-
-	save = doHaltOnError
-	doHaltOnError = flag
-	return save
-
-# ---------------------------------------------------------------------------
-
-getCallers = (stackTrace, lExclude=[]) ->
-
-	iter = stackTrace.matchAll(///
-			at
-			\s+
-			(?:
-				async
-				\s+
-				)?
-			([^\s(]+)
-			///g)
-	if !iter
-		return ["<unknown>"]
-
-	lCallers = []
-	for lMatches from iter
-		[_, caller] = lMatches
-		if (caller.indexOf('file://') == 0)
-			break
-		if caller not in lExclude
-			lCallers.push caller
-
-	return lCallers
-
-# ---------------------------------------------------------------------------
-#   assert - mimic nodejs's assert
-#   return true so we can use it in boolean expressions
-
-export assert = (cond, msg) ->
-
-	if ! cond
-		stackTrace = new Error().stack
-		lCallers = getCallers(stackTrace, ['assert'])
-
-		LOG sep_dash
-		LOG 'JavaScript CALL STACK:'
-		for caller in lCallers
-			LOG "   #{caller}"
-		LOG sep_dash
-		LOG "ERROR: #{msg} (in #{lCallers[0]}())"
-		croak msg
-	return true
-
-# ---------------------------------------------------------------------------
-#   croak - throws an error after possibly printing useful info
-#           err can be a string or an Error object
-
-export croak = (err, label=undef, obj=undef) ->
-
-	if isString(err)
-		curmsg = err
-	else
-		curmsg = err.message
-
-	if isEmpty(label)
-		newmsg = "ERROR (croak): #{curmsg}"
-	else
-		newmsg = """
-			ERROR (croak): #{curmsg}
-			#{label}:
-			#{toTAML(obj)}
-			"""
-	if doHaltOnError
-		LOG newmsg
-		process.exit()
-	else
-		# --- re-throw the error
-		throw new Error(newmsg)

@@ -1,7 +1,6 @@
 # prefix.coffee
 
-import {strict as assert} from 'node:assert'
-
+import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {undef, OL, setCharsAt} from '@jdeighan/base-utils/utils'
 
 # --- We use spaces here because Windows Terminal handles TAB chars badly
@@ -9,6 +8,7 @@ import {undef, OL, setCharsAt} from '@jdeighan/base-utils/utils'
 export vbar = '│'       # unicode 2502
 export hbar = '─'       # unicode 2500
 export corner = '└'     # unicode 2514
+export tee = '├'        # unicode 251C
 export arrowhead = '>'
 export space = ' '
 export dot = '.'
@@ -16,6 +16,7 @@ export dot = '.'
 export fourSpaces  = space  + space + space     + space
 export oneIndent   = vbar   + space + space     + space
 export arrow       = corner + hbar  + arrowhead + space
+export flat        = tee    + hbar  + hbar      + space
 export dotIndent   = dot    + space + space     + space
 
 # ---------------------------------------------------------------------------
@@ -32,6 +33,11 @@ export getPrefix = (level, option='none') ->
 				return arrow
 			else
 				return oneIndent.repeat(level-1) + arrow
+		when 'withFlat'
+			if (level == 0)
+				return flat
+			else
+				return oneIndent.repeat(level-1) + flat
 		when 'noLastVbar'
 			assert (level >= 1),
 				"getPrefix(), noLastVbar but level=#{OL(level)}"

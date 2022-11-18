@@ -3,8 +3,9 @@
 var handleSimpleCase, internalDebugging, lUTLog, loaded, putstr, threeSpaces;
 
 import {
-  strict as assert
-} from 'node:assert';
+  assert,
+  croak
+} from '@jdeighan/base-utils/exceptions';
 
 import {
   pass,
@@ -173,6 +174,11 @@ export var LOGTAML = (label, value, prefix = "", itemPrefix = undef) => {
 };
 
 // ---------------------------------------------------------------------------
+export var stringFits = (str) => {
+  return str.length <= logWidth;
+};
+
+// ---------------------------------------------------------------------------
 export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
   var escaped, i, j, len, len1, line, ref, ref1, str, str1, str2, str3, subtype, type;
   if (internalDebugging) {
@@ -190,7 +196,7 @@ export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
   if (internalDebugging) {
     console.log(`Using OL(), strlen = ${str.length}, logWidth = ${logWidth}`);
   }
-  if (str.length <= logWidth) {
+  if (stringFits(str)) {
     PUTSTR(str);
     return true;
   }
@@ -204,7 +210,7 @@ export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
         PUTSTR(`${prefix}${label} = ''`);
       } else {
         str = `${prefix}${label} = ${quoted(value, 'escape')}`;
-        if (str.length <= logWidth) {
+        if (stringFits(str)) {
           PUTSTR(str);
         } else {
           // --- escape, but not newlines

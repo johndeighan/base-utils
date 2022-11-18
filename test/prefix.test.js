@@ -39,10 +39,10 @@ test("line 20", (t) => {
   return t.is(getPrefix(2, 'noLast2Vbars'), un('˳˳˳˳˳˳˳˳'));
 });
 
-test("line 22", (t) => {
+test("line 21", (t) => {
   return t.is(getPrefix(2, 'dotLast2Vbars'), un('.˳˳˳˳˳˳˳'));
 });
 
-test("line 23", (t) => {
+test("line 22", (t) => {
   return t.is(getPrefix(2), un('˳˳˳˳˳˳˳˳'));
 });

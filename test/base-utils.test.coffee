@@ -3,14 +3,15 @@
 import test from 'ava'
 
 import {
-	pass, isNumber, arrayToBlock,
+	assert, croak, haltOnError, exReset, exGetLog,
+	} from '@jdeighan/base-utils/exceptions'
+import {
+	undef, pass, isNumber, arrayToBlock,
 	} from '@jdeighan/base-utils/utils'
 import {
-	haltOnError, assert, croak,
-	} from '@jdeighan/base-utils'
-import {
-	setLogger, debugLogging, LOG, sep_dash,
+	setLogger, debugLogging, LOG, sep_dash, utReset, utGetLog,
 	} from '@jdeighan/base-utils/log'
+import {dbgReset, dbgGetLog} from '@jdeighan/base-utils/debug'
 
 haltOnError false
 
@@ -44,15 +45,15 @@ test "line 39", (t) =>
 
 
 test "line 44", (t) =>
-	lLog = []
+	exReset()
 	try
 		result = quadruple('abc')
-	t.is getLog(), """
-		#{sep_dash}
+	t.is exGetLog(), """
+		-------------------------
 		JavaScript CALL STACK:
 		   double
 		   quadruple
-		#{sep_dash}
+		-------------------------
 		ERROR: not a number (in double())
 		"""
 
