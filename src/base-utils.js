@@ -11,7 +11,6 @@ import {
   LOG,
   LOGVALUE,
   LOGTAML,
-  setLogger,
   sep_dash,
   sep_eq
 } from '@jdeighan/base-utils/log';
@@ -41,7 +40,6 @@ export {
   LOG,
   LOGVALUE,
   LOGTAML,
-  setLogger,
   sep_dash,
   sep_eq,
   setDebugging,

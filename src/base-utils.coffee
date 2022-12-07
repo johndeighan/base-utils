@@ -4,7 +4,7 @@ import {
 	undef, pass, defined, notdefined,
 	} from '@jdeighan/base-utils/utils'
 import {
-	LOG, LOGVALUE, LOGTAML, setLogger, sep_dash, sep_eq,
+	LOG, LOGVALUE, LOGTAML, sep_dash, sep_eq,
 	} from '@jdeighan/base-utils/log'
 import {
 	setDebugging, setCustomDebugLogger,
@@ -16,7 +16,7 @@ import {
 
 export {
 	undef, pass, defined, notdefined,
-	LOG, LOGVALUE, LOGTAML, setLogger, sep_dash, sep_eq,
+	LOG, LOGVALUE, LOGTAML, sep_dash, sep_eq,
 	setDebugging, setCustomDebugLogger,
 	isTAML, fromTAML, toTAML,
 	haltOnError, assert, croak,

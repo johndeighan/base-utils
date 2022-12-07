@@ -60,9 +60,10 @@ export tamlFix = (str) =>
 export fixValStr = (valStr) =>
 
 	if isEmpty(valStr) \
-			|| valStr.match(/^\d+(?:\.\d*)?$/) \
-			|| valStr.match(/^\".*\"$/) \
-			|| valStr.match(/^\'.*\'$/)
+			|| valStr.match(/^\d+(?:\.\d*)?$/) \   # a number
+			|| valStr.match(/^\".*\"$/) \          # " quoted string
+			|| valStr.match(/^\'.*\'$/) \          # ' quoted string
+			|| (valStr == 'true') || (valStr == 'false')
 		return valStr
 	else
 		return "'" + valStr.replace(/'/g, "''") + "'"

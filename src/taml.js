@@ -73,7 +73,7 @@ export var tamlFix = (str) => {
 
 // ---------------------------------------------------------------------------
 export var fixValStr = (valStr) => {
-  if (isEmpty(valStr) || valStr.match(/^\d+(?:\.\d*)?$/) || valStr.match(/^\".*\"$/) || valStr.match(/^\'.*\'$/)) {
+  if (isEmpty(valStr) || valStr.match(/^\d+(?:\.\d*)?$/) || valStr.match(/^\".*\"$/) || valStr.match(/^\'.*\'$/) || (valStr === 'true') || (valStr === 'false')) { // a number // " quoted string // ' quoted string
     return valStr;
   } else {
     return "'" + valStr.replace(/'/g, "''") + "'";

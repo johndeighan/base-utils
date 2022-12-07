@@ -1,14 +1,18 @@
 # exceptions.coffee
 
-`const undef = void 0`
+import {getV8Stack, nodeStr} from '@jdeighan/base-utils/v8-stack'
+import {
+	undef, defined, notdefined,
+	} from '@jdeighan/base-utils/utils'
+
 doHaltOnError = true
 doLog = true
 
 # ---------------------------------------------------------------------------
 
-export suppressExceptionLogging = (flag=true) ->
+export suppressExceptionLogging = () ->
 
-	doLog = ! flag
+	doLog = false
 	return
 
 # ---------------------------------------------------------------------------
@@ -36,38 +40,12 @@ export exGetLog = () =>
 
 # ---------------------------------------------------------------------------
 
-LLOG = (str) ->
+EXLOG = (str) ->
 
 	if lExceptionLog
 		lExceptionLog.push str
 	else if doLog
 		console.log str
-
-# ---------------------------------------------------------------------------
-
-getCallers = (stackTrace, lExclude=[]) ->
-
-	iter = stackTrace.matchAll(///
-			at
-			\s+
-			(?:
-				async
-				\s+
-				)?
-			([^\s(]+)
-			///g)
-	if ! iter
-		return ["<unknown>"]
-
-	lCallers = []
-	for lMatches from iter
-		[_, caller] = lMatches
-		if (caller.indexOf('file://') == 0)
-			break
-		if caller not in lExclude
-			lCallers.push caller
-
-	return lCallers
 
 # ---------------------------------------------------------------------------
 #   assert - mimic nodejs's assert
@@ -76,15 +54,16 @@ getCallers = (stackTrace, lExclude=[]) ->
 export assert = (cond, msg) ->
 
 	if ! cond
-		stackTrace = new Error().stack
-		lCallers = getCallers(stackTrace, ['assert'])
+		lFrames = getV8Stack().slice(3)
 
-		LLOG '-------------------------'
-		LLOG 'JavaScript CALL STACK:'
-		for caller in lCallers
-			LLOG "   #{caller}"
-		LLOG '-------------------------'
-		LLOG "ERROR: #{msg} (in #{lCallers[0]}())"
+		EXLOG '-------------------------'
+		EXLOG 'JavaScript CALL STACK:'
+		for node in lFrames
+			EXLOG "   #{nodeStr(node)}"
+			if (node.type == 'script')
+				break
+		EXLOG '-------------------------'
+		EXLOG "ERROR: #{msg}"
 		croak msg
 	return true
 
@@ -109,8 +88,9 @@ export croak = (err, label=undef, obj=undef) ->
 			"""
 
 	if doHaltOnError
-		LLOG newmsg
+		EXLOG newmsg
 		process.exit()
 	else
 		# --- re-throw the error
+		doLog = true    # reset for next error
 		throw new Error(newmsg)

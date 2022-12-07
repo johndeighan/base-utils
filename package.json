@@ -12,7 +12,8 @@
 		"./stack": "./src/stack.js",
 		"./prefix": "./src/prefix.js",
 		"./taml": "./src/taml.js",
-		"./exceptions": "./src/exceptions.js"
+		"./exceptions": "./src/exceptions.js",
+		"./v8-stack": "./src/v8-stack.js"
 	},
 	"scripts": {
 		"build": "cls && coffee -c .",
@@ -25,6 +26,7 @@
 	"license": "MIT",
 	"dependencies": {
 		"ava": "^4.3.3",
-		"js-yaml": "^4.1.0"
+		"js-yaml": "^4.1.0",
+		"stack-utils": "^2.0.6"
 	}
 }

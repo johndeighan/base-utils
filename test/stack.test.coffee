@@ -2,246 +2,224 @@
 
 import test from 'ava'
 
-import {haltOnError} from '@jdeighan/base-utils/exceptions'
-import {pass, undef, OL} from '@jdeighan/base-utils/utils'
 import {
-	LOG, LOGVALUE, utReset, utGetLog,
-	} from '@jdeighan/base-utils/log'
+	assert, croak, haltOnError,
+	} from '@jdeighan/base-utils/exceptions'
 import {
-	CallStack, throwOnError, debugStack,
-	} from '@jdeighan/base-utils/stack'
+	undef, defined, notdefined, words,
+	} from '@jdeighan/base-utils/utils'
+import {clearAllLogs} from '@jdeighan/base-utils/log'
+import {CallStack, getStackLog} from '@jdeighan/base-utils/stack'
 
-haltOnError false
-throwOnError true
-
-# ---------------------------------------------------------------------------
-
-(() ->
-	stack = new CallStack()
-
-	test "line 20", (t) =>
-		t.is stack.level, 0
-		t.is stack.logLevel, 0
-		t.is stack.isLogging(), false
-		t.is stack.currentFunc(), undef
-		t.is stack.TOS(), undef
-		t.is stack.isActive('dummy'), false
-
-	test "line 28", (t) =>
-		stack.enter 'A'
-
-		t.is stack.level, 1
-		t.is stack.logLevel, 0
-		t.is stack.isLogging(), false
-		t.is stack.currentFunc(), 'A'
-		t.is stack.isActive('dummy'), false
-		t.is stack.isActive('A'), true
-
-	test "line 38", (t) =>
-		stack.enter 'B', [], true
-
-		t.is stack.level, 2
-		t.is stack.logLevel, 1
-		t.is stack.isLogging(), true
-		t.is stack.currentFunc(), 'B'
-		t.is stack.isActive('dummy'), false
-		t.is stack.isActive('A'), true
-		t.is stack.isActive('B'), true
-
-	test "line 49", (t) =>
-		stack.returnFrom 'B'
-
-		t.is stack.level, 1
-		t.is stack.logLevel, 0
-		t.is stack.isLogging(), false
-		t.is stack.currentFunc(), 'A'
-		t.is stack.isActive('dummy'), false
-		t.is stack.isActive('A'), true
-		t.is stack.isActive('B'), false
-
-	test "line 60", (t) =>
-		stack.enter 'B', [], true
-
-		t.is stack.level, 2
-		t.is stack.logLevel, 1
-		t.is stack.isLogging(), true
-		t.is stack.currentFunc(), 'B'
-		t.is stack.isActive('dummy'), false
-		t.is stack.isActive('A'), true
-		t.is stack.isActive('B'), true
-
-	test "line 71", (t) =>
-		stack.yield 'A', 1
-
-		t.is stack.level, 2
-		t.is stack.logLevel, 1
-		t.is stack.isLogging(), false
-		t.is stack.currentFunc(), 'A'
-		t.is stack.isActive('dummy'), false
-		t.is stack.isActive('A'), true
-		t.is stack.isActive('B'), true
-
-	test "line 82", (t) =>
-		stack.resume 'B'
-
-		t.is stack.level, 2
-		t.is stack.logLevel, 1
-		t.is stack.isLogging(), true
-		t.is stack.currentFunc(), 'B'
-		t.is stack.isActive('dummy'), false
-		t.is stack.isActive('A'), true
-		t.is stack.isActive('B'), true
-
-	test "line 93", (t) =>
-		stack.yieldFrom 'C'
-		stack.enter 'C', [], true
-
-		t.is stack.level, 3
-		t.is stack.logLevel, 2
-		t.is stack.isLogging(), true
-		t.is stack.currentFunc(), 'C'
-		t.is stack.isActive('dummy'), false
-		t.is stack.isActive('A'), true
-		t.is stack.isActive('B'), true
-		t.is stack.isActive('C'), true
-	)()
+haltOnError false   # always set in unit tests
 
 # ---------------------------------------------------------------------------
 
-(() ->
-	utReset()
-	prev = debugStack true
-
-	stack = new CallStack()
-
-	stack.enter 'A'
-	stack.enter 'B', [], true
-	stack.returnFrom 'B'
-	stack.enter 'B', [], true
-	stack.yield 'B', 1
-	stack.resume 'B'
-	stack.yield 'B', 2
-	stack.resume 'B'
-	stack.returnFrom 'B'
-	stack.enter 'C', [], true
-
-	theLog = utGetLog()
-
-	test "line 126", (t) =>
-		t.is theLog, """
-			RESET STACK => <undef>
-			ENTER A => A
-				ENTER B => B
-					RETURN FROM B => A
-				ENTER B => B
-					YIELD 1 - in B => A
-					RESUME B => B
-					YIELD 2 - in B => A
-					RESUME B => B
-					RETURN FROM B => A
-				ENTER C => C
-			"""
-	debugStack prev
-	)()
+TEST = (t, stack, curFunc, strActive, strNonActive, logging, level=undef, logLevel=undef) =>
+	if defined(curFunc)
+		t.is stack.curFuncName, curFunc
+	else
+		t.is stack.curFuncName, '_MAIN_'
+	if defined(strActive)
+		for name in words(strActive)
+			t.truthy stack.isActive(name)
+	if defined(strNonActive)
+		for name in words(strNonActive)
+			t.falsy stack.isActive(name)
+	if logging
+		t.truthy stack.isLogging()
+	else
+		t.falsy stack.isLogging()
+	if defined(level)
+		t.is stack.level, level
+	if defined(logLevel)
+		t.is stack.logLevel, logLevel
+	return
 
 # ---------------------------------------------------------------------------
 
-(() ->
+test "line 41", (t) =>
+	clearAllLogs()
+	stack = new CallStack('logCalls')
 
-	# --- What we're simulating
+	stack.enter 'func'
+	# ---           cur    active  !active  isLogging
+	TEST t, stack, 'func', "func", "func2", false
 
-	A = () ->
-		dbgEnter 'A'
-		for i in B()
-			LOG i
-		dbgReturn 'A'
+	stack.returnFrom 'func'
+	t.truthy stack.isEmpty()
 
-	B = () ->
-		dbgEnter 'B'
-		dbgYieldFrom 'B'
-		yield from C()
-		dbgResume 'B'
-		dbgReturn 'B'
-
-	C = () ->
-		dbgEnter 'C'
-		dbgYield 'C', 42
-		yield 42
-		dbgResume 'C'
-		dbgYield 'C', 99
-		yield 99
-		dbgResume 'C'
-		dbgReturn 'C'
-
-	utReset()
-	prev = debugStack true
-
-	stack = new CallStack()
-
-	stack.enter 'A'
-	stack.enter 'B'
-	stack.yieldFrom 'B'
-	stack.enter 'C'
-	stack.yield 'C', 42
-	stack.resume 'C'
-	stack.yield 'C', 99
-	stack.resume 'C'
-	stack.returnFrom 'C'
-	stack.resume 'B'
-	stack.returnFrom 'B'
-	stack.returnFrom 'A'
-
-	theLog = utGetLog()
-
-	test "line 196", (t) =>
-		t.is theLog, """
-			RESET STACK => <undef>
-			ENTER A => A
-				ENTER B => B
-					YIELD FROM - in B => A
-					ENTER C => C
-						YIELD 42 - in C => A
-						RESUME C => C
-						YIELD 99 - in C => A
-						RESUME C => C
-						RETURN FROM C => A
-					RESUME B => B
-					RETURN FROM B => A
-				RETURN FROM A => <undef>
-			"""
-	debugStack prev
-	)()
+	t.is getStackLog(), """
+		RESET STACK
+		ENTER 'func'
+		RETURN FROM 'func'
+		"""
 
 # ---------------------------------------------------------------------------
 
-(() ->
-	utReset()
-	prev = debugStack true
+test "line 59", (t) =>
+	t.throws () ->
+		suppressExceptionLogging true
+		clearAllLogs()
+		stack = new CallStack('logCalls')
+		stack.enter 'func'
+		stack.returnFrom 'func2'   # should throw an error
 
-	stack = new CallStack()
+# ---------------------------------------------------------------------------
 
-	stack.enter 'A'
-	stack.enter 'B', [], true
-	stack.returnFrom 'B'
-	stack.enter 'B', [], true
-	stack.yield 'B', 1
-	stack.resume 'B'
-	stack.yieldFrom 'B'
-	stack.enter 'C', [], true
+test "line 69", (t) =>
+	clearAllLogs()
+	stack = new CallStack('logCalls')
 
-	theLog = utGetLog()
+	stack.enter 'func', [], true
+	# ---           cur    active  !active  isLogging
+	TEST t, stack, 'func', "func", "func2", true
 
-	test "line 96", (t) =>
-		t.is theLog, """
-			RESET STACK => <undef>
-			ENTER A => A
-				ENTER B => B
-					RETURN FROM B => A
-				ENTER B => B
-					YIELD 1 - in B => A
-					RESUME B => B
-					YIELD FROM - in B => A
-					ENTER C => C
-			"""
-	debugStack prev
-	)()
+	stack.returnFrom 'func'
+	# ---          cur     active  !active        isLogging
+	#              -----   ------  --------       ---------
+	TEST t, stack, undef,  undef,  'func func2',  false
+	t.truthy stack.isEmpty()
+
+	t.is getStackLog(), """
+		RESET STACK
+		ENTER 'func'
+		RETURN FROM 'func'
+		"""
+
+# ---------------------------------------------------------------------------
+
+test "line 92", (t) =>
+	clearAllLogs()
+	stack = new CallStack('logCalls')
+
+	stack.enter 'func', [], true
+
+	# ---          cur     active  !active    isLogging
+	#              -----   ------  --------   ---------
+	TEST t, stack, 'func', 'func',  'func2',  true
+
+	stack.enter 'func2'
+
+	# ---          cur      active        !active   isLogging
+	#              -----    ------        --------  ---------
+	TEST t, stack, 'func2', 'func func2', undef,    false
+
+	stack.returnFrom 'func2'
+
+	# ---          cur     active  !active    isLogging
+	#              -----   ------  --------   ---------
+	TEST t, stack, 'func', 'func',  'func2',  true
+
+	stack.returnFrom 'func'
+
+	# ---          cur     active  !active      isLogging
+	#              -----   ------  --------     ---------
+	TEST t, stack, undef, undef,  'func func2', false
+
+	t.is getStackLog(), """
+		RESET STACK
+		ENTER 'func'
+			ENTER 'func2'
+			RETURN FROM 'func2'
+		RETURN FROM 'func'
+		"""
+	t.truthy stack.isEmpty()
+
+# ---------------------------------------------------------------------------
+# --- Test yield / resume
+
+test "line 132", (t) =>
+	clearAllLogs()
+	stack = new CallStack('logCalls')
+
+	# ---          cur     active  !active       isLogging
+	#              -----   ------  --------      ---------
+	TEST t, stack, undef, undef,   'func gen', false, 0, 0
+
+	stack.enter 'func', [], true
+
+	# ---          cur     active  !active   isLogging
+	#              -----   ------  --------  ---------
+	TEST t, stack, 'func', 'func',  'gen', true, 1, 1
+
+	stack.enter 'gen', [], false
+
+	# ---          cur     active        !active   isLogging
+	#              -----   ------        --------  ---------
+	TEST t, stack, 'gen', 'func gen',  undef, false, 2, 1
+
+	stack.yield 'gen', 13
+
+	# ---          cur     active    !active   isLogging
+	#              -----   ------    --------  ---------
+	TEST t, stack, 'func', 'func',  'gen',   true, 1, 1
+
+	stack.resume 'gen'
+
+	# ---          cur     active    !active   isLogging
+	#              -----   ------    --------  ---------
+	TEST t, stack, 'gen', 'func gen',  undef,   false, 2, 1
+
+	stack.returnFrom 'gen'
+
+	# ---          cur     active    !active   isLogging
+	#              -----   ------    --------  ---------
+	TEST t, stack, 'func', 'func',  'gen',   true, 1, 1
+
+	stack.returnFrom 'func'
+
+	# ---          cur     active  !active       isLogging
+	#              -----   ------  --------      ---------
+	TEST t, stack, undef, undef,   'func gen', false, 0, 0
+
+	t.truthy stack.isEmpty()
+
+# ---------------------------------------------------------------------------
+# --- Test multiple generators
+
+test "line 181", (t) =>
+	clearAllLogs()
+	stack = new CallStack('logCalls')
+
+	# ---          cur     active  !active       isLogging
+	#              -----   ------  --------      ---------
+	TEST t, stack, undef, undef,   'func gen', false, 0, 0
+
+	stack.enter 'func', [], true
+
+	# ---          cur     active  !active   isLogging
+	#              -----   ------  --------  ---------
+	TEST t, stack, 'func', 'func',  'gen', true, 1, 1
+
+	stack.enter 'gen', [], false
+
+	# ---          cur     active        !active   isLogging
+	#              -----   ------        --------  ---------
+	TEST t, stack, 'gen', 'func gen',  undef, false, 2, 1
+
+	stack.yield 'gen', 13
+
+	# ---          cur     active    !active   isLogging
+	#              -----   ------    --------  ---------
+	TEST t, stack, 'func', 'func',  'gen',   true, 1, 1
+
+	stack.resume 'gen'
+
+	# ---          cur     active    !active   isLogging
+	#              -----   ------    --------  ---------
+	TEST t, stack, 'gen', 'func gen',  undef,   false, 2, 1
+
+	stack.returnFrom 'gen'
+
+	# ---          cur     active    !active   isLogging
+	#              -----   ------    --------  ---------
+	TEST t, stack, 'func', 'func',  'gen',   true, 1, 1
+
+	stack.returnFrom 'func'
+
+	# ---          cur     active  !active       isLogging
+	#              -----   ------  --------      ---------
+	TEST t, stack, undef, undef,   'func gen', false, 0, 0
+
+	t.truthy stack.isEmpty()

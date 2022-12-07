@@ -19,7 +19,8 @@ import {
 import {
   isTAML,
   toTAML,
-  fromTAML
+  fromTAML,
+  fixValStr
 } from '@jdeighan/base-utils/taml';
 
 // ---------------------------------------------------------------------------
@@ -262,4 +263,29 @@ test("line 177", (t) => {
 Script: '[Function: Script]'
 code: '[Function: code]'
 html: '[Function: html]'`);
+});
+
+// ---------------------------------------------------------------------------
+test("line 12", (t) => {
+  return t.is(fixValStr(""), "");
+});
+
+test("line 15", (t) => {
+  return t.is(fixValStr("5"), "5");
+});
+
+test("line 18", (t) => {
+  return t.is(fixValStr("'abc'"), "'abc'");
+});
+
+test("line 21", (t) => {
+  return t.is(fixValStr('"5"'), '"5"');
+});
+
+test("line 24", (t) => {
+  return t.is(fixValStr('abc'), "'abc'");
+});
+
+test("line 27", (t) => {
+  return t.is(fixValStr("ab'cd"), "'ab''cd'");
 });

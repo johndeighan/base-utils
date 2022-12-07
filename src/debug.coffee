@@ -4,18 +4,17 @@ import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	undef, defined, notdefined, OL, OLS, isIdentifier, isFunctionName,
 	isString, isFunction, isArray, isHash, isBoolean, isInteger,
-	isEmpty, nonEmpty,
+	isEmpty, nonEmpty, arrayToBlock, getOptions,
 	words, firstWord, inList, oneof,
-	arrayToBlock,
 	} from '@jdeighan/base-utils/utils'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {
-	LOG, LOGVALUE, stringFits, setLogger, debugLogging,
+	LOG, LOGVALUE, stringFits, debugLogging, getMyLog,
 	} from '@jdeighan/base-utils/log'
 import {toTAML} from '@jdeighan/base-utils/taml'
-import {CallStack, debugStack} from '@jdeighan/base-utils/stack'
+import {CallStack} from '@jdeighan/base-utils/stack'
 
-export {debugStack, debugLogging}
+export {debugLogging}
 
 export callStack = new CallStack()
 
@@ -23,14 +22,26 @@ lFuncList = []      # array of {funcName, plus}
 logAll = false      # if true, always log
 internalDebugging = false
 
+# --- Custom loggers, if defined
 logEnter     = undef
 logReturn    = undef
-logReturnVal = undef
 logYield     = undef
-logYieldFrom = undef
 logResume    = undef
-logValue     = undef
 logString    = undef
+logValue     = undef
+
+# ---------------------------------------------------------------------------
+
+export getDebugLog = () =>
+
+	return getMyLog()
+
+# ---------------------------------------------------------------------------
+
+export setCallStack = (hOptions={}) ->
+
+	callStack = new CallStack(getOptions(hOptions))
+	return
 
 # ---------------------------------------------------------------------------
 
@@ -50,9 +61,7 @@ export dumpDebugLoggers = (label=undef) ->
 		lLines.push "LOGGERS"
 	lLines.push "   enter      - #{logType(logEnter, stdLogEnter)}"
 	lLines.push "   return     - #{logType(logReturn, stdLogReturn)}"
-	lLines.push "   return val - #{logType(logReturnVal, stdLogReturnVal)}"
 	lLines.push "   yield      - #{logType(logYield, stdLogYield)}"
-	lLines.push "   yield from - #{logType(logYieldFrom, stdLogYieldFrom)}"
 	lLines.push "   resume     - #{logType(logResume, stdLogResume)}"
 	lLines.push "   string     - #{logType(logString, stdLogString)}"
 	lLines.push "   value      - #{logType(logValue, stdLogValue)}"
@@ -82,12 +91,10 @@ export setDebugging = (lParms...) ->
 	logAll = false
 	logEnter     = stdLogEnter
 	logReturn    = stdLogReturn
-	logReturnVal = stdLogReturnVal
 	logYield     = stdLogYield
-	logYieldFrom = stdLogYieldFrom
 	logResume    = stdLogResume
-	logValue     = stdLogValue
 	logString    = stdLogString
+	logValue     = stdLogValue
 
 	customSet = false
 	for parm,i in lParms
@@ -124,18 +131,14 @@ export setCustomDebugLogger = (type, func) ->
 			logEnter = func
 		when 'returnFrom'
 			logReturn = func
-		when 'returnVal'
-			logReturnVal = func
 		when 'yield'
 			logYield = func
-		when 'yieldFrom'
-			logYieldFrom = func
 		when 'resume'
 			logResume = func
-		when 'value'
-			logValue = func
 		when 'string'
 			logString = func
+		when 'value'
+			logValue = func
 		else
 			throw new Error("Unknown type: #{OL(type)}")
 	return
@@ -157,20 +160,6 @@ export getFuncList = (str) ->
 	return lFuncs
 
 # ---------------------------------------------------------------------------
-# simple redirect to an array - useful in unit tests
-
-lDebugLog = undef
-
-export dbgReset = () =>
-	lDebugLog = []
-	return
-
-export dbgGetLog = () =>
-	result = arrayToBlock(lDebugLog)
-	lDebugLog = undef
-	return result
-
-# ---------------------------------------------------------------------------
 # Stack is only modified in these 8 functions (it is reset in setDebugging())
 # ---------------------------------------------------------------------------
 
@@ -179,50 +168,43 @@ export dbgEnter = (funcName, lValues...) ->
 	assert isFunctionName(funcName), "not a valid function name"
 	doLog = logAll || funcMatch(funcName)
 	if internalDebugging
-		nVals = lValues.length
-		console.log "dbgEnter #{OL(funcName)}, #{OL(nVals)} vals"
+		if (lValues.length == 0)
+			console.log "dbgEnter #{OL(funcName)}"
+		else
+			console.log "dbgEnter #{OL(funcName)}, #{OLS(lValues)}"
 		console.log "   - doLog = #{OL(doLog)}"
 
 	if doLog
-		if defined(lDebugLog)
-			orgLogger = setLogger (str) => lDebugLog.push(str)
-
 		level = callStack.logLevel
-		if ! logEnter funcName, lValues, level
-			stdLogEnter funcName, lValues, level
-
-		if defined(lDebugLog)
-			setLogger orgLogger
+		if ! logEnter level, funcName, lValues
+			stdLogEnter level, funcName, lValues
 
 	callStack.enter funcName, lValues, doLog
 	return true
 
 # ---------------------------------------------------------------------------
 
-export dbgReturn = (funcName) ->
+export dbgReturn = (lArgs...) ->
 
+	if (lArgs.length > 1)
+		return dbgReturnVal lArgs...
+	funcName = lArgs[0]
 	assert isFunctionName(funcName), "not a valid function name"
 	doLog = logAll || callStack.isLogging()
 	if internalDebugging
 		console.log "dbgReturn #{OL(funcName)}"
 		console.log "   - doLog = #{OL(doLog)}"
 	if doLog
-		if defined(lDebugLog)
-			orgLogger = setLogger (str) => lDebugLog.push(str)
-
 		level = callStack.logLevel
-		if ! logReturn funcName, level
-			stdLogReturn funcName, level
-
-		if defined(lDebugLog)
-			setLogger orgLogger
+		if ! logReturn level, funcName
+			stdLogReturn level, funcName
 
 	callStack.returnFrom funcName
 	return true
 
 # ---------------------------------------------------------------------------
 
-export dbgReturnVal = (funcName, val) ->
+dbgReturnVal = (funcName, val) ->
 
 	assert isFunctionName(funcName), "not a valid function name"
 	doLog = logAll || callStack.isLogging()
@@ -230,63 +212,51 @@ export dbgReturnVal = (funcName, val) ->
 		console.log "dbgReturn #{OL(funcName)}, #{OL(val)}"
 		console.log "   - doLog = #{OL(doLog)}"
 	if doLog
-		if defined(lDebugLog)
-			orgLogger = setLogger (str) => lDebugLog.push(str)
-
 		level = callStack.logLevel
-		if ! logReturnVal funcName, val, level
-			stdLogReturnVal funcName, val, level
+		if ! logReturn level, funcName, val
+			stdLogReturn level, funcName, val
 
-		if defined(lDebugLog)
-			setLogger orgLogger
-
-	callStack.returnVal funcName, val
+	callStack.returnFrom funcName, val
 	return true
 
 # ---------------------------------------------------------------------------
 
-export dbgYield = (funcName, val) ->
+export dbgYield = (lArgs...) ->
+
+	nArgs = lArgs.length
+	assert (nArgs==1) || (nArgs==2), "Bad num args: #{nArgs}"
+	[funcName, val] = lArgs
+	if (nArgs==1)
+		return dbgYieldFrom(funcName)
 
 	assert isFunctionName(funcName), "not a function name"
 	doLog = logAll || callStack.isLogging()
 	if internalDebugging
-		console.log "dbgYield #{OL(val)}"
+		console.log "dbgYield #{OL(funcName)} #{OL(val)}"
 		console.log "   - doLog = #{OL(doLog)}"
 	if doLog
-		if defined(lDebugLog)
-			orgLogger = setLogger (str) => lDebugLog.push(str)
-
 		level = callStack.logLevel
-		if ! logYield funcName, val, level
-			stdLogYield funcName, val, level
-
-		if defined(lDebugLog)
-			setLogger orgLogger
+		if ! logYield level, funcName, val
+			stdLogYield level, funcName, val
 
 	callStack.yield funcName, val
 	return true
 
 # ---------------------------------------------------------------------------
 
-export dbgYieldFrom = (funcName) ->
+dbgYieldFrom = (funcName) ->
 
 	assert isFunctionName(funcName), "not a function name"
 	doLog = logAll || callStack.isLogging()
 	if internalDebugging
-		console.log "dbgYieldFrom"
+		console.log "dbgYieldFrom #{OL(funcName)}"
 		console.log "   - doLog = #{OL(doLog)}"
 	if doLog
-		if defined(lDebugLog)
-			orgLogger = setLogger (str) => lDebugLog.push(str)
-
 		level = callStack.logLevel
-		if ! logYieldFrom funcName, level
-			stdLogYieldFrom funcName, level
+		if ! logYieldFrom level, funcName
+			stdLogYieldFrom level, funcName
 
-		if defined(lDebugLog)
-			setLogger orgLogger
-
-	callStack.yieldFrom funcName
+	callStack.yield funcName
 	return true
 
 # ---------------------------------------------------------------------------
@@ -296,18 +266,12 @@ export dbgResume = (funcName) ->
 	assert isFunctionName(funcName), "not a valid function name"
 	doLog = logAll || callStack.isLogging()
 	if internalDebugging
-		console.log "dbgResume(#{OL(funcName)})"
+		console.log "dbgResume #{OL(funcName)}"
 		console.log "   - doLog = #{OL(doLog)}"
 	if doLog
-		if defined(lDebugLog)
-			orgLogger = setLogger (str) => lDebugLog.push(str)
-
 		level = callStack.logLevel
 		if ! logResume funcName, level
 			stdLogResume funcName, level
-
-		if defined(lDebugLog)
-			setLogger orgLogger
 
 	callStack.resume funcName
 	return true
@@ -323,15 +287,9 @@ export dbgValue = (label, val) ->
 		console.log "dbgValue #{OL(label)}, #{OL(val)}"
 		console.log "   - doLog = #{OL(doLog)}"
 	if doLog
-		if defined(lDebugLog)
-			orgLogger = setLogger (str) => lDebugLog.push(str)
-
 		level = callStack.logLevel
-		if ! logValue label, val, level
-			stdLogValue label, val, level
-
-		if defined(lDebugLog)
-			setLogger orgLogger
+		if ! logValue level, label, val
+			stdLogValue level, label, val
 
 	return true
 
@@ -345,15 +303,9 @@ export dbgString = (str) ->
 		console.log "dbgString(#{OL(str)})"
 		console.log "   - doLog = #{OL(doLog)}"
 	if doLog
-		if defined(lDebugLog)
-			orgLogger = setLogger (str) => lDebugLog.push(str)
-
 		level = callStack.logLevel
-		if ! logString str, level
-			stdLogString str, level
-
-		if defined(lDebugLog)
-			setLogger orgLogger
+		if ! logString level, str
+			stdLogString level, str
 
 	return true
 
@@ -370,7 +322,7 @@ export dbg = (lArgs...) ->
 # ---------------------------------------------------------------------------
 #    Only these 8 functions ever call LOG or LOGVALUE
 
-export stdLogEnter = (funcName, lArgs, level) ->
+export stdLogEnter = (level, funcName, lArgs) ->
 
 	assert isFunctionName(funcName), "bad function name"
 	assert isArray(lArgs), "not an array"
@@ -393,8 +345,11 @@ export stdLogEnter = (funcName, lArgs, level) ->
 
 # ---------------------------------------------------------------------------
 
-export stdLogReturn = (funcName, level) ->
+export stdLogReturn = (lArgs...) ->
 
+	[level, funcName, val] = lArgs
+	if (lArgs.length == 3)
+		return stdLogReturnVal level, funcName, val
 	assert isFunctionName(funcName), "bad function name"
 	assert isInteger(level), "level not an integer"
 
@@ -404,7 +359,7 @@ export stdLogReturn = (funcName, level) ->
 
 # ---------------------------------------------------------------------------
 
-export stdLogReturnVal = (funcName, val, level) ->
+export stdLogReturnVal = (level, funcName, val) ->
 
 	assert isFunctionName(funcName), "bad function name"
 	assert isInteger(level), "level not an integer"
@@ -422,8 +377,11 @@ export stdLogReturnVal = (funcName, val, level) ->
 
 # ---------------------------------------------------------------------------
 
-export stdLogYield = (funcName, val, level) ->
+export stdLogYield = (lArgs...) ->
 
+	[level, funcName, val] = lArgs
+	if (lArgs.length == 2)
+		return stdLogYieldFrom level, funcName
 	labelPre = getPrefix(level, 'withFlat')
 	valStr = OL(val)
 	str = "yield #{valStr}"
@@ -438,7 +396,7 @@ export stdLogYield = (funcName, val, level) ->
 
 # ---------------------------------------------------------------------------
 
-export stdLogYieldFrom = (funcName, level) ->
+export stdLogYieldFrom = (level, funcName) ->
 
 	labelPre = getPrefix(level, 'withFlat')
 	LOG "yieldFrom", labelPre
@@ -455,7 +413,7 @@ export stdLogResume = (funcName, level) ->
 
 # ---------------------------------------------------------------------------
 
-export stdLogString = (str, level) ->
+export stdLogString = (level, str) ->
 
 	assert isString(str), "not a string"
 	assert isInteger(level), "level not an integer"
@@ -466,7 +424,7 @@ export stdLogString = (str, level) ->
 
 # ---------------------------------------------------------------------------
 
-export stdLogValue = (label, val, level) ->
+export stdLogValue = (level, label, val) ->
 
 	assert isInteger(level), "level not an integer"
 
@@ -533,9 +491,6 @@ export getType = (label, lValues=[]) ->
 
 export funcMatch = (fullName) ->
 	# --- fullName came from a call to dbgEnter()
-
-	if internalDebugging
-		console.log "funcMatch(#{OL(fullName)})"
 
 	for h in lFuncList
 		if (h.fullName == fullName)

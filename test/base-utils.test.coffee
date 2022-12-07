@@ -9,9 +9,10 @@ import {
 	undef, pass, isNumber, arrayToBlock,
 	} from '@jdeighan/base-utils/utils'
 import {
-	setLogger, debugLogging, LOG, sep_dash, utReset, utGetLog,
+	setLogger, debugLogging, LOG, sep_dash, clearAllLogs, getMyLog,
 	} from '@jdeighan/base-utils/log'
-import {dbgReset, dbgGetLog} from '@jdeighan/base-utils/debug'
+import {getDebugLog} from '@jdeighan/base-utils/debug'
+import {debugV8Stack} from '@jdeighan/base-utils/v8-stack'
 
 haltOnError false
 
@@ -26,41 +27,35 @@ quadruple = (x) =>
 
 # ---------------------------------------------------------------------------
 
-# --- clear lLog before each test
-lLog = []
-setLogger (str) => lLog.push(str)
-getLog = () => return arrayToBlock(lLog)
-
-# ---------------------------------------------------------------------------
-
-test "line 33", (t) =>
-	lLog = []
+test "line 29", (t) =>
+	clearAllLogs()
 	LOG 'abc'
 	LOG 'def'
-	t.is getLog(), "abc\ndef"
+	t.is getMyLog(), "abc\ndef"
 
-test "line 39", (t) =>
+test "line 35", (t) =>
 	x = 5
 	t.is(quadruple(x), 20)
 
 
-test "line 44", (t) =>
+test "line 40", (t) =>
 	exReset()
 	try
 		result = quadruple('abc')
 	t.is exGetLog(), """
 		-------------------------
 		JavaScript CALL STACK:
-		   double
-		   quadruple
+		   double() base-utils.test.js:43:3
+		   quadruple() base-utils.test.js:48:14
+		   script base-utils.test.js base-utils.test.js:69:14
 		-------------------------
-		ERROR: not a number (in double())
+		ERROR: not a number
 		"""
 
-test "line 57", (t) =>
-	lLog = []
+test "line 53", (t) =>
+	clearAllLogs()
 	try
 		croak "Bad Moon Rising"
 	catch err
 		LOG err.message
-	t.is getLog(), "ERROR (croak): Bad Moon Rising"
+	t.is getMyLog(), "ERROR (croak): Bad Moon Rising"

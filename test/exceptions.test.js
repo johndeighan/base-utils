@@ -11,21 +11,17 @@ import {
 
 haltOnError(false);
 
-suppressExceptionLogging(true);
-
 // ---------------------------------------------------------------------------
-test("line 11", (t) => {
-  return t.is(2 + 2, 4);
-});
-
 test("line 12", (t) => {
   return t.throws(function() {
+    suppressExceptionLogging(true);
     return croak("BAD");
   });
 });
 
 test("line 13", (t) => {
   return t.throws(function() {
+    suppressExceptionLogging(true);
     return assert(2 + 2 !== 4, 'EXCEPTION');
   });
 });

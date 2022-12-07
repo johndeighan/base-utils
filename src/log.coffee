@@ -2,14 +2,15 @@
 
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
-	pass, undef, defined, notdefined, deepCopy,
+	pass, undef, defined, notdefined, deepCopy, getOptions,
 	hEsc, escapeStr, OL, untabify, isObject,
 	blockToArray, arrayToBlock, prefixBlock,
 	isNumber, isInteger, isString, isHash, isFunction, isBoolean,
-	nonEmpty, hEscNoNL, jsType, hasChar, quoted,
+	isEmpty, nonEmpty, hEscNoNL, jsType, hasChar, quoted,
 	} from '@jdeighan/base-utils/utils'
 import {toTAML} from '@jdeighan/base-utils/taml'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
+import {getMyOutsideCaller} from '@jdeighan/base-utils/v8-stack'
 
 export logWidth = 42
 export sep_dash = '-'.repeat(logWidth)
@@ -20,18 +21,100 @@ internalDebugging = false
 threeSpaces  = '   '
 
 # --- This logger only ever gets passed a single string argument
-#     ONLY called directly in PUTSTR
+#     ONLY called directly in PUTSTR, set in setLogger()
 putstr = undef
+
+lNamedLogs = []    # array of {caller, str}
+hEchoLogs = {}     # { <source> => true }
+
+# ---------------------------------------------------------------------------
+
+export echoMyLogs = () =>
+
+	caller = getMyOutsideCaller().source
+	hEchoLogs[caller] = true
+	return
+
+# ---------------------------------------------------------------------------
+
+export clearMyLogs = () =>
+
+	caller = getMyOutsideCaller().source
+	lNewLogs = []
+	for h in lNamedLogs
+		if (h.caller != caller)
+			lNewLogs.push h
+	lNamedLogs = lNewLogs
+	return
+
+# ---------------------------------------------------------------------------
+
+export clearAllLogs = () =>
+
+	lNamedLogs = []
+	return
+
+# ---------------------------------------------------------------------------
+
+export getMyLog = () =>
+
+	caller = getMyOutsideCaller().source
+	lLines = []
+	for h in lNamedLogs
+		if (h.caller == caller)
+			lLines.push h.str
+	result = lLines.join("\n")
+	if isEmpty(result)
+		return undef
+	else
+		return result
+
+# ---------------------------------------------------------------------------
+
+export getAllLogs = () =>
+
+	caller = getMyOutsideCaller().source
+	lLines = []
+	for h in lNamedLogs
+		lLines.push h.str
+	return lLines.join("\n")
+
+# ---------------------------------------------------------------------------
+
+export dumpLog = (label, theLog) =>
+
+	console.log "======================================="
+	console.log "              #{label}"
+	console.log "======================================="
+	console.log theLog
+	console.log "======================================="
+	return
 
 # ---------------------------------------------------------------------------
 
 export PUTSTR = (str) ->
 
-	if (putstr == console.log) || notdefined(putstr)
-		console.log untabify(str)
-	else
-		putstr str
+	caller = getMyOutsideCaller().source
+	lNamedLogs.push {caller, str}
+
+	if defined(hEchoLogs[caller])
+		if (putstr == console.log) || notdefined(putstr)
+			console.log untabify(str)
+		else
+			putstr str
 	return
+
+# ---------------------------------------------------------------------------
+
+export LOG = (str="", prefix="") =>
+
+	if internalDebugging
+		console.log "CALL LOG(#{OL(str)}), prefix=#{OL(prefix)}"
+		if defined(putstr) && (putstr != console.log)
+			console.log "   - use custom logger"
+
+	PUTSTR "#{prefix}#{str}"
+	return true   # to allow use in boolean expressions
 
 # ---------------------------------------------------------------------------
 
@@ -110,18 +193,6 @@ export orderedStringify = (obj, escape=false) =>
 
 # ---------------------------------------------------------------------------
 
-export LOG = (str="", prefix="") =>
-
-	if internalDebugging
-		console.log "CALL LOG(#{OL(str)}), prefix=#{OL(prefix)}"
-		if defined(putstr) && (putstr != console.log)
-			console.log "   - use custom logger"
-
-	PUTSTR "#{prefix}#{str}"
-	return true   # to allow use in boolean expressions
-
-# ---------------------------------------------------------------------------
-
 export LOGTAML = (label, value, prefix="", itemPrefix=undef) =>
 
 	if internalDebugging
@@ -164,9 +235,9 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 
 	# --- Try OL() - if it's short enough, use that
 	str = "#{prefix}#{label} = #{OL(value)}"
-	if internalDebugging
-		console.log "Using OL(), strlen = #{str.length}, logWidth = #{logWidth}"
 	if stringFits(str)
+		if internalDebugging
+			console.log "Using OL(), #{str.length} <= #{logWidth}"
 		PUTSTR str
 		return true
 
@@ -221,6 +292,41 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 
 # ---------------------------------------------------------------------------
 
+export LOGSTRING = (label, value, prefix="") =>
+
+	if internalDebugging
+		str1 = OL(label)
+		str2 = OL(value)
+		str3 = OL(prefix)
+		console.log "CALL LOGSTRING(#{str1}, #{str2}), prefix=#{str3}"
+	assert nonEmpty(label), "label is empty"
+	assert isString(value), "value not a string"
+
+	# --- if it's short enough, put on one line
+	str = "#{prefix}#{label} = #{quoted(value)}"
+	if stringFits(str)
+		if internalDebugging
+			console.log "Put on one line, #{str.length} <= #{logWidth}"
+		PUTSTR str
+		return true
+
+	itemPrefix = prefix + "\t"
+
+	str = "#{prefix}#{label} = #{quoted(value, 'escape')}"
+	if stringFits(str)
+		PUTSTR str
+	else
+		# --- escape, but not newlines
+		PUTSTR """
+			#{prefix}#{label} = \"\"\"
+			#{prefixBlock(value, itemPrefix)}
+			#{prefixBlock('"""', itemPrefix)}
+			"""
+
+	return true
+
+# ---------------------------------------------------------------------------
+
 handleSimpleCase = (label, value, prefix) =>
 	# --- Returns true if handled, else false
 
@@ -244,24 +350,6 @@ handleSimpleCase = (label, value, prefix) =>
 		return false
 
 # ---------------------------------------------------------------------------
-# simple redirect to an array - useful in unit tests
 
-lUTLog = undef
-
-export utReset = () =>
-	lUTLog = []
-	setLogger (str) => lUTLog.push(str)
-	return
-
-export utGetLog = () =>
-	result = arrayToBlock(lUTLog)
-	lUTLog = undef
-	resetLogger()
-	return result
-
-# ---------------------------------------------------------------------------
-
-if ! loaded
-	setStringifier orderedStringify
-	resetLogger()
-loaded = true
+setStringifier orderedStringify
+resetLogger()

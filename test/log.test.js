@@ -20,38 +20,46 @@ import {
   logWidth,
   sep_dash,
   sep_eq,
-  stringify,
   setLogWidth,
   resetLogWidth,
   debugLogging,
   setStringifier,
   resetStringifier,
-  setLogger,
-  resetLogger,
+  stringify,
   tamlStringify,
   orderedStringify,
   LOG,
   LOGVALUE,
   LOGTAML,
-  utReset,
-  utGetLog
+  clearAllLogs,
+  getMyLog
 } from '@jdeighan/base-utils/log';
 
 fourSpaces = '    ';
 
 // ---------------------------------------------------------------------------
 test("line 23", (t) => {
+  return t.deepEqual(orderedStringify(['a', 42, [1, 2]]), `---
+- a
+- 42
+-
+   - 1
+   - 2`);
+});
+
+// ---------------------------------------------------------------------------
+test("line 35", (t) => {
   return t.is(logWidth, 42);
 });
 
-test("line 25", (t) => {
+test("line 37", (t) => {
   setLogWidth(5);
   t.is(logWidth, 5);
   t.is(sep_dash, '-----');
   return resetLogWidth();
 });
 
-test("line 31", (t) => {
+test("line 43", (t) => {
   setLogWidth(5);
   t.is(logWidth, 5);
   t.is(sep_eq, '=====');
@@ -59,134 +67,134 @@ test("line 31", (t) => {
 });
 
 // ---------------------------------------------------------------------------
-test("line 39", (t) => {
+test("line 51", (t) => {
   return t.is(getPrefix(0), '');
 });
 
-test("line 40", (t) => {
+test("line 52", (t) => {
   return t.is(getPrefix(1), fourSpaces);
 });
 
-test("line 41", (t) => {
+test("line 53", (t) => {
   return t.is(getPrefix(2), fourSpaces + fourSpaces);
 });
 
 // ---------------------------------------------------------------------------
-test("line 45", (t) => {
-  utReset();
+test("line 57", (t) => {
+  clearAllLogs('noecho');
   LOG("abc");
-  return t.is(utGetLog(), `abc`);
+  return t.is(getMyLog(), `abc`);
 });
 
-test("line 52", (t) => {
-  utReset();
+test("line 64", (t) => {
+  clearAllLogs('noecho');
   LOG("abc");
   LOG("def");
-  return t.is(utGetLog(), `abc
+  return t.is(getMyLog(), `abc
 def`);
 });
 
-test("line 61", (t) => {
-  utReset();
+test("line 73", (t) => {
+  clearAllLogs('noecho');
   LOG("abc");
   LOG("def", getPrefix(1));
   LOG("ghi", getPrefix(2));
-  return t.is(utGetLog(), `abc
+  return t.is(getMyLog(), `abc
     def
         ghi`);
 });
 
 // ---------------------------------------------------------------------------
-test("line 74", (t) => {
-  utReset();
+test("line 86", (t) => {
+  clearAllLogs('noecho');
   LOGVALUE('x', undef);
-  return t.is(utGetLog(), `x = undef`);
+  return t.is(getMyLog(), `x = undef`);
 });
 
-test("line 81", (t) => {
-  utReset();
+test("line 93", (t) => {
+  clearAllLogs('noecho');
   LOGVALUE('x', null);
-  return t.is(utGetLog(), `x = null`);
+  return t.is(getMyLog(), `x = null`);
 });
 
-test("line 88", (t) => {
-  utReset();
+test("line 100", (t) => {
+  clearAllLogs('noecho');
   LOGVALUE('x', 'abc');
-  return t.is(utGetLog(), `x = 'abc'`);
+  return t.is(getMyLog(), `x = 'abc'`);
 });
 
-test("line 95", (t) => {
-  utReset();
+test("line 107", (t) => {
+  clearAllLogs('noecho');
   LOGVALUE('x', 'abc def');
-  return t.is(utGetLog(), `x = 'abc˳def'`);
+  return t.is(getMyLog(), `x = 'abc˳def'`);
 });
 
-test("line 102", (t) => {
-  utReset();
+test("line 114", (t) => {
+  clearAllLogs('noecho');
   LOGVALUE('x', '"abc"');
-  return t.is(utGetLog(), `x = '"abc"'`);
+  return t.is(getMyLog(), `x = '"abc"'`);
 });
 
-test("line 109", (t) => {
-  utReset();
+test("line 121", (t) => {
+  clearAllLogs('noecho');
   LOGVALUE('x', "'abc'");
-  return t.is(utGetLog(), `x = "'abc'"`);
+  return t.is(getMyLog(), `x = "'abc'"`);
 });
 
-test("line 116", (t) => {
-  utReset();
+test("line 128", (t) => {
+  clearAllLogs('noecho');
   LOGVALUE('x', "'\"abc\"'");
-  return t.is(utGetLog(), `x = <'"abc"'>`);
+  return t.is(getMyLog(), `x = <'"abc"'>`);
 });
 
 // --- long string
-test("line 125", (t) => {
-  utReset();
+test("line 137", (t) => {
+  clearAllLogs('noecho');
   LOGVALUE('x', 'a'.repeat(80));
-  return t.is(utGetLog(), `x = \"\"\"
+  return t.is(getMyLog(), `x = \"\"\"
 	${'a'.repeat(80)}
 	\"\"\"`);
 });
 
 // --- multi line string
-test("line 136", (t) => {
-  utReset();
+test("line 148", (t) => {
+  clearAllLogs('noecho');
   LOGVALUE('x', 'abc\ndef');
-  return t.is(utGetLog(), `x = 'abc®def'`);
+  return t.is(getMyLog(), `x = 'abc®def'`);
 });
 
 // --- hash (OL doesn't fit)
-test("line 145", (t) => {
-  utReset();
+test("line 157", (t) => {
+  clearAllLogs('noecho');
   setLogWidth(5);
   LOGVALUE('h', {
     xyz: 42,
     abc: 99
   });
   resetLogWidth();
-  return t.is(utGetLog(), `h =
+  return t.is(getMyLog(), `h =
 	---
 	abc: 99
 	xyz: 42`);
 });
 
 // --- hash (OL fits)
-test("line 159", (t) => {
-  utReset();
+test("line 171", (t) => {
+  clearAllLogs('noecho');
   LOGVALUE('h', {
     xyz: 42,
     abc: 99
   });
-  return t.is(utGetLog(), `h = {"xyz":42,"abc":99}`);
+  return t.is(getMyLog(), `h = {"xyz":42,"abc":99}`);
 });
 
 // --- array  (OL doesn't fit)
-test("line 168", (t) => {
-  utReset();
+test("line 180", (t) => {
+  clearAllLogs('noecho');
   setLogWidth(5);
   LOGVALUE('l', ['xyz', 42, false, undef]);
   resetLogWidth();
-  return t.is(utGetLog(), `l =
+  return t.is(getMyLog(), `l =
 	---
 	- xyz
 	- 42
@@ -195,10 +203,10 @@ test("line 168", (t) => {
 });
 
 // --- array (OL fits)
-test("line 184", (t) => {
-  utReset();
+test("line 196", (t) => {
+  clearAllLogs('noecho');
   LOGVALUE('l', ['xyz', 42, false, undef]);
-  return t.is(utGetLog(), `l = ["xyz",42,false,null]`);
+  return t.is(getMyLog(), `l = ["xyz",42,false,null]`);
 });
 
 // --- object
@@ -213,10 +221,10 @@ Node1 = class Node1 {
 
 node1 = new Node1('abc', 2);
 
-test("line 198", (t) => {
-  utReset();
+test("line 210", (t) => {
+  clearAllLogs('noecho');
   LOGVALUE('Node1', node1);
-  return t.is(utGetLog(), `Node1 =
+  return t.is(getMyLog(), `Node1 =
 	---
 	level: 2
 	name: node1
@@ -245,10 +253,10 @@ node2 = new Node2('abc', 2);
 
 [type, subtype] = jsType(node2);
 
-test("line 228", (t) => {
-  utReset();
+test("line 240", (t) => {
+  clearAllLogs('noecho');
   LOGVALUE('Node2', node2);
-  return t.is(utGetLog(), `Node2 =
+  return t.is(getMyLog(), `Node2 =
 	HERE IT IS
 	str is abc
 	name is node2
@@ -256,9 +264,9 @@ test("line 228", (t) => {
 	THAT'S ALL FOLKS!`);
 });
 
-test("line 240", (t) => {
+test("line 252", (t) => {
   var hProc;
-  utReset();
+  clearAllLogs('noecho');
   hProc = {
     code: function(block) {
       return `${block};`;
@@ -271,19 +279,19 @@ test("line 240", (t) => {
     }
   };
   LOGVALUE('hProc', hProc);
-  return t.is(utGetLog(), `hProc =
+  return t.is(getMyLog(), `hProc =
 	---
 	Script: '[Function: Script]'
 	code: '[Function: code]'
 	html: '[Function: html]'`);
 });
 
-test("line 259", (t) => {
-  utReset();
+test("line 271", (t) => {
+  clearAllLogs('noecho');
   setLogWidth(5);
   LOGTAML('lItems', ['xyz', 42, false, undef]);
   resetLogWidth();
-  return t.is(utGetLog(), `lItems =
+  return t.is(getMyLog(), `lItems =
 	---
 	- xyz
 	- 42

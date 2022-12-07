@@ -2,168 +2,240 @@
 
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
-	undef, defined, notdefined, OL, deepCopy, warn, oneof,
-	isString, isArray, isBoolean, isEmpty, nonEmpty, isFunctionName,
-	spaces, tabs,
+	undef, defined, notdefined, OL, OLS, deepCopy, warn, oneof,
+	isString, isArray, isBoolean, isInteger, isFunctionName,
+	isEmpty, nonEmpty,
+	spaces, tabs, getOptions,
 	} from '@jdeighan/base-utils/utils'
-import {LOG} from '@jdeighan/base-utils/log'
+import {LOG, LOGVALUE, getMyLog} from '@jdeighan/base-utils/log'
 
-internalDebugging = false
-doThrowOnError = false
+mainName = '_MAIN_'
+
+# ---------------------------------------------------------------------------
+# --- export only to allow unit tests
+
+export class Node
+
+	constructor: (@id, @funcName, @lArgs, @caller, @doLog=false) ->
+
+		assert isInteger(@id), "id not an integer"
+		assert isFunctionName(@funcName), "not a function name"
+		assert isArray(@lArgs), "not an array"
+		assert notdefined(@caller) || (@caller instanceof Node),
+			"Bad caller"
+
+		@lCalling = []
+		@isYielded = false
 
 # ---------------------------------------------------------------------------
 
-export throwOnError = (flag=true) ->
+export getStackLog = () =>
 
-	save = doThrowOnError
-	doThrowOnError = flag
-	return save
-
-# ---------------------------------------------------------------------------
-
-export debugStack = (flag=true) ->
-
-	save = internalDebugging
-	internalDebugging = !!flag
-	return save
+	return getMyLog()
 
 # ---------------------------------------------------------------------------
 
 export class CallStack
 
-	constructor: () ->
+	@nextID: 1
 
-		# --- Items on stack have keys:
-		#        funcName
-		#        lArgs
-		#        caller
-		#        doLog
-		#        isYielded
+	constructor: (hOptions={}) ->
+		# --- Valid options: (all default to false)
+		#        logCalls
+		#        debugStack
+		#        throwErrors
+		hOptions = getOptions(hOptions)
+		@logCalls = hOptions.logCalls
+		@debugStack = hOptions.debugStack
+		@throwErrors = hOptions.throwErrors
 		@reset()
+
+	# ........................................................................
+
+	log: (str) ->
+
+		LOG "#{tabs(@level)}#{str}"
+		return
 
 	# ........................................................................
 
 	reset: () ->
 
-		@lStack = []
+		if @logCalls
+			@log "RESET STACK"
 		@level = 0
 		@logLevel = 0
-		if internalDebugging
-			@dbg "RESET STACK"
+		@root = @getNewNode(mainName, [], undef)
+		@setCurFunc(@root)
 		return
+
+	# ........................................................................
+
+	getNewNode: (funcName, lArgs, caller, doLog=false) ->
+
+		id = CallStack.nextID
+		CallStack.nextID += 1
+		return new Node(id, funcName, deepCopy(lArgs), caller, doLog)
+
+	# ........................................................................
+
+	setCurFunc: (node) ->
+
+		@curFunc = node
+		@curFuncName = node.funcName
+		return
+
+	# ........................................................................
+
+	isEmpty: () ->
+
+		return (@curFunc == @root)
+
+	# ........................................................................
+
+	nonEmpty: () ->
+
+		return ! @isEmpty()
+
+	# ........................................................................
+
+	isActive: (funcName, node=@root) ->
+
+		if (node.funcName == funcName)
+			return true
+		for node in node.lCalling
+			if @isActive(funcName, node) && ! node.isYielded
+				return true
+		return false
+
+	# ........................................................................
+
+	isLogging: () ->
+
+		return @curFunc.doLog
 
 	# ........................................................................
 	# ........................................................................
 
 	enter: (funcName, lArgs=[], doLog=false) ->
 
-		assert isFunctionName(funcName), "not a function name"
-		assert isArray(lArgs), "not an array"
-		@lStack.push {
-			funcName
-			lArgs: deepCopy(lArgs)
-			caller: @currentFuncRec()
-			doLog
-			isYielded: false
-			}
-		if internalDebugging
-			nArgs = lArgs.length
-			if (nArgs == 0)
-				@dbg "ENTER #{funcName}"
+		if @logCalls
+			if (lArgs.length == 0)
+				@log "ENTER #{OL(funcName)}"
 			else
-				@dbg "ENTER #{funcName} #{nArgs} args"
-		@incLevel(doLog)
+				@log "ENTER #{OL(funcName)} #{OLS(lArgs)}"
+
+		node = @getNewNode(funcName, lArgs, @curFunc, doLog)
+		@curFunc.lCalling.push node
+		@setCurFunc node
+
+		@level += 1
+		if doLog
+			@logLevel += 1
+
+		if @debugStack
+			@dump(@level)
 		return
 
 	# ........................................................................
 
-	returnFrom: (funcName) ->
+	returnFrom: (lParms...) ->
+		# --- Always returns from the current function
+		#     parameter is just a check for correct function name
+		# --- We must use spread operator to distinguish between
+		#        returnFrom('func', undef)
+		#        returnFrom('func')
 
-		assert isString(funcName), "not a string"
+		nArgs = lParms.length
+		[funcName, val] = lParms
 
-		rec = @currentFuncRec()
-		@stackAssert (funcName == rec.funcName),
-			"returnFrom #{funcName} but current func is #{rec.funcName}"
-		@stackAssert ! @TOS.isYielded,
-			"returnFrom #{funcName} but #{@TOS().funcName} at TOS is yielded"
-		@lStack.pop()
-		if internalDebugging
-			@dbg "RETURN FROM #{funcName}"
-		@decLevel(rec.doLog)
-		return
+		# --- Adjust levels before logging
+		assert (@level > 0), "dec level when level is 0"
+		@level -= 1
+		if @isLogging()
+			assert (@logLevel > 0), "dec logLevel when logLevel is 0"
+			@logLevel -= 1
 
-	# ........................................................................
+		if @logCalls
+			if (nArgs == 1)
+				@log "RETURN FROM #{OL(funcName)}"
+			else
+				@log "RETURN FROM #{OL(funcName)} #{OL(val)}"
 
-	returnVal: (funcName, val) ->
+		assert (nArgs==1) || (nArgs==2), "Bad num args: #{nArgs}"
+		assert isFunctionName(funcName), "Not a function name: #{funcName}"
+		assert (@curFuncName != mainName), "Return from #{mainName}"
+		assert (funcName == @curFuncName),
+			"return from #{funcName}, but cur func is #{@curFuncName}"
 
-		assert isString(funcName), "not a string"
+		@setCurFunc @curFunc.caller
+		assert (@curFunc.lCalling.length > 0), "calling stack empty"
+		@curFunc.lCalling.pop()
 
-		rec = @currentFuncRec()
-		@stackAssert (funcName == rec.funcName),
-			"returnFrom #{funcName} but current func is #{rec.funcName}"
-		@stackAssert ! @TOS.isYielded,
-			"returnFrom #{funcName} but #{@TOS().funcName} at TOS is yielded"
-		@lStack.pop()
-		if internalDebugging
-			@dbg "RETURN FROM #{funcName} #{OL(val)}"
-		@decLevel(rec.doLog)
+		if @debugStack
+			@dump(@level)
 		return
 
 	# ........................................................................
 
 	yield: (lArgs...) ->
+		# --- We must use spread operator to distinguish between
+		#        yield('func', undef)
+		#        yield('func')
 
-		assert (lArgs.length == 2), "Bad # args: #{lArgs.length}"
+		nArgs = lArgs.length
+		assert (nArgs==1) || (nArgs==2), "Bad num args: #{nArgs}"
 		[funcName, val] = lArgs
-		rec = @currentFuncRec()
-		rec.isYielded = true
-		if internalDebugging
-			@dbg "YIELD #{OL(val)} - in #{funcName}"
-		return
 
-	# ........................................................................
+		# --- Adjust levels before logging
+		@level -= 1
+		if @isLogging()
+			@logLevel -= 1
 
-	yieldFrom: (funcName) ->
+		if @logCalls
+			if (nArgs == 1)
+				@log "YIELD FROM #{OL(funcName)}"
+			else
+				@log "YIELD FROM #{OL(funcName)} #{OL(val)}"
 
-		rec = @currentFuncRec()
-		rec.isYielded = true
-		if internalDebugging
-			@dbg "YIELD FROM - in #{funcName}"
+		assert isFunctionName(funcName), "Not a function name: #{funcName}"
+		assert (@curFuncName != mainName), "yield from #{mainName}"
+		assert (funcName == @curFuncName),
+			"yield #{funcName}, but cur func is #{@curFuncName}"
+
+		@curFunc.isYielded = true
+		newCurFunc = @curFunc.caller
+		while (newCurFunc.isYielded)
+			newCurFunc = newCurFunc.caller
+		@setCurFunc newCurFunc
+
+		if @debugStack
+			@dump(@level)
 		return
 
 	# ........................................................................
 
 	resume: (funcName) ->
 
-		rec = @TOS()
-		assert (rec.funcName == funcName),
-				"resume #{funcName} but TOS is #{rec.funcName}"
-		@stackAssert (rec.isYielded),
-			"resume('#{funcName}') but #{funcName} is not yielded"
-		rec.isYielded = false
+		if @logCalls
+			@log "RESUME #{OL(funcName)}"
+		assert isFunctionName(funcName), "Not a function name"
 
-		if internalDebugging
-			@dbg "RESUME #{funcName}"
-		return
-
-	# ........................................................................
-	# ........................................................................
-
-	dbg: (str) ->
-
-		curFunc = @currentFunc() || '<undef>'
-		LOG "#{tabs(@level)}#{str} => #{curFunc}"
-		return
-
-	# ........................................................................
-
-	incLevel: (doLog) ->
+		@setCurFunc @curFunc.lCalling[@curFunc.lCalling.length - 1]
+		assert (@curFunc.funcName == funcName),
+			"resume #{funcName} but resumed @curFunc.funcName"
+		assert @curFunc.isYielded, "resume #{funcName} but it's not yielded"
+		@curFunc.isYielded = false
 
 		@level += 1
-		if doLog
+		if @curFunc.doLog
 			@logLevel += 1
+
+		if @debugStack
+			@dump(@level)
 		return
 
+	# ........................................................................
 	# ........................................................................
 
 	decLevel: (doLog) ->
@@ -179,76 +251,80 @@ export class CallStack
 		# --- We don't really want to throw exceptions here
 
 		if !cond
-			if doThrowOnError
-				croak "#{msg}\n#{@dump()}"
+			if @throwErrors
+				croak "#{msg}\n#{@dumpStr(@root)}"
 			else
-				warn "#{msg}\n#{@dump()}"
+				warn "#{msg}\n#{@dumpStr(@root)}"
 		return
 
 	# ........................................................................
 
-	isLogging: () ->
+	dump: (level=0, oneIndent=spaces(5)) ->
 
-		rec = @currentFuncRec()
-		if defined(rec)
-			return rec.doLog
+		prefix = oneIndent.repeat(level)
+		console.log prefix + '-------- CALL STACK --------'
+		console.log prefix + "curFunc = #{@curFuncName}"
+		console.log @dumpStr @root, level, oneIndent
+		console.log prefix + '----------------------------'
+		return
+
+	# ........................................................................
+
+	dumpStr: (node, level, oneIndent) ->
+
+		assert (node instanceof Node), "not a Node obj in dump()"
+		lLines = []
+		lLines.push oneIndent.repeat(level) + @callStr(node)
+		assert isArray(node.lCalling), "not an array"
+		for node in node.lCalling
+			lLines.push @dumpStr(node, level+1, oneIndent)
+		str = lLines.join("\n")
+		return str
+
+	# ........................................................................
+
+	callStr: (hNode) ->
+
+		if (hNode == @curFunc)
+			curSym = '> '
 		else
-			return false
+			curSym = '. '
 
-	# ........................................................................
+		{caller, lCalling} = hNode
+		assert isArray(lCalling), "lCalling not an array"
 
-	currentFunc: () ->
-
-		rec = @currentFuncRec()
-		if defined(rec)
-			return rec.funcName
+		if defined(caller)
+			callerStr = caller.id.toString(10)
 		else
-			return undef
+			callerStr = '-'
 
-	# ........................................................................
+		callingStr = @idStr(lCalling)
 
-	currentFuncRec: () ->
-
-		return @lStack.findLast((rec) -> ! rec.isYielded)
-
-	# ........................................................................
-
-	TOS: () ->
-
-		if (@lStack.length == 0)
-			return undef
+		if hNode.doLog
+			if hNode.isYielded
+				sym = ' LY'
+			else
+				sym = ' L'
 		else
-			return @lStack[@lStack.length - 1]
+			if hNode.isYielded
+				sym = ' Y'
+			else
+				sym = ''
+
+		str = "#{curSym}[#{hNode.id}] #{hNode.funcName} #{callerStr} #{callingStr} #{sym}"
+		return str
 
 	# ........................................................................
 
-	isActive: (funcName) ->
+	idStr: (lNodes) ->
 
-		for h in @lStack
-			if (h.funcName == funcName)
-				return true
-		return false
-
-	# ........................................................................
-
-	dump: () ->
-
-		lLines = ['-- CALL STACK --']
-		if @lStack.length == 0
-			lLines.push "\t<EMPTY>"
-		else
-			pos = @lStack.length
-			while (pos > 0)
-				pos -= 1
-				lLines.push "\t" + @callStr(@lStack[pos])
-		return lLines.join("\n")
-
-	# ........................................................................
-
-	callStr: (item) ->
-
-		sym = if item.doLog then 'L' else '-'
-		if item.isYielded
-			return "#{sym} #{item.funcName}*"
-		else
-			return "#{sym} #{item.funcName}"
+		assert isArray(lNodes), "not an array in idStr()"
+		if (lNodes.length == 0)
+			return '-'
+		lIDs = []
+		for node in lNodes
+			lIDs.push node.id.toString(10)
+		str = lIDs.join(',')
+		assert defined(str), "str not defined"
+		assert (str != 'undefined'), "str is 'undefined'"
+		return str

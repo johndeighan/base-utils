@@ -7,28 +7,39 @@ import {
 	} from '@jdeighan/base-utils/utils'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {
-	logWidth, sep_dash, sep_eq, stringify,
+	logWidth, sep_dash, sep_eq,
 	setLogWidth, resetLogWidth, debugLogging,
 	setStringifier, resetStringifier,
-	setLogger, resetLogger,
-	tamlStringify, orderedStringify,
+	stringify, tamlStringify, orderedStringify,
 	LOG, LOGVALUE, LOGTAML,
-	utReset, utGetLog,
+	clearAllLogs, getMyLog,
 	} from '@jdeighan/base-utils/log'
 
 fourSpaces = '    '
 
 # ---------------------------------------------------------------------------
 
-test "line 23", (t) => t.is(logWidth, 42)
+test "line 23", (t) =>
+	t.deepEqual orderedStringify(['a', 42, [1,2]]), """
+		---
+		- a
+		- 42
+		-
+		   - 1
+		   - 2
+		"""
 
-test "line 25", (t) =>
+# ---------------------------------------------------------------------------
+
+test "line 35", (t) => t.is(logWidth, 42)
+
+test "line 37", (t) =>
 	setLogWidth 5
 	t.is logWidth, 5
 	t.is sep_dash, '-----'
 	resetLogWidth()
 
-test "line 31", (t) =>
+test "line 43", (t) =>
 	setLogWidth 5
 	t.is logWidth, 5
 	t.is sep_eq, '====='
@@ -36,34 +47,34 @@ test "line 31", (t) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 39", (t) => t.is(getPrefix(0), '')
-test "line 40", (t) => t.is(getPrefix(1), fourSpaces)
-test "line 41", (t) => t.is(getPrefix(2), fourSpaces + fourSpaces)
+test "line 51", (t) => t.is(getPrefix(0), '')
+test "line 52", (t) => t.is(getPrefix(1), fourSpaces)
+test "line 53", (t) => t.is(getPrefix(2), fourSpaces + fourSpaces)
 
 # ---------------------------------------------------------------------------
 
-test "line 45", (t) =>
-	utReset()
+test "line 57", (t) =>
+	clearAllLogs('noecho')
 	LOG "abc"
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		abc
 		"""
 
-test "line 52", (t) =>
-	utReset()
+test "line 64", (t) =>
+	clearAllLogs('noecho')
 	LOG "abc"
 	LOG "def"
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		abc
 		def
 		"""
 
-test "line 61", (t) =>
-	utReset()
+test "line 73", (t) =>
+	clearAllLogs('noecho')
 	LOG "abc"
 	LOG "def", getPrefix(1)
 	LOG "ghi", getPrefix(2)
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		abc
 		    def
 		        ghi
@@ -71,61 +82,61 @@ test "line 61", (t) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 74", (t) =>
-	utReset()
+test "line 86", (t) =>
+	clearAllLogs('noecho')
 	LOGVALUE 'x', undef
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		x = undef
 		"""
 
-test "line 81", (t) =>
-	utReset()
+test "line 93", (t) =>
+	clearAllLogs('noecho')
 	LOGVALUE 'x', null
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		x = null
 		"""
 
-test "line 88", (t) =>
-	utReset()
+test "line 100", (t) =>
+	clearAllLogs('noecho')
 	LOGVALUE 'x', 'abc'
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		x = 'abc'
 		"""
 
-test "line 95", (t) =>
-	utReset()
+test "line 107", (t) =>
+	clearAllLogs('noecho')
 	LOGVALUE 'x', 'abc def'
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		x = 'abc˳def'
 		"""
 
-test "line 102", (t) =>
-	utReset()
+test "line 114", (t) =>
+	clearAllLogs('noecho')
 	LOGVALUE 'x', '"abc"'
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		x = '"abc"'
 		"""
 
-test "line 109", (t) =>
-	utReset()
+test "line 121", (t) =>
+	clearAllLogs('noecho')
 	LOGVALUE 'x', "'abc'"
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		x = "'abc'"
 		"""
 
-test "line 116", (t) =>
-	utReset()
+test "line 128", (t) =>
+	clearAllLogs('noecho')
 	LOGVALUE 'x', "'\"abc\"'"
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		x = <'"abc"'>
 		"""
 
 # --- long string
 
-test "line 125", (t) =>
-	utReset()
+test "line 137", (t) =>
+	clearAllLogs('noecho')
 	LOGVALUE 'x', 'a'.repeat(80)
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		x = \"\"\"
 			#{'a'.repeat(80)}
 			\"\"\"
@@ -133,21 +144,21 @@ test "line 125", (t) =>
 
 # --- multi line string
 
-test "line 136", (t) =>
-	utReset()
+test "line 148", (t) =>
+	clearAllLogs('noecho')
 	LOGVALUE 'x', 'abc\ndef'
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		x = 'abc®def'
 		"""
 
 # --- hash (OL doesn't fit)
 
-test "line 145", (t) =>
-	utReset()
+test "line 157", (t) =>
+	clearAllLogs('noecho')
 	setLogWidth 5
 	LOGVALUE 'h', {xyz: 42, abc: 99}
 	resetLogWidth()
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		h =
 			---
 			abc: 99
@@ -156,21 +167,21 @@ test "line 145", (t) =>
 
 # --- hash (OL fits)
 
-test "line 159", (t) =>
-	utReset()
+test "line 171", (t) =>
+	clearAllLogs('noecho')
 	LOGVALUE 'h', {xyz: 42, abc: 99}
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		h = {"xyz":42,"abc":99}
 		"""
 
 # --- array  (OL doesn't fit)
 
-test "line 168", (t) =>
-	utReset()
+test "line 180", (t) =>
+	clearAllLogs('noecho')
 	setLogWidth 5
 	LOGVALUE 'l', ['xyz', 42, false, undef]
 	resetLogWidth()
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		l =
 			---
 			- xyz
@@ -181,10 +192,10 @@ test "line 168", (t) =>
 
 # --- array (OL fits)
 
-test "line 184", (t) =>
-	utReset()
+test "line 196", (t) =>
+	clearAllLogs('noecho')
 	LOGVALUE 'l', ['xyz', 42, false, undef]
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		l = ["xyz",42,false,null]
 		"""
 
@@ -195,10 +206,10 @@ class Node1
 		@name = 'node1'
 node1 = new Node1('abc', 2)
 
-test "line 198", (t) =>
-	utReset()
+test "line 210", (t) =>
+	clearAllLogs('noecho')
 	LOGVALUE 'Node1', node1
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		Node1 =
 			---
 			level: 2
@@ -225,10 +236,10 @@ class Node2
 node2 = new Node2('abc', 2)
 [type, subtype] = jsType(node2)
 
-test "line 228", (t) =>
-	utReset()
+test "line 240", (t) =>
+	clearAllLogs('noecho')
 	LOGVALUE 'Node2', node2
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		Node2 =
 			HERE IT IS
 			str is abc
@@ -237,8 +248,8 @@ test "line 228", (t) =>
 			THAT'S ALL FOLKS!
 		"""
 
-test "line 240", (t) =>
-	utReset()
+test "line 252", (t) =>
+	clearAllLogs('noecho')
 
 	hProc = {
 		code:   (block) -> return "#{block};"
@@ -248,7 +259,7 @@ test "line 240", (t) =>
 
 	LOGVALUE 'hProc', hProc
 
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		hProc =
 			---
 			Script: '[Function: Script]'
@@ -256,12 +267,12 @@ test "line 240", (t) =>
 			html: '[Function: html]'
 		"""
 
-test "line 259", (t) =>
-	utReset()
+test "line 271", (t) =>
+	clearAllLogs('noecho')
 	setLogWidth 5
 	LOGTAML 'lItems', ['xyz', 42, false, undef]
 	resetLogWidth()
-	t.is utGetLog(), """
+	t.is getMyLog(), """
 		lItems =
 			---
 			- xyz

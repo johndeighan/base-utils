@@ -1,6 +1,6 @@
 # utils.coffee
 
-import {assert, croak} from '@jdeighan/base-utils/exceptions'
+import assert from 'node:assert/strict'
 
 `export const undef = void 0`
 
@@ -211,15 +211,20 @@ export isIdentifier = (x) =>
 
 export isFunctionName = (x) =>
 
-	return !! (isString(x) && x.match(///^
-			[A-Za-z_]
-			[A-Za-z0-9_]*
+	if isString(x) && lMatches = x.match(///^
+			( [A-Za-z_] [A-Za-z0-9_]* )
 			(?:
 				\.             # allow class method names
-				[A-Za-z_]
-				[A-Za-z0-9_]*
+				( [A-Za-z_] [A-Za-z0-9_]* )
 				)?
-			$///))
+			$///)
+		[_, first, second] = lMatches
+		if nonEmpty(second)
+			return [first, second]
+		else
+			return [first]
+	else
+		return undef
 
 # ---------------------------------------------------------------------------
 
@@ -273,7 +278,7 @@ export isHash = (x, lKeys) ->
 		if isString(lKeys)
 			lKeys = words(lKeys)
 		else if ! isArray(lKeys)
-			croak "lKeys not an array: #{OL(lKeys)}"
+			throw new Error("lKeys not an array: #{OL(lKeys)}")
 		for key in lKeys
 			if ! x.hasOwnProperty(key)
 				return false
