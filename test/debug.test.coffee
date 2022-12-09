@@ -181,3 +181,95 @@ TEST = (lineNum, options, func, expectedDbg, expectedLog) ->
 		2
 		"""
 	)()
+
+# ---------------------------------------------------------------------------
+
+(() ->
+
+	callGen = () ->
+		dbgEnter 'func'
+		dbgReturn 'func'
+		LOG 'abc'
+
+	TEST 193, 'func', callGen, """
+		enter func
+		└─> return from func
+		""", """
+		abc
+		"""
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() ->
+
+	callGen = () ->
+		dbgEnter 'obj.func'
+		dbgReturn 'obj.func'
+		LOG 'abc'
+
+	TEST 193, 'obj.func', callGen, """
+		enter obj.func
+		└─> return from obj.func
+		""", """
+		abc
+		"""
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() ->
+
+	callGen = () ->
+		dbgEnter 'obj.func'
+		dbgReturn 'obj.func'
+		LOG 'abc'
+
+	TEST 193, 'func', callGen, """
+		enter obj.func
+		└─> return from obj.func
+		""", """
+		abc
+		"""
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() ->
+
+	callGen = () ->
+		dbgEnter 'Getter.get'
+		dbgEnter 'Fetcher.fetch'
+		dbgReturn 'Fetcher.fetch', {
+			str: 'abcdef abcdef abcdef abcdef abcdef'
+			node: 'abcdef abcdef abcdef abcdef abcdef'
+			lineNum: 15
+			}
+		dbgReturn 'Getter.get', {
+			str: 'abcdef abcdef abcdef abcdef abcdef'
+			node: 'abcdef abcdef abcdef abcdef abcdef'
+			lineNum: 15
+			}
+		LOG 'abc'
+
+	TEST 193, 'get fetch', callGen, """
+		enter Getter.get
+		│   enter Fetcher.fetch
+		│   └─> return from Fetcher.fetch
+		│       val =
+		│       ---
+		│       lineNum: 15
+		│       node: abcdef˳abcdef˳abcdef˳abcdef˳abcdef
+		│       str: abcdef˳abcdef˳abcdef˳abcdef˳abcdef
+		└─> return from Getter.get
+		    val =
+		    ---
+		    lineNum: 15
+		    node: abcdef˳abcdef˳abcdef˳abcdef˳abcdef
+		    str: abcdef˳abcdef˳abcdef˳abcdef˳abcdef
+		""", """
+		abc
+		"""
+	)()
+
+# ---------------------------------------------------------------------------

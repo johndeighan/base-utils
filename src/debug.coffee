@@ -18,7 +18,9 @@ export {debugLogging}
 
 export callStack = new CallStack()
 
+# --- Comes from call to setDebugging()
 lFuncList = []      # array of {funcName, plus}
+
 logAll = false      # if true, always log
 internalDebugging = false
 
@@ -165,8 +167,9 @@ export getFuncList = (str) ->
 
 export dbgEnter = (funcName, lValues...) ->
 
-	assert isFunctionName(funcName), "not a valid function name"
-	doLog = logAll || funcMatch(funcName)
+	lParts = isFunctionName(funcName)
+	assert defined(lParts), "not a valid function name"
+	doLog = logAll || funcMatch(funcName, lParts)
 	if internalDebugging
 		if (lValues.length == 0)
 			console.log "dbgEnter #{OL(funcName)}"
@@ -359,7 +362,7 @@ export stdLogReturn = (lArgs...) ->
 
 # ---------------------------------------------------------------------------
 
-export stdLogReturnVal = (level, funcName, val) ->
+stdLogReturnVal = (level, funcName, val) ->
 
 	assert isFunctionName(funcName), "bad function name"
 	assert isInteger(level), "level not an integer"
@@ -370,7 +373,7 @@ export stdLogReturnVal = (level, funcName, val) ->
 		LOG str, labelPre
 	else
 		idPre = getPrefix(level, 'noLastVbar')
-		itemPre = getPrefix(level, 'noLast2Vbars')
+		itemPre = getPrefix(level, 'noLastVbar')
 		LOG "return from #{funcName}", labelPre
 		LOGVALUE "val", val, idPre, itemPre
 	return true
@@ -489,14 +492,22 @@ export getType = (label, lValues=[]) ->
 
 # ---------------------------------------------------------------------------
 
-export funcMatch = (fullName) ->
+export funcMatch = (fullName, lParts) ->
 	# --- fullName came from a call to dbgEnter()
+	#     it might be of form <object>.<method>
 
 	for h in lFuncList
 		if (h.fullName == fullName)
 			return true
 		if h.plus && callStack.isActive(fullName)
 			return true
+	if (lParts.length == 2)   # came from dbgEnter()
+		methodName = lParts[1]
+		for h in lFuncList
+			if (h.fullName == methodName)
+				return true
+#			if h.plus && callStack.isActive(methodName)
+#				return true
 	return false
 
 # ........................................................................

@@ -179,3 +179,71 @@ enter func2 15
 └─> return from callGen`, `1
 2`);
 })();
+
+// ---------------------------------------------------------------------------
+(function() {
+  callGen = function() {
+    dbgEnter('func');
+    dbgReturn('func');
+    return LOG('abc');
+  };
+  return TEST(193, 'func', callGen, `enter func
+└─> return from func`, `abc`);
+})();
+
+// ---------------------------------------------------------------------------
+(function() {
+  callGen = function() {
+    dbgEnter('obj.func');
+    dbgReturn('obj.func');
+    return LOG('abc');
+  };
+  return TEST(193, 'obj.func', callGen, `enter obj.func
+└─> return from obj.func`, `abc`);
+})();
+
+// ---------------------------------------------------------------------------
+(function() {
+  callGen = function() {
+    dbgEnter('obj.func');
+    dbgReturn('obj.func');
+    return LOG('abc');
+  };
+  return TEST(193, 'func', callGen, `enter obj.func
+└─> return from obj.func`, `abc`);
+})();
+
+// ---------------------------------------------------------------------------
+(function() {
+  callGen = function() {
+    dbgEnter('Getter.get');
+    dbgEnter('Fetcher.fetch');
+    dbgReturn('Fetcher.fetch', {
+      str: 'abcdef abcdef abcdef abcdef abcdef',
+      node: 'abcdef abcdef abcdef abcdef abcdef',
+      lineNum: 15
+    });
+    dbgReturn('Getter.get', {
+      str: 'abcdef abcdef abcdef abcdef abcdef',
+      node: 'abcdef abcdef abcdef abcdef abcdef',
+      lineNum: 15
+    });
+    return LOG('abc');
+  };
+  return TEST(193, 'get fetch', callGen, `enter Getter.get
+│   enter Fetcher.fetch
+│   └─> return from Fetcher.fetch
+│       val =
+│       ---
+│       lineNum: 15
+│       node: abcdef˳abcdef˳abcdef˳abcdef˳abcdef
+│       str: abcdef˳abcdef˳abcdef˳abcdef˳abcdef
+└─> return from Getter.get
+    val =
+    ---
+    lineNum: 15
+    node: abcdef˳abcdef˳abcdef˳abcdef˳abcdef
+    str: abcdef˳abcdef˳abcdef˳abcdef˳abcdef`, `abc`);
+})();
+
+// ---------------------------------------------------------------------------

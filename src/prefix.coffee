@@ -23,8 +23,6 @@ export dotIndent   = dot    + space + space     + space
 
 export getPrefix = (level, option='none') ->
 
-	if (option == 'noLast2Vbars') && (level < 2)
-		option = 'noLastVbar'
 	switch option
 		when 'plain'
 			return oneIndent.repeat(level)
@@ -42,10 +40,6 @@ export getPrefix = (level, option='none') ->
 			assert (level >= 1),
 				"getPrefix(), noLastVbar but level=#{OL(level)}"
 			return oneIndent.repeat(level-1) + fourSpaces
-		when 'noLast2Vbars'
-			assert (level >= 2),
-				"getPrefix(), noLast2Vbars but level=#{OL(level)}"
-			return oneIndent.repeat(level-2) + fourSpaces + fourSpaces
 		when 'dotLast2Vbars'
 			assert (level >= 2),
 				"getPrefix(), dotLast2Vbars but level=#{OL(level)}"
