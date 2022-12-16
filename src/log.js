@@ -137,7 +137,7 @@ export var dumpLog = (label, theLog, hOptions = {}) => {
   if (hOptions.escape) {
     console.log(escapeStr(theLog, hEscNoNL));
   } else {
-    console.log(theLog);
+    console.log(theLog.replace(/\t/g, "   "));
   }
   console.log("=======================================");
 };
