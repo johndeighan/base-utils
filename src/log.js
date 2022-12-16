@@ -127,11 +127,18 @@ export var getAllLogs = () => {
 };
 
 // ---------------------------------------------------------------------------
-export var dumpLog = (label, theLog) => {
+export var dumpLog = (label, theLog, hOptions = {}) => {
+  // --- Valid options:
+  //        escape - escape space & TAB chars
+  hOptions = getOptions(hOptions);
   console.log("=======================================");
   console.log(`              ${label}`);
   console.log("=======================================");
-  console.log(theLog);
+  if (hOptions.echo) {
+    console.log(escapeStr(theLog, hEscNoNL));
+  } else {
+    console.log(theLog);
+  }
   console.log("=======================================");
 };
 
