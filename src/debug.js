@@ -8,6 +8,7 @@ import {
 } from '@jdeighan/base-utils/exceptions';
 
 import {
+  pass,
   undef,
   defined,
   notdefined,
@@ -28,7 +29,8 @@ import {
   words,
   firstWord,
   inList,
-  oneof
+  oneof,
+  jsType
 } from '@jdeighan/base-utils/utils';
 
 import {
@@ -40,7 +42,8 @@ import {
   LOGVALUE,
   stringFits,
   debugLogging,
-  getMyLog
+  getMyLog,
+  echoMyLogs
 } from '@jdeighan/base-utils/log';
 
 import {
@@ -90,6 +93,11 @@ export var setCallStack = function(hOptions = {}) {
 // ---------------------------------------------------------------------------
 export var debugDebug = (debugFlag = true) => {
   internalDebugging = debugFlag;
+  if (debugFlag) {
+    console.log("turn on internal debugging in debug.coffee");
+  } else {
+    console.log("turn off internal debugging in debug.coffee");
+  }
 };
 
 // ---------------------------------------------------------------------------
@@ -122,12 +130,20 @@ logType = function(cur, std) {
 };
 
 // ---------------------------------------------------------------------------
-export var setDebugging = function(...lParms) {
-  var customSet, i, j, key, len, parm, value;
-  // --- pass a hash to set custom loggers
+export var setDebugging = function(debugWhat = undef, hOptions = {}) {
+  var customSet, j, key, len, ref, subtype, type;
+  // --- debugWhat can be:
+  //        1. a boolean
+  //        2. a string
+  //        3. an array of strings
+  // --- Valid options:
+  //        'echo' - echo logs to console
+  //        'enter','returnFrom','yield','resume','string','value'
+  //           - to set a custom logger
   if (internalDebugging) {
-    console.log(`setDebugging() with ${lParms.length} parms`);
+    console.log(`setDebugging ${OL(debugWhat)}, ${OL(hOptions)}`);
   }
+  // --- reset everything
   callStack.reset();
   lFuncList = [];
   logAll = false;
@@ -137,33 +153,48 @@ export var setDebugging = function(...lParms) {
   logResume = stdLogResume;
   logString = stdLogString;
   logValue = stdLogValue;
-  customSet = false;
-  for (i = j = 0, len = lParms.length; j < len; i = ++j) {
-    parm = lParms[i];
-    if (isBoolean(parm)) {
-      logAll = parm;
-    } else if (isString(parm)) {
-      logAll = false;
-      if (internalDebugging) {
-        console.log(`lParms[${i}] is string ${OL(parm)}`);
-      }
-      lFuncList = lFuncList.concat(getFuncList(parm));
-    } else if (isHash(parm)) {
-      if (internalDebugging) {
-        console.log(`lParms[${i}] is hash ${OL(parm)}`);
-      }
-      customSet = true;
-      for (key in parm) {
-        value = parm[key];
-        setCustomDebugLogger(key, value);
-      }
-    } else {
-      croak(`Invalid parm to setDebugging(): ${OL(parm)}`);
+  customSet = false; // were any custom loggers set?
+  
+  // --- First, process any options
+  hOptions = getOptions(hOptions);
+  if (hOptions.echo) {
+    echoMyLogs();
+    if (internalDebugging) {
+      console.log("turn on echo");
     }
   }
+  ref = words('enter returnFrom yield resume string value');
+  for (j = 0, len = ref.length; j < len; j++) {
+    key = ref[j];
+    if (defined(hOptions[key])) {
+      setCustomDebugLogger(key, hOptions[key]);
+      customSet = true;
+    }
+  }
+  // --- process debugWhat if defined
+  [type, subtype] = jsType(debugWhat);
+  switch (type) {
+    case undef:
+      pass();
+      break;
+    case 'boolean':
+      if (internalDebugging) {
+        console.log(`set logAll to ${OL(debugWhat)}`);
+      }
+      logAll = debugWhat;
+      break;
+    case 'string':
+    case 'array':
+      if (internalDebugging) {
+        console.log(`debugWhat is ${OL(debugWhat)}`);
+      }
+      lFuncList = getFuncList(debugWhat);
+      break;
+    default:
+      croak(`Bad arg 1: ${OL(debugWhat)}`);
+  }
   if (internalDebugging) {
-    console.log('lFuncList:');
-    console.log(toTAML(lFuncList));
+    dumpFuncList();
     if (customSet) {
       dumpDebugLoggers();
     }
@@ -171,8 +202,18 @@ export var setDebugging = function(...lParms) {
 };
 
 // ---------------------------------------------------------------------------
+export var dumpFuncList = () => {
+  console.log('lFuncList: --------------------------------');
+  console.log(toTAML(lFuncList));
+  console.log('-------------------------------------------');
+};
+
+// ---------------------------------------------------------------------------
 export var setCustomDebugLogger = function(type, func) {
   assert(isFunction(func), "Not a function");
+  if (internalDebugging) {
+    console.log(`set custom logger ${OL(type)}`);
+  }
   switch (type) {
     case 'enter':
       logEnter = func;
@@ -198,12 +239,25 @@ export var setCustomDebugLogger = function(type, func) {
 };
 
 // ---------------------------------------------------------------------------
-export var getFuncList = function(str) {
-  var fullName, j, lFuncs, len, modifier, ref, word;
-  lFuncs = [];
-  ref = words(str);
-  for (j = 0, len = ref.length; j < len; j++) {
-    word = ref[j];
+export var getFuncList = function(funcs) {
+  var fullName, j, k, lFuncs, lItems, len, len1, modifier, ref, str, word;
+  // --- funcs can be a string or an array of strings
+  lFuncs = []; // return value
+  
+  // --- Allow passing in an array of strings
+  if (isArray(funcs)) {
+    assert(isArrayOfStrings(funcs), "not an array of strings");
+    for (j = 0, len = funcs.length; j < len; j++) {
+      str = funcs[j];
+      lItems = getFuncList(str); // recursive call
+      lFuncs.push(...lItems);
+    }
+    return lFuncs;
+  }
+  assert(isString(funcs), "not a string");
+  ref = words(funcs);
+  for (k = 0, len1 = ref.length; k < len1; k++) {
+    word = ref[k];
     if (word === 'debug') {
       internalDebugging = true;
     }
@@ -221,10 +275,8 @@ export var getFuncList = function(str) {
 // Stack is only modified in these 8 functions (it is reset in setDebugging())
 // ---------------------------------------------------------------------------
 export var dbgEnter = function(funcName, ...lValues) {
-  var doLog, lParts, level;
-  lParts = isFunctionName(funcName);
-  assert(defined(lParts), "not a valid function name");
-  doLog = logAll || funcMatch(funcName, lParts);
+  var doLog, level;
+  doLog = logAll || funcMatch(funcName);
   if (internalDebugging) {
     if (lValues.length === 0) {
       console.log(`dbgEnter ${OL(funcName)}`);
@@ -241,6 +293,51 @@ export var dbgEnter = function(funcName, ...lValues) {
   }
   callStack.enter(funcName, lValues, doLog);
   return true;
+};
+
+// ---------------------------------------------------------------------------
+export var funcMatch = function(funcName) {
+  var h, j, k, lParts, len, len1, methodName;
+  // --- funcName came from a call to dbgEnter()
+  //     it might be of form <object>.<method>
+  // --- We KNOW that funcName is active!
+  if (internalDebugging) {
+    console.log(`CHECK funcMatch(${OL(funcName)})`);
+    callStack.dump(1);
+  }
+  lParts = isFunctionName(funcName);
+  assert(defined(lParts), `not a valid function name: ${OL(funcName)}`);
+  for (j = 0, len = lFuncList.length; j < len; j++) {
+    h = lFuncList[j];
+    if (h.fullName === funcName) {
+      if (internalDebugging) {
+        console.log(`   - TRUE - ${OL(funcName)} is in lFuncList`);
+      }
+      return true;
+    }
+    if (h.plus && callStack.isActive(h.fullName)) {
+      if (internalDebugging) {
+        console.log(`   - TRUE - ${OL(h.fullName)} is active`);
+      }
+      return true;
+    }
+  }
+  if (lParts.length === 2) { // came from dbgEnter()
+    methodName = lParts[1];
+    for (k = 0, len1 = lFuncList.length; k < len1; k++) {
+      h = lFuncList[k];
+      if (h.fullName === methodName) {
+        if (internalDebugging) {
+          console.log(`   - TRUE - ${OL(methodName)} is in lFuncList`);
+        }
+        return true;
+      }
+    }
+  }
+  if (internalDebugging) {
+    console.log("   - FALSE");
+  }
+  return false;
 };
 
 // ---------------------------------------------------------------------------
@@ -538,34 +635,6 @@ export var getType = function(label, lValues = []) {
   } else {
     throw new Error("More than 1 object not allowed here");
   }
-};
-
-// ---------------------------------------------------------------------------
-export var funcMatch = function(fullName, lParts) {
-  var h, j, k, len, len1, methodName;
-// --- fullName came from a call to dbgEnter()
-//     it might be of form <object>.<method>
-  for (j = 0, len = lFuncList.length; j < len; j++) {
-    h = lFuncList[j];
-    if (h.fullName === fullName) {
-      return true;
-    }
-    if (h.plus && callStack.isActive(fullName)) {
-      return true;
-    }
-  }
-  if (lParts.length === 2) { // came from dbgEnter()
-    methodName = lParts[1];
-    for (k = 0, len1 = lFuncList.length; k < len1; k++) {
-      h = lFuncList[k];
-      if (h.fullName === methodName) {
-        return true;
-      }
-    }
-  }
-  //			if h.plus && callStack.isActive(methodName)
-  //				return true
-  return false;
 };
 
 // ........................................................................

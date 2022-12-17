@@ -28,15 +28,15 @@ main = () ->
 
 	dbgEnter 'main'
 	for i in [13, 15]
-		func i
+		func1 i
 		LOG i+1
 	dbgReturn 'main'
 	return
 
-func = (i) ->
-	dbgEnter 'func', i
+func1 = (i) ->
+	dbgEnter 'func1', i
 	func2(i)
-	dbgReturn 'func'
+	dbgReturn 'func1'
 	return
 
 func2 = (i) ->
@@ -270,6 +270,42 @@ TEST = (lineNum, options, func, expectedDbg, expectedLog) ->
 		""", """
 		abc
 		"""
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() ->
+	MAIN = () ->
+		dbgEnter 'MAIN'
+		FUNC1()
+		FUNC2()
+		dbgReturn 'MAIN'
+		return
+
+	FUNC1 = () ->
+		dbgEnter 'FUNC1'
+		LOG 'Hello'
+		dbgReturn 'FUNC1'
+		return
+
+	FUNC2 = () ->
+		dbgEnter 'FUNC2'
+		LOG 'Hi'
+		dbgReturn 'FUNC2'
+		return
+
+	TEST 297, 'MAIN+', MAIN, """
+		enter MAIN
+		│   enter FUNC1
+		│   └─> return from FUNC1
+		│   enter FUNC2
+		│   └─> return from FUNC2
+		└─> return from MAIN
+		""", """
+		Hello
+		Hi
+		"""
+
 	)()
 
 # ---------------------------------------------------------------------------

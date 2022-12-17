@@ -2,14 +2,15 @@
 
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
-	undef, defined, notdefined, OL, OLS, isIdentifier, isFunctionName,
+	pass, undef, defined, notdefined, OL, OLS,
+	isIdentifier, isFunctionName,
 	isString, isFunction, isArray, isHash, isBoolean, isInteger,
 	isEmpty, nonEmpty, arrayToBlock, getOptions,
-	words, firstWord, inList, oneof,
+	words, firstWord, inList, oneof, jsType,
 	} from '@jdeighan/base-utils/utils'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {
-	LOG, LOGVALUE, stringFits, debugLogging, getMyLog,
+	LOG, LOGVALUE, stringFits, debugLogging, getMyLog, echoMyLogs,
 	} from '@jdeighan/base-utils/log'
 import {toTAML} from '@jdeighan/base-utils/taml'
 import {CallStack} from '@jdeighan/base-utils/stack'
@@ -50,6 +51,10 @@ export setCallStack = (hOptions={}) ->
 export debugDebug = (debugFlag=true) =>
 
 	internalDebugging = debugFlag
+	if debugFlag
+		console.log "turn on internal debugging in debug.coffee"
+	else
+		console.log "turn off internal debugging in debug.coffee"
 	return
 
 # ---------------------------------------------------------------------------
@@ -82,12 +87,20 @@ logType = (cur, std) ->
 
 # ---------------------------------------------------------------------------
 
-export setDebugging = (lParms...) ->
-	# --- pass a hash to set custom loggers
+export setDebugging = (debugWhat=undef, hOptions={}) ->
+	# --- debugWhat can be:
+	#        1. a boolean
+	#        2. a string
+	#        3. an array of strings
+	# --- Valid options:
+	#        'echo' - echo logs to console
+	#        'enter','returnFrom','yield','resume','string','value'
+	#           - to set a custom logger
 
 	if internalDebugging
-		console.log "setDebugging() with #{lParms.length} parms"
+		console.log "setDebugging #{OL(debugWhat)}, #{OL(hOptions)}"
 
+	# --- reset everything
 	callStack.reset()
 	lFuncList = []
 	logAll = false
@@ -98,29 +111,48 @@ export setDebugging = (lParms...) ->
 	logString    = stdLogString
 	logValue     = stdLogValue
 
-	customSet = false
-	for parm,i in lParms
-		if isBoolean(parm)
-			logAll = parm
-		else if isString(parm)
-			logAll = false
-			if internalDebugging
-				console.log "lParms[#{i}] is string #{OL(parm)}"
-			lFuncList = lFuncList.concat(getFuncList(parm))
-		else if isHash(parm)
-			if internalDebugging
-				console.log "lParms[#{i}] is hash #{OL(parm)}"
+	customSet = false     # were any custom loggers set?
+
+	# --- First, process any options
+	hOptions = getOptions(hOptions)
+	if hOptions.echo
+		echoMyLogs()
+		if internalDebugging
+			console.log "turn on echo"
+	for key in words('enter returnFrom yield resume string value')
+		if defined(hOptions[key])
+			setCustomDebugLogger key, hOptions[key]
 			customSet = true
-			for key,value of parm
-				setCustomDebugLogger key, value
+
+	# --- process debugWhat if defined
+	[type, subtype] = jsType(debugWhat)
+	switch type
+		when undef
+			pass()
+		when 'boolean'
+			if internalDebugging
+				console.log "set logAll to #{OL(debugWhat)}"
+			logAll = debugWhat
+		when 'string', 'array'
+			if internalDebugging
+				console.log "debugWhat is #{OL(debugWhat)}"
+			lFuncList = getFuncList(debugWhat)
 		else
-			croak "Invalid parm to setDebugging(): #{OL(parm)}"
+			croak "Bad arg 1: #{OL(debugWhat)}"
 
 	if internalDebugging
-		console.log 'lFuncList:'
-		console.log toTAML(lFuncList)
+		dumpFuncList()
 		if customSet
 			dumpDebugLoggers()
+	return
+
+# ---------------------------------------------------------------------------
+
+export dumpFuncList = () =>
+
+	console.log 'lFuncList: --------------------------------'
+	console.log toTAML(lFuncList)
+	console.log '-------------------------------------------'
 	return
 
 # ---------------------------------------------------------------------------
@@ -128,6 +160,8 @@ export setDebugging = (lParms...) ->
 export setCustomDebugLogger = (type, func) ->
 
 	assert isFunction(func), "Not a function"
+	if internalDebugging
+		console.log "set custom logger #{OL(type)}"
 	switch type
 		when 'enter'
 			logEnter = func
@@ -147,10 +181,21 @@ export setCustomDebugLogger = (type, func) ->
 
 # ---------------------------------------------------------------------------
 
-export getFuncList = (str) ->
+export getFuncList = (funcs) ->
+	# --- funcs can be a string or an array of strings
 
-	lFuncs = []
-	for word in words(str)
+	lFuncs = []    # return value
+
+	# --- Allow passing in an array of strings
+	if isArray(funcs)
+		assert isArrayOfStrings(funcs), "not an array of strings"
+		for str in funcs
+			lItems = getFuncList(str)   # recursive call
+			lFuncs.push lItems...
+		return lFuncs
+
+	assert isString(funcs), "not a string"
+	for word in words(funcs)
 		if (word == 'debug')
 			internalDebugging = true
 		[fullName, modifier] = parseFunc(word)
@@ -167,9 +212,7 @@ export getFuncList = (str) ->
 
 export dbgEnter = (funcName, lValues...) ->
 
-	lParts = isFunctionName(funcName)
-	assert defined(lParts), "not a valid function name"
-	doLog = logAll || funcMatch(funcName, lParts)
+	doLog = logAll || funcMatch(funcName)
 	if internalDebugging
 		if (lValues.length == 0)
 			console.log "dbgEnter #{OL(funcName)}"
@@ -184,6 +227,41 @@ export dbgEnter = (funcName, lValues...) ->
 
 	callStack.enter funcName, lValues, doLog
 	return true
+
+# ---------------------------------------------------------------------------
+
+export funcMatch = (funcName) ->
+	# --- funcName came from a call to dbgEnter()
+	#     it might be of form <object>.<method>
+	# --- We KNOW that funcName is active!
+
+	if internalDebugging
+		console.log "CHECK funcMatch(#{OL(funcName)})"
+		callStack.dump 1
+
+	lParts = isFunctionName(funcName)
+	assert defined(lParts), "not a valid function name: #{OL(funcName)}"
+
+	for h in lFuncList
+		if (h.fullName == funcName)
+			if internalDebugging
+				console.log "   - TRUE - #{OL(funcName)} is in lFuncList"
+			return true
+		if h.plus && callStack.isActive(h.fullName)
+			if internalDebugging
+				console.log "   - TRUE - #{OL(h.fullName)} is active"
+			return true
+
+	if (lParts.length == 2)   # came from dbgEnter()
+		methodName = lParts[1]
+		for h in lFuncList
+			if (h.fullName == methodName)
+				if internalDebugging
+					console.log "   - TRUE - #{OL(methodName)} is in lFuncList"
+				return true
+	if internalDebugging
+		console.log "   - FALSE"
+	return false
 
 # ---------------------------------------------------------------------------
 
@@ -489,26 +567,6 @@ export getType = (label, lValues=[]) ->
 		return ['string', undef]
 	else
 		throw new Error("More than 1 object not allowed here")
-
-# ---------------------------------------------------------------------------
-
-export funcMatch = (fullName, lParts) ->
-	# --- fullName came from a call to dbgEnter()
-	#     it might be of form <object>.<method>
-
-	for h in lFuncList
-		if (h.fullName == fullName)
-			return true
-		if h.plus && callStack.isActive(fullName)
-			return true
-	if (lParts.length == 2)   # came from dbgEnter()
-		methodName = lParts[1]
-		for h in lFuncList
-			if (h.fullName == methodName)
-				return true
-#			if h.plus && callStack.isActive(methodName)
-#				return true
-	return false
 
 # ........................................................................
 
