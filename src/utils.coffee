@@ -533,33 +533,6 @@ export firstWord = (str) =>
 
 # ---------------------------------------------------------------------------
 
-export hashFromString = (str) ->
-
-	assert isString(str), "not a string: #{OL(str)}"
-	h = {}
-	for word in words(str)
-		if lMatches = word.match(///^
-				(\!)?                    # negate value
-				([A-Za-z][A-Za-z_0-9]*)  # identifier
-				(?:
-					(=)
-					(.*)
-					)?
-				$///)
-			[_, neg, ident, eq, str] = lMatches
-			if nonEmpty(eq)
-				assert isEmpty(neg), "negation with string value"
-				h[ident] = str
-			else if neg
-				h[ident] = false
-			else
-				h[ident] = true
-		else
-			throw new Error("Invalid word #{OL(word)}")
-	return h
-
-# ---------------------------------------------------------------------------
-
 export getOptions = (options=undef, hDefault={}) ->
 
 	[type, subtype] = jsType(options)
@@ -579,6 +552,35 @@ export getOptions = (options=undef, hDefault={}) ->
 			hOptions[key] = value
 
 	return hOptions
+
+# ---------------------------------------------------------------------------
+
+export hashFromString = (str) ->
+
+	assert isString(str), "not a string: #{OL(str)}"
+	h = {}
+	for word in words(str)
+		if lMatches = word.match(///^
+				(\!)?                    # negate value
+				([A-Za-z][A-Za-z_0-9]*)  # identifier
+				(?:
+					(=)
+					(.*)
+					)?
+				$///)
+			[_, neg, ident, eq, str] = lMatches
+			if nonEmpty(eq)
+				assert isEmpty(neg), "negation with string value"
+
+				# --- TO DO: interpret backslash escapes
+				h[ident] = str
+			else if neg
+				h[ident] = false
+			else
+				h[ident] = true
+		else
+			throw new Error("Invalid word #{OL(word)}")
+	return h
 
 # ---------------------------------------------------------------------------
 

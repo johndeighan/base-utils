@@ -4,7 +4,7 @@ import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	undef, defined, notdefined, OL, OLS, deepCopy, warn, oneof,
 	isString, isArray, isBoolean, isInteger, isFunctionName,
-	isEmpty, nonEmpty,
+	isEmpty, nonEmpty, isNonEmptyString,
 	spaces, tabs, getOptions,
 	} from '@jdeighan/base-utils/utils'
 import {LOG, LOGVALUE, getMyLog} from '@jdeighan/base-utils/log'
@@ -73,6 +73,7 @@ export class CallStack
 
 	getNewNode: (funcName, lArgs, caller, doLog=false) ->
 
+		assert isNonEmptyString(funcName), "funcName not a non-empty string"
 		id = CallStack.nextID
 		CallStack.nextID += 1
 		return new Node(id, funcName, deepCopy(lArgs), caller, doLog)
@@ -81,6 +82,7 @@ export class CallStack
 
 	setCurFunc: (node) ->
 
+		assert defined(node), "node is undef"
 		@curFunc = node
 		@curFuncName = node.funcName
 		return
@@ -119,6 +121,7 @@ export class CallStack
 
 	enter: (funcName, lArgs=[], doLog=false) ->
 
+		assert isNonEmptyString(funcName), "funcName not a non-empty string"
 		if @logCalls
 			if (lArgs.length == 0)
 				@log "ENTER #{OL(funcName)}"

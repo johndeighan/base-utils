@@ -23,6 +23,7 @@ import {
   isFunctionName,
   isEmpty,
   nonEmpty,
+  isNonEmptyString,
   spaces,
   tabs,
   getOptions
@@ -94,6 +95,7 @@ export var CallStack = (function() {
     // ........................................................................
     getNewNode(funcName, lArgs, caller, doLog = false) {
       var id;
+      assert(isNonEmptyString(funcName), "funcName not a non-empty string");
       id = CallStack.nextID;
       CallStack.nextID += 1;
       return new Node(id, funcName, deepCopy(lArgs), caller, doLog);
@@ -101,6 +103,7 @@ export var CallStack = (function() {
 
     // ........................................................................
     setCurFunc(node) {
+      assert(defined(node), "node is undef");
       this.curFunc = node;
       this.curFuncName = node.funcName;
     }
@@ -140,6 +143,7 @@ export var CallStack = (function() {
     // ........................................................................
     enter(funcName, lArgs = [], doLog = false) {
       var node;
+      assert(isNonEmptyString(funcName), "funcName not a non-empty string");
       if (this.logCalls) {
         if (lArgs.length === 0) {
           this.log(`ENTER ${OL(funcName)}`);

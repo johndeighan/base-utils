@@ -585,32 +585,6 @@ export var firstWord = (str) => {
 };
 
 // ---------------------------------------------------------------------------
-export var hashFromString = function(str) {
-  var _, eq, h, i, ident, lMatches, len1, neg, ref, word;
-  assert(isString(str), `not a string: ${OL(str)}`);
-  h = {};
-  ref = words(str);
-  for (i = 0, len1 = ref.length; i < len1; i++) {
-    word = ref[i];
-    if (lMatches = word.match(/^(\!)?([A-Za-z][A-Za-z_0-9]*)(?:(=)(.*))?$/)) { // negate value
-      // identifier
-      [_, neg, ident, eq, str] = lMatches;
-      if (nonEmpty(eq)) {
-        assert(isEmpty(neg), "negation with string value");
-        h[ident] = str;
-      } else if (neg) {
-        h[ident] = false;
-      } else {
-        h[ident] = true;
-      }
-    } else {
-      throw new Error(`Invalid word ${OL(word)}`);
-    }
-  }
-  return h;
-};
-
-// ---------------------------------------------------------------------------
 export var getOptions = function(options = undef, hDefault = {}) {
   var hOptions, key, subtype, type, value;
   [type, subtype] = jsType(options);
@@ -635,6 +609,33 @@ export var getOptions = function(options = undef, hDefault = {}) {
     }
   }
   return hOptions;
+};
+
+// ---------------------------------------------------------------------------
+export var hashFromString = function(str) {
+  var _, eq, h, i, ident, lMatches, len1, neg, ref, word;
+  assert(isString(str), `not a string: ${OL(str)}`);
+  h = {};
+  ref = words(str);
+  for (i = 0, len1 = ref.length; i < len1; i++) {
+    word = ref[i];
+    if (lMatches = word.match(/^(\!)?([A-Za-z][A-Za-z_0-9]*)(?:(=)(.*))?$/)) { // negate value
+      // identifier
+      [_, neg, ident, eq, str] = lMatches;
+      if (nonEmpty(eq)) {
+        assert(isEmpty(neg), "negation with string value");
+        // --- TO DO: interpret backslash escapes
+        h[ident] = str;
+      } else if (neg) {
+        h[ident] = false;
+      } else {
+        h[ident] = true;
+      }
+    } else {
+      throw new Error(`Invalid word ${OL(word)}`);
+    }
+  }
+  return h;
 };
 
 // ---------------------------------------------------------------------------
