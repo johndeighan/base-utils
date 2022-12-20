@@ -77,6 +77,11 @@ export var CallStack = (function() {
     }
 
     // ........................................................................
+    debugCalls(flag = true) {
+      this.debugCalls = flag;
+    }
+
+    // ........................................................................
     log(str) {
       LOG(`${tabs(this.level)}${str}`);
     }
