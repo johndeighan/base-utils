@@ -3,7 +3,7 @@
 import test from 'ava'
 
 import {
-	assert, croak, haltOnError,
+	assert, croak,
 	} from '@jdeighan/base-utils/exceptions'
 import {undef} from '@jdeighan/base-utils'
 import {fromTAML} from '@jdeighan/base-utils/taml'
@@ -93,7 +93,7 @@ test "line 21", (t) =>
 			source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
 			hFile: {
 				base: 'v8-stack.test.js'
-				lineNum: 84
+				lineNum: 83
 				colNum: 24
 				}
 			}
@@ -113,7 +113,7 @@ test "line 21", (t) =>
 			source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
 			hFile: {
 				base: 'v8-stack.test.js'
-				lineNum: 87
+				lineNum: 86
 				colNum: 17
 				}
 			}

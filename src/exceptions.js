@@ -13,7 +13,7 @@ import {
   notdefined
 } from '@jdeighan/base-utils/utils';
 
-doHaltOnError = true;
+doHaltOnError = false;
 
 doLog = true;
 

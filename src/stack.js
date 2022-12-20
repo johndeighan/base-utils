@@ -58,7 +58,7 @@ export var Node = class Node {
 
 // ---------------------------------------------------------------------------
 export var getStackLog = () => {
-  return getMyLog();
+  return getMyLog() || '';
 };
 
 export var CallStack = (function() {
@@ -77,8 +77,8 @@ export var CallStack = (function() {
     }
 
     // ........................................................................
-    debugCalls(flag = true) {
-      this.debugCalls = flag;
+    logCalls(flag = true) {
+      this.logCalls = flag;
     }
 
     // ........................................................................

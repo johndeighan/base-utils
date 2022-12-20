@@ -6,8 +6,7 @@ import test from 'ava';
 
 import {
   assert,
-  croak,
-  haltOnError
+  croak
 } from '@jdeighan/base-utils/exceptions';
 
 import {
@@ -42,8 +41,6 @@ import {
   dbg,
   getDebugLog
 } from '@jdeighan/base-utils/debug';
-
-haltOnError(false);
 
 // ---------------------------------------------------------------------------
 // --- Define some functions to use in testing

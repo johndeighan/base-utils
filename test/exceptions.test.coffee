@@ -3,10 +3,8 @@
 import test from 'ava'
 
 import {
-	suppressExceptionLogging, haltOnError, assert, croak,
+	suppressExceptionLogging, assert, croak,
 	} from '@jdeighan/base-utils/exceptions'
-
-haltOnError false
 
 # ---------------------------------------------------------------------------
 

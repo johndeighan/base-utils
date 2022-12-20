@@ -3,15 +3,13 @@
 import test from 'ava'
 
 import {
-	assert, croak, haltOnError,
+	assert, croak,
 	} from '@jdeighan/base-utils/exceptions'
 import {
 	undef, defined, notdefined, words,
 	} from '@jdeighan/base-utils/utils'
 import {clearAllLogs} from '@jdeighan/base-utils/log'
 import {CallStack, getStackLog} from '@jdeighan/base-utils/stack'
-
-haltOnError false   # always set in unit tests
 
 # ---------------------------------------------------------------------------
 

@@ -6,8 +6,7 @@ import test from 'ava';
 
 import {
   assert,
-  croak,
-  haltOnError
+  croak
 } from '@jdeighan/base-utils/exceptions';
 
 import {
@@ -25,9 +24,6 @@ import {
   CallStack,
   getStackLog
 } from '@jdeighan/base-utils/stack';
-
-haltOnError(false); // always set in unit tests
-
 
 // ---------------------------------------------------------------------------
 TEST = (t, stack, curFunc, strActive, strNonActive, logging, level = undef, logLevel = undef) => {

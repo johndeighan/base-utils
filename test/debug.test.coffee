@@ -3,7 +3,7 @@
 import test from 'ava'
 
 import {
-	assert, croak, haltOnError,
+	assert, croak,
 	} from '@jdeighan/base-utils/exceptions'
 import {
 	undef, defined, notdefined,
@@ -18,8 +18,6 @@ import {
 	dbgEnter, dbgReturn, dbgYield, dbgResume, dbg,
 	getDebugLog,
 	} from '@jdeighan/base-utils/debug'
-
-haltOnError false
 
 # ---------------------------------------------------------------------------
 # --- Define some functions to use in testing

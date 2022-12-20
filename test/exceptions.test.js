@@ -4,12 +4,9 @@ import test from 'ava';
 
 import {
   suppressExceptionLogging,
-  haltOnError,
   assert,
   croak
 } from '@jdeighan/base-utils/exceptions';
-
-haltOnError(false);
 
 // ---------------------------------------------------------------------------
 test("line 12", (t) => {

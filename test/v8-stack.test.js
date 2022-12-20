@@ -4,8 +4,7 @@ import test from 'ava';
 
 import {
   assert,
-  croak,
-  haltOnError
+  croak
 } from '@jdeighan/base-utils/exceptions';
 
 import {
@@ -104,7 +103,7 @@ hFile:
       source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js',
       hFile: {
         base: 'v8-stack.test.js',
-        lineNum: 84,
+        lineNum: 83,
         colNum: 24
       }
     });
@@ -124,7 +123,7 @@ hFile:
       source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js',
       hFile: {
         base: 'v8-stack.test.js',
-        lineNum: 87,
+        lineNum: 86,
         colNum: 17
       }
     });

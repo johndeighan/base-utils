@@ -31,7 +31,7 @@ export class Node
 
 export getStackLog = () =>
 
-	return getMyLog()
+	return getMyLog() || ''
 
 # ---------------------------------------------------------------------------
 
@@ -52,9 +52,9 @@ export class CallStack
 
 	# ........................................................................
 
-	debugCalls: (flag=true) ->
+	logCalls: (flag=true) ->
 
-		@debugCalls = flag
+		@logCalls = flag
 		return
 
 	# ........................................................................

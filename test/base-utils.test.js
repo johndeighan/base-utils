@@ -7,7 +7,6 @@ import test from 'ava';
 import {
   assert,
   croak,
-  haltOnError,
   exReset,
   exGetLog
 } from '@jdeighan/base-utils/exceptions';
@@ -35,8 +34,6 @@ import {
 import {
   debugV8Stack
 } from '@jdeighan/base-utils/v8-stack';
-
-haltOnError(false);
 
 // ---------------------------------------------------------------------------
 double = (x) => {
@@ -70,9 +67,9 @@ test("line 40", (t) => {
   } catch (error) {}
   return t.is(exGetLog(), `-------------------------
 JavaScript CALL STACK:
-   double() base-utils.test.js:43:3
-   quadruple() base-utils.test.js:48:14
-   script base-utils.test.js base-utils.test.js:69:14
+   double() base-utils.test.js:40:3
+   quadruple() base-utils.test.js:45:14
+   script base-utils.test.js base-utils.test.js:66:14
 -------------------------
 ERROR: not a number`);
 });
