@@ -13,7 +13,7 @@ import {
 	} from '@jdeighan/base-utils/log'
 import {CallStack} from '@jdeighan/base-utils/stack'
 import {
-	setCallStack, callStack, setDebugging, debugDebug,
+	callStack, setDebugging, debugDebug,
 	getType, dumpDebugLoggers,
 	dbgEnter, dbgReturn, dbgYield, dbgResume, dbg,
 	getDebugLog,
@@ -81,7 +81,7 @@ TEST = (lineNum, options, func, expectedDbg, expectedLog) ->
 	else
 		setDebugging false
 
-	setCallStack('debugCalls')
+	callStack.logCalls true
 	clearAllLogs()
 
 	func()

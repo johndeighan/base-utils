@@ -39,22 +39,29 @@ export class CallStack
 
 	@nextID: 1
 
-	constructor: (hOptions={}) ->
-		# --- Valid options: (all default to false)
-		#        logCalls
-		#        debugStack
-		#        throwErrors
-		hOptions = getOptions(hOptions)
-		@logCalls = hOptions.logCalls
-		@debugStack = hOptions.debugStack
-		@throwErrors = hOptions.throwErrors
+	constructor: (arg=undef) ->
+		assert notdefined(arg), "args no longer allowed"
 		@reset()
 
 	# ........................................................................
 
 	logCalls: (flag=true) ->
 
-		@logCalls = flag
+		@doLogCalls = flag
+		return
+
+	# ........................................................................
+
+	debug: (flag=true) ->
+
+		@doDebugStack = flag
+		return
+
+	# ........................................................................
+
+	throwErrors: (flag=true) ->
+
+		@doThrowErrors = flag
 		return
 
 	# ........................................................................
@@ -68,7 +75,7 @@ export class CallStack
 
 	reset: () ->
 
-		if @logCalls
+		if @doLogCalls
 			@log "RESET STACK"
 		@level = 0
 		@logLevel = 0
@@ -129,7 +136,7 @@ export class CallStack
 	enter: (funcName, lArgs=[], doLog=false) ->
 
 		assert isNonEmptyString(funcName), "funcName not a non-empty string"
-		if @logCalls
+		if @doLogCalls
 			if (lArgs.length == 0)
 				@log "ENTER #{OL(funcName)}"
 			else
@@ -143,7 +150,7 @@ export class CallStack
 		if doLog
 			@logLevel += 1
 
-		if @debugStack
+		if @doDebugStack
 			@dump(@level)
 		return
 
@@ -166,7 +173,7 @@ export class CallStack
 			assert (@logLevel > 0), "dec logLevel when logLevel is 0"
 			@logLevel -= 1
 
-		if @logCalls
+		if @doLogCalls
 			if (nArgs == 1)
 				@log "RETURN FROM #{OL(funcName)}"
 			else
@@ -182,7 +189,7 @@ export class CallStack
 		assert (@curFunc.lCalling.length > 0), "calling stack empty"
 		@curFunc.lCalling.pop()
 
-		if @debugStack
+		if @doDebugStack
 			@dump(@level)
 		return
 
@@ -202,7 +209,7 @@ export class CallStack
 		if @isLogging()
 			@logLevel -= 1
 
-		if @logCalls
+		if @doLogCalls
 			if (nArgs == 1)
 				@log "YIELD FROM #{OL(funcName)}"
 			else
@@ -219,7 +226,7 @@ export class CallStack
 			newCurFunc = newCurFunc.caller
 		@setCurFunc newCurFunc
 
-		if @debugStack
+		if @doDebugStack
 			@dump(@level)
 		return
 
@@ -227,7 +234,7 @@ export class CallStack
 
 	resume: (funcName) ->
 
-		if @logCalls
+		if @doLogCalls
 			@log "RESUME #{OL(funcName)}"
 		assert isFunctionName(funcName), "Not a function name"
 
@@ -241,7 +248,7 @@ export class CallStack
 		if @curFunc.doLog
 			@logLevel += 1
 
-		if @debugStack
+		if @doDebugStack
 			@dump(@level)
 		return
 
@@ -261,7 +268,7 @@ export class CallStack
 		# --- We don't really want to throw exceptions here
 
 		if !cond
-			if @throwErrors
+			if @doThrowErrors
 				croak "#{msg}\n#{@dumpStr(@root)}"
 			else
 				warn "#{msg}\n#{@dumpStr(@root)}"

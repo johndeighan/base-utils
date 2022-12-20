@@ -28,7 +28,6 @@ import {
 } from '@jdeighan/base-utils/stack';
 
 import {
-  setCallStack,
   callStack,
   setDebugging,
   debugDebug,
@@ -105,7 +104,7 @@ TEST = function(lineNum, options, func, expectedDbg, expectedLog) {
   } else {
     setDebugging(false);
   }
-  setCallStack('debugCalls');
+  callStack.logCalls(true);
   clearAllLogs();
   func();
   dbgStr = getDebugLog();

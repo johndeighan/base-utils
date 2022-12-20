@@ -41,13 +41,6 @@ export getDebugLog = () =>
 
 # ---------------------------------------------------------------------------
 
-export setCallStack = (hOptions={}) ->
-
-	callStack = new CallStack(getOptions(hOptions))
-	return
-
-# ---------------------------------------------------------------------------
-
 export debugDebug = (debugFlag=true) =>
 
 	internalDebugging = debugFlag

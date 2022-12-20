@@ -64,21 +64,24 @@ export var getStackLog = () => {
 export var CallStack = (function() {
   // ---------------------------------------------------------------------------
   class CallStack {
-    constructor(hOptions = {}) {
-      // --- Valid options: (all default to false)
-      //        logCalls
-      //        debugStack
-      //        throwErrors
-      hOptions = getOptions(hOptions);
-      this.logCalls = hOptions.logCalls;
-      this.debugStack = hOptions.debugStack;
-      this.throwErrors = hOptions.throwErrors;
+    constructor(arg = undef) {
+      assert(notdefined(arg), "args no longer allowed");
       this.reset();
     }
 
     // ........................................................................
     logCalls(flag = true) {
-      this.logCalls = flag;
+      this.doLogCalls = flag;
+    }
+
+    // ........................................................................
+    debug(flag = true) {
+      this.doDebugStack = flag;
+    }
+
+    // ........................................................................
+    throwErrors(flag = true) {
+      this.doThrowErrors = flag;
     }
 
     // ........................................................................
@@ -88,7 +91,7 @@ export var CallStack = (function() {
 
     // ........................................................................
     reset() {
-      if (this.logCalls) {
+      if (this.doLogCalls) {
         this.log("RESET STACK");
       }
       this.level = 0;
@@ -149,7 +152,7 @@ export var CallStack = (function() {
     enter(funcName, lArgs = [], doLog = false) {
       var node;
       assert(isNonEmptyString(funcName), "funcName not a non-empty string");
-      if (this.logCalls) {
+      if (this.doLogCalls) {
         if (lArgs.length === 0) {
           this.log(`ENTER ${OL(funcName)}`);
         } else {
@@ -163,7 +166,7 @@ export var CallStack = (function() {
       if (doLog) {
         this.logLevel += 1;
       }
-      if (this.debugStack) {
+      if (this.doDebugStack) {
         this.dump(this.level);
       }
     }
@@ -185,7 +188,7 @@ export var CallStack = (function() {
         assert(this.logLevel > 0, "dec logLevel when logLevel is 0");
         this.logLevel -= 1;
       }
-      if (this.logCalls) {
+      if (this.doLogCalls) {
         if (nArgs === 1) {
           this.log(`RETURN FROM ${OL(funcName)}`);
         } else {
@@ -199,7 +202,7 @@ export var CallStack = (function() {
       this.setCurFunc(this.curFunc.caller);
       assert(this.curFunc.lCalling.length > 0, "calling stack empty");
       this.curFunc.lCalling.pop();
-      if (this.debugStack) {
+      if (this.doDebugStack) {
         this.dump(this.level);
       }
     }
@@ -218,7 +221,7 @@ export var CallStack = (function() {
       if (this.isLogging()) {
         this.logLevel -= 1;
       }
-      if (this.logCalls) {
+      if (this.doLogCalls) {
         if (nArgs === 1) {
           this.log(`YIELD FROM ${OL(funcName)}`);
         } else {
@@ -234,14 +237,14 @@ export var CallStack = (function() {
         newCurFunc = newCurFunc.caller;
       }
       this.setCurFunc(newCurFunc);
-      if (this.debugStack) {
+      if (this.doDebugStack) {
         this.dump(this.level);
       }
     }
 
     // ........................................................................
     resume(funcName) {
-      if (this.logCalls) {
+      if (this.doLogCalls) {
         this.log(`RESUME ${OL(funcName)}`);
       }
       assert(isFunctionName(funcName), "Not a function name");
@@ -253,7 +256,7 @@ export var CallStack = (function() {
       if (this.curFunc.doLog) {
         this.logLevel += 1;
       }
-      if (this.debugStack) {
+      if (this.doDebugStack) {
         this.dump(this.level);
       }
     }
@@ -270,7 +273,7 @@ export var CallStack = (function() {
     // ........................................................................
     stackAssert(cond, msg) {
       if (!cond) {
-        if (this.throwErrors) {
+        if (this.doThrowErrors) {
           croak(`${msg}\n${this.dumpStr(this.root)}`);
         } else {
           warn(`${msg}\n${this.dumpStr(this.root)}`);

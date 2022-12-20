@@ -61,27 +61,28 @@ TEST = (t, stack, curFunc, strActive, strNonActive, logging, level = undef, logL
 };
 
 // ---------------------------------------------------------------------------
-test("line 41", (t) => {
+test("line 39", (t) => {
   var stack;
   clearAllLogs();
-  stack = new CallStack('logCalls');
+  stack = new CallStack();
+  stack.logCalls(true);
   stack.enter('func');
   // ---           cur    active  !active  isLogging
   TEST(t, stack, 'func', "func", "func2", false);
   stack.returnFrom('func');
   t.truthy(stack.isEmpty());
-  return t.is(getStackLog(), `RESET STACK
-ENTER 'func'
+  return t.is(getStackLog(), `ENTER 'func'
 RETURN FROM 'func'`);
 });
 
 // ---------------------------------------------------------------------------
-test("line 59", (t) => {
+test("line 58", (t) => {
   return t.throws(function() {
     var stack;
     suppressExceptionLogging(true);
     clearAllLogs();
-    stack = new CallStack('logCalls');
+    stack = new CallStack();
+    stack.logCalls(true);
     stack.enter('func');
     return stack.returnFrom('func2'); // should throw an error
   });
@@ -92,7 +93,8 @@ test("line 59", (t) => {
 test("line 69", (t) => {
   var stack;
   clearAllLogs();
-  stack = new CallStack('logCalls');
+  stack = new CallStack();
+  stack.logCalls(true);
   stack.enter('func', [], true);
   // ---           cur    active  !active  isLogging
   TEST(t, stack, 'func', "func", "func2", true);
@@ -101,16 +103,16 @@ test("line 69", (t) => {
   //              -----   ------  --------       ---------
   TEST(t, stack, undef, undef, 'func func2', false);
   t.truthy(stack.isEmpty());
-  return t.is(getStackLog(), `RESET STACK
-ENTER 'func'
+  return t.is(getStackLog(), `ENTER 'func'
 RETURN FROM 'func'`);
 });
 
 // ---------------------------------------------------------------------------
-test("line 92", (t) => {
+test("line 91", (t) => {
   var stack;
   clearAllLogs();
-  stack = new CallStack('logCalls');
+  stack = new CallStack();
+  stack.logCalls(true);
   stack.enter('func', [], true);
   // ---          cur     active  !active    isLogging
   //              -----   ------  --------   ---------
@@ -127,8 +129,7 @@ test("line 92", (t) => {
   // ---          cur     active  !active      isLogging
   //              -----   ------  --------     ---------
   TEST(t, stack, undef, undef, 'func func2', false);
-  t.is(getStackLog(), `RESET STACK
-ENTER 'func'
+  t.is(getStackLog(), `ENTER 'func'
 	ENTER 'func2'
 	RETURN FROM 'func2'
 RETURN FROM 'func'`);
@@ -137,10 +138,11 @@ RETURN FROM 'func'`);
 
 // ---------------------------------------------------------------------------
 // --- Test yield / resume
-test("line 132", (t) => {
+test("line 131", (t) => {
   var stack;
   clearAllLogs();
-  stack = new CallStack('logCalls');
+  stack = new CallStack();
+  stack.logCalls(true);
   // ---          cur     active  !active       isLogging
   //              -----   ------  --------      ---------
   TEST(t, stack, undef, undef, 'func gen', false, 0, 0);
@@ -176,7 +178,8 @@ test("line 132", (t) => {
 test("line 181", (t) => {
   var stack;
   clearAllLogs();
-  stack = new CallStack('logCalls');
+  stack = new CallStack();
+  stack.logCalls(true);
   // ---          cur     active  !active       isLogging
   //              -----   ------  --------      ---------
   TEST(t, stack, undef, undef, 'func gen', false, 0, 0);
@@ -205,4 +208,32 @@ test("line 181", (t) => {
   //              -----   ------  --------      ---------
   TEST(t, stack, undef, undef, 'func gen', false, 0, 0);
   return t.truthy(stack.isEmpty());
+});
+
+// ---------------------------------------------------------------------------
+// test stack log
+test("line 231", (t) => {
+  var stack;
+  clearAllLogs();
+  stack = new CallStack();
+  stack.logCalls(true);
+  stack.reset();
+  stack.enter('func1', [13]);
+  stack.enter('func2', [
+    'abc',
+    {
+      mean: 42
+    }
+  ]);
+  stack.yield('func2', 99);
+  stack.resume('func2');
+  stack.returnFrom('func2', 'def');
+  stack.returnFrom('func1');
+  return t.is(getStackLog(), `RESET STACK
+ENTER 'func1' 13
+	ENTER 'func2' 'abc',{"mean":42}
+	YIELD FROM 'func2' 99
+	RESUME 'func2'
+	RETURN FROM 'func2' 'def'
+RETURN FROM 'func1'`);
 });

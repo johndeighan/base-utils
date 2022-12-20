@@ -86,11 +86,6 @@ export var getDebugLog = () => {
 };
 
 // ---------------------------------------------------------------------------
-export var setCallStack = function(hOptions = {}) {
-  callStack = new CallStack(getOptions(hOptions));
-};
-
-// ---------------------------------------------------------------------------
 export var debugDebug = (debugFlag = true) => {
   internalDebugging = debugFlag;
   if (debugFlag) {
