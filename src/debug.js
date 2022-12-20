@@ -507,7 +507,7 @@ export var stdLogEnter = function(level, funcName, lArgs) {
       LOG(str, labelPre);
     } else {
       idPre = getPrefix(level + 1, 'plain');
-      itemPre = getPrefix(level + 2, 'dotLast2Vbars');
+      itemPre = getPrefix(level + 2, 'noLastVbar');
       LOG(`enter ${funcName}`, labelPre);
       for (i = j = 0, len = lArgs.length; j < len; i = ++j) {
         arg = lArgs[i];
@@ -534,7 +534,7 @@ export var stdLogReturn = function(...lArgs) {
 
 // ---------------------------------------------------------------------------
 stdLogReturnVal = function(level, funcName, val) {
-  var idPre, itemPre, labelPre, str;
+  var labelPre, pre, str;
   assert(isFunctionName(funcName), "bad function name");
   assert(isInteger(level), "level not an integer");
   labelPre = getPrefix(level, 'withArrow');
@@ -542,31 +542,29 @@ stdLogReturnVal = function(level, funcName, val) {
   if (stringFits(str)) {
     LOG(str, labelPre);
   } else {
-    idPre = getPrefix(level, 'noLastVbar');
-    itemPre = getPrefix(level, 'noLastVbar');
+    pre = getPrefix(level, 'noLastVbar');
     LOG(`return from ${funcName}`, labelPre);
-    LOGVALUE("val", val, idPre, itemPre);
+    LOGVALUE("val", val, pre, pre);
   }
   return true;
 };
 
 // ---------------------------------------------------------------------------
 export var stdLogYield = function(...lArgs) {
-  var funcName, idPre, itemPre, labelPre, level, str, val, valStr;
+  var funcName, labelPre, level, pre, str, val, valStr;
   [level, funcName, val] = lArgs;
   if (lArgs.length === 2) {
     return stdLogYieldFrom(level, funcName);
   }
-  labelPre = getPrefix(level, 'withFlat');
+  labelPre = getPrefix(level, 'withYield');
   valStr = OL(val);
   str = `yield ${valStr}`;
   if (stringFits(str)) {
     LOG(str, labelPre);
   } else {
-    idPre = getPrefix(level + 1, 'plain');
-    itemPre = getPrefix(level + 2, 'dotLast2Vbars');
+    pre = getPrefix(level, 'plain');
     LOG("yield", labelPre);
-    LOGVALUE("val", val, idPre, itemPre);
+    LOGVALUE(undef, val, pre, pre);
   }
   return true;
 };
@@ -583,8 +581,9 @@ export var stdLogYieldFrom = function(level, funcName) {
 export var stdLogResume = function(funcName, level) {
   var labelPre;
   assert(isInteger(level), "level not an integer");
-  labelPre = getPrefix(level, 'plain');
-  // LOG "resume", labelPre  # no need to log it
+  //	labelPre = getPrefix(level+1, 'plain')
+  labelPre = getPrefix(level + 1, 'withResume');
+  LOG("resume", labelPre); // no need to log it
   return true;
 };
 

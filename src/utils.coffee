@@ -492,7 +492,7 @@ export rtrim = (line) ->
 
 	assert isString(line), "rtrim(): line is not a string"
 	lMatches = line.match(/\s+$/)
-	if lMatches?
+	if defined(lMatches)
 		n = lMatches[0].length   # num chars to remove
 		return line.substring(0, line.length - n)
 	else

@@ -3,7 +3,7 @@
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	pass, undef, defined, notdefined, deepCopy, getOptions,
-	hEsc, escapeStr, OL, untabify, isObject,
+	hEsc, escapeStr, OL, untabify, isObject, rtrim,
 	blockToArray, arrayToBlock, prefixBlock,
 	isNumber, isInteger, isString, isHash, isFunction, isBoolean,
 	isEmpty, nonEmpty, hEscNoNL, jsType, hasChar, quoted,
@@ -101,6 +101,7 @@ export dumpLog = (label, theLog, hOptions={}) =>
 
 export PUTSTR = (str) ->
 
+	str = rtrim(str)
 	caller = getMyOutsideCaller().source
 	lNamedLogs.push {caller, str}
 
@@ -229,19 +230,26 @@ export stringFits = (str) =>
 # ---------------------------------------------------------------------------
 
 export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
+	# --- Allow label to be empty, i.e. undef
 
 	if internalDebugging
 		str1 = OL(label)
 		str2 = OL(value)
 		str3 = OL(prefix)
 		console.log "CALL LOGVALUE(#{str1}, #{str2}), prefix=#{str3}"
-	assert nonEmpty(label), "label is empty"
 
+	# --- Handles undef, null, boolean, number
 	if handleSimpleCase(label, value, prefix)
 		return true
 
+	if defined(label)
+		labelStr = "#{label} = "
+	else
+		labelStr = ""
+
 	# --- Try OL() - if it's short enough, use that
-	str = "#{prefix}#{label} = #{OL(value)}"
+	str = "#{prefix}#{labelStr}#{OL(value)}"
+
 	if stringFits(str)
 		if internalDebugging
 			console.log "Using OL(), #{str.length} <= #{logWidth}"
@@ -255,31 +263,34 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 	switch type
 		when 'string'
 			if (subtype == 'empty')
-				PUTSTR "#{prefix}#{label} = ''"
+				# --- empty string
+				PUTSTR "#{prefix}#{labelStr}''"
 			else
-				str = "#{prefix}#{label} = #{quoted(value, 'escape')}"
+				# --- non empty string
+				str = "#{prefix}#{labelStr}#{quoted(value, 'escape')}"
 				if stringFits(str)
 					PUTSTR str
 				else
 					# --- escape, but not newlines
 					escaped = escapeStr(value, hEscNoNL)
 					PUTSTR """
-						#{prefix}#{label} = \"\"\"
+						#{prefix}#{labelStr}\"\"\"
 						#{prefixBlock(escaped, itemPrefix)}
 						#{prefixBlock('"""', itemPrefix)}
 						"""
 
 		when 'hash', 'array'
 			str = toTAML(value, {sortKeys: true})
-			PUTSTR "#{prefix}#{label} ="
+			if labelStr
+				PUTSTR "#{prefix}#{labelStr}"
 			for str in blockToArray(str)
 				PUTSTR "#{itemPrefix}#{str}"
 
 		when 'regexp'
-			PUTSTR "#{prefix}#{label} = <regexp>"
+			PUTSTR "#{prefix}#{labelStr}<regexp>"
 
 		when 'function'
-			PUTSTR "#{prefix}#{label} = <function>"
+			PUTSTR "#{prefix}#{labelStr}<function>"
 
 		when 'object'
 			if isObject(value, '&toLogString')
@@ -288,13 +299,14 @@ export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
 				str = toTAML(value)
 
 			if hasChar(str, "\n")
-				PUTSTR "#{prefix}#{label} ="
+				if labelStr
+					PUTSTR "#{prefix}#{labelStr}"
 				if notdefined(itemPrefix)
 					itemPrefix = prefix
 				for line in blockToArray(str)
 					PUTSTR "#{itemPrefix}#{line}"
 			else
-				PUTSTR "#{prefix}#{label} = #{str}"
+				PUTSTR "#{prefix}#{labelStr}#{str}"
 	return true
 
 # ---------------------------------------------------------------------------
@@ -337,21 +349,26 @@ export LOGSTRING = (label, value, prefix="") =>
 handleSimpleCase = (label, value, prefix) =>
 	# --- Returns true if handled, else false
 
+	if defined(label)
+		labelStr = "#{label} = "
+	else
+		labelStr = ""
+
 	# --- Handle some simple cases
 	if (value == undef)
-		PUTSTR "#{prefix}#{label} = undef"
+		PUTSTR "#{prefix}#{labelStr}undef"
 		return true
 	else if (value == null)
-		PUTSTR "#{prefix}#{label} = null"
+		PUTSTR "#{prefix}#{labelStr}null"
 		return true
 	else if isBoolean(value)
 		if value
-			PUTSTR "#{prefix}#{label} = true"
+			PUTSTR "#{prefix}#{labelStr}true"
 		else
-			PUTSTR "#{prefix}#{label} = false"
+			PUTSTR "#{prefix}#{labelStr}false"
 		return true
 	else if isNumber(value)
-		PUTSTR "#{prefix}#{label} = #{value}"
+		PUTSTR "#{prefix}#{labelStr}#{value}"
 		return true
 	else
 		return false

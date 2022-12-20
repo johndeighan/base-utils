@@ -19,6 +19,7 @@ import {
   OL,
   untabify,
   isObject,
+  rtrim,
   blockToArray,
   arrayToBlock,
   prefixBlock,
@@ -145,6 +146,7 @@ export var dumpLog = (label, theLog, hOptions = {}) => {
 // ---------------------------------------------------------------------------
 export var PUTSTR = function(str) {
   var caller;
+  str = rtrim(str);
   caller = getMyOutsideCaller().source;
   lNamedLogs.push({caller, str});
   if (defined(hEchoLogs[caller])) {
@@ -269,19 +271,25 @@ export var stringFits = (str) => {
 
 // ---------------------------------------------------------------------------
 export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
-  var escaped, i, j, len, len1, line, ref, ref1, str, str1, str2, str3, subtype, type;
+  var escaped, i, j, labelStr, len, len1, line, ref, ref1, str, str1, str2, str3, subtype, type;
+  // --- Allow label to be empty, i.e. undef
   if (internalDebugging) {
     str1 = OL(label);
     str2 = OL(value);
     str3 = OL(prefix);
     console.log(`CALL LOGVALUE(${str1}, ${str2}), prefix=${str3}`);
   }
-  assert(nonEmpty(label), "label is empty");
+  // --- Handles undef, null, boolean, number
   if (handleSimpleCase(label, value, prefix)) {
     return true;
   }
+  if (defined(label)) {
+    labelStr = `${label} = `;
+  } else {
+    labelStr = "";
+  }
   // --- Try OL() - if it's short enough, use that
-  str = `${prefix}${label} = ${OL(value)}`;
+  str = `${prefix}${labelStr}${OL(value)}`;
   if (stringFits(str)) {
     if (internalDebugging) {
       console.log(`Using OL(), ${str.length} <= ${logWidth}`);
@@ -296,15 +304,17 @@ export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
   switch (type) {
     case 'string':
       if (subtype === 'empty') {
-        PUTSTR(`${prefix}${label} = ''`);
+        // --- empty string
+        PUTSTR(`${prefix}${labelStr}''`);
       } else {
-        str = `${prefix}${label} = ${quoted(value, 'escape')}`;
+        // --- non empty string
+        str = `${prefix}${labelStr}${quoted(value, 'escape')}`;
         if (stringFits(str)) {
           PUTSTR(str);
         } else {
           // --- escape, but not newlines
           escaped = escapeStr(value, hEscNoNL);
-          PUTSTR(`${prefix}${label} = \"\"\"
+          PUTSTR(`${prefix}${labelStr}\"\"\"
 ${prefixBlock(escaped, itemPrefix)}
 ${prefixBlock('"""', itemPrefix)}`);
         }
@@ -315,7 +325,9 @@ ${prefixBlock('"""', itemPrefix)}`);
       str = toTAML(value, {
         sortKeys: true
       });
-      PUTSTR(`${prefix}${label} =`);
+      if (labelStr) {
+        PUTSTR(`${prefix}${labelStr}`);
+      }
       ref = blockToArray(str);
       for (i = 0, len = ref.length; i < len; i++) {
         str = ref[i];
@@ -323,10 +335,10 @@ ${prefixBlock('"""', itemPrefix)}`);
       }
       break;
     case 'regexp':
-      PUTSTR(`${prefix}${label} = <regexp>`);
+      PUTSTR(`${prefix}${labelStr}<regexp>`);
       break;
     case 'function':
-      PUTSTR(`${prefix}${label} = <function>`);
+      PUTSTR(`${prefix}${labelStr}<function>`);
       break;
     case 'object':
       if (isObject(value, '&toLogString')) {
@@ -335,7 +347,9 @@ ${prefixBlock('"""', itemPrefix)}`);
         str = toTAML(value);
       }
       if (hasChar(str, "\n")) {
-        PUTSTR(`${prefix}${label} =`);
+        if (labelStr) {
+          PUTSTR(`${prefix}${labelStr}`);
+        }
         if (notdefined(itemPrefix)) {
           itemPrefix = prefix;
         }
@@ -345,7 +359,7 @@ ${prefixBlock('"""', itemPrefix)}`);
           PUTSTR(`${itemPrefix}${line}`);
         }
       } else {
-        PUTSTR(`${prefix}${label} = ${str}`);
+        PUTSTR(`${prefix}${labelStr}${str}`);
       }
   }
   return true;
@@ -386,24 +400,29 @@ ${prefixBlock('"""', itemPrefix)}`);
 
 // ---------------------------------------------------------------------------
 handleSimpleCase = (label, value, prefix) => {
+  var labelStr;
   // --- Returns true if handled, else false
-
+  if (defined(label)) {
+    labelStr = `${label} = `;
+  } else {
+    labelStr = "";
+  }
   // --- Handle some simple cases
   if (value === undef) {
-    PUTSTR(`${prefix}${label} = undef`);
+    PUTSTR(`${prefix}${labelStr}undef`);
     return true;
   } else if (value === null) {
-    PUTSTR(`${prefix}${label} = null`);
+    PUTSTR(`${prefix}${labelStr}null`);
     return true;
   } else if (isBoolean(value)) {
     if (value) {
-      PUTSTR(`${prefix}${label} = true`);
+      PUTSTR(`${prefix}${labelStr}true`);
     } else {
-      PUTSTR(`${prefix}${label} = false`);
+      PUTSTR(`${prefix}${labelStr}false`);
     }
     return true;
   } else if (isNumber(value)) {
-    PUTSTR(`${prefix}${label} = ${value}`);
+    PUTSTR(`${prefix}${labelStr}${value}`);
     return true;
   } else {
     return false;

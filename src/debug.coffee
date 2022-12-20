@@ -418,7 +418,7 @@ export stdLogEnter = (level, funcName, lArgs) ->
 			LOG str, labelPre
 		else
 			idPre = getPrefix(level+1, 'plain')
-			itemPre = getPrefix(level+2, 'dotLast2Vbars')
+			itemPre = getPrefix(level+2, 'noLastVbar')
 			LOG "enter #{funcName}", labelPre
 			for arg,i in lArgs
 				LOGVALUE "arg[#{i}]", arg, idPre, itemPre
@@ -450,10 +450,9 @@ stdLogReturnVal = (level, funcName, val) ->
 	if stringFits(str)
 		LOG str, labelPre
 	else
-		idPre = getPrefix(level, 'noLastVbar')
-		itemPre = getPrefix(level, 'noLastVbar')
+		pre = getPrefix(level, 'noLastVbar')
 		LOG "return from #{funcName}", labelPre
-		LOGVALUE "val", val, idPre, itemPre
+		LOGVALUE "val", val, pre, pre
 	return true
 
 # ---------------------------------------------------------------------------
@@ -463,16 +462,15 @@ export stdLogYield = (lArgs...) ->
 	[level, funcName, val] = lArgs
 	if (lArgs.length == 2)
 		return stdLogYieldFrom level, funcName
-	labelPre = getPrefix(level, 'withFlat')
+	labelPre = getPrefix(level, 'withYield')
 	valStr = OL(val)
 	str = "yield #{valStr}"
 	if stringFits(str)
 		LOG str, labelPre
 	else
-		idPre = getPrefix(level+1, 'plain')
-		itemPre = getPrefix(level+2, 'dotLast2Vbars')
+		pre = getPrefix(level, 'plain')
 		LOG "yield", labelPre
-		LOGVALUE "val", val, idPre, itemPre
+		LOGVALUE undef, val, pre, pre
 	return true
 
 # ---------------------------------------------------------------------------
@@ -488,8 +486,9 @@ export stdLogYieldFrom = (level, funcName) ->
 export stdLogResume = (funcName, level) ->
 
 	assert isInteger(level), "level not an integer"
-	labelPre = getPrefix(level, 'plain')
-	# LOG "resume", labelPre  # no need to log it
+#	labelPre = getPrefix(level+1, 'plain')
+	labelPre = getPrefix(level+1, 'withResume')
+	LOG "resume", labelPre  # no need to log it
 	return true
 
 # ---------------------------------------------------------------------------

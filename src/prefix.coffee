@@ -10,14 +10,16 @@ export hbar = '─'       # unicode 2500
 export corner = '└'     # unicode 2514
 export tee = '├'        # unicode 251C
 export arrowhead = '>'
+export backarrow = '<'
 export space = ' '
 export dot = '.'
 
-export fourSpaces  = space  + space + space     + space
-export oneIndent   = vbar   + space + space     + space
-export arrow       = corner + hbar  + arrowhead + space
-export flat        = tee    + hbar  + hbar      + space
-export dotIndent   = dot    + space + space     + space
+export fourSpaces  = space  + space     + space     + space
+export oneIndent   = vbar   + space     + space     + space
+export arrow       = corner + hbar      + arrowhead + space
+export flat        = tee    + hbar      + hbar      + space
+export resume      = tee    + hbar      + arrowhead + space
+export yieldSym    = tee    + backarrow + hbar      + space
 
 # ---------------------------------------------------------------------------
 
@@ -31,19 +33,25 @@ export getPrefix = (level, option='none') ->
 				return arrow
 			else
 				return oneIndent.repeat(level-1) + arrow
+		when 'withResume'
+			if (level == 0)
+				return resume
+			else
+				return oneIndent.repeat(level-1) + resume
 		when 'withFlat'
 			if (level == 0)
 				return flat
 			else
 				return oneIndent.repeat(level-1) + flat
+		when 'withYield'
+			if (level == 0)
+				return yieldSym
+			else
+				return oneIndent.repeat(level-1) + yieldSym
 		when 'noLastVbar'
 			assert (level >= 1),
 				"getPrefix(), noLastVbar but level=#{OL(level)}"
 			return oneIndent.repeat(level-1) + fourSpaces
-		when 'dotLast2Vbars'
-			assert (level >= 2),
-				"getPrefix(), dotLast2Vbars but level=#{OL(level)}"
-			return oneIndent.repeat(level-2) + dotIndent + fourSpaces
 		else
 			return fourSpaces.repeat(level)
 

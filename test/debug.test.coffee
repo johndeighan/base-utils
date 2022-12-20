@@ -170,10 +170,12 @@ TEST = (lineNum, options, func, expectedDbg, expectedLog) ->
 	TEST 170, true, callGen, """
 		enter callGen
 		│   enter gen
-		│   ├── yield 1
+		│   ├<─ yield 1
 		│   GOT 1
-		│   ├── yield 2
+		│   ├─> resume
+		│   ├<─ yield 2
 		│   GOT 2
+		│   ├─> resume
 		│   └─> return from gen
 		└─> return from callGen
 		""", """

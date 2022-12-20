@@ -22,6 +22,8 @@ export var tee = '├'; // unicode 251C
 
 export var arrowhead = '>';
 
+export var backarrow = '<';
+
 export var space = ' ';
 
 export var dot = '.';
@@ -34,7 +36,9 @@ export var arrow = corner + hbar + arrowhead + space;
 
 export var flat = tee + hbar + hbar + space;
 
-export var dotIndent = dot + space + space + space;
+export var resume = tee + hbar + arrowhead + space;
+
+export var yieldSym = tee + backarrow + hbar + space;
 
 // ---------------------------------------------------------------------------
 export var getPrefix = function(level, option = 'none') {
@@ -48,6 +52,13 @@ export var getPrefix = function(level, option = 'none') {
         return oneIndent.repeat(level - 1) + arrow;
       }
       break;
+    case 'withResume':
+      if (level === 0) {
+        return resume;
+      } else {
+        return oneIndent.repeat(level - 1) + resume;
+      }
+      break;
     case 'withFlat':
       if (level === 0) {
         return flat;
@@ -55,12 +66,16 @@ export var getPrefix = function(level, option = 'none') {
         return oneIndent.repeat(level - 1) + flat;
       }
       break;
+    case 'withYield':
+      if (level === 0) {
+        return yieldSym;
+      } else {
+        return oneIndent.repeat(level - 1) + yieldSym;
+      }
+      break;
     case 'noLastVbar':
       assert(level >= 1, `getPrefix(), noLastVbar but level=${OL(level)}`);
       return oneIndent.repeat(level - 1) + fourSpaces;
-    case 'dotLast2Vbars':
-      assert(level >= 2, `getPrefix(), dotLast2Vbars but level=${OL(level)}`);
-      return oneIndent.repeat(level - 2) + dotIndent + fourSpaces;
     default:
       return fourSpaces.repeat(level);
   }

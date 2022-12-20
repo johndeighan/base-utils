@@ -36,9 +36,5 @@ test("line 19", (t) => {
 });
 
 test("line 20", (t) => {
-  return t.is(getPrefix(2, 'dotLast2Vbars'), un('.˳˳˳˳˳˳˳'));
-});
-
-test("line 21", (t) => {
   return t.is(getPrefix(2), un('˳˳˳˳˳˳˳˳'));
 });
