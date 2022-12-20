@@ -430,6 +430,7 @@ dbgYieldFrom = function(funcName) {
 export var dbgResume = function(funcName) {
   var doLog, level;
   assert(isFunctionName(funcName), "not a valid function name");
+  callStack.resume(funcName);
   doLog = logAll || callStack.isLogging();
   if (internalDebugging) {
     console.log(`dbgResume ${OL(funcName)}`);
@@ -437,11 +438,10 @@ export var dbgResume = function(funcName) {
   }
   if (doLog) {
     level = callStack.logLevel;
-    if (!logResume(funcName, level)) {
-      stdLogResume(funcName, level);
+    if (!logResume(funcName, level - 1)) {
+      stdLogResume(funcName, level - 1);
     }
   }
-  callStack.resume(funcName);
   return true;
 };
 
@@ -581,9 +581,8 @@ export var stdLogYieldFrom = function(level, funcName) {
 export var stdLogResume = function(funcName, level) {
   var labelPre;
   assert(isInteger(level), "level not an integer");
-  //	labelPre = getPrefix(level+1, 'plain')
   labelPre = getPrefix(level + 1, 'withResume');
-  LOG("resume", labelPre); // no need to log it
+  LOG("resume", labelPre);
   return true;
 };
 

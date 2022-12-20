@@ -345,16 +345,16 @@ dbgYieldFrom = (funcName) ->
 export dbgResume = (funcName) ->
 
 	assert isFunctionName(funcName), "not a valid function name"
+	callStack.resume funcName
 	doLog = logAll || callStack.isLogging()
 	if internalDebugging
 		console.log "dbgResume #{OL(funcName)}"
 		console.log "   - doLog = #{OL(doLog)}"
 	if doLog
 		level = callStack.logLevel
-		if ! logResume funcName, level
-			stdLogResume funcName, level
+		if ! logResume funcName, level-1
+			stdLogResume funcName, level-1
 
-	callStack.resume funcName
 	return true
 
 # ---------------------------------------------------------------------------
@@ -486,9 +486,8 @@ export stdLogYieldFrom = (level, funcName) ->
 export stdLogResume = (funcName, level) ->
 
 	assert isInteger(level), "level not an integer"
-#	labelPre = getPrefix(level+1, 'plain')
 	labelPre = getPrefix(level+1, 'withResume')
-	LOG "resume", labelPre  # no need to log it
+	LOG "resume", labelPre
 	return true
 
 # ---------------------------------------------------------------------------
