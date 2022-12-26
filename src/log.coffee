@@ -86,6 +86,8 @@ export dumpLog = (label, theLog, hOptions={}) =>
 	#        escape - escape space & TAB chars
 
 	hOptions = getOptions(hOptions)
+	if ! isString(theLog)
+		theLog = JSON.stringify(theLog, undef, 3)
 
 	console.log "======================================="
 	console.log "              #{label}"
