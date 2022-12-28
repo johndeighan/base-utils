@@ -286,7 +286,7 @@ export var CallStack = (function() {
       var prefix;
       prefix = oneIndent.repeat(level);
       console.log(prefix + '-------- CALL STACK --------');
-      console.log(prefix + `curFunc = ${this.curFuncName}`);
+      console.log(prefix + `(curFunc = ${this.curFuncName})`);
       console.log(this.dumpStr(this.root, level, oneIndent));
       console.log(prefix + '----------------------------');
     }

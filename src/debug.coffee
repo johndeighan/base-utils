@@ -6,11 +6,12 @@ import {
 	isIdentifier, isFunctionName,
 	isString, isFunction, isArray, isHash, isBoolean, isInteger,
 	isEmpty, nonEmpty, arrayToBlock, getOptions,
-	words, firstWord, inList, oneof, jsType,
+	words, firstWord, inList, oneof, jsType, blockToArray,
 	} from '@jdeighan/base-utils/utils'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {
-	LOG, LOGVALUE, stringFits, debugLogging, getMyLog, echoMyLogs,
+	LOG, LOGVALUE, stringFits, debugLogging,
+	clearMyLogs, getMyLog, echoMyLogs,
 	} from '@jdeighan/base-utils/log'
 import {toTAML} from '@jdeighan/base-utils/taml'
 import {CallStack} from '@jdeighan/base-utils/stack'
@@ -32,6 +33,12 @@ logYield     = undef
 logResume    = undef
 logString    = undef
 logValue     = undef
+
+# ---------------------------------------------------------------------------
+
+export clearDebugLog = () =>
+
+	return clearMyLogs()
 
 # ---------------------------------------------------------------------------
 
@@ -230,6 +237,7 @@ export funcMatch = (funcName) ->
 
 	if internalDebugging
 		console.log "CHECK funcMatch(#{OL(funcName)})"
+		console.log lFuncList
 		callStack.dump 1
 
 	lParts = isFunctionName(funcName)
@@ -352,6 +360,15 @@ export dbgResume = (funcName) ->
 
 # ---------------------------------------------------------------------------
 
+export dbg = (lArgs...) ->
+
+	if lArgs.length == 1
+		return dbgString lArgs[0]
+	else
+		return dbgValue lArgs[0], lArgs[1]
+
+# ---------------------------------------------------------------------------
+
 export dbgValue = (label, val) ->
 
 	assert isString(label), "not a string"
@@ -368,6 +385,7 @@ export dbgValue = (label, val) ->
 	return true
 
 # ---------------------------------------------------------------------------
+# --- str can be a multi-line string
 
 export dbgString = (str) ->
 
@@ -382,15 +400,6 @@ export dbgString = (str) ->
 			stdLogString level, str
 
 	return true
-
-# ---------------------------------------------------------------------------
-
-export dbg = (lArgs...) ->
-
-	if lArgs.length == 1
-		return dbgString lArgs[0]
-	else
-		return dbgValue lArgs[0], lArgs[1]
 
 # ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
@@ -491,7 +500,8 @@ export stdLogString = (level, str) ->
 	assert isInteger(level), "level not an integer"
 
 	labelPre = getPrefix(level, 'plain')
-	LOG str, labelPre
+	for part in blockToArray(str)
+		LOG part, labelPre
 	return true
 
 # ---------------------------------------------------------------------------

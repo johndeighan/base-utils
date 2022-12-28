@@ -29,10 +29,10 @@ hEchoLogs = {}     # { <source> => true }
 
 # ---------------------------------------------------------------------------
 
-export echoMyLogs = () =>
+export echoMyLogs = (flag=true) =>
 
 	caller = getMyOutsideCaller().source
-	hEchoLogs[caller] = true
+	hEchoLogs[caller] = flag
 	return
 
 # ---------------------------------------------------------------------------

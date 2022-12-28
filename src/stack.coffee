@@ -280,7 +280,7 @@ export class CallStack
 
 		prefix = oneIndent.repeat(level)
 		console.log prefix + '-------- CALL STACK --------'
-		console.log prefix + "curFunc = #{@curFuncName}"
+		console.log prefix + "(curFunc = #{@curFuncName})"
 		console.log @dumpStr @root, level, oneIndent
 		console.log prefix + '----------------------------'
 		return

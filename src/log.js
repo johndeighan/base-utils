@@ -71,10 +71,10 @@ hEchoLogs = {}; // { <source> => true }
 
 
 // ---------------------------------------------------------------------------
-export var echoMyLogs = () => {
+export var echoMyLogs = (flag = true) => {
   var caller;
   caller = getMyOutsideCaller().source;
-  hEchoLogs[caller] = true;
+  hEchoLogs[caller] = flag;
 };
 
 // ---------------------------------------------------------------------------

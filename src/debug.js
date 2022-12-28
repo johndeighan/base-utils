@@ -30,7 +30,8 @@ import {
   firstWord,
   inList,
   oneof,
-  jsType
+  jsType,
+  blockToArray
 } from '@jdeighan/base-utils/utils';
 
 import {
@@ -42,6 +43,7 @@ import {
   LOGVALUE,
   stringFits,
   debugLogging,
+  clearMyLogs,
   getMyLog,
   echoMyLogs
 } from '@jdeighan/base-utils/log';
@@ -79,6 +81,11 @@ logResume = undef;
 logString = undef;
 
 logValue = undef;
+
+// ---------------------------------------------------------------------------
+export var clearDebugLog = () => {
+  return clearMyLogs();
+};
 
 // ---------------------------------------------------------------------------
 export var getDebugLog = () => {
@@ -298,6 +305,7 @@ export var funcMatch = function(funcName) {
   // --- We KNOW that funcName is active!
   if (internalDebugging) {
     console.log(`CHECK funcMatch(${OL(funcName)})`);
+    console.log(lFuncList);
     callStack.dump(1);
   }
   lParts = isFunctionName(funcName);
@@ -441,6 +449,15 @@ export var dbgResume = function(funcName) {
 };
 
 // ---------------------------------------------------------------------------
+export var dbg = function(...lArgs) {
+  if (lArgs.length === 1) {
+    return dbgString(lArgs[0]);
+  } else {
+    return dbgValue(lArgs[0], lArgs[1]);
+  }
+};
+
+// ---------------------------------------------------------------------------
 export var dbgValue = function(label, val) {
   var doLog, level;
   assert(isString(label), "not a string");
@@ -459,6 +476,7 @@ export var dbgValue = function(label, val) {
 };
 
 // ---------------------------------------------------------------------------
+// --- str can be a multi-line string
 export var dbgString = function(str) {
   var doLog, level;
   assert(isString(str), "not a string");
@@ -474,15 +492,6 @@ export var dbgString = function(str) {
     }
   }
   return true;
-};
-
-// ---------------------------------------------------------------------------
-export var dbg = function(...lArgs) {
-  if (lArgs.length === 1) {
-    return dbgString(lArgs[0]);
-  } else {
-    return dbgValue(lArgs[0], lArgs[1]);
-  }
 };
 
 // ---------------------------------------------------------------------------
@@ -583,11 +592,15 @@ export var stdLogResume = function(funcName, level) {
 
 // ---------------------------------------------------------------------------
 export var stdLogString = function(level, str) {
-  var labelPre;
+  var j, labelPre, len, part, ref;
   assert(isString(str), "not a string");
   assert(isInteger(level), "level not an integer");
   labelPre = getPrefix(level, 'plain');
-  LOG(str, labelPre);
+  ref = blockToArray(str);
+  for (j = 0, len = ref.length; j < len; j++) {
+    part = ref[j];
+    LOG(part, labelPre);
+  }
   return true;
 };
 

@@ -38,8 +38,21 @@ import {
   dbgYield,
   dbgResume,
   dbg,
-  getDebugLog
+  clearDebugLog,
+  getDebugLog,
+  stdLogString
 } from '@jdeighan/base-utils/debug';
+
+// ---------------------------------------------------------------------------
+test("line 24", (t) => {
+  clearDebugLog();
+  stdLogString(2, `---
+- abc
+- def`);
+  return t.is(getDebugLog(), `│   │   ---
+│   │   - abc
+│   │   - def`);
+});
 
 // ---------------------------------------------------------------------------
 // --- Define some functions to use in testing
