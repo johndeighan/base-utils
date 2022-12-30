@@ -464,41 +464,57 @@ export var nonEmpty = function(x) {
 // ---------------------------------------------------------------------------
 //   blockToArray - split a block into lines
 export var blockToArray = function(block) {
-  var lLines, len;
+  var lLines;
   if ((block === undef) || (block === '')) {
     return [];
   } else {
-    assert(isString(block), `block is ${jsType(block)}`);
+    assert(isString(block), `block is ${OL(block)}`);
     lLines = block.split(/\r?\n/);
-    // --- remove trailing empty lines
-    len = lLines.length;
-    while ((len > 0) && isEmpty(lLines[len - 1])) {
-      lLines.pop();
-      len -= 1;
-    }
     return lLines;
+  }
+};
+
+// ---------------------------------------------------------------------------
+export var toArray = function(item) {
+  if (isArray(item)) {
+    return item;
+  } else {
+    return blockToArray(item);
   }
 };
 
 // ---------------------------------------------------------------------------
 //   arrayToBlock - block and lines in block will have no trailing whitespace
 export var arrayToBlock = function(lLines, hEsc = undef) {
-  var result;
+  var i, lResult, len1, line, result;
   if (lLines === undef) {
-    return undef;
+    return '';
   }
   assert(isArray(lLines), "lLines is not an array");
-  lLines = lLines.filter((line) => {
-    return defined(line);
-  });
-  if (lLines.length === 0) {
-    return undef;
+  lResult = [];
+  for (i = 0, len1 = lLines.length; i < len1; i++) {
+    line = lLines[i];
+    if (defined(line)) {
+      lResult.push(rtrim(line));
+    }
+  }
+  if (lResult.length === 0) {
+    return '';
   } else {
-    result = rtrim(lLines.join('\n'));
+    result = lResult.join("\n");
     if (defined(hEsc)) {
       result = escapeStr(result, hEsc);
     }
     return result;
+  }
+};
+
+// ---------------------------------------------------------------------------
+export var toBlock = function(item) {
+  if (isString(item)) {
+    return item;
+  } else {
+    return arrayToBlock(item);
   }
 };
 

@@ -434,15 +434,18 @@ export blockToArray = (block) ->
 	if (block == undef) || (block == '')
 		return []
 	else
-		assert isString(block), "block is #{jsType(block)}"
+		assert isString(block), "block is #{OL(block)}"
 		lLines = block.split(/\r?\n/)
-
-		# --- remove trailing empty lines
-		len = lLines.length
-		while (len > 0) && isEmpty(lLines[len-1])
-			lLines.pop()
-			len -= 1
 		return lLines
+
+# ---------------------------------------------------------------------------
+
+export toArray = (item) ->
+
+	if isArray(item)
+		return item
+	else
+		return blockToArray(item)
 
 # ---------------------------------------------------------------------------
 #   arrayToBlock - block and lines in block will have no trailing whitespace
@@ -450,16 +453,28 @@ export blockToArray = (block) ->
 export arrayToBlock = (lLines, hEsc=undef) ->
 
 	if (lLines == undef)
-		return undef
+		return ''
 	assert isArray(lLines), "lLines is not an array"
-	lLines = lLines.filter((line) => defined(line));
-	if lLines.length == 0
-		return undef
+	lResult = []
+	for line in lLines
+		if defined(line)
+			lResult.push rtrim(line)
+	if lResult.length == 0
+		return ''
 	else
-		result = rtrim(lLines.join('\n'))
+		result = lResult.join("\n")
 		if defined(hEsc)
 			result = escapeStr(result, hEsc)
 		return result
+
+# ---------------------------------------------------------------------------
+
+export toBlock = (item) ->
+
+	if isString(item)
+		return item
+	else
+		return arrayToBlock(item)
 
 # ---------------------------------------------------------------------------
 

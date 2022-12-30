@@ -39,6 +39,8 @@ import {
   isFunctionName,
   blockToArray,
   arrayToBlock,
+  toArray,
+  toBlock,
   chomp,
   rtrim,
   setCharsAt,
@@ -644,177 +646,231 @@ test("line 273", (t) => {
 
 // ---------------------------------------------------------------------------
 test("line 277", (t) => {
-  return t.deepEqual(blockToArray("abc\nxyz\n"), ['abc', 'xyz']);
+  return t.deepEqual(blockToArray(undef), []);
+});
+
+test("line 278", (t) => {
+  return t.deepEqual(blockToArray(''), []);
+});
+
+test("line 279", (t) => {
+  return t.deepEqual(blockToArray('a'), ['a']);
+});
+
+test("line 280", (t) => {
+  return t.deepEqual(blockToArray("a\nb"), ['a', 'b']);
+});
+
+test("line 281", (t) => {
+  return t.deepEqual(blockToArray("a\r\nb"), ['a', 'b']);
 });
 
 test("line 282", (t) => {
-  return t.deepEqual(blockToArray("abc\nxyz\n\n\n\n"), ['abc', 'xyz']);
+  return t.deepEqual(blockToArray("abc\nxyz"), ['abc', 'xyz']);
 });
 
 test("line 287", (t) => {
-  return t.deepEqual(blockToArray("abc\n\nxyz\n"), ['abc', '', 'xyz']);
+  return t.deepEqual(blockToArray("abc\nxyz"), ['abc', 'xyz']);
+});
+
+test("line 292", (t) => {
+  return t.deepEqual(blockToArray("abc\n\nxyz"), ['abc', '', 'xyz']);
 });
 
 // ---------------------------------------------------------------------------
-test("line 295", (t) => {
+test("line 300", (t) => {
+  return t.deepEqual(toArray("abc\ndef"), ['abc', 'def']);
+});
+
+test("line 301", (t) => {
+  return t.deepEqual(toArray(['a', 'b']), ['a', 'b']);
+});
+
+// ---------------------------------------------------------------------------
+test("line 305", (t) => {
+  return t.deepEqual(arrayToBlock(undef), '');
+});
+
+test("line 306", (t) => {
+  return t.deepEqual(arrayToBlock([]), '');
+});
+
+test("line 307", (t) => {
+  return t.deepEqual(arrayToBlock([undef]), '');
+});
+
+test("line 308", (t) => {
+  return t.deepEqual(arrayToBlock(['a  ', 'b\t\t']), "a\nb");
+});
+
+test("line 309", (t) => {
   return t.deepEqual(arrayToBlock(['a', 'b', 'c']), "a\nb\nc");
 });
 
-test("line 296", (t) => {
+test("line 310", (t) => {
   return t.deepEqual(arrayToBlock(['a', undef, 'b', 'c']), "a\nb\nc");
 });
 
-test("line 297", (t) => {
+test("line 311", (t) => {
   return t.deepEqual(arrayToBlock([undef, 'a', 'b', 'c', undef]), "a\nb\nc");
 });
 
 // ---------------------------------------------------------------------------
-test("line 301", (t) => {
+test("line 315", (t) => {
+  return t.deepEqual(toBlock(['abc', 'def']), "abc\ndef");
+});
+
+test("line 316", (t) => {
+  return t.deepEqual(toBlock("abc\ndef"), "abc\ndef");
+});
+
+// ---------------------------------------------------------------------------
+test("line 320", (t) => {
   return t.is(chomp('abc'), 'abc');
 });
 
-test("line 302", (t) => {
+test("line 321", (t) => {
   return t.is(chomp('abc\n'), 'abc');
 });
 
-test("line 303", (t) => {
+test("line 322", (t) => {
   return t.is(chomp('abc\r\n'), 'abc');
 });
 
-test("line 305", (t) => {
+test("line 324", (t) => {
   return t.is(chomp('abc\ndef'), 'abc\ndef');
 });
 
-test("line 306", (t) => {
+test("line 325", (t) => {
   return t.is(chomp('abc\ndef\n'), 'abc\ndef');
 });
 
-test("line 307", (t) => {
+test("line 326", (t) => {
   return t.is(chomp('abc\ndef\r\n'), 'abc\ndef');
 });
 
-test("line 309", (t) => {
+test("line 328", (t) => {
   return t.is(chomp('abc\r\ndef'), 'abc\r\ndef');
 });
 
-test("line 310", (t) => {
+test("line 329", (t) => {
   return t.is(chomp('abc\r\ndef\n'), 'abc\r\ndef');
 });
 
-test("line 311", (t) => {
+test("line 330", (t) => {
   return t.is(chomp('abc\r\ndef\r\n'), 'abc\r\ndef');
 });
 
 // ---------------------------------------------------------------------------
-test("line 315", (t) => {
+test("line 334", (t) => {
   return t.is(rtrim("abc"), "abc");
 });
 
-test("line 316", (t) => {
+test("line 335", (t) => {
   return t.is(rtrim("  abc"), "  abc");
 });
 
-test("line 317", (t) => {
+test("line 336", (t) => {
   return t.is(rtrim("abc  "), "abc");
 });
 
-test("line 318", (t) => {
+test("line 337", (t) => {
   return t.is(rtrim("  abc  "), "  abc");
 });
 
 // ---------------------------------------------------------------------------
-test("line 322", (t) => {
+test("line 341", (t) => {
   return t.is(setCharsAt('abc', 1, 'x'), 'axc');
 });
 
-test("line 323", (t) => {
+test("line 342", (t) => {
   return t.is(setCharsAt('abc', 1, 'xy'), 'axy');
 });
 
-test("line 324", (t) => {
+test("line 343", (t) => {
   return t.is(setCharsAt('abc', 1, 'xyz'), 'axyz');
 });
 
 // ---------------------------------------------------------------------------
-test("line 328", (t) => {
+test("line 347", (t) => {
   return t.deepEqual(words(''), []);
 });
 
-test("line 329", (t) => {
+test("line 348", (t) => {
   return t.deepEqual(words('  \t\t'), []);
 });
 
-test("line 330", (t) => {
+test("line 349", (t) => {
   return t.deepEqual(words('a b c'), ['a', 'b', 'c']);
 });
 
-test("line 331", (t) => {
+test("line 350", (t) => {
   return t.deepEqual(words('  a   b   c  '), ['a', 'b', 'c']);
 });
 
-test("line 332", (t) => {
+test("line 351", (t) => {
   return t.deepEqual(words('a b', 'c d'), ['a', 'b', 'c', 'd']);
 });
 
-test("line 333", (t) => {
+test("line 352", (t) => {
   return t.deepEqual(words(' my word ', ' is  word  '), ['my', 'word', 'is', 'word']);
 });
 
-test("line 335", (t) => {
+test("line 354", (t) => {
   return t.is(firstWord("abc"), "abc");
 });
 
-test("line 336", (t) => {
+test("line 355", (t) => {
   return t.is(firstWord(" abc"), "");
 });
 
-test("line 337", (t) => {
+test("line 356", (t) => {
   return t.is(firstWord("abc def"), "abc");
 });
 
-test("line 338", (t) => {
+test("line 357", (t) => {
   return t.is(firstWord("! not this"), "!");
 });
 
-test("line 340", (t) => {
+test("line 359", (t) => {
   return t.truthy(hasChar('abc', 'b'));
 });
 
-test("line 341", (t) => {
+test("line 360", (t) => {
   return t.falsy(hasChar('abc', 'x'));
 });
 
-test("line 342", (t) => {
+test("line 361", (t) => {
   return t.falsy(hasChar("\t\t", ' '));
 });
 
 // ---------------------------------------------------------------------------
-test("line 346", (t) => {
+test("line 365", (t) => {
   return t.is(quoted('abc'), "'abc'");
 });
 
-test("line 347", (t) => {
+test("line 366", (t) => {
   return t.is(quoted('"abc"'), "'\"abc\"'");
 });
 
-test("line 348", (t) => {
+test("line 367", (t) => {
   return t.is(quoted("'abc'"), "\"'abc'\"");
 });
 
-test("line 349", (t) => {
+test("line 368", (t) => {
   return t.is(quoted("'\"abc\"'"), "<'\"abc\"'>");
 });
 
-test("line 350", (t) => {
+test("line 369", (t) => {
   return t.is(quoted("'\"<abc>\"'"), "<'\"<abc>\"'>");
 });
 
 // ---------------------------------------------------------------------------
-test("line 354", (t) => {
+test("line 373", (t) => {
   return t.deepEqual(getOptions(), {});
 });
 
-test("line 355", (t) => {
+test("line 374", (t) => {
   return t.deepEqual(getOptions(undef, {
     x: 1
   }), {
@@ -822,7 +878,7 @@ test("line 355", (t) => {
   });
 });
 
-test("line 356", (t) => {
+test("line 375", (t) => {
   return t.deepEqual(getOptions({
     x: 1
   }, {
@@ -834,25 +890,25 @@ test("line 356", (t) => {
   });
 });
 
-test("line 357", (t) => {
+test("line 376", (t) => {
   return t.deepEqual(getOptions('asText'), {
     asText: true
   });
 });
 
-test("line 358", (t) => {
+test("line 377", (t) => {
   return t.deepEqual(getOptions('!binary'), {
     binary: false
   });
 });
 
-test("line 359", (t) => {
+test("line 378", (t) => {
   return t.deepEqual(getOptions('label=this'), {
     label: 'this'
   });
 });
 
-test("line 360", (t) => {
+test("line 379", (t) => {
   return t.deepEqual(getOptions('asText !binary label=this'), {
     asText: true,
     binary: false,
