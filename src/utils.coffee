@@ -443,7 +443,15 @@ export blockToArray = (block) ->
 export toArray = (item) ->
 
 	if isArray(item)
-		return item
+		# --- We need to split any strings containing a \n
+		lLines = []
+		for line in item
+			if hasChar(line, "\n")
+				for str in line.split(/\r?\n/)
+					lLines.push str
+			else
+				lLines.push line
+		return lLines
 	else
 		return blockToArray(item)
 

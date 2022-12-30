@@ -476,8 +476,23 @@ export var blockToArray = function(block) {
 
 // ---------------------------------------------------------------------------
 export var toArray = function(item) {
+  var i, j, lLines, len1, len2, line, ref, str;
   if (isArray(item)) {
-    return item;
+    // --- We need to split any strings containing a \n
+    lLines = [];
+    for (i = 0, len1 = item.length; i < len1; i++) {
+      line = item[i];
+      if (hasChar(line, "\n")) {
+        ref = line.split(/\r?\n/);
+        for (j = 0, len2 = ref.length; j < len2; j++) {
+          str = ref[j];
+          lLines.push(str);
+        }
+      } else {
+        lLines.push(line);
+      }
+    }
+    return lLines;
   } else {
     return blockToArray(item);
   }

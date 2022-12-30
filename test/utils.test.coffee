@@ -300,83 +300,85 @@ test "line 292", (t) => t.deepEqual(blockToArray("abc\n\nxyz"), [
 test "line 300", (t) => t.deepEqual(toArray("abc\ndef"), ['abc','def'])
 test "line 301", (t) => t.deepEqual(toArray(['a','b']), ['a','b'])
 
-# ---------------------------------------------------------------------------
-
-test "line 305", (t) => t.deepEqual(arrayToBlock(undef), '')
-test "line 306", (t) => t.deepEqual(arrayToBlock([]), '')
-test "line 307", (t) => t.deepEqual(arrayToBlock([undef]), '')
-test "line 308", (t) => t.deepEqual(arrayToBlock(['a  ','b\t\t']), "a\nb")
-test "line 309", (t) => t.deepEqual(arrayToBlock(['a','b','c']), "a\nb\nc")
-test "line 310", (t) => t.deepEqual(arrayToBlock(['a',undef,'b','c']), "a\nb\nc")
-test "line 311", (t) => t.deepEqual(arrayToBlock([undef,'a','b','c',undef]), "a\nb\nc")
+test "line 303", (t) => t.deepEqual(toArray(["a\nb","c\nd"]), ['a','b','c','d'])
 
 # ---------------------------------------------------------------------------
 
-test "line 315", (t) => t.deepEqual(toBlock(['abc','def']), "abc\ndef")
-test "line 316", (t) => t.deepEqual(toBlock("abc\ndef"), "abc\ndef")
+test "line 307", (t) => t.deepEqual(arrayToBlock(undef), '')
+test "line 308", (t) => t.deepEqual(arrayToBlock([]), '')
+test "line 309", (t) => t.deepEqual(arrayToBlock([undef]), '')
+test "line 310", (t) => t.deepEqual(arrayToBlock(['a  ','b\t\t']), "a\nb")
+test "line 311", (t) => t.deepEqual(arrayToBlock(['a','b','c']), "a\nb\nc")
+test "line 312", (t) => t.deepEqual(arrayToBlock(['a',undef,'b','c']), "a\nb\nc")
+test "line 313", (t) => t.deepEqual(arrayToBlock([undef,'a','b','c',undef]), "a\nb\nc")
 
 # ---------------------------------------------------------------------------
 
-test "line 320", (t) => t.is(chomp('abc'), 'abc')
-test "line 321", (t) => t.is(chomp('abc\n'), 'abc')
-test "line 322", (t) => t.is(chomp('abc\r\n'), 'abc')
-
-test "line 324", (t) => t.is(chomp('abc\ndef'), 'abc\ndef')
-test "line 325", (t) => t.is(chomp('abc\ndef\n'), 'abc\ndef')
-test "line 326", (t) => t.is(chomp('abc\ndef\r\n'), 'abc\ndef')
-
-test "line 328", (t) => t.is(chomp('abc\r\ndef'), 'abc\r\ndef')
-test "line 329", (t) => t.is(chomp('abc\r\ndef\n'), 'abc\r\ndef')
-test "line 330", (t) => t.is(chomp('abc\r\ndef\r\n'), 'abc\r\ndef')
+test "line 317", (t) => t.deepEqual(toBlock(['abc','def']), "abc\ndef")
+test "line 318", (t) => t.deepEqual(toBlock("abc\ndef"), "abc\ndef")
 
 # ---------------------------------------------------------------------------
 
-test "line 334", (t) => t.is(rtrim("abc"), "abc")
-test "line 335", (t) => t.is(rtrim("  abc"), "  abc")
-test "line 336", (t) => t.is(rtrim("abc  "), "abc")
-test "line 337", (t) => t.is(rtrim("  abc  "), "  abc")
+test "line 322", (t) => t.is(chomp('abc'), 'abc')
+test "line 323", (t) => t.is(chomp('abc\n'), 'abc')
+test "line 324", (t) => t.is(chomp('abc\r\n'), 'abc')
+
+test "line 326", (t) => t.is(chomp('abc\ndef'), 'abc\ndef')
+test "line 327", (t) => t.is(chomp('abc\ndef\n'), 'abc\ndef')
+test "line 328", (t) => t.is(chomp('abc\ndef\r\n'), 'abc\ndef')
+
+test "line 330", (t) => t.is(chomp('abc\r\ndef'), 'abc\r\ndef')
+test "line 331", (t) => t.is(chomp('abc\r\ndef\n'), 'abc\r\ndef')
+test "line 332", (t) => t.is(chomp('abc\r\ndef\r\n'), 'abc\r\ndef')
 
 # ---------------------------------------------------------------------------
 
-test "line 341", (t) => t.is(setCharsAt('abc', 1, 'x'), 'axc')
-test "line 342", (t) => t.is(setCharsAt('abc', 1, 'xy'), 'axy')
-test "line 343", (t) => t.is(setCharsAt('abc', 1, 'xyz'), 'axyz')
+test "line 336", (t) => t.is(rtrim("abc"), "abc")
+test "line 337", (t) => t.is(rtrim("  abc"), "  abc")
+test "line 338", (t) => t.is(rtrim("abc  "), "abc")
+test "line 339", (t) => t.is(rtrim("  abc  "), "  abc")
 
 # ---------------------------------------------------------------------------
 
-test "line 347", (t) => t.deepEqual(words(''), [])
-test "line 348", (t) => t.deepEqual(words('  \t\t'), [])
-test "line 349", (t) => t.deepEqual(words('a b c'), ['a', 'b', 'c'])
-test "line 350", (t) => t.deepEqual(words('  a   b   c  '), ['a', 'b', 'c'])
-test "line 351", (t) => t.deepEqual(words('a b', 'c d'), ['a', 'b', 'c', 'd'])
-test "line 352", (t) => t.deepEqual(words(' my word ', ' is  word  '), ['my', 'word', 'is', 'word'])
-
-test "line 354", (t) => t.is firstWord("abc"), "abc"
-test "line 355", (t) => t.is firstWord(" abc"), ""
-test "line 356", (t) => t.is firstWord("abc def"), "abc"
-test "line 357", (t) => t.is firstWord("! not this"), "!"
-
-test "line 359", (t) => t.truthy hasChar('abc', 'b')
-test "line 360", (t) => t.falsy  hasChar('abc', 'x')
-test "line 361", (t) => t.falsy  hasChar("\t\t", ' ')
+test "line 343", (t) => t.is(setCharsAt('abc', 1, 'x'), 'axc')
+test "line 344", (t) => t.is(setCharsAt('abc', 1, 'xy'), 'axy')
+test "line 345", (t) => t.is(setCharsAt('abc', 1, 'xyz'), 'axyz')
 
 # ---------------------------------------------------------------------------
 
-test "line 365", (t) => t.is(quoted('abc'), "'abc'")
-test "line 366", (t) => t.is(quoted('"abc"'), "'\"abc\"'")
-test "line 367", (t) => t.is(quoted("'abc'"), "\"'abc'\"")
-test "line 368", (t) => t.is(quoted("'\"abc\"'"), "<'\"abc\"'>")
-test "line 369", (t) => t.is(quoted("'\"<abc>\"'"), "<'\"<abc>\"'>")
+test "line 349", (t) => t.deepEqual(words(''), [])
+test "line 350", (t) => t.deepEqual(words('  \t\t'), [])
+test "line 351", (t) => t.deepEqual(words('a b c'), ['a', 'b', 'c'])
+test "line 352", (t) => t.deepEqual(words('  a   b   c  '), ['a', 'b', 'c'])
+test "line 353", (t) => t.deepEqual(words('a b', 'c d'), ['a', 'b', 'c', 'd'])
+test "line 354", (t) => t.deepEqual(words(' my word ', ' is  word  '), ['my', 'word', 'is', 'word'])
+
+test "line 356", (t) => t.is firstWord("abc"), "abc"
+test "line 357", (t) => t.is firstWord(" abc"), ""
+test "line 358", (t) => t.is firstWord("abc def"), "abc"
+test "line 359", (t) => t.is firstWord("! not this"), "!"
+
+test "line 361", (t) => t.truthy hasChar('abc', 'b')
+test "line 362", (t) => t.falsy  hasChar('abc', 'x')
+test "line 363", (t) => t.falsy  hasChar("\t\t", ' ')
 
 # ---------------------------------------------------------------------------
 
-test "line 373", (t) => t.deepEqual(getOptions(), {})
-test "line 374", (t) => t.deepEqual(getOptions(undef, {x:1}), {x:1})
-test "line 375", (t) => t.deepEqual(getOptions({x:1}, {x:3,y:4}), {x:1,y:4})
-test "line 376", (t) => t.deepEqual(getOptions('asText'), {asText: true})
-test "line 377", (t) => t.deepEqual(getOptions('!binary'), {binary: false})
-test "line 378", (t) => t.deepEqual(getOptions('label=this'), {label: 'this'})
-test "line 379", (t) => t.deepEqual(getOptions('asText !binary label=this'), {
+test "line 367", (t) => t.is(quoted('abc'), "'abc'")
+test "line 368", (t) => t.is(quoted('"abc"'), "'\"abc\"'")
+test "line 369", (t) => t.is(quoted("'abc'"), "\"'abc'\"")
+test "line 370", (t) => t.is(quoted("'\"abc\"'"), "<'\"abc\"'>")
+test "line 371", (t) => t.is(quoted("'\"<abc>\"'"), "<'\"<abc>\"'>")
+
+# ---------------------------------------------------------------------------
+
+test "line 375", (t) => t.deepEqual(getOptions(), {})
+test "line 376", (t) => t.deepEqual(getOptions(undef, {x:1}), {x:1})
+test "line 377", (t) => t.deepEqual(getOptions({x:1}, {x:3,y:4}), {x:1,y:4})
+test "line 378", (t) => t.deepEqual(getOptions('asText'), {asText: true})
+test "line 379", (t) => t.deepEqual(getOptions('!binary'), {binary: false})
+test "line 380", (t) => t.deepEqual(getOptions('label=this'), {label: 'this'})
+test "line 381", (t) => t.deepEqual(getOptions('asText !binary label=this'), {
 	asText: true
 	binary: false
 	label: 'this'
