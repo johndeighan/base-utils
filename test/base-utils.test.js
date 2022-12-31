@@ -37,6 +37,7 @@ import {
   isNonEmptyString,
   isIdentifier,
   isFunctionName,
+  isIterable,
   blockToArray,
   arrayToBlock,
   toArray,
@@ -226,7 +227,7 @@ test("line 108", (t) => {
 // ---------------------------------------------------------------------------
 //        jsTypes:
 (function() {
-  var NewClass, func1, func2, h, l, n, n2, o, s, s2;
+  var NewClass, func1, func2, generatorFunc, h, l, n, n2, o, s, s2;
   NewClass = class NewClass {
     constructor(name = 'bob') {
       this.name = name;
@@ -316,6 +317,14 @@ test("line 108", (t) => {
   });
   test("line 154", (t) => {
     return t.truthy(isFunctionName('class.method'));
+  });
+  generatorFunc = function*() {
+    yield 1;
+    yield 2;
+    yield 3;
+  };
+  test("line 999", (t) => {
+    return t.truthy(isIterable(generatorFunc()));
   });
   test("line 156", (t) => {
     return t.falsy(isNumber(h));

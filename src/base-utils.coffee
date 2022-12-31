@@ -312,6 +312,14 @@ export isFunction = (x) ->
 
 # ---------------------------------------------------------------------------
 
+export isIterable = (obj) ->
+
+	if (obj == undef) || (obj == null)
+		return false
+	return (typeof obj[Symbol.iterator] == 'function')
+
+# ---------------------------------------------------------------------------
+
 export isRegExp = (x) ->
 
 	return x instanceof RegExp

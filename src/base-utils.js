@@ -333,6 +333,14 @@ export var isFunction = function(x) {
 };
 
 // ---------------------------------------------------------------------------
+export var isIterable = function(obj) {
+  if ((obj === undef) || (obj === null)) {
+    return false;
+  }
+  return typeof obj[Symbol.iterator] === 'function';
+};
+
+// ---------------------------------------------------------------------------
 export var isRegExp = function(x) {
   return x instanceof RegExp;
 };

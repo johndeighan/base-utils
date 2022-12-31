@@ -8,7 +8,8 @@ import {
 	escapeStr, unescapeStr, OL, OLS, inList,
 	isString, isNumber, isInteger, isHash, isArray, isBoolean,
 	isConstructor, isFunction, isRegExp, isObject, jsType,
-	isEmpty, nonEmpty, isNonEmptyString, isIdentifier, isFunctionName,
+	isEmpty, nonEmpty, isNonEmptyString, isIdentifier,
+	isFunctionName, isIterable,
 	blockToArray, arrayToBlock, toArray, toBlock,
 	chomp, rtrim, setCharsAt, words, firstWord,
 	hasChar, quoted, getOptions,
@@ -151,6 +152,14 @@ test "line 108", (t) => t.falsy( inList('a', 'b', 'c'))
 	test "line 152", (t) => t.falsy(isFunctionName('abc-def'))
 	test "line 153", (t) => t.falsy(isFunctionName('D()'))
 	test "line 154", (t) => t.truthy(isFunctionName('class.method'))
+
+	generatorFunc = () ->
+		yield 1
+		yield 2
+		yield 3
+		return
+
+	test "line 999", (t) => t.truthy(isIterable(generatorFunc()))
 
 	test "line 156", (t) => t.falsy(isNumber(h))
 	test "line 157", (t) => t.falsy(isNumber(l))
