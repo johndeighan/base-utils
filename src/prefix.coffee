@@ -1,7 +1,7 @@
 # prefix.coffee
 
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
-import {undef, OL, setCharsAt} from '@jdeighan/base-utils/utils'
+import {undef, OL, setCharsAt} from '@jdeighan/base-utils'
 
 # --- We use spaces here because Windows Terminal handles TAB chars badly
 

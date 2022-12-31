@@ -7,7 +7,7 @@ import {
 	} from '@jdeighan/base-utils/exceptions'
 import {
 	undef, defined, notdefined,
-	} from '@jdeighan/base-utils/utils'
+	} from '@jdeighan/base-utils'
 import {
 	LOG, LOGVALUE, LOGSTRING, clearAllLogs, getMyLog,
 	} from '@jdeighan/base-utils/log'

@@ -27,7 +27,7 @@ import {
   spaces,
   tabs,
   getOptions
-} from '@jdeighan/base-utils/utils';
+} from '@jdeighan/base-utils';
 
 import {
   LOG,

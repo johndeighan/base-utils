@@ -3,7 +3,7 @@
 import test from 'ava'
 
 import {
-	suppressExceptionLogging, assert, croak,
+	assert, croak, suppressExceptionLogging,
 	} from '@jdeighan/base-utils/exceptions'
 
 # ---------------------------------------------------------------------------

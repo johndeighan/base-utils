@@ -7,7 +7,7 @@ import {
 	blockToArray, arrayToBlock, prefixBlock,
 	isNumber, isInteger, isString, isHash, isFunction, isBoolean,
 	isEmpty, nonEmpty, hEscNoNL, jsType, hasChar, quoted,
-	} from '@jdeighan/base-utils/utils'
+	} from '@jdeighan/base-utils'
 import {toTAML} from '@jdeighan/base-utils/taml'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {getMyOutsideCaller} from '@jdeighan/base-utils/v8-stack'

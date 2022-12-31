@@ -7,7 +7,7 @@ import {
 	isString, isFunction, isArray, isHash, isBoolean, isInteger,
 	isEmpty, nonEmpty, arrayToBlock, getOptions,
 	words, firstWord, inList, oneof, jsType, blockToArray,
-	} from '@jdeighan/base-utils/utils'
+	} from '@jdeighan/base-utils'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {
 	LOG, LOGVALUE, stringFits, debugLogging,

@@ -14,7 +14,7 @@ import {
   defined,
   notdefined,
   words
-} from '@jdeighan/base-utils/utils';
+} from '@jdeighan/base-utils';
 
 import {
   clearAllLogs

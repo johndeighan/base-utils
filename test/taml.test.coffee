@@ -5,7 +5,7 @@ import test from 'ava'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	undef, untabify,
-	} from '@jdeighan/base-utils/utils'
+	} from '@jdeighan/base-utils'
 import {LOG} from '@jdeighan/base-utils/log'
 import {
 	isTAML, toTAML, fromTAML, fixValStr,

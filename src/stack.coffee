@@ -6,7 +6,7 @@ import {
 	isString, isArray, isBoolean, isInteger, isFunctionName,
 	isEmpty, nonEmpty, isNonEmptyString,
 	spaces, tabs, getOptions,
-	} from '@jdeighan/base-utils/utils'
+	} from '@jdeighan/base-utils'
 import {LOG, LOGVALUE, getMyLog} from '@jdeighan/base-utils/log'
 
 mainName = '_MAIN_'

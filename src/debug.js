@@ -32,7 +32,7 @@ import {
   oneof,
   jsType,
   blockToArray
-} from '@jdeighan/base-utils/utils';
+} from '@jdeighan/base-utils';
 
 import {
   getPrefix

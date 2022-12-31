@@ -11,7 +11,7 @@ import {
   undef,
   defined,
   notdefined
-} from '@jdeighan/base-utils/utils';
+} from '@jdeighan/base-utils';
 
 doHaltOnError = false;
 

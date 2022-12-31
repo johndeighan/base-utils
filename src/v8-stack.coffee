@@ -2,10 +2,11 @@
 
 import pathLib from 'node:path'
 import assert from 'node:assert/strict'
+
 import {
 	undef, defined, notdefined, pass, OL,
 	isIdentifier, isFunctionName, getOptions, isEmpty, nonEmpty,
-	} from '@jdeighan/base-utils/utils'
+	} from '@jdeighan/base-utils'
 
 export internalDebugging = false
 sep_eq = '============================================================'

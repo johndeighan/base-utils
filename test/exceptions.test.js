@@ -3,9 +3,9 @@
 import test from 'ava';
 
 import {
-  suppressExceptionLogging,
   assert,
-  croak
+  croak,
+  suppressExceptionLogging
 } from '@jdeighan/base-utils/exceptions';
 
 // ---------------------------------------------------------------------------

@@ -10,7 +10,7 @@ import {
 import {
   undef,
   untabify
-} from '@jdeighan/base-utils/utils';
+} from '@jdeighan/base-utils';
 
 import {
   LOG

@@ -10,7 +10,7 @@ import {
   notdefined,
   pass,
   jsType
-} from '@jdeighan/base-utils/utils';
+} from '@jdeighan/base-utils';
 
 import {
   getPrefix

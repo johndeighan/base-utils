@@ -24,7 +24,7 @@ import {
   blockToArray,
   arrayToBlock,
   escapeStr
-} from '@jdeighan/base-utils/utils';
+} from '@jdeighan/base-utils';
 
 // ---------------------------------------------------------------------------
 //   isTAML - is the string valid TAML?

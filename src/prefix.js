@@ -9,7 +9,7 @@ import {
   undef,
   OL,
   setCharsAt
-} from '@jdeighan/base-utils/utils';
+} from '@jdeighan/base-utils';
 
 // --- We use spaces here because Windows Terminal handles TAB chars badly
 export var vbar = '│'; // unicode 2502

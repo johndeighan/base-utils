@@ -17,7 +17,7 @@ import {
   getOptions,
   isEmpty,
   nonEmpty
-} from '@jdeighan/base-utils/utils';
+} from '@jdeighan/base-utils';
 
 export var internalDebugging = false;
 

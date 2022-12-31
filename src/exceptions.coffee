@@ -3,7 +3,7 @@
 import {getV8Stack, nodeStr} from '@jdeighan/base-utils/v8-stack'
 import {
 	undef, defined, notdefined,
-	} from '@jdeighan/base-utils/utils'
+	} from '@jdeighan/base-utils'
 
 doHaltOnError = false
 doLog = true

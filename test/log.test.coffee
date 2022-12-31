@@ -4,7 +4,7 @@ import test from 'ava'
 
 import {
 	undef, defined, notdefined, pass, jsType,
-	} from '@jdeighan/base-utils/utils'
+	} from '@jdeighan/base-utils'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {
 	logWidth, sep_dash, sep_eq,

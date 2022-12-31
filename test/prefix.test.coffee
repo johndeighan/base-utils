@@ -4,7 +4,7 @@ import test from 'ava'
 
 import {
 	undef, defined, notdefined, pass, unescapeStr,
-	} from '@jdeighan/base-utils/utils'
+	} from '@jdeighan/base-utils'
 import {
 	getPrefix,
 	} from '@jdeighan/base-utils/prefix'
