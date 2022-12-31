@@ -12,7 +12,7 @@ import {
 	isFunctionName, isIterable,
 	blockToArray, arrayToBlock, toArray, toBlock,
 	chomp, rtrim, setCharsAt, words, firstWord,
-	hasChar, quoted, getOptions,
+	hasChar, quoted, getOptions, range,
 	} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
@@ -391,3 +391,8 @@ test "line 381", (t) => t.deepEqual(getOptions('asText !binary label=this'), {
 	binary: false
 	label: 'this'
 	})
+
+# ---------------------------------------------------------------------------
+
+test "line 398", (t) => t.deepEqual(range(3), [0,1,2])
+

@@ -49,7 +49,8 @@ import {
   firstWord,
   hasChar,
   quoted,
-  getOptions
+  getOptions,
+  range
 } from '@jdeighan/base-utils';
 
 // ---------------------------------------------------------------------------
@@ -927,4 +928,9 @@ test("line 381", (t) => {
     binary: false,
     label: 'this'
   });
+});
+
+// ---------------------------------------------------------------------------
+test("line 398", (t) => {
+  return t.deepEqual(range(3), [0, 1, 2]);
 });
