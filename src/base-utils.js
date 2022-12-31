@@ -8,6 +8,11 @@ import assert from 'node:assert/strict';
 export const undef = void 0;
 
 // ---------------------------------------------------------------------------
+export var isHashComment = function(line) {
+  return line.match(/^\s*\#($|\s)/);
+};
+
+// ---------------------------------------------------------------------------
 //   pass - do nothing
 export var pass = () => {
   return true;
