@@ -14,7 +14,6 @@ import {
   defined,
   notdefined,
   OL,
-  chomp,
   hasChar,
   isEmpty,
   isString,
@@ -23,7 +22,8 @@ import {
   isArray,
   blockToArray,
   arrayToBlock,
-  escapeStr
+  escapeStr,
+  rtrim
 } from '@jdeighan/base-utils';
 
 // ---------------------------------------------------------------------------
@@ -145,7 +145,7 @@ export var toTAML = function(obj, hOptions = {
   if (useTabs) {
     str = str.replace(/   /g, "\t");
   }
-  return "---\n" + chomp(str);
+  return "---\n" + rtrim(str);
 };
 
 // ---------------------------------------------------------------------------

@@ -9,14 +9,20 @@ import {
   defined,
   notdefined,
   pass,
-  unescapeStr
+  escapeStr
 } from '@jdeighan/base-utils';
 
 import {
   getPrefix
 } from '@jdeighan/base-utils/prefix';
 
-un = unescapeStr;
+un = (str) => {
+  return escapeStr(str, {
+    '®': "\n",
+    '→': "\t",
+    '˳': " "
+  });
+};
 
 // ---------------------------------------------------------------------------
 test("line 16", (t) => {

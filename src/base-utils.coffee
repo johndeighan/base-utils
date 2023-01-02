@@ -6,7 +6,7 @@ import assert from 'node:assert/strict'
 
 # ---------------------------------------------------------------------------
 
-export isHashComment = (line) ->
+export isHashComment = (line) =>
 
 	return line.match(/^\s*\#($|\s)/)
 
@@ -42,6 +42,27 @@ export tabs = (n) =>
 	return "\t".repeat(n)
 
 # ---------------------------------------------------------------------------
+#   rtrunc - strip nChars chars from right of a string
+
+export rtrunc = (str, nChars) =>
+
+	return str.substring(0, str.length - nChars)
+
+# ---------------------------------------------------------------------------
+#   ltrunc - strip nChars chars from left of a string
+
+export ltrunc = (str, nChars) =>
+
+	return str.substring(nChars)
+
+# ---------------------------------------------------------------------------
+
+export CWS = (str) =>
+
+	assert isString(str), "CWS(): parameter not a string"
+	return str.trim().replace(/\s+/sg, ' ')
+
+# ---------------------------------------------------------------------------
 
 export untabify = (str, numSpaces=3) =>
 
@@ -49,22 +70,14 @@ export untabify = (str, numSpaces=3) =>
 
 # ---------------------------------------------------------------------------
 
-export oneof = (word, lWords...) ->
+export oneof = (word, lWords...) =>
 
 	return (lWords.indexOf(word) >= 0)
 
 # ---------------------------------------------------------------------------
-
-export prefixBlock = (block, prefix) =>
-
-	lLines = for line in blockToArray(block)
-		"#{prefix}#{line}"
-	return arrayToBlock(lLines)
-
-# ---------------------------------------------------------------------------
 #   deepCopy - deep copy an array or object
 
-export deepCopy = (obj) ->
+export deepCopy = (obj) =>
 
 	if (obj == undef)
 		return undef
@@ -79,7 +92,7 @@ export deepCopy = (obj) ->
 # ---------------------------------------------------------------------------
 # --- a replacer is (key, value) -> newvalue
 
-myReplacer = (name, value) ->
+myReplacer = (name, value) =>
 
 	if (value == undef)
 		return undef
@@ -94,7 +107,7 @@ myReplacer = (name, value) ->
 
 # ---------------------------------------------------------------------------
 
-export OL = (obj) ->
+export OL = (obj) =>
 
 	if defined(obj)
 		if isString(obj)
@@ -108,7 +121,7 @@ export OL = (obj) ->
 
 # ---------------------------------------------------------------------------
 
-export OLS = (lObjects, sep=',') ->
+export OLS = (lObjects, sep=',') =>
 
 	assert isArray(lObjects), "not an array"
 	lParts = []
@@ -174,29 +187,99 @@ export hasChar = (str, ch) =>
 	return (str.indexOf(ch) >= 0)
 
 # ---------------------------------------------------------------------------
-#   unescapeStr - unescape newlines, TAB chars, etc.
-
-export hUnesc = {
-	'®': "\n"
-	'→': "\t"
-	'˳': " "
-	}
-
-export unescapeStr = (str, hReplace=hUnesc) ->
-
-	return escapeStr(str, hReplace)
-
-# ---------------------------------------------------------------------------
 
 export inList = (item, lStrings...) =>
 
 	return (lStrings.indexOf(item) >= 0)
 
 # ---------------------------------------------------------------------------
+# see: https://stackoverflow.com/questions/40922531/how-to-check-if-a-javascript-function-is-a-constructor
+
+myHandler = {
+	construct: () ->
+		return myHandler
+	} # Must return ANY object, so reuse one
+
+export isConstructor = (x) =>
+	if (typeof x != 'function')
+		return false
+	try
+		return !!(new (new Proxy(x, myHandler))())
+	catch e
+		return false
+
+# ---------------------------------------------------------------------------
+
+export jsType = (x) =>
+	# --- return [type, subtype]
+
+	if (x == null)
+		return [undef, 'null']
+	else if (x == undef)
+		return [undef, 'undef']
+
+	switch (typeof x)
+		when 'number'
+			if Number.isInteger(x)
+				return ['number', 'integer']
+			else
+				return ['number', undef]
+		when 'string'
+			if x.match(/^\s*$/)
+				return ['string', 'empty']
+			else
+				return ['string', undef]
+		when 'boolean'
+			return ['boolean', undef]
+		when 'bigint'
+			return ['number', 'integer']
+		when 'function'
+			if x.prototype && (x.prototype.constructor == x)
+				return ['class', undef]
+			return ['function', undef]
+		when 'object'
+			if (x instanceof String)
+				if x.match(/^\s*$/)
+					return ['string', 'empty']
+				else
+					return ['string', undef]
+			if (x instanceof Number)
+				if Number.isInteger(x)
+					return ['number', 'integer']
+				else
+					return ['number', undef]
+			if (x instanceof Boolean)
+				return ['boolean', undef]
+			if Array.isArray(x)
+				if (x.length == 0)
+					return ['array', 'empty']
+				else
+					return ['array', undef]
+			if (x instanceof RegExp)
+				return ['regexp', undef]
+			if (x instanceof Function)
+				if x.prototype && (x.prototype.constructor == x)
+					return ['class', undef]
+				else
+					return ['function', undef]
+			if defined(x.constructor.name) \
+					&& (typeof x.constructor.name == 'string') \
+					&& (x.constructor.name == 'Object')
+				lKeys = Object.keys(x);
+				if (lKeys.length == 0)
+					return ['hash', 'empty']
+				else
+					return ['hash', undef]
+			else
+				return ['object', undef]
+		else
+			throw new Error ("Unknown jsType: #{x}")
+
+# ---------------------------------------------------------------------------
 
 export isString = (x) =>
 
-	return (typeof x == 'string') || (x instanceof String)
+	return (jsType(x)[0] == 'string')
 
 # ---------------------------------------------------------------------------
 
@@ -206,12 +289,26 @@ export isNonEmptyString = (x) =>
 
 # ---------------------------------------------------------------------------
 
+export isNonEmptyArray = (x) =>
+
+	return isArray(x) && (x.length > 0)
+
+# ---------------------------------------------------------------------------
+
+export isNonEmptyHash = (x) =>
+
+	return isHash(x) && (Object.keys(x).length > 0)
+
+# ---------------------------------------------------------------------------
+
 export isIdentifier = (x) =>
 
-	return !! (isString(x) && x.match(///^
+	if ! isString(x)
+		return false
+	return x.match(///^
 			[A-Za-z_]
 			[A-Za-z0-9_]*
-			$///))
+			$///)
 
 # ---------------------------------------------------------------------------
 
@@ -234,30 +331,29 @@ export isFunctionName = (x) =>
 
 # ---------------------------------------------------------------------------
 
-export isNumber = (x, hOptions=undef) ->
+export isNumber = (x, hOptions=undef) =>
 
-	result = (typeof x == 'number') || (x instanceof Number)
-	if result && defined(hOptions)
-		if ! isHash(hOptions)
-			LOG "2nd arg not a hash: #{OL(hOptions)}"
-			process.exit()
+	if (jsType(x)[0] != 'number')
+		return false
+	if defined(hOptions)
+		assert isHash(hOptions), "2nd arg not a hash: #{OL(hOptions)}"
 		{min, max} = hOptions
 		if defined(min) && (x < min)
-			result = false
+			return false
 		if defined(max) && (x > max)
-			result = false
-	return result
+			return false
+	return true
 
 # ---------------------------------------------------------------------------
 
-export isInteger = (x, hOptions={}) ->
+export isInteger = (x, hOptions={}) =>
 
 	if (typeof x == 'number')
 		result = Number.isInteger(x)
 	else if (x instanceof Number)
 		result = Number.isInteger(x.valueOf())
 	else
-		result = false
+		return false
 
 	if result
 		if defined(hOptions.min) && (x < hOptions.min)
@@ -268,17 +364,78 @@ export isInteger = (x, hOptions={}) ->
 
 # ---------------------------------------------------------------------------
 
-export getClassName = (obj) ->
+export isArray = (x) =>
 
-	if (typeof obj != 'object')
-		return undef
-	return obj.constructor.name
+	return (jsType(x)[0] == 'array')
 
 # ---------------------------------------------------------------------------
 
-export isHash = (x, lKeys) ->
+export isArrayOfHashes = (lItems) =>
+	# --- undefined items are allowed
 
-	if ! x || (getClassName(x) != 'Object')
+	if ! isArray(lItems)
+		return false
+	for item in lItems
+		if defined(item) && ! isHash(item)
+			return false
+	return true
+
+# ---------------------------------------------------------------------------
+
+export isArrayOfStrings = (lItems) =>
+	# --- undefined items are allowed
+
+	if ! isArray(lItems)
+		return false
+	for item in lItems
+		if defined(item) && ! isString(item)
+			return false
+	return true
+
+# ---------------------------------------------------------------------------
+
+export words = (lStrings...) =>
+
+	lWords = []
+	for str in lStrings
+		str = str.trim()
+		if (str != '')
+			for word in str.split(/\s+/)
+				lWords.push word
+	return lWords
+
+# ---------------------------------------------------------------------------
+
+export isBoolean = (x) =>
+
+	return (jsType(x)[0] == 'boolean')
+
+# ---------------------------------------------------------------------------
+
+export isFunction = (x) =>
+
+	mtype = jsType(x)[0]
+	return (mtype == 'function') || (mtype == 'class')
+
+# ---------------------------------------------------------------------------
+
+export isIterable = (obj) =>
+
+	if (obj == undef) || (obj == null)
+		return false
+	return (typeof obj[Symbol.iterator] == 'function')
+
+# ---------------------------------------------------------------------------
+
+export isRegExp = (x) =>
+
+	return (jsType(x)[0] == 'regexp')
+
+# ---------------------------------------------------------------------------
+
+export isHash = (x, lKeys) =>
+
+	if (jsType(x)[0] != 'hash')
 		return false
 	if defined(lKeys)
 		if isString(lKeys)
@@ -292,53 +449,9 @@ export isHash = (x, lKeys) ->
 
 # ---------------------------------------------------------------------------
 
-export isArray = (x) ->
+export isObject = (x, lReqKeys=undef) =>
 
-	return Array.isArray(x)
-
-# ---------------------------------------------------------------------------
-
-export isBoolean = (x) ->
-
-	return typeof x == 'boolean'
-
-# ---------------------------------------------------------------------------
-
-export isConstructor = (f) ->
-
-	return (typeof f == 'function') \
-		&& !!f.prototype \
-		&& (f.prototype.constructor == f)
-
-# ---------------------------------------------------------------------------
-
-export isFunction = (x) ->
-
-	return typeof x == 'function'
-
-# ---------------------------------------------------------------------------
-
-export isIterable = (obj) ->
-
-	if (obj == undef) || (obj == null)
-		return false
-	return (typeof obj[Symbol.iterator] == 'function')
-
-# ---------------------------------------------------------------------------
-
-export isRegExp = (x) ->
-
-	return x instanceof RegExp
-
-# ---------------------------------------------------------------------------
-
-export isObject = (x, lReqKeys=undef) ->
-
-	if (typeof x != 'object') \
-			|| isString(x) \
-			|| isArray(x) \
-			|| isHash(x) \
-			|| isNumber(x)
+	if (jsType(x)[0] != 'object')
 		return false
 
 	if defined(lReqKeys)
@@ -357,60 +470,36 @@ export isObject = (x, lReqKeys=undef) ->
 
 # ---------------------------------------------------------------------------
 
-export isScalar = (x) ->
+export isClass = (x) =>
 
-	return isNumber(x) || isString(x) || isBoolean(x)
+	return (jsType(x)[0] == 'class')
 
 # ---------------------------------------------------------------------------
 
-export jsType = (x) ->
+export className = (item) =>
+	# --- item can be a class or an object
 
-	if (x == null)
-		return [undef, 'null']
-	else if (x == undef)
-		return [undef, 'undef']
-	else if isString(x)
-		if x.match(/^\s*$/)
-			return ['string', 'empty']
+	if isClass(item)
+		if lMatches = item.toString().match(/class\s+(\w+)/)
+			return lMatches[1]
 		else
-			return ['string', undef]
-	else if isNumber(x)
-		if Number.isInteger(x)
-			return ['number', 'integer']
-		else
-			return ['number', undef]
-	else if isBoolean(x)
-		if x
-			return ['boolean', 'true']
-		else
-			return ['boolean', 'false']
-	else if isHash(x)
-		lKeys = Object.keys(x);
-		if (lKeys.length == 0)
-			return ['hash', 'empty']
-		else
-			return ['hash', undef]
-	else if isArray(x)
-		if (x.length == 0)
-			return ['array', 'empty']
-		else
-			return ['array', undef]
-	else if isRegExp(x)
-		return ['regexp', undef]
-	else if isConstructor(x)
-		return ['function', 'constructor']
-	else if isFunction(x)
-		return ['function', undef]
-	else if isObject(x)
-		return ['object', undef]
+			throw new Error("className(): Bad input class")
+	else if isObject(item)
+		return item.constructor.name
 	else
-		throw new Error("Unknown type: #{OL(x)}")
+		return undef
+
+# ---------------------------------------------------------------------------
+
+export isScalar = (x) =>
+
+	return isNumber(x) || isString(x) || isBoolean(x)
 
 # ---------------------------------------------------------------------------
 #   isEmpty
 #      - string is whitespace, array has no elements, hash has no keys
 
-export isEmpty = (x) ->
+export isEmpty = (x) =>
 
 	if (x == undef) || (x == null)
 		return true
@@ -427,23 +516,14 @@ export isEmpty = (x) ->
 #   nonEmpty
 #      - string has non-whitespace, array has elements, hash has keys
 
-export nonEmpty = (x) ->
+export nonEmpty = (x) =>
 
-	if notdefined(x)
-		return false
-	if isString(x)
-		return ! x.match(/^\s*$/)
-	if isArray(x)
-		return x.length > 0
-	if isHash(x)
-		return Object.keys(x).length > 0
-	else
-		return defined(x)
+	return ! isEmpty(x)
 
 # ---------------------------------------------------------------------------
 #   blockToArray - split a block into lines
 
-export blockToArray = (block) ->
+export blockToArray = (block) =>
 
 	if (block == undef) || (block == '')
 		return []
@@ -453,26 +533,9 @@ export blockToArray = (block) ->
 		return lLines
 
 # ---------------------------------------------------------------------------
-
-export toArray = (item) ->
-
-	if isArray(item)
-		# --- We need to split any strings containing a \n
-		lLines = []
-		for line in item
-			if hasChar(line, "\n")
-				for str in line.split(/\r?\n/)
-					lLines.push str
-			else
-				lLines.push line
-		return lLines
-	else
-		return blockToArray(item)
-
-# ---------------------------------------------------------------------------
 #   arrayToBlock - block and lines in block will have no trailing whitespace
 
-export arrayToBlock = (lLines, hEsc=undef) ->
+export arrayToBlock = (lLines, hEsc=undef) =>
 
 	if (lLines == undef)
 		return ''
@@ -491,7 +554,7 @@ export arrayToBlock = (lLines, hEsc=undef) ->
 
 # ---------------------------------------------------------------------------
 
-export toBlock = (item) ->
+export toBlock = (item) =>
 
 	if isString(item)
 		return item
@@ -500,32 +563,33 @@ export toBlock = (item) ->
 
 # ---------------------------------------------------------------------------
 
-export chomp = (str) ->
+export toArray = (item) =>
 
-	len = str.length
-	if (len == 0)
-		return ''
-	else if (len == 1)
-		if (str == "\r") || (str == "\n")
-			return ''
-		else
-			return str
-	else
-		# --- check the last 2 characters
-		tail = str.substring(len-2)
-		if (tail == "\r\n")
-			return str.substring(0, len-2)
-		else
-			tail = str.substring(len-1)
-			if (tail == "\n")
-				return str.substring(0, len-1)
+	if isArray(item)
+		# --- We need to split any strings containing a \n
+		lLines = []
+		for line in item
+			if hasChar(line, "\n")
+				for str in line.split(/\r?\n/)
+					lLines.push str
 			else
-				return str
+				lLines.push line
+		return lLines
+	else
+		return blockToArray(item)
+
+# ---------------------------------------------------------------------------
+
+export prefixBlock = (block, prefix) =>
+
+	lLines = for line in toArray(block)
+		"#{prefix}#{line}"
+	return toBlock(lLines)
 
 # ---------------------------------------------------------------------------
 #   rtrim - strip trailing whitespace
 
-export rtrim = (line) ->
+export rtrim = (line) =>
 
 	assert isString(line), "rtrim(): line is not a string"
 	lMatches = line.match(/\s+$/)
@@ -537,62 +601,7 @@ export rtrim = (line) ->
 
 # ---------------------------------------------------------------------------
 
-export setCharsAt = (str, pos, str2) ->
-
-	assert (pos >= 0), "negative pos #{pos} not allowed"
-	assert (pos < str.length), "pos #{pos} not in #{OL(str)}"
-	if (pos + str2.length >= str.length)
-		return str.substring(0, pos) + str2
-	else
-		return str.substring(0, pos) + str2 + str.substring(pos + str2.length)
-
-# ---------------------------------------------------------------------------
-
-export words = (lStrings...) ->
-
-	lWords = []
-	for str in lStrings
-		str = str.trim()
-		if (str != '')
-			for word in str.split(/\s+/)
-				lWords.push word
-	return lWords
-
-# ---------------------------------------------------------------------------
-
-export firstWord = (str) =>
-
-	pos = str.indexOf(' ')
-	if (pos == -1)
-		return str
-	else
-		return str.substring(0, pos)
-
-# ---------------------------------------------------------------------------
-
-export getOptions = (options=undef, hDefault={}) ->
-
-	[type, subtype] = jsType(options)
-	switch type
-		when undef
-			hOptions = {}
-		when 'hash'
-			hOptions = options
-		when 'string'
-			hOptions = hashFromString(options)
-		else
-			throw new Error("options not hash or string: #{OL(options)}")
-
-	# --- Fill in defaults for missing values
-	for own key,value of hDefault
-		if ! hOptions.hasOwnProperty(key)
-			hOptions[key] = value
-
-	return hOptions
-
-# ---------------------------------------------------------------------------
-
-export hashFromString = (str) ->
+hashFromString = (str) =>
 
 	assert isString(str), "not a string: #{OL(str)}"
 	h = {}
@@ -621,7 +630,29 @@ export hashFromString = (str) ->
 
 # ---------------------------------------------------------------------------
 
-export range = (n) ->
+export getOptions = (options=undef, hDefault={}) =>
+
+	[type, subtype] = jsType(options)
+	switch type
+		when undef
+			hOptions = {}
+		when 'hash'
+			hOptions = options
+		when 'string'
+			hOptions = hashFromString(options)
+		else
+			throw new Error("options not hash or string: #{OL(options)}")
+
+	# --- Fill in defaults for missing values
+	for own key,value of hDefault
+		if ! hOptions.hasOwnProperty(key)
+			hOptions[key] = value
+
+	return hOptions
+
+# ---------------------------------------------------------------------------
+
+export range = (n) =>
 
 	return [0..n-1]
 
@@ -631,3 +662,57 @@ export warn = (msg) =>
 
 	console.log "WARNING: #{msg}"
 	return
+
+# ---------------------------------------------------------------------------
+
+export uniq = (lItems) =>
+
+	return [...new Set(lItems)]
+
+# ---------------------------------------------------------------------------
+#   say - print to the console (for now)
+#         later, on a web page, call alert(str)
+
+export say = (x) =>
+
+	if isHash(x)
+		LOG JSON.stringify(x, Object.keys(h).sort(), 3)
+	else
+		LOG x
+	return
+
+# ---------------------------------------------------------------------------
+
+export extractMatches = (line, regexp, convertFunc=undef) =>
+
+	lStrings = [...line.matchAll(regexp)]
+	lStrings = for str in lStrings
+		str[0]
+	if defined(convertFunc)
+		lConverted = for str in lStrings
+			convertFunc(str)
+		return lConverted
+	else
+		return lStrings
+
+# ---------------------------------------------------------------------------
+
+export getTimeStr = (date=undef) =>
+
+	if date == undef
+		date = new Date()
+	return date.toLocaleTimeString('en-US')
+
+# ---------------------------------------------------------------------------
+
+export getDateStr = (date=undef) =>
+
+	if date == undef
+		date = new Date()
+	return date.toLocaleDateString('en-US')
+
+# ---------------------------------------------------------------------------
+
+export timestamp = () =>
+
+	return new Date().toLocaleTimeString("en-US")

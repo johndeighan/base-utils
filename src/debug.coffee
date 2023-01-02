@@ -6,7 +6,7 @@ import {
 	isIdentifier, isFunctionName,
 	isString, isFunction, isArray, isHash, isBoolean, isInteger,
 	isEmpty, nonEmpty, arrayToBlock, getOptions,
-	words, firstWord, inList, oneof, jsType, blockToArray,
+	words, inList, oneof, jsType, blockToArray,
 	} from '@jdeighan/base-utils'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {
@@ -556,10 +556,6 @@ export getType = (label, lValues=[]) ->
 			(?: \( \) )?
 			$///)
 		return ['returnFrom', lMatches[1]]
-
-	# --- Check for deprecated forms
-	assert ! oneof(firstWord(label), 'enter','returnFrom','yield','resume'),
-		"deprecated form for debug(): #{OL(label)}"
 
 	# --- if none of the above returned, then...
 	if (lValues.length == 1)

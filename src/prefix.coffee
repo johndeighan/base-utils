@@ -1,7 +1,7 @@
 # prefix.coffee
 
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
-import {undef, OL, setCharsAt} from '@jdeighan/base-utils'
+import {undef, OL} from '@jdeighan/base-utils'
 
 # --- We use spaces here because Windows Terminal handles TAB chars badly
 
@@ -54,6 +54,19 @@ export getPrefix = (level, option='none') ->
 			return oneIndent.repeat(level-1) + fourSpaces
 		else
 			return fourSpaces.repeat(level)
+
+# ---------------------------------------------------------------------------
+
+setCharsAt = (str, pos, str2) =>
+
+	assert (pos >= 0), "negative pos #{pos} not allowed"
+	assert (pos < str.length), "pos #{pos} not in #{OL(str)}"
+	if (pos + str2.length >= str.length)
+		return str.substring(0, pos) + str2
+	else
+		return str.substring(0, pos) \
+				+ str2 \
+				+ str.substring(pos + str2.length)
 
 # ---------------------------------------------------------------------------
 

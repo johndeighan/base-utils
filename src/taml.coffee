@@ -4,9 +4,9 @@ import yaml from 'js-yaml'
 
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
-	undef, defined, notdefined, OL, chomp, hasChar,
+	undef, defined, notdefined, OL, hasChar,
 	isEmpty, isString, isFunction, isBoolean, isArray,
-	blockToArray, arrayToBlock, escapeStr,
+	blockToArray, arrayToBlock, escapeStr, rtrim,
 	} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
@@ -126,7 +126,7 @@ export toTAML = (obj, hOptions={sortKeys: true}) ->
 	str = str.replace(/<UNDEFINED_VALUE>/g, 'undef')
 	if useTabs
 		str = str.replace(/   /g, "\t")
-	return "---\n" + chomp(str)
+	return "---\n" + rtrim(str)
 
 # ---------------------------------------------------------------------------
 

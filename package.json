@@ -12,7 +12,8 @@
 		"./prefix": "./src/prefix.js",
 		"./taml": "./src/taml.js",
 		"./exceptions": "./src/exceptions.js",
-		"./v8-stack": "./src/v8-stack.js"
+		"./v8-stack": "./src/v8-stack.js",
+		"./utest": "./src/SimpleUnitTester.js"
 	},
 	"scripts": {
 		"build": "cls && coffee -c .",

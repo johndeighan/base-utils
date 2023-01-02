@@ -27,7 +27,6 @@ import {
   arrayToBlock,
   getOptions,
   words,
-  firstWord,
   inList,
   oneof,
   jsType,
@@ -631,8 +630,6 @@ export var getType = function(label, lValues = []) {
   if (lMatches = label.match(/^return\s+from\s+([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)?)(?:\(\))?$/)) {
     return ['returnFrom', lMatches[1]];
   }
-  // --- Check for deprecated forms
-  assert(!oneof(firstWord(label), 'enter', 'returnFrom', 'yield', 'resume'), `deprecated form for debug(): ${OL(label)}`);
   // --- if none of the above returned, then...
   if (lValues.length === 1) {
     return ['value', undef];
