@@ -63,6 +63,29 @@ export CWS = (str) =>
 	return str.trim().replace(/\s+/sg, ' ')
 
 # ---------------------------------------------------------------------------
+#    tabify - convert leading spaces to TAB characters
+#             if numSpaces is not defined, then the first line
+#             that contains at least one space sets it
+
+export tabify = (str, numSpaces=undef) ->
+
+	lLines = []
+	for str in toArray(str)
+		[_, prefix, theRest] = str.match(/^(\s*)(.*)$/)
+		prefixLen = prefix.length
+		if prefixLen == 0
+			lLines.push theRest
+		else
+			assert (prefix.indexOf('\t') == -1), "found TAB"
+			if numSpaces == undef
+				numSpaces = prefixLen
+			assert (prefixLen % numSpaces == 0), "Bad prefix"
+			level = prefixLen / numSpaces
+			lLines.push '\t'.repeat(level) + theRest
+	result = toBlock(lLines)
+	return result
+
+# ---------------------------------------------------------------------------
 
 export untabify = (str, numSpaces=3) =>
 

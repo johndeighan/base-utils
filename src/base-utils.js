@@ -57,6 +57,34 @@ export var CWS = (str) => {
 };
 
 // ---------------------------------------------------------------------------
+//    tabify - convert leading spaces to TAB characters
+//             if numSpaces is not defined, then the first line
+//             that contains at least one space sets it
+export var tabify = function(str, numSpaces = undef) {
+  var _, i, lLines, len, level, prefix, prefixLen, ref, result, theRest;
+  lLines = [];
+  ref = toArray(str);
+  for (i = 0, len = ref.length; i < len; i++) {
+    str = ref[i];
+    [_, prefix, theRest] = str.match(/^(\s*)(.*)$/);
+    prefixLen = prefix.length;
+    if (prefixLen === 0) {
+      lLines.push(theRest);
+    } else {
+      assert(prefix.indexOf('\t') === -1, "found TAB");
+      if (numSpaces === undef) {
+        numSpaces = prefixLen;
+      }
+      assert(prefixLen % numSpaces === 0, "Bad prefix");
+      level = prefixLen / numSpaces;
+      lLines.push('\t'.repeat(level) + theRest);
+    }
+  }
+  result = toBlock(lLines);
+  return result;
+};
+
+// ---------------------------------------------------------------------------
 export var untabify = (str, numSpaces = 3) => {
   return str.replace(/\t/g, ' '.repeat(numSpaces));
 };
