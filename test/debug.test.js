@@ -43,6 +43,8 @@ import {
   stdLogString
 } from '@jdeighan/base-utils/debug';
 
+setDebugging(undef, 'noecho');
+
 // ---------------------------------------------------------------------------
 test("line 24", (t) => {
   clearDebugLog();
@@ -105,17 +107,17 @@ gen = function*() {
 // ---------------------------------------------------------------------------
 hTestNumbers = {};
 
-TEST = function(lineNum, options, func, expectedDbg, expectedLog) {
+TEST = function(lineNum, debugWhat, func, expectedDbg, expectedLog) {
   var dbgStr, logStr;
   // --- Make sure test numbers are unique
   while (hTestNumbers[lineNum]) {
     lineNum += 1000;
   }
   hTestNumbers[lineNum] = true;
-  if (defined(options)) {
-    setDebugging(options);
+  if (defined(debugWhat)) {
+    setDebugging(debugWhat, 'noecho');
   } else {
-    setDebugging(false);
+    setDebugging(false, 'noecho');
   }
   callStack.logCalls(true);
   clearAllLogs();

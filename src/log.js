@@ -74,7 +74,11 @@ hEchoLogs = {}; // { <source> => true }
 export var echoMyLogs = (flag = true) => {
   var caller;
   caller = getMyOutsideCaller().source;
-  hEchoLogs[caller] = flag;
+  if (flag) {
+    hEchoLogs[caller] = true;
+  } else {
+    delete hEchoLogs[caller];
+  }
 };
 
 // ---------------------------------------------------------------------------

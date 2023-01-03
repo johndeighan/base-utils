@@ -32,7 +32,10 @@ hEchoLogs = {}     # { <source> => true }
 export echoMyLogs = (flag=true) =>
 
 	caller = getMyOutsideCaller().source
-	hEchoLogs[caller] = flag
+	if flag
+		hEchoLogs[caller] = true
+	else
+		delete hEchoLogs[caller]
 	return
 
 # ---------------------------------------------------------------------------

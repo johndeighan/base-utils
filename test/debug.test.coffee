@@ -19,6 +19,8 @@ import {
 	clearDebugLog, getDebugLog, stdLogString,
 	} from '@jdeighan/base-utils/debug'
 
+setDebugging undef, 'noecho'
+
 # ---------------------------------------------------------------------------
 
 test "line 24", (t) =>
@@ -84,17 +86,17 @@ gen = () ->
 
 hTestNumbers = {}
 
-TEST = (lineNum, options, func, expectedDbg, expectedLog) ->
+TEST = (lineNum, debugWhat, func, expectedDbg, expectedLog) ->
 
 	# --- Make sure test numbers are unique
 	while (hTestNumbers[lineNum])
 		lineNum += 1000
 	hTestNumbers[lineNum] = true
 
-	if defined(options)
-		setDebugging options
+	if defined(debugWhat)
+		setDebugging debugWhat, 'noecho'
 	else
-		setDebugging false
+		setDebugging false, 'noecho'
 
 	callStack.logCalls true
 	clearAllLogs()
@@ -116,7 +118,6 @@ TEST = (lineNum, options, func, expectedDbg, expectedLog) ->
 # ---------------------------------------------------------------------------
 
 (() ->
-
 	TEST 107, undef, main, undef, """
 		26
 		14
@@ -128,7 +129,6 @@ TEST = (lineNum, options, func, expectedDbg, expectedLog) ->
 # ---------------------------------------------------------------------------
 
 (() ->
-
 	TEST 119, 'main', main, """
 		enter main
 		└─> return from main

@@ -55,6 +55,10 @@ import {
   CallStack
 } from '@jdeighan/base-utils/stack';
 
+import {
+  getV8StackStr
+} from '@jdeighan/base-utils/v8-stack';
+
 export {
   debugLogging
 };
@@ -138,7 +142,7 @@ export var setDebugging = function(debugWhat = undef, hOptions = {}) {
   //        2. a string
   //        3. an array of strings
   // --- Valid options:
-  //        'echo' - echo logs to console
+  //        'noecho' - don't echo logs to console
   //        'enter','returnFrom','yield','resume','string','value'
   //           - to set a custom logger
   if (internalDebugging) {
@@ -158,10 +162,15 @@ export var setDebugging = function(debugWhat = undef, hOptions = {}) {
   
   // --- First, process any options
   hOptions = getOptions(hOptions);
-  if (hOptions.echo) {
-    echoMyLogs();
+  if (hOptions.noecho) {
+    echoMyLogs(false);
     if (internalDebugging) {
-      console.log("turn on echo");
+      console.log("TURN OFF ECHO");
+    }
+  } else {
+    echoMyLogs(true);
+    if (internalDebugging) {
+      console.log("TURN ON ECHO");
     }
   }
   ref = words('enter returnFrom yield resume string value');
@@ -653,4 +662,4 @@ export var parseFunc = function(str) {
 };
 
 // ---------------------------------------------------------------------------
-setDebugging();
+setDebugging(undef, 'noecho');
