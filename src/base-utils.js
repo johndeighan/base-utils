@@ -9,7 +9,21 @@ export const undef = void 0;
 
 // ---------------------------------------------------------------------------
 export var isHashComment = (line) => {
-  return line.match(/^\s*\#($|\s)/);
+  var _, lMatches, prefix, text, ws;
+  // --- true if:
+  //        - 1st non-ws char is a '#'
+  //        - '#' is either followed by a ws char or by nothing
+  lMatches = line.match(/^(\s*)\#(\s*)(.*)$/);
+  if (defined(lMatches)) {
+    [_, prefix, ws, text] = lMatches;
+    if ((ws.length > 0) || (text.length === 0)) {
+      return {prefix, ws, text};
+    } else {
+      return undef;
+    }
+  } else {
+    return undef;
+  }
 };
 
 // ---------------------------------------------------------------------------

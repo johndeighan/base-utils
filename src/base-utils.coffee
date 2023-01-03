@@ -7,8 +7,28 @@ import assert from 'node:assert/strict'
 # ---------------------------------------------------------------------------
 
 export isHashComment = (line) =>
+	# --- true if:
+	#        - 1st non-ws char is a '#'
+	#        - '#' is either followed by a ws char or by nothing
 
-	return line.match(/^\s*\#($|\s)/)
+	lMatches = line.match(///^
+			(\s*)
+			\#
+			(\s*)
+			(.*)
+			$///)
+	if defined(lMatches)
+		[_, prefix, ws, text] = lMatches
+		if (ws.length > 0) || (text.length == 0)
+			return {
+				prefix
+				ws
+				text
+				}
+		else
+			return undef
+	else
+		return undef
 
 # ---------------------------------------------------------------------------
 #   pass - do nothing
