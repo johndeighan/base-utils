@@ -3,7 +3,7 @@
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	pass, undef, defined, notdefined, OL, OLS,
-	isIdentifier, isFunctionName,
+	isIdentifier, isFunctionName, isArrayOfStrings,
 	isString, isFunction, isArray, isHash, isBoolean, isInteger,
 	isEmpty, nonEmpty, arrayToBlock, getOptions,
 	words, inList, oneof, jsType, blockToArray,
@@ -217,7 +217,7 @@ export getFuncList = (funcs) ->
 
 export dbgEnter = (funcName, lValues...) ->
 
-	doLog = logAll || funcMatch(funcName)
+	doLog = doDebugFunc(funcName)
 	if internalDebugging
 		if (lValues.length == 0)
 			console.log "dbgEnter #{OL(funcName)}"
@@ -232,6 +232,12 @@ export dbgEnter = (funcName, lValues...) ->
 
 	callStack.enter funcName, lValues, doLog
 	return true
+
+# ---------------------------------------------------------------------------
+
+export doDebugFunc = (funcName) ->
+
+	return logAll || funcMatch(funcName)
 
 # ---------------------------------------------------------------------------
 

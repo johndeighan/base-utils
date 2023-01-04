@@ -16,6 +16,7 @@ import {
   OLS,
   isIdentifier,
   isFunctionName,
+  isArrayOfStrings,
   isString,
   isFunction,
   isArray,
@@ -286,7 +287,7 @@ export var getFuncList = function(funcs) {
 // ---------------------------------------------------------------------------
 export var dbgEnter = function(funcName, ...lValues) {
   var doLog, level;
-  doLog = logAll || funcMatch(funcName);
+  doLog = doDebugFunc(funcName);
   if (internalDebugging) {
     if (lValues.length === 0) {
       console.log(`dbgEnter ${OL(funcName)}`);
@@ -303,6 +304,11 @@ export var dbgEnter = function(funcName, ...lValues) {
   }
   callStack.enter(funcName, lValues, doLog);
   return true;
+};
+
+// ---------------------------------------------------------------------------
+export var doDebugFunc = function(funcName) {
+  return logAll || funcMatch(funcName);
 };
 
 // ---------------------------------------------------------------------------
