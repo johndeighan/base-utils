@@ -62,6 +62,15 @@ export tabs = (n) =>
 	return "\t".repeat(n)
 
 # ---------------------------------------------------------------------------
+
+export centeredText = (text, width) =>
+
+	totSpaces = width - text.length
+	numLeft = Math.floor(totSpaces / 2)
+	numRight = totSpaces = numLeft
+	return spaces(numLeft) + text + spaces(numRight)
+
+# ---------------------------------------------------------------------------
 #   rtrunc - strip nChars chars from right of a string
 
 export rtrunc = (str, nChars) =>

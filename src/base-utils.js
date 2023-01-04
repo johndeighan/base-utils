@@ -53,6 +53,15 @@ export var tabs = (n) => {
 };
 
 // ---------------------------------------------------------------------------
+export var centeredText = (text, width) => {
+  var numLeft, numRight, totSpaces;
+  totSpaces = width - text.length;
+  numLeft = Math.floor(totSpaces / 2);
+  numRight = totSpaces = numLeft;
+  return spaces(numLeft) + text + spaces(numRight);
+};
+
+// ---------------------------------------------------------------------------
 //   rtrunc - strip nChars chars from right of a string
 export var rtrunc = (str, nChars) => {
   return str.substring(0, str.length - nChars);

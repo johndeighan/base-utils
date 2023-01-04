@@ -144,8 +144,10 @@ export var setDebugging = function(debugWhat = undef, hOptions = {}) {
   //        3. an array of strings
   // --- Valid options:
   //        'noecho' - don't echo logs to console
-  //        'enter','returnFrom','yield','resume','string','value'
-  //           - to set a custom logger
+  //        'enter', 'returnFrom',
+  //           'yield', 'resume',
+  //           'string', 'value'
+  //         - to set custom loggers
   if (internalDebugging) {
     console.log(`setDebugging ${OL(debugWhat)}, ${OL(hOptions)}`);
   }

@@ -23,6 +23,7 @@ import {
   blockToArray,
   arrayToBlock,
   prefixBlock,
+  centeredText,
   isNumber,
   isInteger,
   isString,
@@ -132,22 +133,42 @@ export var getAllLogs = () => {
 };
 
 // ---------------------------------------------------------------------------
-export var dumpLog = (label, theLog, hOptions = {}) => {
+export var getDumpLogStr = (label, theLog, hOptions = {}) => {
+  var escape, lLines, stringified;
   // --- Valid options:
   //        escape - escape space & TAB chars
-  hOptions = getOptions(hOptions);
-  if (!isString(theLog)) {
+  lLines = [];
+  ({escape} = getOptions(hOptions));
+  if (isString(theLog)) {
+    stringified = false;
+  } else if (defined(theLog)) {
     theLog = JSON.stringify(theLog, undef, 3);
-  }
-  console.log("=======================================");
-  console.log(`              ${label}`);
-  console.log("=======================================");
-  if (hOptions.escape) {
-    console.log(escapeStr(theLog, hEscNoNL));
+    stringified = true;
   } else {
-    console.log(theLog.replace(/\t/g, "   "));
+    theLog = 'undef';
+    stringified = true;
   }
-  console.log("=======================================");
+  lLines.push(sep_eq);
+  lLines.push(centeredText(label, logWidth));
+  if (stringified) {
+    lLines.push(sep_dash);
+  } else {
+    lLines.push(sep_eq);
+  }
+  if (escape) {
+    lLines.push(escapeStr(theLog, hEscNoNL));
+  } else {
+    lLines.push(theLog.replace(/\t/g, "   "));
+  }
+  lLines.push(sep_eq);
+  return lLines.join("\n");
+};
+
+// ---------------------------------------------------------------------------
+export var dumpLog = (label, theLog, hOptions = {}) => {
+  var str;
+  str = getDumpLogStr(label, theLog, hOptions);
+  console.log(str);
 };
 
 // ---------------------------------------------------------------------------

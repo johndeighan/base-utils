@@ -4,7 +4,7 @@ import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	pass, undef, defined, notdefined, deepCopy, getOptions,
 	hEsc, escapeStr, OL, untabify, isObject, rtrim,
-	blockToArray, arrayToBlock, prefixBlock,
+	blockToArray, arrayToBlock, prefixBlock, centeredText,
 	isNumber, isInteger, isString, isHash, isFunction, isBoolean,
 	isEmpty, nonEmpty, hEscNoNL, jsType, hasChar, quoted,
 	} from '@jdeighan/base-utils'
@@ -84,22 +84,42 @@ export getAllLogs = () =>
 
 # ---------------------------------------------------------------------------
 
-export dumpLog = (label, theLog, hOptions={}) =>
+export getDumpLogStr = (label, theLog, hOptions={}) =>
 	# --- Valid options:
 	#        escape - escape space & TAB chars
 
-	hOptions = getOptions(hOptions)
-	if ! isString(theLog)
+	lLines = []
+	{escape} = getOptions(hOptions)
+	if isString(theLog)
+		stringified = false
+	else if defined(theLog)
 		theLog = JSON.stringify(theLog, undef, 3)
-
-	console.log "======================================="
-	console.log "              #{label}"
-	console.log "======================================="
-	if hOptions.escape
-		console.log escapeStr(theLog, hEscNoNL)
+		stringified = true
 	else
-		console.log theLog.replace(/\t/g, "   ")
-	console.log "======================================="
+		theLog = 'undef'
+		stringified = true
+
+	lLines.push sep_eq
+	lLines.push centeredText(label, logWidth)
+
+	if stringified
+		lLines.push sep_dash
+	else
+		lLines.push sep_eq
+
+	if escape
+		lLines.push escapeStr(theLog, hEscNoNL)
+	else
+		lLines.push theLog.replace(/\t/g, "   ")
+	lLines.push sep_eq
+	return lLines.join("\n")
+
+# ---------------------------------------------------------------------------
+
+export dumpLog = (label, theLog, hOptions={}) =>
+
+	str = getDumpLogStr(label, theLog, hOptions)
+	console.log str
 	return
 
 # ---------------------------------------------------------------------------
