@@ -88,6 +88,24 @@ logType = (cur, std) ->
 
 # ---------------------------------------------------------------------------
 
+export resetDebugging = () =>
+
+	# --- reset everything
+	callStack.reset()
+	lFuncList = []
+	logAll = false
+	logEnter  = stdLogEnter
+	logReturn = stdLogReturn
+	logYield  = stdLogYield
+	logResume = stdLogResume
+	logString = stdLogString
+	logValue  = stdLogValue
+	clearMyLogs()
+	echoMyLogs false
+	return
+
+# ---------------------------------------------------------------------------
+
 export setDebugging = (debugWhat=undef, hOptions={}) ->
 	# --- debugWhat can be:
 	#        1. a boolean
@@ -103,16 +121,7 @@ export setDebugging = (debugWhat=undef, hOptions={}) ->
 	if internalDebugging
 		console.log "setDebugging #{OL(debugWhat)}, #{OL(hOptions)}"
 
-	# --- reset everything
-	callStack.reset()
-	lFuncList = []
-	logAll = false
-	logEnter  = stdLogEnter
-	logReturn = stdLogReturn
-	logYield  = stdLogYield
-	logResume = stdLogResume
-	logString = stdLogString
-	logValue  = stdLogValue
+	resetDebugging()
 
 	customSet = false     # were any custom loggers set?
 
@@ -600,4 +609,4 @@ export parseFunc = (str) ->
 
 # ---------------------------------------------------------------------------
 
-setDebugging undef, 'noecho'
+resetDebugging()

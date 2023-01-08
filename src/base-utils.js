@@ -179,7 +179,7 @@ export var OLS = (lObjects, sep = ',') => {
 
 // ---------------------------------------------------------------------------
 export var quoted = (str, escape = undef) => {
-  assert(isString(str), "not a string");
+  assert(isString(str), `not a string: ${str}`);
   switch (escape) {
     case 'escape':
       str = escapeStr(str);

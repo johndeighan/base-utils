@@ -136,6 +136,22 @@ logType = function(cur, std) {
 };
 
 // ---------------------------------------------------------------------------
+export var resetDebugging = () => {
+  // --- reset everything
+  callStack.reset();
+  lFuncList = [];
+  logAll = false;
+  logEnter = stdLogEnter;
+  logReturn = stdLogReturn;
+  logYield = stdLogYield;
+  logResume = stdLogResume;
+  logString = stdLogString;
+  logValue = stdLogValue;
+  clearMyLogs();
+  echoMyLogs(false);
+};
+
+// ---------------------------------------------------------------------------
 export var setDebugging = function(debugWhat = undef, hOptions = {}) {
   var customSet, j, key, len, ref, subtype, type;
   // --- debugWhat can be:
@@ -151,16 +167,7 @@ export var setDebugging = function(debugWhat = undef, hOptions = {}) {
   if (internalDebugging) {
     console.log(`setDebugging ${OL(debugWhat)}, ${OL(hOptions)}`);
   }
-  // --- reset everything
-  callStack.reset();
-  lFuncList = [];
-  logAll = false;
-  logEnter = stdLogEnter;
-  logReturn = stdLogReturn;
-  logYield = stdLogYield;
-  logResume = stdLogResume;
-  logString = stdLogString;
-  logValue = stdLogValue;
+  resetDebugging();
   customSet = false; // were any custom loggers set?
   
   // --- First, process any options
@@ -670,4 +677,4 @@ export var parseFunc = function(str) {
 };
 
 // ---------------------------------------------------------------------------
-setDebugging(undef, 'noecho');
+resetDebugging();

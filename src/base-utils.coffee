@@ -185,7 +185,7 @@ export OLS = (lObjects, sep=',') =>
 
 export quoted = (str, escape=undef) =>
 
-	assert isString(str), "not a string"
+	assert isString(str), "not a string: #{str}"
 	switch escape
 		when 'escape'
 			str = escapeStr(str)
