@@ -807,5 +807,5 @@ export getDumpStr = (label, str, hOptions={}) =>
 
 export DUMP = (label, obj, hOptions={}) =>
 
-	console.log getDumpLogStr(label, obj, hOptions)
+	console.log getDumpStr(label, obj, hOptions)
 	return

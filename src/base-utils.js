@@ -912,5 +912,5 @@ export var getDumpStr = (label, str, hOptions = {}) => {
 
 // ---------------------------------------------------------------------------
 export var DUMP = (label, obj, hOptions = {}) => {
-  console.log(getDumpLogStr(label, obj, hOptions));
+  console.log(getDumpStr(label, obj, hOptions));
 };
