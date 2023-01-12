@@ -20,6 +20,7 @@ import {
   untabify,
   isObject,
   rtrim,
+  DUMP,
   blockToArray,
   arrayToBlock,
   prefixBlock,
@@ -133,42 +134,8 @@ export var getAllLogs = () => {
 };
 
 // ---------------------------------------------------------------------------
-export var getDumpLogStr = (label, theLog, hOptions = {}) => {
-  var escape, lLines, stringified;
-  // --- Valid options:
-  //        escape - escape space & TAB chars
-  lLines = [];
-  ({escape} = getOptions(hOptions));
-  if (isString(theLog)) {
-    stringified = false;
-  } else if (defined(theLog)) {
-    theLog = JSON.stringify(theLog, undef, 3);
-    stringified = true;
-  } else {
-    theLog = 'undef';
-    stringified = true;
-  }
-  lLines.push(sep_eq);
-  lLines.push(centeredText(label, logWidth));
-  if (stringified) {
-    lLines.push(sep_dash);
-  } else {
-    lLines.push(sep_eq);
-  }
-  if (escape) {
-    lLines.push(escapeStr(theLog, hEscNoNL));
-  } else {
-    lLines.push(theLog.replace(/\t/g, "   "));
-  }
-  lLines.push(sep_eq);
-  return lLines.join("\n");
-};
-
-// ---------------------------------------------------------------------------
 export var dumpLog = (label, theLog, hOptions = {}) => {
-  var str;
-  str = getDumpLogStr(label, theLog, hOptions);
-  console.log(str);
+  DUMP(label, theLog, hOptions);
 };
 
 // ---------------------------------------------------------------------------

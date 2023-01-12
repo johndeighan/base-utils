@@ -16,8 +16,18 @@ export var isHashComment = (line) => {
   lMatches = line.match(/^(\s*)\#(\s*)(.*)$/);
   if (defined(lMatches)) {
     [_, prefix, ws, text] = lMatches;
-    if ((ws.length > 0) || (text.length === 0)) {
-      return {prefix, ws, text};
+    if (text.length === 0) {
+      return {
+        prefix,
+        ws,
+        text: ''
+      };
+    } else if (ws.length > 0) {
+      return {
+        prefix,
+        ws,
+        text: text.trim()
+      };
     } else {
       return undef;
     }
@@ -862,4 +872,45 @@ export var getDateStr = (date = undef) => {
 // ---------------------------------------------------------------------------
 export var timestamp = () => {
   return new Date().toLocaleTimeString("en-US");
+};
+
+// ---------------------------------------------------------------------------
+export var getDumpStr = (label, str, hOptions = {}) => {
+  var escape, lLines, stringified, width;
+  // --- Valid options:
+  //        escape - escape space & TAB chars
+  //        width
+  lLines = [];
+  ({escape, width} = getOptions(hOptions, {
+    escape: false,
+    width: 42
+  }));
+  if (isString(str)) {
+    stringified = false;
+  } else if (defined(str)) {
+    str = JSON.stringify(str, undef, 3);
+    stringified = true;
+  } else {
+    str = 'undef';
+    stringified = true;
+  }
+  lLines.push('='.repeat(width));
+  lLines.push(centeredText(label, width));
+  if (stringified) {
+    lLines.push('-'.repeat(width));
+  } else {
+    lLines.push('='.repeat(width));
+  }
+  if (escape) {
+    lLines.push(escapeStr(str, hEscNoNL));
+  } else {
+    lLines.push(str.replace(/\t/g, "   "));
+  }
+  lLines.push('='.repeat(width));
+  return lLines.join("\n");
+};
+
+// ---------------------------------------------------------------------------
+export var DUMP = (label, obj, hOptions = {}) => {
+  console.log(getDumpLogStr(label, obj, hOptions));
 };
