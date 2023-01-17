@@ -37,6 +37,15 @@ export var isHashComment = (line) => {
 };
 
 // ---------------------------------------------------------------------------
+export var splitPrefix = (line) => {
+  var lMatches;
+  assert(isString(line), `non-string ${OL(line)}`);
+  line = rtrim(line);
+  lMatches = line.match(/^(\s*)(.*)$/);
+  return [lMatches[1], lMatches[2]];
+};
+
+// ---------------------------------------------------------------------------
 //   pass - do nothing
 export var pass = () => {
   return true;
