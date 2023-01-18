@@ -134,9 +134,19 @@ export untabify = (str, numSpaces=3) =>
 # ---------------------------------------------------------------------------
 
 export forEachLine = (item, func) =>
+	# --- callback to func() gets arguments:
+	#        line - each line
+	#        hInfo - with keys lineNum and nextLine
+	# Return value should be:
+	#    true - to stop prematurely
+	#    false - to continue
 
-	for line in toArray(item)
-		result = func(line)
+	lInput = toArray(item)
+	for line,i in lInput
+		result = func(line, {
+			lineNum: i+1
+			nextLine: lInput[i+1]
+			})
 		assert isBoolean(result), "result must be a boolean, got #{OL(result)}"
 		if result   # return of true causes premature exit
 			return
@@ -145,10 +155,21 @@ export forEachLine = (item, func) =>
 # ---------------------------------------------------------------------------
 
 export mapEachLine = (item, func) =>
+	# --- callback to func() gets arguments:
+	#        line - each line
+	#        hInfo - with keys lineNum and nextLine
+	# Return value should be:
+	#    undef - to skip this line
+	#    else value to include
 
-	lLines = []
-	for str in toArray(item)
-		if defined(result = func(str))
+	lLines = []    # return value
+	lInput = toArray(item)
+	for line,i in lInput
+		result = func(line, {
+			lineNum: i+1
+			nextLine: lInput[i+1]
+			})
+		if defined(result)
 			lLines.push result
 	if isArray(item)
 		return lLines

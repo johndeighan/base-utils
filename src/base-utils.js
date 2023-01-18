@@ -104,11 +104,11 @@ export var splitPrefix = (line) => {
 //             that contains at least one space sets it
 // --- Works on both blocks and arrays - returns same kind of item
 export var tabify = function(item, numSpaces = undef) {
-  var i, lLines, len, level, prefix, prefixLen, ref, result, str, theRest;
+  var j, lLines, len, level, prefix, prefixLen, ref, result, str, theRest;
   lLines = [];
   ref = toArray(item);
-  for (i = 0, len = ref.length; i < len; i++) {
-    str = ref[i];
+  for (j = 0, len = ref.length; j < len; j++) {
+    str = ref[j];
     [prefix, theRest] = splitPrefix(str);
     prefixLen = prefix.length;
     if (prefixLen === 0) {
@@ -138,11 +138,20 @@ export var untabify = (str, numSpaces = 3) => {
 
 // ---------------------------------------------------------------------------
 export var forEachLine = (item, func) => {
-  var i, len, line, ref, result;
-  ref = toArray(item);
-  for (i = 0, len = ref.length; i < len; i++) {
-    line = ref[i];
-    result = func(line);
+  var i, j, lInput, len, line, result;
+  // --- callback to func() gets arguments:
+  //        line - each line
+  //        hInfo - with keys lineNum and nextLine
+  // Return value should be:
+  //    true - to stop prematurely
+  //    false - to continue
+  lInput = toArray(item);
+  for (i = j = 0, len = lInput.length; j < len; i = ++j) {
+    line = lInput[i];
+    result = func(line, {
+      lineNum: i + 1,
+      nextLine: lInput[i + 1]
+    });
     assert(isBoolean(result), `result must be a boolean, got ${OL(result)}`);
     if (result) { // return of true causes premature exit
       return;
@@ -152,12 +161,22 @@ export var forEachLine = (item, func) => {
 
 // ---------------------------------------------------------------------------
 export var mapEachLine = (item, func) => {
-  var i, lLines, len, ref, result, str;
-  lLines = [];
-  ref = toArray(item);
-  for (i = 0, len = ref.length; i < len; i++) {
-    str = ref[i];
-    if (defined(result = func(str))) {
+  var i, j, lInput, lLines, len, line, result;
+  // --- callback to func() gets arguments:
+  //        line - each line
+  //        hInfo - with keys lineNum and nextLine
+  // Return value should be:
+  //    undef - to skip this line
+  //    else value to include
+  lLines = []; // return value
+  lInput = toArray(item);
+  for (i = j = 0, len = lInput.length; j < len; i = ++j) {
+    line = lInput[i];
+    result = func(line, {
+      lineNum: i + 1,
+      nextLine: lInput[i + 1]
+    });
+    if (defined(result)) {
       lLines.push(result);
     }
   }
@@ -223,11 +242,11 @@ export var OL = (obj) => {
 
 // ---------------------------------------------------------------------------
 export var OLS = (lObjects, sep = ',') => {
-  var i, lParts, len, obj;
+  var j, lParts, len, obj;
   assert(isArray(lObjects), "not an array");
   lParts = [];
-  for (i = 0, len = lObjects.length; i < len; i++) {
-    obj = lObjects[i];
+  for (j = 0, len = lObjects.length; j < len; j++) {
+    obj = lObjects[j];
     lParts.push(OL(obj));
   }
   return lParts.join(sep);
@@ -287,11 +306,11 @@ export var escapeStr = function(str, hReplace = hEsc) {
   }
   assert(isString(str), "escapeStr(): not a string");
   lParts = (function() {
-    var i, len, ref, results;
+    var j, len, ref, results;
     ref = str.split('');
     results = [];
-    for (i = 0, len = ref.length; i < len; i++) {
-      ch = ref[i];
+    for (j = 0, len = ref.length; j < len; j++) {
+      ch = ref[j];
       if (defined(hReplace[ch])) {
         results.push(hReplace[ch]);
       } else {
@@ -508,12 +527,12 @@ export var isArray = (x) => {
 
 // ---------------------------------------------------------------------------
 export var isArrayOfHashes = (lItems) => {
-  var i, item, len;
+  var item, j, len;
   if (!isArray(lItems)) {
     return false;
   }
-  for (i = 0, len = lItems.length; i < len; i++) {
-    item = lItems[i];
+  for (j = 0, len = lItems.length; j < len; j++) {
+    item = lItems[j];
     if (defined(item) && !isHash(item)) {
       return false;
     }
@@ -523,12 +542,12 @@ export var isArrayOfHashes = (lItems) => {
 
 // ---------------------------------------------------------------------------
 export var isArrayOfStrings = (lItems) => {
-  var i, item, len;
+  var item, j, len;
   if (!isArray(lItems)) {
     return false;
   }
-  for (i = 0, len = lItems.length; i < len; i++) {
-    item = lItems[i];
+  for (j = 0, len = lItems.length; j < len; j++) {
+    item = lItems[j];
     if (defined(item) && !isString(item)) {
       return false;
     }
@@ -538,15 +557,15 @@ export var isArrayOfStrings = (lItems) => {
 
 // ---------------------------------------------------------------------------
 export var words = (...lStrings) => {
-  var i, j, lWords, len, len1, ref, str, word;
+  var j, k, lWords, len, len1, ref, str, word;
   lWords = [];
-  for (i = 0, len = lStrings.length; i < len; i++) {
-    str = lStrings[i];
+  for (j = 0, len = lStrings.length; j < len; j++) {
+    str = lStrings[j];
     str = str.trim();
     if (str !== '') {
       ref = str.split(/\s+/);
-      for (j = 0, len1 = ref.length; j < len1; j++) {
-        word = ref[j];
+      for (k = 0, len1 = ref.length; k < len1; k++) {
+        word = ref[k];
         lWords.push(word);
       }
     }
@@ -581,7 +600,7 @@ export var isRegExp = (x) => {
 
 // ---------------------------------------------------------------------------
 export var isHash = (x, lKeys) => {
-  var i, key, len;
+  var j, key, len;
   if (jsType(x)[0] !== 'hash') {
     return false;
   }
@@ -591,8 +610,8 @@ export var isHash = (x, lKeys) => {
     } else if (!isArray(lKeys)) {
       throw new Error(`lKeys not an array: ${OL(lKeys)}`);
     }
-    for (i = 0, len = lKeys.length; i < len; i++) {
-      key = lKeys[i];
+    for (j = 0, len = lKeys.length; j < len; j++) {
+      key = lKeys[j];
       if (!x.hasOwnProperty(key)) {
         return false;
       }
@@ -603,7 +622,7 @@ export var isHash = (x, lKeys) => {
 
 // ---------------------------------------------------------------------------
 export var isObject = (x, lReqKeys = undef) => {
-  var _, i, key, lMatches, len, type;
+  var _, j, key, lMatches, len, type;
   if (jsType(x)[0] !== 'object') {
     return false;
   }
@@ -612,8 +631,8 @@ export var isObject = (x, lReqKeys = undef) => {
       lReqKeys = words(lReqKeys);
     }
     assert(isArray(lReqKeys), `lReqKeys not an array: ${OL(lReqKeys)}`);
-    for (i = 0, len = lReqKeys.length; i < len; i++) {
-      key = lReqKeys[i];
+    for (j = 0, len = lReqKeys.length; j < len; j++) {
+      key = lReqKeys[j];
       type = undef;
       if (lMatches = key.match(/^(\&)(.*)$/)) {
         [_, type, key] = lMatches;
@@ -699,14 +718,14 @@ export var blockToArray = (block) => {
 // ---------------------------------------------------------------------------
 //   arrayToBlock - block and lines in block will have no trailing whitespace
 export var arrayToBlock = (lLines, hEsc = undef) => {
-  var i, lResult, len, line, result;
+  var j, lResult, len, line, result;
   if (lLines === undef) {
     return '';
   }
   assert(isArray(lLines), "lLines is not an array");
   lResult = [];
-  for (i = 0, len = lLines.length; i < len; i++) {
-    line = lLines[i];
+  for (j = 0, len = lLines.length; j < len; j++) {
+    line = lLines[j];
     if (defined(line)) {
       lResult.push(rtrim(line));
     }
@@ -733,16 +752,16 @@ export var toBlock = (item) => {
 
 // ---------------------------------------------------------------------------
 export var toArray = (item) => {
-  var i, j, lLines, len, len1, line, ref, str;
+  var j, k, lLines, len, len1, line, ref, str;
   if (isArray(item)) {
     // --- We need to split any strings containing a \n
     lLines = [];
-    for (i = 0, len = item.length; i < len; i++) {
-      line = item[i];
+    for (j = 0, len = item.length; j < len; j++) {
+      line = item[j];
       if (hasChar(line, "\n")) {
         ref = line.split(/\r?\n/);
-        for (j = 0, len1 = ref.length; j < len1; j++) {
-          str = ref[j];
+        for (k = 0, len1 = ref.length; k < len1; k++) {
+          str = ref[k];
           lLines.push(str);
         }
       } else {
@@ -759,11 +778,11 @@ export var toArray = (item) => {
 export var prefixBlock = (block, prefix) => {
   var lLines, line;
   lLines = (function() {
-    var i, len, ref, results;
+    var j, len, ref, results;
     ref = toArray(block);
     results = [];
-    for (i = 0, len = ref.length; i < len; i++) {
-      line = ref[i];
+    for (j = 0, len = ref.length; j < len; j++) {
+      line = ref[j];
       results.push(`${prefix}${line}`);
     }
     return results;
@@ -787,12 +806,12 @@ export var rtrim = (line) => {
 
 // ---------------------------------------------------------------------------
 hashFromString = (str) => {
-  var _, eq, h, i, ident, lMatches, len, neg, ref, word;
+  var _, eq, h, ident, j, lMatches, len, neg, ref, word;
   assert(isString(str), `not a string: ${OL(str)}`);
   h = {};
   ref = words(str);
-  for (i = 0, len = ref.length; i < len; i++) {
-    word = ref[i];
+  for (j = 0, len = ref.length; j < len; j++) {
+    word = ref[j];
     if (lMatches = word.match(/^(\!)?([A-Za-z][A-Za-z_0-9]*)(?:(=)(.*))?$/)) { // negate value
       // identifier
       [_, neg, ident, eq, str] = lMatches;
@@ -844,7 +863,7 @@ export var range = (n) => {
   var ref;
   return (function() {
     var results = [];
-    for (var i = 0, ref = n - 1; 0 <= ref ? i <= ref : i >= ref; 0 <= ref ? i++ : i--){ results.push(i); }
+    for (var j = 0, ref = n - 1; 0 <= ref ? j <= ref : j >= ref; 0 <= ref ? j++ : j--){ results.push(j); }
     return results;
   }).apply(this);
 };
@@ -875,20 +894,20 @@ export var extractMatches = (line, regexp, convertFunc = undef) => {
   var lConverted, lStrings, str;
   lStrings = [...line.matchAll(regexp)];
   lStrings = (function() {
-    var i, len, results;
+    var j, len, results;
     results = [];
-    for (i = 0, len = lStrings.length; i < len; i++) {
-      str = lStrings[i];
+    for (j = 0, len = lStrings.length; j < len; j++) {
+      str = lStrings[j];
       results.push(str[0]);
     }
     return results;
   })();
   if (defined(convertFunc)) {
     lConverted = (function() {
-      var i, len, results;
+      var j, len, results;
       results = [];
-      for (i = 0, len = lStrings.length; i < len; i++) {
-        str = lStrings[i];
+      for (j = 0, len = lStrings.length; j < len; j++) {
+        str = lStrings[j];
         results.push(convertFunc(str));
       }
       return results;
