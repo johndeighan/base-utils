@@ -63,7 +63,9 @@ import {
   className,
   isArrayOfStrings,
   isArrayOfHashes,
-  extractMatches
+  extractMatches,
+  forEachLine,
+  mapEachLine
 } from '@jdeighan/base-utils';
 
 // ---------------------------------------------------------------------------
@@ -1351,3 +1353,112 @@ utest.equal(711, getOptions({
 });
 
 utest.equal(712, getOptions(), {});
+
+// ---------------------------------------------------------------------------
+// --- test forEachLine
+(() => {
+  var block, lResult;
+  lResult = [];
+  block = `abc
+def
+ghi`;
+  forEachLine(block, (line) => {
+    lResult.push(line.toUpperCase());
+    return false;
+  });
+  return utest.equal(725, lResult, ['ABC', 'DEF', 'GHI']);
+})();
+
+(() => {
+  var block, lResult;
+  lResult = [];
+  block = `abc
+def
+ghi`;
+  forEachLine(block, (line) => {
+    if (line === 'ghi') {
+      return true;
+    }
+    lResult.push(line.toUpperCase());
+    return false;
+  });
+  return utest.equal(725, lResult, ['ABC', 'DEF']);
+})();
+
+(() => {
+  var item, lResult;
+  lResult = [];
+  item = ['abc', 'def', 'ghi'];
+  forEachLine(item, (line) => {
+    lResult.push(line.toUpperCase());
+    return false;
+  });
+  return utest.equal(725, lResult, ['ABC', 'DEF', 'GHI']);
+})();
+
+(() => {
+  var item, lResult;
+  lResult = [];
+  item = ['abc', 'def', 'ghi'];
+  forEachLine(item, (line) => {
+    if (line === 'ghi') {
+      return true;
+    }
+    lResult.push(line.toUpperCase());
+    return false;
+  });
+  return utest.equal(725, lResult, ['ABC', 'DEF']);
+})();
+
+// ---------------------------------------------------------------------------
+// --- test mapEachLine
+(() => {
+  var block, newblock;
+  block = `abc
+def
+ghi`;
+  newblock = mapEachLine(block, (line) => {
+    return line.toUpperCase();
+  });
+  return utest.equal(725, newblock, `ABC
+DEF
+GHI`);
+})();
+
+(() => {
+  var block, newblock;
+  block = `abc
+def
+ghi`;
+  newblock = mapEachLine(block, (line) => {
+    if (line === 'def') {
+      return undef;
+    } else {
+      return line.toUpperCase();
+    }
+  });
+  return utest.equal(725, newblock, `ABC
+GHI`);
+})();
+
+(() => {
+  var item, newblock;
+  item = ['abc', 'def', 'ghi'];
+  newblock = mapEachLine(item, (line) => {
+    return line.toUpperCase();
+  });
+  return utest.equal(725, newblock, ['ABC', 'DEF', 'GHI']);
+})();
+
+(() => {
+  var item, newblock;
+  item = ['abc', 'def', 'ghi'];
+  newblock = mapEachLine(item, (line) => {
+    if (line === 'def') {
+      return undef;
+    } else {
+      return line.toUpperCase();
+    }
+  });
+  return utest.equal(725, newblock, ['ABC', 'GHI']);
+})();

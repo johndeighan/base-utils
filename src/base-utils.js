@@ -37,15 +37,6 @@ export var isHashComment = (line) => {
 };
 
 // ---------------------------------------------------------------------------
-export var splitPrefix = (line) => {
-  var lMatches;
-  assert(isString(line), `non-string ${OL(line)}`);
-  line = rtrim(line);
-  lMatches = line.match(/^(\s*)(.*)$/);
-  return [lMatches[1], lMatches[2]];
-};
-
-// ---------------------------------------------------------------------------
 //   pass - do nothing
 export var pass = () => {
   return true;
@@ -99,16 +90,26 @@ export var CWS = (str) => {
 };
 
 // ---------------------------------------------------------------------------
+export var splitPrefix = (line) => {
+  var lMatches;
+  assert(isString(line), `non-string ${OL(line)}`);
+  line = rtrim(line);
+  lMatches = line.match(/^(\s*)(.*)$/);
+  return [lMatches[1], lMatches[2]];
+};
+
+// ---------------------------------------------------------------------------
 //    tabify - convert leading spaces to TAB characters
 //             if numSpaces is not defined, then the first line
 //             that contains at least one space sets it
-export var tabify = function(str, numSpaces = undef) {
-  var _, i, lLines, len, level, prefix, prefixLen, ref, result, theRest;
+// --- Works on both blocks and arrays - returns same kind of item
+export var tabify = function(item, numSpaces = undef) {
+  var i, lLines, len, level, prefix, prefixLen, ref, result, str, theRest;
   lLines = [];
-  ref = toArray(str);
+  ref = toArray(item);
   for (i = 0, len = ref.length; i < len; i++) {
     str = ref[i];
-    [_, prefix, theRest] = str.match(/^(\s*)(.*)$/);
+    [prefix, theRest] = splitPrefix(str);
     prefixLen = prefix.length;
     if (prefixLen === 0) {
       lLines.push(theRest);
@@ -122,13 +123,49 @@ export var tabify = function(str, numSpaces = undef) {
       lLines.push('\t'.repeat(level) + theRest);
     }
   }
-  result = toBlock(lLines);
+  if (isArray(item)) {
+    result = item;
+  } else {
+    result = toBlock(lLines);
+  }
   return result;
 };
 
 // ---------------------------------------------------------------------------
 export var untabify = (str, numSpaces = 3) => {
   return str.replace(/\t/g, ' '.repeat(numSpaces));
+};
+
+// ---------------------------------------------------------------------------
+export var forEachLine = (item, func) => {
+  var i, len, line, ref, result;
+  ref = toArray(item);
+  for (i = 0, len = ref.length; i < len; i++) {
+    line = ref[i];
+    result = func(line);
+    assert(isBoolean(result), `result must be a boolean, got ${OL(result)}`);
+    if (result) { // return of true causes premature exit
+      return;
+    }
+  }
+};
+
+// ---------------------------------------------------------------------------
+export var mapEachLine = (item, func) => {
+  var i, lLines, len, ref, result, str;
+  lLines = [];
+  ref = toArray(item);
+  for (i = 0, len = ref.length; i < len; i++) {
+    str = ref[i];
+    if (defined(result = func(str))) {
+      lLines.push(result);
+    }
+  }
+  if (isArray(item)) {
+    return lLines;
+  } else {
+    return toBlock(lLines);
+  }
 };
 
 // ---------------------------------------------------------------------------

@@ -29,15 +29,6 @@ export isHashComment = (line) =>
 		return undef
 
 # ---------------------------------------------------------------------------
-
-export splitPrefix = (line) =>
-
-	assert isString(line), "non-string #{OL(line)}"
-	line = rtrim(line)
-	lMatches = line.match(/^(\s*)(.*)$/)
-	return [lMatches[1], lMatches[2]]
-
-# ---------------------------------------------------------------------------
 #   pass - do nothing
 
 export pass = () =>
@@ -99,15 +90,25 @@ export CWS = (str) =>
 	return str.trim().replace(/\s+/sg, ' ')
 
 # ---------------------------------------------------------------------------
+
+export splitPrefix = (line) =>
+
+	assert isString(line), "non-string #{OL(line)}"
+	line = rtrim(line)
+	lMatches = line.match(/^(\s*)(.*)$/)
+	return [lMatches[1], lMatches[2]]
+
+# ---------------------------------------------------------------------------
 #    tabify - convert leading spaces to TAB characters
 #             if numSpaces is not defined, then the first line
 #             that contains at least one space sets it
+# --- Works on both blocks and arrays - returns same kind of item
 
-export tabify = (str, numSpaces=undef) ->
+export tabify = (item, numSpaces=undef) ->
 
 	lLines = []
-	for str in toArray(str)
-		[_, prefix, theRest] = str.match(/^(\s*)(.*)$/)
+	for str in toArray(item)
+		[prefix, theRest] = splitPrefix(str)
 		prefixLen = prefix.length
 		if prefixLen == 0
 			lLines.push theRest
@@ -118,7 +119,10 @@ export tabify = (str, numSpaces=undef) ->
 			assert (prefixLen % numSpaces == 0), "Bad prefix"
 			level = prefixLen / numSpaces
 			lLines.push '\t'.repeat(level) + theRest
-	result = toBlock(lLines)
+	if isArray(item)
+		result = item
+	else
+		result = toBlock(lLines)
 	return result
 
 # ---------------------------------------------------------------------------
@@ -126,6 +130,30 @@ export tabify = (str, numSpaces=undef) ->
 export untabify = (str, numSpaces=3) =>
 
 	return str.replace(/\t/g, ' '.repeat(numSpaces))
+
+# ---------------------------------------------------------------------------
+
+export forEachLine = (item, func) =>
+
+	for line in toArray(item)
+		result = func(line)
+		assert isBoolean(result), "result must be a boolean, got #{OL(result)}"
+		if result   # return of true causes premature exit
+			return
+	return
+
+# ---------------------------------------------------------------------------
+
+export mapEachLine = (item, func) =>
+
+	lLines = []
+	for str in toArray(item)
+		if defined(result = func(str))
+			lLines.push result
+	if isArray(item)
+		return lLines
+	else
+		return toBlock(lLines)
 
 # ---------------------------------------------------------------------------
 

@@ -16,6 +16,7 @@ import {
 	rtrim, words, hasChar, quoted, getOptions, range,
 	oneof, uniq, rtrunc, ltrunc, CWS, className,
 	isArrayOfStrings, isArrayOfHashes, extractMatches,
+	forEachLine, mapEachLine,
 	} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
@@ -710,3 +711,116 @@ utest.equal 709, getOptions('a b c'), {'a':true, 'b':true, 'c':true}
 utest.equal 710, getOptions('abc'), {'abc':true}
 utest.equal 711, getOptions({'a':true, 'b':false, 'c':42}), {'a':true, 'b':false, 'c':42}
 utest.equal 712, getOptions(), {}
+
+# ---------------------------------------------------------------------------
+# --- test forEachLine
+
+(() =>
+	lResult = []
+	block = """
+		abc
+		def
+		ghi
+		"""
+	forEachLine block, (line) =>
+		lResult.push line.toUpperCase()
+		return false
+	utest.equal 725, lResult, ['ABC','DEF', 'GHI']
+	)()
+
+(() =>
+	lResult = []
+	block = """
+		abc
+		def
+		ghi
+		"""
+	forEachLine block, (line) =>
+		if (line == 'ghi')
+			return true
+		lResult.push line.toUpperCase()
+		return false
+
+	utest.equal 725, lResult, ['ABC','DEF']
+	)()
+
+(() =>
+	lResult = []
+	item = ['abc','def','ghi']
+	forEachLine item, (line) =>
+		lResult.push line.toUpperCase()
+		return false
+	utest.equal 725, lResult, ['ABC','DEF', 'GHI']
+	)()
+
+(() =>
+	lResult = []
+	item = ['abc','def','ghi']
+	forEachLine item, (line) =>
+		if (line == 'ghi')
+			return true
+		lResult.push line.toUpperCase()
+		return false
+
+	utest.equal 725, lResult, ['ABC','DEF']
+	)()
+
+# ---------------------------------------------------------------------------
+# --- test mapEachLine
+
+(() =>
+	block = """
+		abc
+		def
+		ghi
+		"""
+	newblock = mapEachLine block, (line) =>
+		return line.toUpperCase()
+	utest.equal 725, newblock, """
+		ABC
+		DEF
+		GHI
+		"""
+	)()
+
+(() =>
+	block = """
+		abc
+		def
+		ghi
+		"""
+	newblock = mapEachLine block, (line) =>
+		if (line == 'def')
+			return undef
+		else
+			return line.toUpperCase()
+	utest.equal 725, newblock, """
+		ABC
+		GHI
+		"""
+	)()
+
+(() =>
+	item = ['abc','def','ghi']
+	newblock = mapEachLine item, (line) =>
+		return line.toUpperCase()
+	utest.equal 725, newblock, [
+		'ABC'
+		'DEF'
+		'GHI'
+		]
+	)()
+
+(() =>
+	item = ['abc','def','ghi']
+	newblock = mapEachLine item, (line) =>
+		if (line == 'def')
+			return undef
+		else
+			return line.toUpperCase()
+	utest.equal 725, newblock, [
+		'ABC'
+		'GHI'
+		]
+	)()
+
