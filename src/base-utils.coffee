@@ -158,9 +158,9 @@ export mapEachLine = (item, func) =>
 	# --- callback to func() gets arguments:
 	#        line - each line
 	#        hInfo - with keys lineNum and nextLine
-	# Return value should be:
-	#    undef - to skip this line
-	#    else value to include
+	#     callback return value should be:
+	#        undef - to skip this line
+	#        else value to include
 
 	lLines = []    # return value
 	lInput = toArray(item)
@@ -554,6 +554,24 @@ export isHash = (x, lKeys) =>
 			if ! x.hasOwnProperty(key)
 				return false
 	return true
+
+# ---------------------------------------------------------------------------
+
+export removeKeys = (item, lKeys) =>
+
+	assert isArray(lKeys), "not an array"
+	[type, subtype] = jsType(item)
+	switch type
+		when 'array'
+			for subitem in item
+				removeKeys subitem, lKeys
+		when 'hash', 'object'
+			for key in lKeys
+				if item.hasOwnProperty(key)
+					delete item[key]
+			for prop,value of item
+				removeKeys value, lKeys
+	return item
 
 # ---------------------------------------------------------------------------
 

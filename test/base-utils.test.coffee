@@ -8,7 +8,7 @@ import {
 	undef, pass, defined, notdefined, tabify, untabify, prefixBlock,
 	escapeStr, OL, OLS, inList,  isHashComment, splitPrefix,
 	isString, isNumber, isInteger, isHash, isArray, isBoolean,
-	isClass, isConstructor,
+	isClass, isConstructor, removeKeys,
 	isFunction, isRegExp, isObject, jsType,
 	isEmpty, nonEmpty, isNonEmptyString, isIdentifier,
 	isFunctionName, isIterable,
@@ -845,8 +845,73 @@ utest.equal 713, getOptions(), {}
 			return "#{hInfo.lineNum} #{line.toUpperCase()} #{hInfo.nextLine}"
 		else
 			return "#{hInfo.lineNum} #{line.toUpperCase()}"
-	utest.equal 833, newblock, [
+	utest.equal 848, newblock, [
 		'1 ABC def'
 		'3 GHI'
 		]
+	)()
+
+# ---------------------------------------------------------------------------
+# --- test removeKeys
+
+(() =>
+	hAST = {
+		body: [
+			{
+				declarations: Array [{start:0}],
+				end: 11,
+				kind: 'let',
+				start: 0,
+				type: 'VariableDeclaration',
+				},
+			],
+		end: 11,
+		sourceType: 'script',
+		start: 0,
+		type: 'Program',
+		}
+
+	utest.equal 874, removeKeys(hAST, ['start','end']), {
+		body: [
+			{
+				declarations: Array [{}],
+				kind: 'let',
+				type: 'VariableDeclaration',
+				},
+			],
+		sourceType: 'script',
+		type: 'Program',
+		}
+
+	)()
+
+(() =>
+	hAST = {
+		body: [
+			{
+				declarations: Array [{start:0}],
+				end: 12,
+				kind: 'let',
+				start: 0,
+				type: 'VariableDeclaration',
+				},
+			],
+		end: 12,
+		sourceType: 'script',
+		start: 0,
+		type: 'Program',
+		}
+
+	utest.equal 905, removeKeys(hAST, ['start','end']), {
+		body: [
+			{
+				declarations: Array [{}],
+				kind: 'let',
+				type: 'VariableDeclaration',
+				},
+			],
+		sourceType: 'script',
+		type: 'Program',
+		}
+
 	)()

@@ -35,6 +35,7 @@ import {
   isBoolean,
   isClass,
   isConstructor,
+  removeKeys,
   isFunction,
   isRegExp,
   isObject,
@@ -1489,5 +1490,83 @@ GHI`);
       return `${hInfo.lineNum} ${line.toUpperCase()}`;
     }
   });
-  return utest.equal(833, newblock, ['1 ABC def', '3 GHI']);
+  return utest.equal(848, newblock, ['1 ABC def', '3 GHI']);
+})();
+
+// ---------------------------------------------------------------------------
+// --- test removeKeys
+(() => {
+  var hAST;
+  hAST = {
+    body: [
+      {
+        declarations: Array([
+          {
+            start: 0
+          }
+        ],
+      {
+          end: 11,
+          kind: 'let',
+          start: 0,
+          type: 'VariableDeclaration'
+        })
+      }
+    ],
+    end: 11,
+    sourceType: 'script',
+    start: 0,
+    type: 'Program'
+  };
+  return utest.equal(874, removeKeys(hAST, ['start', 'end']), {
+    body: [
+      {
+        declarations: Array([{}],
+      {
+          kind: 'let',
+          type: 'VariableDeclaration'
+        })
+      }
+    ],
+    sourceType: 'script',
+    type: 'Program'
+  });
+})();
+
+(() => {
+  var hAST;
+  hAST = {
+    body: [
+      {
+        declarations: Array([
+          {
+            start: 0
+          }
+        ],
+      {
+          end: 12,
+          kind: 'let',
+          start: 0,
+          type: 'VariableDeclaration'
+        })
+      }
+    ],
+    end: 12,
+    sourceType: 'script',
+    start: 0,
+    type: 'Program'
+  };
+  return utest.equal(905, removeKeys(hAST, ['start', 'end']), {
+    body: [
+      {
+        declarations: Array([{}],
+      {
+          kind: 'let',
+          type: 'VariableDeclaration'
+        })
+      }
+    ],
+    sourceType: 'script',
+    type: 'Program'
+  });
 })();

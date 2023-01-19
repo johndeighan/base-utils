@@ -165,9 +165,9 @@ export var mapEachLine = (item, func) => {
   // --- callback to func() gets arguments:
   //        line - each line
   //        hInfo - with keys lineNum and nextLine
-  // Return value should be:
-  //    undef - to skip this line
-  //    else value to include
+  //     callback return value should be:
+  //        undef - to skip this line
+  //        else value to include
   lLines = []; // return value
   lInput = toArray(item);
   for (i = j = 0, len = lInput.length; j < len; i = ++j) {
@@ -618,6 +618,34 @@ export var isHash = (x, lKeys) => {
     }
   }
   return true;
+};
+
+// ---------------------------------------------------------------------------
+export var removeKeys = (item, lKeys) => {
+  var j, k, key, len, len1, prop, subitem, subtype, type, value;
+  assert(isArray(lKeys), "not an array");
+  [type, subtype] = jsType(item);
+  switch (type) {
+    case 'array':
+      for (j = 0, len = item.length; j < len; j++) {
+        subitem = item[j];
+        removeKeys(subitem, lKeys);
+      }
+      break;
+    case 'hash':
+    case 'object':
+      for (k = 0, len1 = lKeys.length; k < len1; k++) {
+        key = lKeys[k];
+        if (item.hasOwnProperty(key)) {
+          delete item[key];
+        }
+      }
+      for (prop in item) {
+        value = item[prop];
+        removeKeys(value, lKeys);
+      }
+  }
+  return item;
 };
 
 // ---------------------------------------------------------------------------
