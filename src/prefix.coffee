@@ -13,6 +13,8 @@ export arrowhead = '>'
 export backarrow = '<'
 export space = ' '
 export dot = '.'
+export lI18N = '◄'      # unicode 25C4
+export rI18N = '►'      # unicode 25BA
 
 export fourSpaces  = space  + space     + space     + space
 export oneIndent   = vbar   + space     + space     + space

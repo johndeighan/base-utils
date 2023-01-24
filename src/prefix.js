@@ -29,6 +29,10 @@ export var space = ' ';
 
 export var dot = '.';
 
+export var lI18N = '◄'; // unicode 25C4
+
+export var rI18N = '►'; // unicode 25BA
+
 export var fourSpaces = space + space + space + space;
 
 export var oneIndent = vbar + space + space + space;
