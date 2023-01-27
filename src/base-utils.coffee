@@ -855,6 +855,7 @@ export getDumpStr = (label, str, hOptions={}) =>
 		escape: false
 		width: 42
 		})
+
 	if isString(str)
 		stringified = false
 	else if defined(str)
@@ -883,5 +884,6 @@ export getDumpStr = (label, str, hOptions={}) =>
 
 export DUMP = (label, obj, hOptions={}) =>
 
+	assert isString(label), "no label"
 	console.log getDumpStr(label, obj, hOptions)
 	return

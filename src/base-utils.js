@@ -1005,5 +1005,6 @@ export var getDumpStr = (label, str, hOptions = {}) => {
 
 // ---------------------------------------------------------------------------
 export var DUMP = (label, obj, hOptions = {}) => {
+  assert(isString(label), "no label");
   console.log(getDumpStr(label, obj, hOptions));
 };
