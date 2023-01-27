@@ -17,7 +17,7 @@
 	},
 	"scripts": {
 		"build": "cls && coffee -c .",
-		"test": "npm run build && rm -f ./test/*.js && coffee -c ./test && ava ./test/*.test.js && git status"
+		"test": "npm run build && npx ava ./test/*.test.js && git status"
 	},
 	"keywords": [
 		"javascript"
@@ -25,7 +25,7 @@
 	"author": "John Deighan",
 	"license": "MIT",
 	"dependencies": {
-		"ava": "^4.3.3",
+		"ava": "^5.1.1",
 		"js-yaml": "^4.1.0",
 		"stack-utils": "^2.0.6"
 	}
