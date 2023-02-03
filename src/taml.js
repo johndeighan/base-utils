@@ -28,13 +28,13 @@ import {
 
 // ---------------------------------------------------------------------------
 //   isTAML - is the string valid TAML?
-export var isTAML = function(text) {
+export var isTAML = (text) => {
   return isString(text) && text.match(/^---$/m);
 };
 
 // ---------------------------------------------------------------------------
 //   taml - convert valid TAML string to a JavaScript value
-export var fromTAML = function(text) {
+export var fromTAML = (text) => {
   var _, i, j, lLines, len, line, prefix, ref, str;
   assert(defined(text), "text is undef");
   assert(isTAML(text), `string ${OL(text)} isn't TAML`);
@@ -82,7 +82,7 @@ export var fixValStr = (valStr) => {
 
 // ---------------------------------------------------------------------------
 // --- a replacer is (key, value) -> newvalue
-myReplacer = function(name, value) {
+myReplacer = (name, value) => {
   if (value === undef) {
     // --- We need this, otherwise js-yaml will convert undef to null
     return "<UNDEFINED_VALUE>";
@@ -96,9 +96,9 @@ myReplacer = function(name, value) {
 };
 
 // ---------------------------------------------------------------------------
-export var toTAML = function(obj, hOptions = {
+export var toTAML = (obj, hOptions = {
     sortKeys: true
-  }) {
+  }) => {
   var escape, h, i, j, key, len, replacer, sortKeys, str, useTabs;
   if (obj === undef) {
     return "---\nundef";
@@ -160,6 +160,6 @@ compareFunc = (a, b) => {
 };
 
 // ---------------------------------------------------------------------------
-squote = function(text) {
+squote = (text) => {
   return "'" + text.replace(/'/g, "''") + "'";
 };

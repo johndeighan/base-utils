@@ -25,7 +25,7 @@ export yieldSym    = tee    + backarrow + hbar      + space
 
 # ---------------------------------------------------------------------------
 
-export getPrefix = (level, option='none') ->
+export getPrefix = (level, option='none') =>
 
 	switch option
 		when 'plain'
@@ -72,7 +72,7 @@ setCharsAt = (str, pos, str2) =>
 
 # ---------------------------------------------------------------------------
 
-export addArrow = (prefix) ->
+export addArrow = (prefix) =>
 
 	pos = prefix.lastIndexOf(vbar)
 	if (pos == -1)
@@ -83,7 +83,7 @@ export addArrow = (prefix) ->
 
 # ---------------------------------------------------------------------------
 
-export removeLastVbar = (prefix) ->
+export removeLastVbar = (prefix) =>
 
 	pos = prefix.lastIndexOf(vbar)
 	if (pos == -1)

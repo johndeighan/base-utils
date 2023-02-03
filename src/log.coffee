@@ -91,7 +91,7 @@ export dumpLog = (label, theLog, hOptions={}) =>
 
 # ---------------------------------------------------------------------------
 
-export PUTSTR = (str) ->
+export PUTSTR = (str) =>
 
 	str = rtrim(str)
 	caller = getMyOutsideCaller().source

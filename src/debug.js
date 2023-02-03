@@ -107,7 +107,7 @@ export var debugDebug = (debugFlag = true) => {
 };
 
 // ---------------------------------------------------------------------------
-export var dumpDebugLoggers = function(label = undef) {
+export var dumpDebugLoggers = (label = undef) => {
   var lLines;
   lLines = [];
   if (nonEmpty(label)) {
@@ -125,7 +125,7 @@ export var dumpDebugLoggers = function(label = undef) {
 };
 
 // ---------------------------------------------------------------------------
-logType = function(cur, std) {
+logType = (cur, std) => {
   if (cur === std) {
     return 'std';
   } else if (defined(cur)) {
@@ -152,7 +152,7 @@ export var resetDebugging = () => {
 };
 
 // ---------------------------------------------------------------------------
-export var setDebugging = function(debugWhat = undef, hOptions = {}) {
+export var setDebugging = (debugWhat = undef, hOptions = {}) => {
   var customSet, j, key, len, ref, subtype, type;
   // --- debugWhat can be:
   //        1. a boolean
@@ -229,7 +229,7 @@ export var dumpFuncList = () => {
 };
 
 // ---------------------------------------------------------------------------
-export var setCustomDebugLogger = function(type, func) {
+export var setCustomDebugLogger = (type, func) => {
   assert(isFunction(func), "Not a function");
   if (internalDebugging) {
     console.log(`set custom logger ${OL(type)}`);
@@ -259,7 +259,7 @@ export var setCustomDebugLogger = function(type, func) {
 };
 
 // ---------------------------------------------------------------------------
-export var getFuncList = function(funcs) {
+export var getFuncList = (funcs) => {
   var fullName, j, k, lFuncs, lItems, len, len1, modifier, ref, str, word;
   // --- funcs can be a string or an array of strings
   lFuncs = []; // return value
@@ -294,7 +294,7 @@ export var getFuncList = function(funcs) {
 // ---------------------------------------------------------------------------
 // Stack is only modified in these 8 functions (it is reset in setDebugging())
 // ---------------------------------------------------------------------------
-export var dbgEnter = function(funcName, ...lValues) {
+export var dbgEnter = (funcName, ...lValues) => {
   var doLog, level;
   doLog = doDebugFunc(funcName);
   if (internalDebugging) {
@@ -316,12 +316,12 @@ export var dbgEnter = function(funcName, ...lValues) {
 };
 
 // ---------------------------------------------------------------------------
-export var doDebugFunc = function(funcName) {
+export var doDebugFunc = (funcName) => {
   return logAll || funcMatch(funcName);
 };
 
 // ---------------------------------------------------------------------------
-export var funcMatch = function(funcName) {
+export var funcMatch = (funcName) => {
   var h, j, k, lParts, len, len1, methodName;
   // --- funcName came from a call to dbgEnter()
   //     it might be of form <object>.<method>
@@ -367,7 +367,7 @@ export var funcMatch = function(funcName) {
 };
 
 // ---------------------------------------------------------------------------
-export var dbgReturn = function(...lArgs) {
+export var dbgReturn = (...lArgs) => {
   var doLog, funcName, level;
   if (lArgs.length > 1) {
     return dbgReturnVal(...lArgs);
@@ -390,7 +390,7 @@ export var dbgReturn = function(...lArgs) {
 };
 
 // ---------------------------------------------------------------------------
-dbgReturnVal = function(funcName, val) {
+dbgReturnVal = (funcName, val) => {
   var doLog, level;
   assert(isFunctionName(funcName), "not a valid function name");
   doLog = logAll || callStack.isLogging();
@@ -409,7 +409,7 @@ dbgReturnVal = function(funcName, val) {
 };
 
 // ---------------------------------------------------------------------------
-export var dbgYield = function(...lArgs) {
+export var dbgYield = (...lArgs) => {
   var doLog, funcName, level, nArgs, val;
   nArgs = lArgs.length;
   assert((nArgs === 1) || (nArgs === 2), `Bad num args: ${nArgs}`);
@@ -434,7 +434,7 @@ export var dbgYield = function(...lArgs) {
 };
 
 // ---------------------------------------------------------------------------
-dbgYieldFrom = function(funcName) {
+dbgYieldFrom = (funcName) => {
   var doLog, level;
   assert(isFunctionName(funcName), "not a function name");
   doLog = logAll || callStack.isLogging();
@@ -453,7 +453,7 @@ dbgYieldFrom = function(funcName) {
 };
 
 // ---------------------------------------------------------------------------
-export var dbgResume = function(funcName) {
+export var dbgResume = (funcName) => {
   var doLog, level;
   assert(isFunctionName(funcName), "not a valid function name");
   callStack.resume(funcName);
@@ -472,7 +472,7 @@ export var dbgResume = function(funcName) {
 };
 
 // ---------------------------------------------------------------------------
-export var dbg = function(...lArgs) {
+export var dbg = (...lArgs) => {
   if (lArgs.length === 1) {
     return dbgString(lArgs[0]);
   } else {
@@ -481,7 +481,7 @@ export var dbg = function(...lArgs) {
 };
 
 // ---------------------------------------------------------------------------
-export var dbgValue = function(label, val) {
+export var dbgValue = (label, val) => {
   var doLog, level;
   assert(isString(label), "not a string");
   doLog = logAll || callStack.isLogging();
@@ -500,7 +500,7 @@ export var dbgValue = function(label, val) {
 
 // ---------------------------------------------------------------------------
 // --- str can be a multi-line string
-export var dbgString = function(str) {
+export var dbgString = (str) => {
   var doLog, level;
   assert(isString(str), "not a string");
   doLog = logAll || callStack.isLogging();
@@ -520,7 +520,7 @@ export var dbgString = function(str) {
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 //    Only these 8 functions ever call LOG or LOGVALUE
-export var stdLogEnter = function(level, funcName, lArgs) {
+export var stdLogEnter = (level, funcName, lArgs) => {
   var arg, i, idPre, itemPre, j, labelPre, len, str;
   assert(isFunctionName(funcName), "bad function name");
   assert(isArray(lArgs), "not an array");
@@ -546,7 +546,7 @@ export var stdLogEnter = function(level, funcName, lArgs) {
 };
 
 // ---------------------------------------------------------------------------
-export var stdLogReturn = function(...lArgs) {
+export var stdLogReturn = (...lArgs) => {
   var funcName, labelPre, level, val;
   [level, funcName, val] = lArgs;
   if (lArgs.length === 3) {
@@ -560,7 +560,7 @@ export var stdLogReturn = function(...lArgs) {
 };
 
 // ---------------------------------------------------------------------------
-stdLogReturnVal = function(level, funcName, val) {
+stdLogReturnVal = (level, funcName, val) => {
   var labelPre, pre, str;
   assert(isFunctionName(funcName), "bad function name");
   assert(isInteger(level), "level not an integer");
@@ -577,7 +577,7 @@ stdLogReturnVal = function(level, funcName, val) {
 };
 
 // ---------------------------------------------------------------------------
-export var stdLogYield = function(...lArgs) {
+export var stdLogYield = (...lArgs) => {
   var funcName, labelPre, level, pre, str, val, valStr;
   [level, funcName, val] = lArgs;
   if (lArgs.length === 2) {
@@ -597,7 +597,7 @@ export var stdLogYield = function(...lArgs) {
 };
 
 // ---------------------------------------------------------------------------
-export var stdLogYieldFrom = function(level, funcName) {
+export var stdLogYieldFrom = (level, funcName) => {
   var labelPre;
   labelPre = getPrefix(level, 'withFlat');
   LOG("yieldFrom", labelPre);
@@ -605,7 +605,7 @@ export var stdLogYieldFrom = function(level, funcName) {
 };
 
 // ---------------------------------------------------------------------------
-export var stdLogResume = function(funcName, level) {
+export var stdLogResume = (funcName, level) => {
   var labelPre;
   assert(isInteger(level), "level not an integer");
   labelPre = getPrefix(level + 1, 'withResume');
@@ -614,7 +614,7 @@ export var stdLogResume = function(funcName, level) {
 };
 
 // ---------------------------------------------------------------------------
-export var stdLogString = function(level, str) {
+export var stdLogString = (level, str) => {
   var j, labelPre, len, part, ref;
   assert(isString(str), "not a string");
   assert(isInteger(level), "level not an integer");
@@ -628,7 +628,7 @@ export var stdLogString = function(level, str) {
 };
 
 // ---------------------------------------------------------------------------
-export var stdLogValue = function(level, label, val) {
+export var stdLogValue = (level, label, val) => {
   var labelPre;
   assert(isInteger(level), "level not an integer");
   labelPre = getPrefix(level, 'plain');
@@ -638,7 +638,7 @@ export var stdLogValue = function(level, label, val) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-export var getType = function(label, lValues = []) {
+export var getType = (label, lValues = []) => {
   var lMatches;
   // --- returns [type, funcName]
   //     <type> is one of:
@@ -665,7 +665,7 @@ export var getType = function(label, lValues = []) {
 };
 
 // ........................................................................
-export var parseFunc = function(str) {
+export var parseFunc = (str) => {
   var _, fullName, lMatches, modifier;
   // --- returns [fullName, modifier]
   if (lMatches = str.match(/^([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)?)(\+)?$/)) {

@@ -10,14 +10,14 @@ doLog = true
 
 # ---------------------------------------------------------------------------
 
-export suppressExceptionLogging = () ->
+export suppressExceptionLogging = () =>
 
 	doLog = false
 	return
 
 # ---------------------------------------------------------------------------
 
-export haltOnError = (flag=true) ->
+export haltOnError = (flag=true) =>
 	# --- return existing setting
 
 	save = doHaltOnError
@@ -40,7 +40,7 @@ export exGetLog = () =>
 
 # ---------------------------------------------------------------------------
 
-EXLOG = (str) ->
+EXLOG = (str) =>
 
 	if lExceptionLog
 		lExceptionLog.push str
@@ -51,7 +51,7 @@ EXLOG = (str) ->
 #   assert - mimic nodejs's assert
 #   return true so we can use it in boolean expressions
 
-export assert = (cond, msg) ->
+export assert = (cond, msg) =>
 
 	if ! cond
 		lFrames = getV8Stack().slice(3)
@@ -71,7 +71,7 @@ export assert = (cond, msg) ->
 #   croak - throws an error after possibly printing useful info
 #           err can be a string or an Error object
 
-export croak = (err, label=undef, obj=undef) ->
+export croak = (err, label=undef, obj=undef) =>
 
 	if (typeof err == 'string') || (err instanceof String)
 		curmsg = err

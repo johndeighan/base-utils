@@ -12,14 +12,14 @@ import {
 # ---------------------------------------------------------------------------
 #   isTAML - is the string valid TAML?
 
-export isTAML = (text) ->
+export isTAML = (text) =>
 
 	return isString(text) && text.match(/^---$/m)
 
 # ---------------------------------------------------------------------------
 #   taml - convert valid TAML string to a JavaScript value
 
-export fromTAML = (text) ->
+export fromTAML = (text) =>
 
 	assert defined(text), "text is undef"
 	assert isTAML(text), "string #{OL(text)} isn't TAML"
@@ -71,7 +71,7 @@ export fixValStr = (valStr) =>
 # ---------------------------------------------------------------------------
 # --- a replacer is (key, value) -> newvalue
 
-myReplacer = (name, value) ->
+myReplacer = (name, value) =>
 
 	if (value == undef)
 		# --- We need this, otherwise js-yaml will convert undef to null
@@ -85,7 +85,7 @@ myReplacer = (name, value) ->
 
 # ---------------------------------------------------------------------------
 
-export toTAML = (obj, hOptions={sortKeys: true}) ->
+export toTAML = (obj, hOptions={sortKeys: true}) =>
 
 	if (obj == undef)
 		return "---\nundef"
@@ -141,6 +141,6 @@ compareFunc = (a, b) =>
 
 # ---------------------------------------------------------------------------
 
-squote = (text) ->
+squote = (text) =>
 
 	return "'" + text.replace(/'/g, "''") + "'"

@@ -1,7 +1,6 @@
 # v8-stack.coffee
 
 import pathLib from 'node:path'
-import assert from 'node:assert/strict'
 
 import {
 	undef, defined, notdefined, pass, OL,
@@ -13,15 +12,24 @@ sep_eq = '============================================================'
 sep_dash = '------------------------------------------------------------'
 
 # ---------------------------------------------------------------------------
+# assert() for use in this file only
 
-export debugV8Stack = (flag=true) ->
+assert = (cond, msg) =>
+
+	if !cond
+		throw new Error(msg)
+	return true
+
+# ---------------------------------------------------------------------------
+
+export debugV8Stack = (flag=true) =>
 
 	internalDebugging = flag
 	return
 
 # ---------------------------------------------------------------------------
 
-export getV8StackStr = (maxDepth=Infinity) ->
+export getV8StackStr = (maxDepth=Infinity) =>
 
 	oldLimit = Error.stackTraceLimit
 	Error.stackTraceLimit = maxDepth + 1
@@ -35,14 +43,14 @@ export getV8StackStr = (maxDepth=Infinity) ->
 
 # ---------------------------------------------------------------------------
 
-export getV8Stack = (maxDepth=Infinity) ->
+export getV8Stack = (maxDepth=Infinity) =>
 
 	stackStr = getV8StackStr(maxDepth)
 	return Array.from(stackFrames(stackStr))
 
 # ---------------------------------------------------------------------------
 
-export getMyself = (depth=3) ->
+export getMyself = (depth=3) =>
 
 	stackStr = getV8StackStr(2)
 	for hNode from stackFrames(stackStr)
@@ -51,7 +59,7 @@ export getMyself = (depth=3) ->
 
 # ---------------------------------------------------------------------------
 
-export getMyDirectCaller = (depth=3) ->
+export getMyDirectCaller = (depth=3) =>
 
 	stackStr = getV8StackStr(depth)
 	for hNode from stackFrames(stackStr)
@@ -61,7 +69,7 @@ export getMyDirectCaller = (depth=3) ->
 
 # ---------------------------------------------------------------------------
 
-export getMyOutsideCaller = () ->
+export getMyOutsideCaller = () =>
 
 	if internalDebugging
 		console.log "in getMyOutsideCaller()"
@@ -156,13 +164,13 @@ export stackFrames = (stackStr) ->
 
 # ---------------------------------------------------------------------------
 
-mksource = (dir, base) ->
+mksource = (dir, base) =>
 
 	return "#{dir}/#{base}"
 
 # ---------------------------------------------------------------------------
 
-export parseLine = (line, depth) ->
+export parseLine = (line, depth) =>
 
 	line = line.trim()
 	if internalDebugging
@@ -233,7 +241,7 @@ export parseLine = (line, depth) ->
 
 # ---------------------------------------------------------------------------
 
-export parseFileURL = (url) ->
+export parseFileURL = (url) =>
 	# --- Return value will have these keys:
 	#        root
 	#        dir
@@ -263,7 +271,7 @@ export parseFileURL = (url) ->
 
 # ---------------------------------------------------------------------------
 
-export shorten = (line) ->
+export shorten = (line) =>
 
 	if isEmpty(line)
 		return ''
@@ -278,7 +286,7 @@ export shorten = (line) ->
 
 # ---------------------------------------------------------------------------
 
-export getRoot = () ->
+export getRoot = () =>
 
 	result = process.env.ProjectRoot
 	if isEmpty(result)
@@ -287,4 +295,3 @@ export getRoot = () ->
 		return result
 
 # ---------------------------------------------------------------------------
-

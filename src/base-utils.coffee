@@ -1,8 +1,15 @@
 # base-utils.coffee
 
-import assert from 'node:assert/strict'
-
 `export const undef = void 0`
+
+# ---------------------------------------------------------------------------
+# assert() for use in this file only
+
+assert = (cond, msg) =>
+
+	if !cond
+		throw new Error(msg)
+	return true
 
 # ---------------------------------------------------------------------------
 
@@ -64,8 +71,10 @@ export tabs = (n) =>
 export centeredText = (text, width) =>
 
 	totSpaces = width - text.length
+	if (totSpaces <= 0)
+		return text
 	numLeft = Math.floor(totSpaces / 2)
-	numRight = totSpaces = numLeft
+	numRight = totSpaces - numLeft
 	return spaces(numLeft) + text + spaces(numRight)
 
 # ---------------------------------------------------------------------------
@@ -104,7 +113,7 @@ export splitPrefix = (line) =>
 #             that contains at least one space sets it
 # --- Works on both blocks and arrays - returns same kind of item
 
-export tabify = (item, numSpaces=undef) ->
+export tabify = (item, numSpaces=undef) =>
 
 	lLines = []
 	for str in toArray(item)
@@ -269,7 +278,7 @@ export hEscNoNL = {
 	" ": '˳'
 	}
 
-export escapeStr = (str, hReplace=hEsc) ->
+export escapeStr = (str, hReplace=hEsc) =>
 	# --- hReplace can also be a string:
 	#        'esc'     - escape space, newline, tab
 	#        'escNoNL' - escape space, tab
@@ -887,3 +896,30 @@ export DUMP = (label, obj, hOptions={}) =>
 	assert isString(label), "no label"
 	console.log getDumpStr(label, obj, hOptions)
 	return
+
+# ---------------------------------------------------------------------------
+
+export getProxy = (obj, hCallbacks) =>
+	# --- Keys in hFuncs can be: 'get','set'
+
+	hHandlers = {}
+	if hCallbacks.hasOwnProperty('set')
+		hHandlers.set = (obj, prop, value) ->
+			if DEBUG
+				console.log "set obj #{OL(obj)} prop #{prop} to #{OL(value)}"
+			Reflect.set(obj, prop, value)
+			hCallbacks.set()
+			return true
+
+	if hCallbacks.hasOwnProperty('get')
+		hHandlers.get = (obj, prop) ->
+			if DEBUG
+				console.log "get obj #{OL(obj)} prop #{prop}"
+			value = Reflect.get(obj, prop)
+			newval = hCallbacks.get(value)
+			return newval
+
+	if isEmpty(hHandlers)
+		return obj
+	else
+		return new Proxy(obj, hHandlers)

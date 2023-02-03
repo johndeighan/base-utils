@@ -46,7 +46,7 @@ export var resume = tee + hbar + arrowhead + space;
 export var yieldSym = tee + backarrow + hbar + space;
 
 // ---------------------------------------------------------------------------
-export var getPrefix = function(level, option = 'none') {
+export var getPrefix = (level, option = 'none') => {
   switch (option) {
     case 'plain':
       return oneIndent.repeat(level);
@@ -98,7 +98,7 @@ setCharsAt = (str, pos, str2) => {
 };
 
 // ---------------------------------------------------------------------------
-export var addArrow = function(prefix) {
+export var addArrow = (prefix) => {
   var pos, result;
   pos = prefix.lastIndexOf(vbar);
   if (pos === -1) {
@@ -110,7 +110,7 @@ export var addArrow = function(prefix) {
 };
 
 // ---------------------------------------------------------------------------
-export var removeLastVbar = function(prefix) {
+export var removeLastVbar = (prefix) => {
   var pos, result;
   pos = prefix.lastIndexOf(vbar);
   if (pos === -1) {

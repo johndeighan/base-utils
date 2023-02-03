@@ -60,7 +60,7 @@ export debugDebug = (debugFlag=true) =>
 
 # ---------------------------------------------------------------------------
 
-export dumpDebugLoggers = (label=undef) ->
+export dumpDebugLoggers = (label=undef) =>
 
 	lLines = []
 	if nonEmpty(label)
@@ -77,7 +77,7 @@ export dumpDebugLoggers = (label=undef) ->
 
 # ---------------------------------------------------------------------------
 
-logType = (cur, std) ->
+logType = (cur, std) =>
 
 	if (cur == std)
 		return 'std'
@@ -106,7 +106,7 @@ export resetDebugging = () =>
 
 # ---------------------------------------------------------------------------
 
-export setDebugging = (debugWhat=undef, hOptions={}) ->
+export setDebugging = (debugWhat=undef, hOptions={}) =>
 	# --- debugWhat can be:
 	#        1. a boolean
 	#        2. a string
@@ -173,7 +173,7 @@ export dumpFuncList = () =>
 
 # ---------------------------------------------------------------------------
 
-export setCustomDebugLogger = (type, func) ->
+export setCustomDebugLogger = (type, func) =>
 
 	assert isFunction(func), "Not a function"
 	if internalDebugging
@@ -197,7 +197,7 @@ export setCustomDebugLogger = (type, func) ->
 
 # ---------------------------------------------------------------------------
 
-export getFuncList = (funcs) ->
+export getFuncList = (funcs) =>
 	# --- funcs can be a string or an array of strings
 
 	lFuncs = []    # return value
@@ -226,7 +226,7 @@ export getFuncList = (funcs) ->
 # Stack is only modified in these 8 functions (it is reset in setDebugging())
 # ---------------------------------------------------------------------------
 
-export dbgEnter = (funcName, lValues...) ->
+export dbgEnter = (funcName, lValues...) =>
 
 	doLog = doDebugFunc(funcName)
 	if internalDebugging
@@ -246,13 +246,13 @@ export dbgEnter = (funcName, lValues...) ->
 
 # ---------------------------------------------------------------------------
 
-export doDebugFunc = (funcName) ->
+export doDebugFunc = (funcName) =>
 
 	return logAll || funcMatch(funcName)
 
 # ---------------------------------------------------------------------------
 
-export funcMatch = (funcName) ->
+export funcMatch = (funcName) =>
 	# --- funcName came from a call to dbgEnter()
 	#     it might be of form <object>.<method>
 	# --- We KNOW that funcName is active!
@@ -288,7 +288,7 @@ export funcMatch = (funcName) ->
 
 # ---------------------------------------------------------------------------
 
-export dbgReturn = (lArgs...) ->
+export dbgReturn = (lArgs...) =>
 
 	if (lArgs.length > 1)
 		return dbgReturnVal lArgs...
@@ -308,7 +308,7 @@ export dbgReturn = (lArgs...) ->
 
 # ---------------------------------------------------------------------------
 
-dbgReturnVal = (funcName, val) ->
+dbgReturnVal = (funcName, val) =>
 
 	assert isFunctionName(funcName), "not a valid function name"
 	doLog = logAll || callStack.isLogging()
@@ -325,7 +325,7 @@ dbgReturnVal = (funcName, val) ->
 
 # ---------------------------------------------------------------------------
 
-export dbgYield = (lArgs...) ->
+export dbgYield = (lArgs...) =>
 
 	nArgs = lArgs.length
 	assert (nArgs==1) || (nArgs==2), "Bad num args: #{nArgs}"
@@ -348,7 +348,7 @@ export dbgYield = (lArgs...) ->
 
 # ---------------------------------------------------------------------------
 
-dbgYieldFrom = (funcName) ->
+dbgYieldFrom = (funcName) =>
 
 	assert isFunctionName(funcName), "not a function name"
 	doLog = logAll || callStack.isLogging()
@@ -365,7 +365,7 @@ dbgYieldFrom = (funcName) ->
 
 # ---------------------------------------------------------------------------
 
-export dbgResume = (funcName) ->
+export dbgResume = (funcName) =>
 
 	assert isFunctionName(funcName), "not a valid function name"
 	callStack.resume funcName
@@ -382,7 +382,7 @@ export dbgResume = (funcName) ->
 
 # ---------------------------------------------------------------------------
 
-export dbg = (lArgs...) ->
+export dbg = (lArgs...) =>
 
 	if lArgs.length == 1
 		return dbgString lArgs[0]
@@ -391,7 +391,7 @@ export dbg = (lArgs...) ->
 
 # ---------------------------------------------------------------------------
 
-export dbgValue = (label, val) ->
+export dbgValue = (label, val) =>
 
 	assert isString(label), "not a string"
 
@@ -409,7 +409,7 @@ export dbgValue = (label, val) ->
 # ---------------------------------------------------------------------------
 # --- str can be a multi-line string
 
-export dbgString = (str) ->
+export dbgString = (str) =>
 
 	assert isString(str), "not a string"
 	doLog = logAll || callStack.isLogging()
@@ -427,7 +427,7 @@ export dbgString = (str) ->
 # ---------------------------------------------------------------------------
 #    Only these 8 functions ever call LOG or LOGVALUE
 
-export stdLogEnter = (level, funcName, lArgs) ->
+export stdLogEnter = (level, funcName, lArgs) =>
 
 	assert isFunctionName(funcName), "bad function name"
 	assert isArray(lArgs), "not an array"
@@ -450,7 +450,7 @@ export stdLogEnter = (level, funcName, lArgs) ->
 
 # ---------------------------------------------------------------------------
 
-export stdLogReturn = (lArgs...) ->
+export stdLogReturn = (lArgs...) =>
 
 	[level, funcName, val] = lArgs
 	if (lArgs.length == 3)
@@ -464,7 +464,7 @@ export stdLogReturn = (lArgs...) ->
 
 # ---------------------------------------------------------------------------
 
-stdLogReturnVal = (level, funcName, val) ->
+stdLogReturnVal = (level, funcName, val) =>
 
 	assert isFunctionName(funcName), "bad function name"
 	assert isInteger(level), "level not an integer"
@@ -481,7 +481,7 @@ stdLogReturnVal = (level, funcName, val) ->
 
 # ---------------------------------------------------------------------------
 
-export stdLogYield = (lArgs...) ->
+export stdLogYield = (lArgs...) =>
 
 	[level, funcName, val] = lArgs
 	if (lArgs.length == 2)
@@ -499,7 +499,7 @@ export stdLogYield = (lArgs...) ->
 
 # ---------------------------------------------------------------------------
 
-export stdLogYieldFrom = (level, funcName) ->
+export stdLogYieldFrom = (level, funcName) =>
 
 	labelPre = getPrefix(level, 'withFlat')
 	LOG "yieldFrom", labelPre
@@ -507,7 +507,7 @@ export stdLogYieldFrom = (level, funcName) ->
 
 # ---------------------------------------------------------------------------
 
-export stdLogResume = (funcName, level) ->
+export stdLogResume = (funcName, level) =>
 
 	assert isInteger(level), "level not an integer"
 	labelPre = getPrefix(level+1, 'withResume')
@@ -516,7 +516,7 @@ export stdLogResume = (funcName, level) ->
 
 # ---------------------------------------------------------------------------
 
-export stdLogString = (level, str) ->
+export stdLogString = (level, str) =>
 
 	assert isString(str), "not a string"
 	assert isInteger(level), "level not an integer"
@@ -528,7 +528,7 @@ export stdLogString = (level, str) ->
 
 # ---------------------------------------------------------------------------
 
-export stdLogValue = (level, label, val) ->
+export stdLogValue = (level, label, val) =>
 
 	assert isInteger(level), "level not an integer"
 
@@ -539,7 +539,7 @@ export stdLogValue = (level, label, val) ->
 # ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 
-export getType = (label, lValues=[]) ->
+export getType = (label, lValues=[]) =>
 	# --- returns [type, funcName]
 	#     <type> is one of:
 	#        'enter'      - funcName is set
@@ -589,7 +589,7 @@ export getType = (label, lValues=[]) ->
 
 # ........................................................................
 
-export parseFunc = (str) ->
+export parseFunc = (str) =>
 	# --- returns [fullName, modifier]
 
 	if lMatches = str.match(///^

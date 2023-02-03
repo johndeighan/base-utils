@@ -18,12 +18,12 @@ doHaltOnError = false;
 doLog = true;
 
 // ---------------------------------------------------------------------------
-export var suppressExceptionLogging = function() {
+export var suppressExceptionLogging = () => {
   doLog = false;
 };
 
 // ---------------------------------------------------------------------------
-export var haltOnError = function(flag = true) {
+export var haltOnError = (flag = true) => {
   var save;
   // --- return existing setting
   save = doHaltOnError;
@@ -47,7 +47,7 @@ export var exGetLog = () => {
 };
 
 // ---------------------------------------------------------------------------
-EXLOG = function(str) {
+EXLOG = (str) => {
   if (lExceptionLog) {
     return lExceptionLog.push(str);
   } else if (doLog) {
@@ -58,7 +58,7 @@ EXLOG = function(str) {
 // ---------------------------------------------------------------------------
 //   assert - mimic nodejs's assert
 //   return true so we can use it in boolean expressions
-export var assert = function(cond, msg) {
+export var assert = (cond, msg) => {
   var i, lFrames, len, node;
   if (!cond) {
     lFrames = getV8Stack().slice(3);
@@ -81,7 +81,7 @@ export var assert = function(cond, msg) {
 // ---------------------------------------------------------------------------
 //   croak - throws an error after possibly printing useful info
 //           err can be a string or an Error object
-export var croak = function(err, label = undef, obj = undef) {
+export var croak = (err, label = undef, obj = undef) => {
   var curmsg, newmsg;
   if ((typeof err === 'string') || (err instanceof String)) {
     curmsg = err;

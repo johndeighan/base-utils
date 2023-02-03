@@ -139,7 +139,7 @@ export var dumpLog = (label, theLog, hOptions = {}) => {
 };
 
 // ---------------------------------------------------------------------------
-export var PUTSTR = function(str) {
+export var PUTSTR = (str) => {
   var caller;
   str = rtrim(str);
   caller = getMyOutsideCaller().source;
