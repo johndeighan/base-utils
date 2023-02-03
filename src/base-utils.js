@@ -1025,9 +1025,6 @@ export var getProxy = (obj, hCallbacks) => {
   hHandlers = {};
   if (hCallbacks.hasOwnProperty('set')) {
     hHandlers.set = function(obj, prop, value) {
-      if (DEBUG) {
-        console.log(`set obj ${OL(obj)} prop ${prop} to ${OL(value)}`);
-      }
       Reflect.set(obj, prop, value);
       hCallbacks.set();
       return true;
@@ -1036,9 +1033,6 @@ export var getProxy = (obj, hCallbacks) => {
   if (hCallbacks.hasOwnProperty('get')) {
     hHandlers.get = function(obj, prop) {
       var newval, value;
-      if (DEBUG) {
-        console.log(`get obj ${OL(obj)} prop ${prop}`);
-      }
       value = Reflect.get(obj, prop);
       newval = hCallbacks.get(value);
       return newval;

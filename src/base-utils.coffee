@@ -905,16 +905,12 @@ export getProxy = (obj, hCallbacks) =>
 	hHandlers = {}
 	if hCallbacks.hasOwnProperty('set')
 		hHandlers.set = (obj, prop, value) ->
-			if DEBUG
-				console.log "set obj #{OL(obj)} prop #{prop} to #{OL(value)}"
 			Reflect.set(obj, prop, value)
 			hCallbacks.set()
 			return true
 
 	if hCallbacks.hasOwnProperty('get')
 		hHandlers.get = (obj, prop) ->
-			if DEBUG
-				console.log "get obj #{OL(obj)} prop #{prop}"
 			value = Reflect.get(obj, prop)
 			newval = hCallbacks.get(value)
 			return newval
