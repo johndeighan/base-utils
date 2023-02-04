@@ -898,6 +898,12 @@ export DUMP = (label, obj, hOptions={}) =>
 	return
 
 # ---------------------------------------------------------------------------
+# in callback set():
+#    - return undef to NOT set
+#    - return value (possibly changed) to set
+# in callback get():
+#    - return (possibly changed) value
+# ---------------------------------------------------------------------------
 
 export getProxy = (obj, hCallbacks) =>
 	# --- Keys in hFuncs can be: 'get','set'
@@ -919,3 +925,23 @@ export getProxy = (obj, hCallbacks) =>
 		return obj
 	else
 		return new Proxy(obj, hHandlers)
+
+# ---------------------------------------------------------------------------
+
+export sleep = (secs) =>
+
+	return new Promise((r) => setTimeout(r, 1000 * secs))
+
+# ---------------------------------------------------------------------------
+
+hTimers = {}    # { <id> => <timer>, ... }
+
+export schedule = (secs, keyVal, func, lArgs...) =>
+
+	assert isFunction(func), "not a function: #{OL(func)}"
+
+	# --- if there's currently a timer with the same keyVal, kill it
+	if defined(timer = hTimers[keyVal])
+		clearTimeout timer
+	hTimers[keyVal] = setTimeout(func, 1000 * secs, lArgs...)
+	return

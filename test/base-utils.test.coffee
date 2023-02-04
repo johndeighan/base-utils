@@ -16,7 +16,7 @@ import {
 	rtrim, words, hasChar, quoted, getOptions, range,
 	oneof, uniq, rtrunc, ltrunc, CWS, className,
 	isArrayOfStrings, isArrayOfHashes, extractMatches,
-	forEachLine, mapEachLine, getProxy,
+	forEachLine, mapEachLine, getProxy, sleep, schedule,
 	} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
@@ -953,4 +953,41 @@ utest.equal 713, getOptions(), {}
 	utest.equal 944, hToDo.task, 'do something'
 	utest.equal 945, h.task, 'DO SOMETHING'
 
+	)()
+
+# ---------------------------------------------------------------------------
+# test doDelayed()
+
+(() =>
+	lLines = undef
+	LOG = (str) =>
+		lLines.push str
+
+	run1 = () =>
+		lLines = []
+		schedule 1, 1, LOG, 'abc'
+		schedule 2, 2, LOG, 'def'
+		await sleep 5
+		schedule 3, 1, LOG, 'ghi'
+		await sleep 5
+		return lLines.join(',')
+
+	utest.equal 972, await run1(), 'abc,def,ghi'
+	)()
+
+(() =>
+	lLines = undef
+	LOG = (str) =>
+		lLines.push str
+
+	run2 = () =>
+
+		lLines = []
+		schedule 1, 1, LOG, 'abc'
+		schedule 2, 2, LOG, 'def'
+		schedule 3, 1, LOG, 'ghi'
+		await sleep 5
+		return lLines.join(',')
+
+	utest.equal 989, await run2(), 'def,ghi'
 	)()

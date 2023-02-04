@@ -67,7 +67,9 @@ import {
   extractMatches,
   forEachLine,
   mapEachLine,
-  getProxy
+  getProxy,
+  sleep,
+  schedule
 } from '@jdeighan/base-utils';
 
 // ---------------------------------------------------------------------------
@@ -1602,4 +1604,41 @@ GHI`);
   h.task = 'nothing';
   utest.equal(944, hToDo.task, 'do something');
   return utest.equal(945, h.task, 'DO SOMETHING');
+})();
+
+// ---------------------------------------------------------------------------
+// test doDelayed()
+(async() => {
+  var LOG, lLines, run1;
+  lLines = undef;
+  LOG = (str) => {
+    return lLines.push(str);
+  };
+  run1 = async() => {
+    lLines = [];
+    schedule(1, 1, LOG, 'abc');
+    schedule(2, 2, LOG, 'def');
+    await sleep(5);
+    schedule(3, 1, LOG, 'ghi');
+    await sleep(5);
+    return lLines.join(',');
+  };
+  return utest.equal(972, (await run1()), 'abc,def,ghi');
+})();
+
+(async() => {
+  var LOG, lLines, run2;
+  lLines = undef;
+  LOG = (str) => {
+    return lLines.push(str);
+  };
+  run2 = async() => {
+    lLines = [];
+    schedule(1, 1, LOG, 'abc');
+    schedule(2, 2, LOG, 'def');
+    schedule(3, 1, LOG, 'ghi');
+    await sleep(5);
+    return lLines.join(',');
+  };
+  return utest.equal(989, (await run2()), 'def,ghi');
 })();
