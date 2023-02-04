@@ -66,7 +66,8 @@ import {
   isArrayOfHashes,
   extractMatches,
   forEachLine,
-  mapEachLine
+  mapEachLine,
+  getProxy
 } from '@jdeighan/base-utils';
 
 // ---------------------------------------------------------------------------
@@ -1569,4 +1570,36 @@ GHI`);
     sourceType: 'script',
     type: 'Program'
   });
+})();
+
+// ---------------------------------------------------------------------------
+// test getProxy()
+(() => {
+  var h, hToDo;
+  hToDo = {
+    task: 'go shopping',
+    notes: 'broccoli, milk'
+  };
+  // ..........................................................
+  h = getProxy(hToDo, {
+    get: function(obj, prop, value) {
+      return value.toUpperCase(); // return in upper case
+    },
+    set: function(obj, prop, value) {
+      // --- only allow setting tasks to 'do <something>'
+      if ((prop === 'task') && (value.indexOf('do ') !== 0)) {
+        return undef;
+      } else {
+        return value;
+      }
+    }
+  });
+  utest.equal(944, hToDo.task, 'go shopping');
+  utest.equal(945, h.task, 'GO SHOPPING');
+  h.task = 'do something';
+  utest.equal(944, hToDo.task, 'do something');
+  utest.equal(945, h.task, 'DO SOMETHING');
+  h.task = 'nothing';
+  utest.equal(944, hToDo.task, 'do something');
+  return utest.equal(945, h.task, 'DO SOMETHING');
 })();

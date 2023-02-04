@@ -16,7 +16,7 @@ import {
 	rtrim, words, hasChar, quoted, getOptions, range,
 	oneof, uniq, rtrunc, ltrunc, CWS, className,
 	isArrayOfStrings, isArrayOfHashes, extractMatches,
-	forEachLine, mapEachLine,
+	forEachLine, mapEachLine, getProxy,
 	} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
@@ -913,5 +913,44 @@ utest.equal 713, getOptions(), {}
 		sourceType: 'script',
 		type: 'Program',
 		}
+
+	)()
+
+# ---------------------------------------------------------------------------
+# test getProxy()
+
+(() =>
+	hToDo = {
+		task: 'go shopping'
+		notes: 'broccoli, milk'
+		}
+
+	# ..........................................................
+
+	h = getProxy hToDo, {
+
+		get: (obj, prop, value) ->
+
+			return value.toUpperCase() # return in upper case
+
+		set: (obj, prop, value) ->
+			# --- only allow setting tasks to 'do <something>'
+
+			if (prop == 'task') && (value.indexOf('do ') != 0)
+				return undef
+			else
+				return value
+		}
+
+	utest.equal 944, hToDo.task, 'go shopping'
+	utest.equal 945, h.task, 'GO SHOPPING'
+
+	h.task = 'do something'
+	utest.equal 944, hToDo.task, 'do something'
+	utest.equal 945, h.task, 'DO SOMETHING'
+
+	h.task = 'nothing'
+	utest.equal 944, hToDo.task, 'do something'
+	utest.equal 945, h.task, 'DO SOMETHING'
 
 	)()

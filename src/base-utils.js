@@ -1025,17 +1025,19 @@ export var getProxy = (obj, hCallbacks) => {
   hHandlers = {};
   if (hCallbacks.hasOwnProperty('set')) {
     hHandlers.set = function(obj, prop, value) {
-      Reflect.set(obj, prop, value);
-      hCallbacks.set();
+      var newval;
+      newval = hCallbacks.set(obj, prop, value);
+      if (defined(newval)) { // don't set if callback returns false
+        Reflect.set(obj, prop, newval);
+      }
       return true;
     };
   }
   if (hCallbacks.hasOwnProperty('get')) {
     hHandlers.get = function(obj, prop) {
-      var newval, value;
+      var value;
       value = Reflect.get(obj, prop);
-      newval = hCallbacks.get(value);
-      return newval;
+      return hCallbacks.get(obj, prop, value);
     };
   }
   if (isEmpty(hHandlers)) {
