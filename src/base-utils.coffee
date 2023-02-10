@@ -736,7 +736,7 @@ export rtrim = (line) =>
 
 # ---------------------------------------------------------------------------
 
-hashFromString = (str) =>
+export hashFromString = (str) =>
 
 	assert isString(str), "not a string: #{OL(str)}"
 	h = {}
@@ -753,8 +753,13 @@ hashFromString = (str) =>
 			if nonEmpty(eq)
 				assert isEmpty(neg), "negation with string value"
 
-				# --- TO DO: interpret backslash escapes
-				h[ident] = str
+				# --- check if str is a valid number
+				num = parseFloat(str)
+				if isNaN(num)
+					# --- TO DO: interpret backslash escapes
+					h[ident] = str
+				else
+					h[ident] = num
 			else if neg
 				h[ident] = false
 			else
