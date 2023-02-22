@@ -13,7 +13,8 @@
 		"./taml": "./src/taml.js",
 		"./exceptions": "./src/exceptions.js",
 		"./v8-stack": "./src/v8-stack.js",
-		"./utest": "./src/SimpleUnitTester.js"
+		"./utest": "./src/SimpleUnitTester.js",
+		"./package.json": "./package.json"
 	},
 	"scripts": {
 		"build": "cls && coffee -c .",

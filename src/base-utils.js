@@ -373,7 +373,9 @@ export var jsType = (x) => {
   }
   switch (typeof x) {
     case 'number':
-      if (Number.isInteger(x)) {
+      if (Number.isNaN(x)) {
+        return [undef, 'NaN'];
+      } else if (Number.isInteger(x)) {
         return ['number', 'integer'];
       } else {
         return ['number', undef];
@@ -856,7 +858,7 @@ export var hashFromString = (str) => {
         assert(isEmpty(neg), "negation with string value");
         // --- check if str is a valid number
         num = parseFloat(str);
-        if (isNaN(num)) {
+        if (Number.isNaN(num)) {
           // --- TO DO: interpret backslash escapes
           h[ident] = str;
         } else {

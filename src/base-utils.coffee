@@ -337,7 +337,9 @@ export jsType = (x) =>
 
 	switch (typeof x)
 		when 'number'
-			if Number.isInteger(x)
+			if Number.isNaN(x)
+				return [undef, 'NaN']
+			else if Number.isInteger(x)
 				return ['number', 'integer']
 			else
 				return ['number', undef]
@@ -755,7 +757,7 @@ export hashFromString = (str) =>
 
 				# --- check if str is a valid number
 				num = parseFloat(str)
-				if isNaN(num)
+				if Number.isNaN(num)
 					# --- TO DO: interpret backslash escapes
 					h[ident] = str
 				else
