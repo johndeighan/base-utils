@@ -8,14 +8,14 @@ import {
 	undef, pass, defined, notdefined, tabify, untabify, prefixBlock,
 	escapeStr, OL, OLS, inList,  isHashComment, splitPrefix,
 	isString, isNumber, isInteger, isHash, isArray, isBoolean,
-	isClass, isConstructor, removeKeys,
+	isClass, isConstructor, removeKeys, extractMatches,
 	isFunction, isRegExp, isObject, jsType,
 	isEmpty, nonEmpty, isNonEmptyString, isIdentifier,
 	isFunctionName, isIterable, hashFromString,
 	blockToArray, arrayToBlock, toArray, toBlock,
 	rtrim, words, hasChar, quoted, getOptions, range,
 	oneof, uniq, rtrunc, ltrunc, CWS, className,
-	isArrayOfStrings, isArrayOfHashes, extractMatches,
+	isArrayOfStrings, isArrayOfHashes, isArrayOfArrays,
 	forEachLine, mapEachLine, getProxy, sleep, schedule,
 	} from '@jdeighan/base-utils'
 
@@ -540,16 +540,33 @@ utest.truthy 539, isArrayOfStrings(['a',undef, null, 'b'])
 
 # ---------------------------------------------------------------------------
 
-utest.truthy 543, isArrayOfHashes([])
-utest.truthy 544, isArrayOfHashes([{}, {}])
-utest.truthy 545, isArrayOfHashes([{a:1, b:2}, {}])
-utest.truthy 546, isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, {}])
-utest.truthy 547, isArrayOfHashes([{a:1, b:2}, undef, null, {}])
+utest.truthy 543, isArrayOfArrays([])
+utest.truthy 544, isArrayOfArrays([[], []])
+utest.truthy 545, isArrayOfArrays([[1,2], []])
+utest.truthy 546, isArrayOfArrays([[1,2,[1,2,3]], []])
+utest.truthy 547, isArrayOfArrays([[1,2], undef, null, []])
 
-utest.falsy  549, isArrayOfHashes({})
-utest.falsy  550, isArrayOfHashes([1,2,3])
-utest.falsy  551, isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, 4])
-utest.falsy  552, isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, {}, [1,2]])
+utest.falsy  549, isArrayOfArrays({})
+utest.falsy  550, isArrayOfArrays([1,2,3])
+utest.falsy  551, isArrayOfArrays([[1,2,[3,4]], 4])
+utest.falsy  552, isArrayOfArrays([[1,2,[3,4]], [], {a:1,b:2}])
+
+utest.truthy 554, isArrayOfArrays([[1,2],[3,4],[4,5]], 2)
+utest.falsy  555, isArrayOfArrays([[1,2],[3],[4,5]], 2)
+utest.falsy  556, isArrayOfArrays([[1,2],[3,4,5],[4,5]], 2)
+
+# ---------------------------------------------------------------------------
+
+utest.truthy 560, isArrayOfHashes([])
+utest.truthy 561, isArrayOfHashes([{}, {}])
+utest.truthy 562, isArrayOfHashes([{a:1, b:2}, {}])
+utest.truthy 563, isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, {}])
+utest.truthy 564, isArrayOfHashes([{a:1, b:2}, undef, null, {}])
+
+utest.falsy  566, isArrayOfHashes({})
+utest.falsy  567, isArrayOfHashes([1,2,3])
+utest.falsy  568, isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, 4])
+utest.falsy  569, isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, {}, [1,2]])
 
 # ---------------------------------------------------------------------------
 
@@ -568,79 +585,79 @@ utest.falsy  552, isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, {}, [1,2]])
 	s = 'utest'
 	s2 = new String('abc')
 
-	utest.truthy 571, isHash(h)
-	utest.falsy  572, isHash(l)
-	utest.falsy  573, isHash(o)
-	utest.falsy  574, isHash(n)
-	utest.falsy  575, isHash(n2)
-	utest.falsy  576, isHash(s)
-	utest.falsy  577, isHash(s2)
+	utest.truthy 588, isHash(h)
+	utest.falsy  589, isHash(l)
+	utest.falsy  590, isHash(o)
+	utest.falsy  591, isHash(n)
+	utest.falsy  592, isHash(n2)
+	utest.falsy  593, isHash(s)
+	utest.falsy  594, isHash(s2)
 
-	utest.falsy  579, isArray(h)
-	utest.truthy 580, isArray(l)
-	utest.falsy  581, isArray(o)
-	utest.falsy  582, isArray(n)
-	utest.falsy  583, isArray(n2)
-	utest.falsy  584, isArray(s)
-	utest.falsy  585, isArray(s2)
+	utest.falsy  596, isArray(h)
+	utest.truthy 597, isArray(l)
+	utest.falsy  598, isArray(o)
+	utest.falsy  599, isArray(n)
+	utest.falsy  600, isArray(n2)
+	utest.falsy  601, isArray(s)
+	utest.falsy  602, isArray(s2)
 
-	utest.falsy  587, isString(undef)
-	utest.falsy  588, isString(h)
-	utest.falsy  589, isString(l)
-	utest.falsy  590, isString(o)
-	utest.falsy  591, isString(n)
-	utest.falsy  592, isString(n2)
-	utest.truthy 593, isString(s)
-	utest.truthy 594, isString(s2)
+	utest.falsy  604, isString(undef)
+	utest.falsy  605, isString(h)
+	utest.falsy  606, isString(l)
+	utest.falsy  607, isString(o)
+	utest.falsy  608, isString(n)
+	utest.falsy  609, isString(n2)
+	utest.truthy 610, isString(s)
+	utest.truthy 611, isString(s2)
 
-	utest.falsy  596, isObject(h)
-	utest.falsy  597, isObject(l)
-	utest.truthy 598, isObject(o)
-	utest.truthy 599, isObject(o, ['name','doIt'])
-	utest.falsy  600, isObject(o, ['name','doIt','missing'])
-	utest.falsy  601, isObject(n)
-	utest.falsy  602, isObject(n2)
-	utest.falsy  603, isObject(s)
-	utest.falsy  604, isObject(s2)
+	utest.falsy  613, isObject(h)
+	utest.falsy  614, isObject(l)
+	utest.truthy 615, isObject(o)
+	utest.truthy 616, isObject(o, ['name','doIt'])
+	utest.falsy  617, isObject(o, ['name','doIt','missing'])
+	utest.falsy  618, isObject(n)
+	utest.falsy  619, isObject(n2)
+	utest.falsy  620, isObject(s)
+	utest.falsy  621, isObject(s2)
 
-	utest.falsy  606, isNumber(h)
-	utest.falsy  607, isNumber(l)
-	utest.falsy  608, isNumber(o)
-	utest.truthy 609, isNumber(n)
-	utest.truthy 610, isNumber(n2)
-	utest.falsy  611, isNumber(s)
-	utest.falsy  612, isNumber(s2)
+	utest.falsy  623, isNumber(h)
+	utest.falsy  624, isNumber(l)
+	utest.falsy  625, isNumber(o)
+	utest.truthy 626, isNumber(n)
+	utest.truthy 627, isNumber(n2)
+	utest.falsy  628, isNumber(s)
+	utest.falsy  629, isNumber(s2)
 
-	utest.truthy 614, isNumber(42.0, {min: 42.0})
-	utest.falsy  615, isNumber(42.0, {min: 42.1})
-	utest.truthy 616, isNumber(42.0, {max: 42.0})
-	utest.falsy  617, isNumber(42.0, {max: 41.9})
+	utest.truthy 631, isNumber(42.0, {min: 42.0})
+	utest.falsy  632, isNumber(42.0, {min: 42.1})
+	utest.truthy 633, isNumber(42.0, {max: 42.0})
+	utest.falsy  634, isNumber(42.0, {max: 41.9})
 	)()
 
 # ---------------------------------------------------------------------------
 
-utest.truthy 622, isFunction(() -> pass)
-utest.falsy  623, isFunction(23)
+utest.truthy 639, isFunction(() -> pass)
+utest.falsy  640, isFunction(23)
 
-utest.truthy 625, isInteger(42)
-utest.truthy 626, isInteger(new Number(42))
-utest.falsy  627, isInteger('abc')
-utest.falsy  628, isInteger({})
-utest.falsy  629, isInteger([])
-utest.truthy 630, isInteger(42, {min:  0})
-utest.falsy  631, isInteger(42, {min: 50})
-utest.truthy 632, isInteger(42, {max: 50})
-utest.falsy  633, isInteger(42, {max:  0})
-
-# ---------------------------------------------------------------------------
-
-utest.equal 637, OL(undef), "undef"
-utest.equal 638, OL("\t\tabc\nxyz"), "'→→abc®xyz'"
-utest.equal 639, OL({a:1, b:'xyz'}), '{"a":1,"b":"xyz"}'
+utest.truthy 642, isInteger(42)
+utest.truthy 643, isInteger(new Number(42))
+utest.falsy  644, isInteger('abc')
+utest.falsy  645, isInteger({})
+utest.falsy  646, isInteger([])
+utest.truthy 647, isInteger(42, {min:  0})
+utest.falsy  648, isInteger(42, {min: 50})
+utest.truthy 649, isInteger(42, {max: 50})
+utest.falsy  650, isInteger(42, {max:  0})
 
 # ---------------------------------------------------------------------------
 
-utest.equal 643, CWS("""
+utest.equal 654, OL(undef), "undef"
+utest.equal 655, OL("\t\tabc\nxyz"), "'→→abc®xyz'"
+utest.equal 656, OL({a:1, b:'xyz'}), '{"a":1,"b":"xyz"}'
+
+# ---------------------------------------------------------------------------
+
+utest.equal 660, CWS("""
 		a utest
 		error message
 		"""), "a utest error message"
@@ -648,47 +665,47 @@ utest.equal 643, CWS("""
 # ---------------------------------------------------------------------------
 # test isRegExp()
 
-utest.truthy 651, isRegExp(/^abc$/)
-utest.truthy 652, isRegExp(///^
+utest.truthy 668, isRegExp(/^abc$/)
+utest.truthy 669, isRegExp(///^
 		\s*
 		where
 		\s+
 		areyou
 		$///)
-utest.falsy  658, isRegExp(42)
-utest.falsy  659, isRegExp('abc')
-utest.falsy  660, isRegExp([1,'a'])
-utest.falsy  661, isRegExp({a:1, b:'ccc'})
-utest.falsy  662, isRegExp(undef)
+utest.falsy  675, isRegExp(42)
+utest.falsy  676, isRegExp('abc')
+utest.falsy  677, isRegExp([1,'a'])
+utest.falsy  678, isRegExp({a:1, b:'ccc'})
+utest.falsy  679, isRegExp(undef)
 
-utest.truthy 664, isRegExp(/\.coffee/)
+utest.truthy 681, isRegExp(/\.coffee/)
 
 # ---------------------------------------------------------------------------
 
-utest.equal 668, extractMatches("..3 and 4 plus 5", /\d+/g, parseInt),
+utest.equal 685, extractMatches("..3 and 4 plus 5", /\d+/g, parseInt),
 	[3, 4, 5]
-utest.equal 670, extractMatches("And This Is A String", /A/g), ['A','A']
+utest.equal 687, extractMatches("And This Is A String", /A/g), ['A','A']
 
 # ---------------------------------------------------------------------------
 
-utest.truthy 674, notdefined(undef)
-utest.truthy 675, notdefined(null)
-utest.truthy 676, defined('')
-utest.truthy 677, defined(5)
-utest.truthy 678, defined([])
-utest.truthy 679, defined({})
+utest.truthy 691, notdefined(undef)
+utest.truthy 692, notdefined(null)
+utest.truthy 693, defined('')
+utest.truthy 694, defined(5)
+utest.truthy 695, defined([])
+utest.truthy 696, defined({})
 
-utest.falsy 681, defined(undef)
-utest.falsy 682, defined(null)
-utest.falsy 683, notdefined('')
-utest.falsy 684, notdefined(5)
-utest.falsy 685, notdefined([])
-utest.falsy 686, notdefined({})
+utest.falsy 698, defined(undef)
+utest.falsy 699, defined(null)
+utest.falsy 700, notdefined('')
+utest.falsy 701, notdefined(5)
+utest.falsy 702, notdefined([])
+utest.falsy 703, notdefined({})
 
 # ---------------------------------------------------------------------------
 
-utest.truthy 690, isIterable([])
-utest.truthy 691, isIterable(['a','b'])
+utest.truthy 707, isIterable([])
+utest.truthy 708, isIterable(['a','b'])
 
 gen = () ->
 	yield 1
@@ -696,7 +713,7 @@ gen = () ->
 	yield 3
 	return
 
-utest.truthy 699, isIterable(gen())
+utest.truthy 716, isIterable(gen())
 
 # ---------------------------------------------------------------------------
 
@@ -705,16 +722,16 @@ utest.truthy 699, isIterable(gen())
 		constructor: (str) ->
 			@mystr = str
 
-	utest.equal 708, className(MyClass), 'MyClass'
+	utest.equal 725, className(MyClass), 'MyClass'
 
 	)()
 
 # ---------------------------------------------------------------------------
 
-utest.equal 714, getOptions('a b c'), {'a':true, 'b':true, 'c':true}
-utest.equal 715, getOptions('abc'), {'abc':true}
-utest.equal 716, getOptions({'a':true, 'b':false, 'c':42}), {'a':true, 'b':false, 'c':42}
-utest.equal 717, getOptions(), {}
+utest.equal 731, getOptions('a b c'), {'a':true, 'b':true, 'c':true}
+utest.equal 732, getOptions('abc'), {'abc':true}
+utest.equal 733, getOptions({'a':true, 'b':false, 'c':42}), {'a':true, 'b':false, 'c':42}
+utest.equal 734, getOptions(), {}
 
 # ---------------------------------------------------------------------------
 # --- test forEachLine
@@ -729,7 +746,7 @@ utest.equal 717, getOptions(), {}
 	forEachLine block, (line) =>
 		lResult.push line.toUpperCase()
 		return false
-	utest.equal 732, lResult, ['ABC','DEF', 'GHI']
+	utest.equal 749, lResult, ['ABC','DEF', 'GHI']
 	)()
 
 (() =>
@@ -745,7 +762,7 @@ utest.equal 717, getOptions(), {}
 		lResult.push line.toUpperCase()
 		return false
 
-	utest.equal 748, lResult, ['ABC','DEF']
+	utest.equal 765, lResult, ['ABC','DEF']
 	)()
 
 (() =>
@@ -754,7 +771,7 @@ utest.equal 717, getOptions(), {}
 	forEachLine item, (line) =>
 		lResult.push line.toUpperCase()
 		return false
-	utest.equal 757, lResult, ['ABC','DEF', 'GHI']
+	utest.equal 774, lResult, ['ABC','DEF', 'GHI']
 	)()
 
 (() =>
@@ -766,7 +783,7 @@ utest.equal 717, getOptions(), {}
 		lResult.push line.toUpperCase()
 		return false
 
-	utest.equal 769, lResult, ['ABC','DEF']
+	utest.equal 786, lResult, ['ABC','DEF']
 	)()
 
 (() =>
@@ -778,7 +795,7 @@ utest.equal 717, getOptions(), {}
 		lResult.push "#{hInfo.lineNum} #{line.toUpperCase()} #{hInfo.nextLine}"
 		return false
 
-	utest.equal 781, lResult, ['1 ABC def','2 DEF ghi']
+	utest.equal 798, lResult, ['1 ABC def','2 DEF ghi']
 	)()
 
 # ---------------------------------------------------------------------------
@@ -792,7 +809,7 @@ utest.equal 717, getOptions(), {}
 		"""
 	newblock = mapEachLine block, (line) =>
 		return line.toUpperCase()
-	utest.equal 795, newblock, """
+	utest.equal 812, newblock, """
 		ABC
 		DEF
 		GHI
@@ -810,7 +827,7 @@ utest.equal 717, getOptions(), {}
 			return undef
 		else
 			return line.toUpperCase()
-	utest.equal 813, newblock, """
+	utest.equal 830, newblock, """
 		ABC
 		GHI
 		"""
@@ -820,7 +837,7 @@ utest.equal 717, getOptions(), {}
 	item = ['abc','def','ghi']
 	newblock = mapEachLine item, (line) =>
 		return line.toUpperCase()
-	utest.equal 823, newblock, [
+	utest.equal 840, newblock, [
 		'ABC'
 		'DEF'
 		'GHI'
@@ -834,7 +851,7 @@ utest.equal 717, getOptions(), {}
 			return undef
 		else
 			return line.toUpperCase()
-	utest.equal 837, newblock, [
+	utest.equal 854, newblock, [
 		'ABC'
 		'GHI'
 		]
@@ -849,7 +866,7 @@ utest.equal 717, getOptions(), {}
 			return "#{hInfo.lineNum} #{line.toUpperCase()} #{hInfo.nextLine}"
 		else
 			return "#{hInfo.lineNum} #{line.toUpperCase()}"
-	utest.equal 852, newblock, [
+	utest.equal 869, newblock, [
 		'1 ABC def'
 		'3 GHI'
 		]
@@ -875,7 +892,7 @@ utest.equal 717, getOptions(), {}
 		type: 'Program',
 		}
 
-	utest.equal 878, removeKeys(hAST, ['start','end']), {
+	utest.equal 895, removeKeys(hAST, ['start','end']), {
 		body: [
 			{
 				declarations: Array [{}],
@@ -906,7 +923,7 @@ utest.equal 717, getOptions(), {}
 		type: 'Program',
 		}
 
-	utest.equal 909, removeKeys(hAST, ['start','end']), {
+	utest.equal 926, removeKeys(hAST, ['start','end']), {
 		body: [
 			{
 				declarations: Array [{}],
@@ -946,16 +963,16 @@ utest.equal 717, getOptions(), {}
 				return value
 		}
 
-	utest.equal 949, hToDo.task, 'go shopping'
-	utest.equal 950, h.task, 'GO SHOPPING'
+	utest.equal 966, hToDo.task, 'go shopping'
+	utest.equal 967, h.task, 'GO SHOPPING'
 
 	h.task = 'do something'
-	utest.equal 953, hToDo.task, 'do something'
-	utest.equal 954, h.task, 'DO SOMETHING'
+	utest.equal 970, hToDo.task, 'do something'
+	utest.equal 971, h.task, 'DO SOMETHING'
 
 	h.task = 'nothing'
-	utest.equal 957, hToDo.task, 'do something'
-	utest.equal 958, h.task, 'DO SOMETHING'
+	utest.equal 974, hToDo.task, 'do something'
+	utest.equal 975, h.task, 'DO SOMETHING'
 
 	)()
 
@@ -976,7 +993,7 @@ utest.equal 717, getOptions(), {}
 		await sleep 5
 		return lLines.join(',')
 
-	utest.equal 979, await run1(), 'abc,def,ghi'
+	utest.equal 996, await run1(), 'abc,def,ghi'
 	)()
 
 (() =>
@@ -993,5 +1010,5 @@ utest.equal 717, getOptions(), {}
 		await sleep 5
 		return lLines.join(',')
 
-	utest.equal 996, await run2(), 'def,ghi'
+	utest.equal 1013, await run2(), 'def,ghi'
 	)()

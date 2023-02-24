@@ -489,6 +489,21 @@ export isArray = (x) =>
 
 # ---------------------------------------------------------------------------
 
+export isArrayOfArrays = (lItems, size=undef) =>
+	# --- undefined items are allowed
+
+	if ! isArray(lItems)
+		return false
+	for item in lItems
+		if defined(item)
+			if ! isArray(item)
+				return false
+			if defined(size) && (item.length != size)
+				return false
+	return true
+
+# ---------------------------------------------------------------------------
+
 export isArrayOfHashes = (lItems) =>
 	# --- undefined items are allowed
 

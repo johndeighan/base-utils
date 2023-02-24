@@ -537,6 +537,26 @@ export var isArray = (x) => {
 };
 
 // ---------------------------------------------------------------------------
+export var isArrayOfArrays = (lItems, size = undef) => {
+  var item, j, len;
+  if (!isArray(lItems)) {
+    return false;
+  }
+  for (j = 0, len = lItems.length; j < len; j++) {
+    item = lItems[j];
+    if (defined(item)) {
+      if (!isArray(item)) {
+        return false;
+      }
+      if (defined(size) && (item.length !== size)) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
+// ---------------------------------------------------------------------------
 export var isArrayOfHashes = (lItems) => {
   var item, j, len;
   if (!isArray(lItems)) {
