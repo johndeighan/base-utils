@@ -42,10 +42,12 @@ export echoMyLogs = (flag=true) =>
 
 export clearMyLogs = () =>
 
-	caller = getMyOutsideCaller().source
+	caller = getMyOutsideCaller()
+	if notdefined(caller) || ! caller.source
+		return
 	lNewLogs = []
 	for h in lNamedLogs
-		if (h.caller != caller)
+		if (h.caller != caller.source)
 			lNewLogs.push h
 	lNamedLogs = lNewLogs
 	return

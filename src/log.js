@@ -86,11 +86,14 @@ export var echoMyLogs = (flag = true) => {
 // ---------------------------------------------------------------------------
 export var clearMyLogs = () => {
   var caller, h, i, lNewLogs, len;
-  caller = getMyOutsideCaller().source;
+  caller = getMyOutsideCaller();
+  if (notdefined(caller) || !caller.source) {
+    return;
+  }
   lNewLogs = [];
   for (i = 0, len = lNamedLogs.length; i < len; i++) {
     h = lNamedLogs[i];
-    if (h.caller !== caller) {
+    if (h.caller !== caller.source) {
       lNewLogs.push(h);
     }
   }
