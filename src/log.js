@@ -75,11 +75,14 @@ hEchoLogs = {}; // { <source> => true }
 // ---------------------------------------------------------------------------
 export var echoMyLogs = (flag = true) => {
   var caller;
-  caller = getMyOutsideCaller().source;
+  caller = getMyOutsideCaller();
+  if (notdefined(caller) || !caller.source) {
+    return;
+  }
   if (flag) {
-    hEchoLogs[caller] = true;
+    hEchoLogs[caller.source] = true;
   } else {
-    delete hEchoLogs[caller];
+    delete hEchoLogs[caller.source];
   }
 };
 
@@ -108,11 +111,14 @@ export var clearAllLogs = () => {
 // ---------------------------------------------------------------------------
 export var getMyLog = () => {
   var caller, h, i, lLines, len, result;
-  caller = getMyOutsideCaller().source;
+  caller = getMyOutsideCaller();
+  if (notdefined(caller) || !caller.source) {
+    return undef;
+  }
   lLines = [];
   for (i = 0, len = lNamedLogs.length; i < len; i++) {
     h = lNamedLogs[i];
-    if (h.caller === caller) {
+    if (h.caller === caller.source) {
       lLines.push(h.str);
     }
   }
@@ -126,8 +132,7 @@ export var getMyLog = () => {
 
 // ---------------------------------------------------------------------------
 export var getAllLogs = () => {
-  var caller, h, i, lLines, len;
-  caller = getMyOutsideCaller().source;
+  var h, i, lLines, len;
   lLines = [];
   for (i = 0, len = lNamedLogs.length; i < len; i++) {
     h = lNamedLogs[i];
@@ -145,9 +150,15 @@ export var dumpLog = (label, theLog, hOptions = {}) => {
 export var PUTSTR = (str) => {
   var caller;
   str = rtrim(str);
-  caller = getMyOutsideCaller().source;
-  lNamedLogs.push({caller, str});
-  if (defined(hEchoLogs[caller])) {
+  caller = getMyOutsideCaller();
+  if (notdefined(caller) || !caller.source) {
+    return undef;
+  }
+  lNamedLogs.push({
+    caller: caller.source,
+    str
+  });
+  if (defined(hEchoLogs[caller.source])) {
     if ((putstr === console.log) || notdefined(putstr)) {
       console.log(untabify(str));
     } else {

@@ -31,11 +31,13 @@ hEchoLogs = {}     # { <source> => true }
 
 export echoMyLogs = (flag=true) =>
 
-	caller = getMyOutsideCaller().source
+	caller = getMyOutsideCaller()
+	if notdefined(caller) || ! caller.source
+		return
 	if flag
-		hEchoLogs[caller] = true
+		hEchoLogs[caller.source] = true
 	else
-		delete hEchoLogs[caller]
+		delete hEchoLogs[caller.source]
 	return
 
 # ---------------------------------------------------------------------------
@@ -63,10 +65,12 @@ export clearAllLogs = () =>
 
 export getMyLog = () =>
 
-	caller = getMyOutsideCaller().source
+	caller = getMyOutsideCaller()
+	if notdefined(caller) || ! caller.source
+		return undef
 	lLines = []
 	for h in lNamedLogs
-		if (h.caller == caller)
+		if (h.caller == caller.source)
 			lLines.push h.str
 	result = lLines.join("\n")
 	if isEmpty(result)
@@ -78,7 +82,6 @@ export getMyLog = () =>
 
 export getAllLogs = () =>
 
-	caller = getMyOutsideCaller().source
 	lLines = []
 	for h in lNamedLogs
 		lLines.push h.str
@@ -96,10 +99,15 @@ export dumpLog = (label, theLog, hOptions={}) =>
 export PUTSTR = (str) =>
 
 	str = rtrim(str)
-	caller = getMyOutsideCaller().source
-	lNamedLogs.push {caller, str}
+	caller = getMyOutsideCaller()
+	if notdefined(caller) || ! caller.source
+		return undef
+	lNamedLogs.push {
+		caller: caller.source,
+		str
+		}
 
-	if defined(hEchoLogs[caller])
+	if defined(hEchoLogs[caller.source])
 		if (putstr == console.log) || notdefined(putstr)
 			console.log untabify(str)
 		else
