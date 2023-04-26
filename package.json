@@ -11,6 +11,7 @@
 		"./stack": "./src/stack.js",
 		"./prefix": "./src/prefix.js",
 		"./taml": "./src/taml.js",
+		"./machine": "./src/machine.js",
 		"./exceptions": "./src/exceptions.js",
 		"./v8-stack": "./src/v8-stack.js",
 		"./utest": "./src/SimpleUnitTester.js",
