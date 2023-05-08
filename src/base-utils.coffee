@@ -108,6 +108,14 @@ export splitPrefix = (line) =>
 	return [lMatches[1], lMatches[2]]
 
 # ---------------------------------------------------------------------------
+
+export hasPrefix = (line) =>
+
+	assert isString(line), "non-string #{OL(line)}"
+	lMatches = line.match(/^(\s*)/)
+	return (lMatches[1].length > 0)
+
+# ---------------------------------------------------------------------------
 #    tabify - convert leading spaces to TAB characters
 #             if numSpaces is not defined, then the first line
 #             that contains at least one space sets it

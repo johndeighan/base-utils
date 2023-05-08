@@ -108,6 +108,14 @@ export var splitPrefix = (line) => {
 };
 
 // ---------------------------------------------------------------------------
+export var hasPrefix = (line) => {
+  var lMatches;
+  assert(isString(line), `non-string ${OL(line)}`);
+  lMatches = line.match(/^(\s*)/);
+  return lMatches[1].length > 0;
+};
+
+// ---------------------------------------------------------------------------
 //    tabify - convert leading spaces to TAB characters
 //             if numSpaces is not defined, then the first line
 //             that contains at least one space sets it
