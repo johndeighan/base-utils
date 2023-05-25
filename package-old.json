@@ -33,8 +33,5 @@
 		"coffeescript": "^2.7.0",
 		"js-yaml": "^4.1.0",
 		"stack-utils": "^2.0.6"
-	},
-	"bin": {
-		"gen-bin-files": "./bin/gen-bin-files.js"
 	}
 }

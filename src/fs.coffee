@@ -54,6 +54,24 @@ export barf = (filepath, contents) =>
 	return
 
 # ---------------------------------------------------------------------------
+#   slurpJson - read a file into a string
+
+export slurpJson = (filepath) =>
+
+	filepath = filepath.replace(/\//g, "\\")
+	contents = fs.readFileSync(filepath, 'utf8').toString()
+	return JSON.parse(contents)
+
+# ---------------------------------------------------------------------------
+#   barfJson - write a string to a file
+
+export barfJson = (filepath, hJson) =>
+
+	contents = JSON.stringify(hJson, null, "\t")
+	fs.writeFileSync(filepath, contents)
+	return
+
+# ---------------------------------------------------------------------------
 
 export forEachFileInDir = (dir, func) =>
 	# --- callback will get parms (filename, dir)

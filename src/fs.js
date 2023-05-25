@@ -56,6 +56,23 @@ export var barf = (filepath, contents) => {
 };
 
 // ---------------------------------------------------------------------------
+//   slurpJson - read a file into a string
+export var slurpJson = (filepath) => {
+  var contents;
+  filepath = filepath.replace(/\//g, "\\");
+  contents = fs.readFileSync(filepath, 'utf8').toString();
+  return JSON.parse(contents);
+};
+
+// ---------------------------------------------------------------------------
+//   barfJson - write a string to a file
+export var barfJson = (filepath, hJson) => {
+  var contents;
+  contents = JSON.stringify(hJson, null, "\t");
+  fs.writeFileSync(filepath, contents);
+};
+
+// ---------------------------------------------------------------------------
 export var forEachFileInDir = (dir, func) => {
   var ent, i, len, ref;
   ref = fs.readdirSync(dir, {
