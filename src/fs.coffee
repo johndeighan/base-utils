@@ -1,7 +1,6 @@
 # fs.coffee
 
 import fs from 'fs'
-import CoffeeScript from 'coffeescript'
 
 import {nonEmpty} from '@jdeighan/base-utils'
 
@@ -94,19 +93,3 @@ export mkpath = (lParts...) =>
 		return "#{drive.toLowerCase()}:#{rest}"
 	else
 		return str
-
-# ---------------------------------------------------------------------------
-
-export brew = (coffeeCode, hOptions) ->
-	# --- Valid options:
-	#        shebang: <bool>   - add the shebang line
-
-	jsCode = CoffeeScript.compile(coffeeCode, {
-		bare: true
-		header: false
-		})
-
-	if hOptions.shebang
-		return "#!/usr/bin/env node\n" + jsCode.trim()
-	else
-		return jsCode.trim()
