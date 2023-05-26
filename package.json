@@ -20,7 +20,6 @@
 	},
 	"scripts": {
 		"build": "cls && coffee -c .",
-		"gen-bin-files": "npm run build && node ./bin/gen-bin-files.js",
 		"test": "npm run build && npx ava ./test/*.test.js && git status"
 	},
 	"keywords": [
@@ -35,6 +34,6 @@
 		"stack-utils": "^2.0.6"
 	},
 	"bin": {
-		"gen-bin-files": "./bin/gen-bin-files.js"
+		"gen-bin-key": "./bin/gen-bin-key.js"
 	}
 }

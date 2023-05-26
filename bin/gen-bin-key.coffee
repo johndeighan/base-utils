@@ -1,4 +1,4 @@
-# gen-bin-files.coffee
+# gen-bin-key.coffee
 
 import {nonEmpty} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
