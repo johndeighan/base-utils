@@ -15,11 +15,11 @@ import {
   isFile,
   isDir,
   mkpath,
+  rmFileSync,
   mkdirSync,
   slurp,
   barf,
   forEachFileInDir,
-  brew,
   slurpJson,
   barfJson
 } from '@jdeighan/base-utils/fs';
@@ -57,10 +57,13 @@ forEachFileInDir(binDir, (fname) => {
     switch (ext) {
       case 'coffee':
         assert(isFile(jsPath), `Missing file ${jsPath}`);
+        console.log(`FOUND ${fname} and ${jsFileName}`);
         return hBin[stub] = `./bin/${jsFileName}`;
       case 'js':
         jsCode = slurp(jsPath);
         if (!jsCode.startsWith("#!/usr/bin/env node")) {
+          console.log(`Adding shebang line to ${jsFileName}`);
+          rmFileSync(jsPath);
           return barf(jsPath, "#!/usr/bin/env node\n" + jsCode);
         }
     }

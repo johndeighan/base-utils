@@ -3,6 +3,11 @@
 import fs from 'fs';
 
 import {
+  assert,
+  croak
+} from '@jdeighan/base-utils/exceptions';
+
+import {
   nonEmpty
 } from '@jdeighan/base-utils';
 
@@ -22,6 +27,12 @@ export var isDir = (fullpath) => {
   } catch (error) {
     return false;
   }
+};
+
+// ---------------------------------------------------------------------------
+export var rmFileSync = (filepath) => {
+  assert(isFile(filepath), `${filepath} is not a file`);
+  fs.rmSync(filepath);
 };
 
 // ---------------------------------------------------------------------------

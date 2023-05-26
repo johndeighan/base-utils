@@ -3,9 +3,8 @@
 import {nonEmpty} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
-	isFile, isDir, mkpath, mkdirSync,
-	slurp, barf, forEachFileInDir, brew,
-	slurpJson, barfJson,
+	isFile, isDir, mkpath, rmFileSync, mkdirSync,
+	slurp, barf, forEachFileInDir, slurpJson, barfJson,
 	} from '@jdeighan/base-utils/fs'
 
 # ---------------------------------------------------------------------------
@@ -38,10 +37,13 @@ forEachFileInDir binDir, (fname) =>
 		switch ext
 			when 'coffee'
 				assert isFile(jsPath), "Missing file #{jsPath}"
+				console.log "FOUND #{fname} and #{jsFileName}"
 				hBin[stub] = "./bin/#{jsFileName}"
 			when 'js'
 				jsCode = slurp jsPath
 				if ! jsCode.startsWith("#!/usr/bin/env node")
+					console.log "Adding shebang line to #{jsFileName}"
+					rmFileSync jsPath
 					barf jsPath, "#!/usr/bin/env node\n" + jsCode
 
 # 5. Add sub-keys to key 'bin' in package.json (create if not exists)

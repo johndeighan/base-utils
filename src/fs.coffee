@@ -2,6 +2,7 @@
 
 import fs from 'fs'
 
+import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {nonEmpty} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
@@ -21,6 +22,14 @@ export isDir = (fullpath) =>
 		return fs.lstatSync(fullpath).isDirectory()
 	catch
 		return false
+
+# ---------------------------------------------------------------------------
+
+export rmFileSync = (filepath) =>
+
+	assert isFile(filepath), "#{filepath} is not a file"
+	fs.rmSync filepath
+	return
 
 # ---------------------------------------------------------------------------
 
