@@ -6,7 +6,7 @@ import {undef, isEmpty, nonEmpty} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	isFile, isDir, mkpath, rmFileSync, mkdirSync,
-	slurp, forEachFileInDir, slurpJson, barfJson,
+	slurp, forEachFileInDir, slurpJSON, barfJSON,
 	} from '@jdeighan/base-utils/fs'
 
 dir = process.cwd()
@@ -52,11 +52,11 @@ if isEmpty(hBin)
 	console.log "No bin keys to set"
 else
 	console.log "SET 'bin' key in package.json"
-	hJson = slurpJson pkgJsonPath
+	hJson = slurpJSON pkgJsonPath
 	if ! hJson.hasOwnProperty('bin')
 		hJson.bin = {}
 	for key,value of hBin
 		hJson.bin[key] = value
-	barfJson hJson, pkgJsonPath
+	barfJSON hJson, pkgJsonPath
 
 console.log "DONE"

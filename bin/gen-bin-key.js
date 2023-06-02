@@ -22,8 +22,8 @@ import {
   mkdirSync,
   slurp,
   forEachFileInDir,
-  slurpJson,
-  barfJson
+  slurpJSON,
+  barfJSON
 } from '@jdeighan/base-utils/fs';
 
 dir = process.cwd();
@@ -73,7 +73,7 @@ if (isEmpty(hBin)) {
   console.log("No bin keys to set");
 } else {
   console.log("SET 'bin' key in package.json");
-  hJson = slurpJson(pkgJsonPath);
+  hJson = slurpJSON(pkgJsonPath);
   if (!hJson.hasOwnProperty('bin')) {
     hJson.bin = {};
   }
@@ -81,7 +81,7 @@ if (isEmpty(hBin)) {
     value = hBin[key];
     hJson.bin[key] = value;
   }
-  barfJson(hJson, pkgJsonPath);
+  barfJSON(hJson, pkgJsonPath);
 }
 
 console.log("DONE");
