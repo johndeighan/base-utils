@@ -17,6 +17,11 @@ import {
   dbg
 } from '@jdeighan/base-utils/debug';
 
+import {
+  toTAML,
+  fromTAML
+} from '@jdeighan/base-utils/taml';
+
 // ---------------------------------------------------------------------------
 export var mkpath = (...lParts) => {
   var _, drive, lMatches, rest, str;
@@ -97,6 +102,18 @@ export var mkdirSync = (dirpath) => {
 };
 
 // ---------------------------------------------------------------------------
+export var fromJSON = (strJson) => {
+  // --- string to data structure
+  return JSON.parse(strJson);
+};
+
+// ---------------------------------------------------------------------------
+export var toJSON = (hJson) => {
+  // --- data structure to string
+  return JSON.stringify(hJson, null, "\t");
+};
+
+// ---------------------------------------------------------------------------
 //   slurp - read a file into a string
 export var slurp = (...lParts) => {
   var filePath;
@@ -106,18 +123,15 @@ export var slurp = (...lParts) => {
 };
 
 // ---------------------------------------------------------------------------
-//   barf - write a string to a file
-export var barf = (contents, ...lParts) => {
-  var filePath;
-  assert(lParts.length > 0, "Missing file path");
-  filePath = mkpath(...lParts);
-  fs.writeFileSync(filePath, contents);
+//   slurpJson - read a file into a hash
+export var slurpJSON = (...lParts) => {
+  return fromJSON(slurp(...lParts));
 };
 
 // ---------------------------------------------------------------------------
-//   slurpJson - read a file into a hash
-export var slurpJson = (...lParts) => {
-  return JSON.parse(slurp(...lParts));
+//   slurpTAML - read a file into a hash
+export var slurpTAML = (...lParts) => {
+  return fromTAML(slurp(...lParts));
 };
 
 // ---------------------------------------------------------------------------
@@ -134,12 +148,26 @@ export var slurpPkgJson = (...lParts) => {
 };
 
 // ---------------------------------------------------------------------------
+//   barf - write a string to a file
+export var barf = (contents, ...lParts) => {
+  var filePath;
+  assert(lParts.length > 0, "Missing file path");
+  filePath = mkpath(...lParts);
+  fs.writeFileSync(filePath, contents);
+};
+
+// ---------------------------------------------------------------------------
 //   barfJson - write a string to a file
-export var barfJson = (hJson, ...lParts) => {
-  var contents;
+export var barfJSON = (hJson, ...lParts) => {
   assert(isHash(hJson), "hJson not a hash");
-  contents = JSON.stringify(hJson, null, "\t");
-  barf(contents, lParts);
+  barf(toJSON(hJson), lParts);
+};
+
+// ---------------------------------------------------------------------------
+//   barfTAML - write a string to a file
+export var barfTAML = (hJson, ...lParts) => {
+  assert(isHash(hJson), "hJson not a hash");
+  barf(toTAML(hJson), lParts);
 };
 
 // ---------------------------------------------------------------------------

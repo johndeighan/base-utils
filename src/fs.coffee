@@ -5,6 +5,7 @@ import fs from 'fs'
 import {nonEmpty, isHash} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
+import {toTAML, fromTAML} from '@jdeighan/base-utils/taml'
 
 # ---------------------------------------------------------------------------
 
@@ -81,6 +82,20 @@ export mkdirSync = (dirpath) =>
 	return
 
 # ---------------------------------------------------------------------------
+
+export fromJSON = (strJson) =>
+	# --- string to data structure
+
+	return JSON.parse(strJson)
+
+# ---------------------------------------------------------------------------
+
+export toJSON = (hJson) =>
+	# --- data structure to string
+
+	return JSON.stringify(hJson, null, "\t")
+
+# ---------------------------------------------------------------------------
 #   slurp - read a file into a string
 
 export slurp = (lParts...) =>
@@ -90,21 +105,18 @@ export slurp = (lParts...) =>
 	return fs.readFileSync(filePath, 'utf8').toString()
 
 # ---------------------------------------------------------------------------
-#   barf - write a string to a file
-
-export barf = (contents, lParts...) =>
-
-	assert (lParts.length > 0), "Missing file path"
-	filePath = mkpath(lParts...)
-	fs.writeFileSync(filePath, contents)
-	return
-
-# ---------------------------------------------------------------------------
 #   slurpJson - read a file into a hash
 
-export slurpJson = (lParts...) =>
+export slurpJSON = (lParts...) =>
 
-	return JSON.parse(slurp(lParts...))
+	return fromJSON(slurp(lParts...))
+
+# ---------------------------------------------------------------------------
+#   slurpTAML - read a file into a hash
+
+export slurpTAML = (lParts...) =>
+
+	return fromTAML(slurp(lParts...))
 
 # ---------------------------------------------------------------------------
 #   slurpPkgJson - read package.json into a hash
@@ -119,13 +131,31 @@ export slurpPkgJson = (lParts...) =>
 	return slurpJson(pkgJsonPath)
 
 # ---------------------------------------------------------------------------
+#   barf - write a string to a file
+
+export barf = (contents, lParts...) =>
+
+	assert (lParts.length > 0), "Missing file path"
+	filePath = mkpath(lParts...)
+	fs.writeFileSync(filePath, contents)
+	return
+
+# ---------------------------------------------------------------------------
 #   barfJson - write a string to a file
 
-export barfJson = (hJson, lParts...) =>
+export barfJSON = (hJson, lParts...) =>
 
 	assert isHash(hJson), "hJson not a hash"
-	contents = JSON.stringify(hJson, null, "\t")
-	barf(contents, lParts)
+	barf(toJSON(hJson), lParts)
+	return
+
+# ---------------------------------------------------------------------------
+#   barfTAML - write a string to a file
+
+export barfTAML = (hJson, lParts...) =>
+
+	assert isHash(hJson), "hJson not a hash"
+	barf(toTAML(hJson), lParts)
 	return
 
 # ---------------------------------------------------------------------------
