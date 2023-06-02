@@ -81,7 +81,7 @@ test "line 21", (t) =>
 			source: 'C:/Users/johnd/base-utils/test/v8-module.js'
 			hFile: {
 				base: 'v8-module.js'
-				lineNum: 17
+				lineNum: 16
 				colNum: 10
 				}
 			}
@@ -91,7 +91,7 @@ test "line 21", (t) =>
 			source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
 			hFile: {
 				base: 'v8-stack.test.js'
-				lineNum: 83
+				lineNum: 82
 				colNum: 24
 				}
 			}
@@ -101,7 +101,7 @@ test "line 21", (t) =>
 			source: 'C:/Users/johnd/base-utils/test/v8-module.js'
 			hFile: {
 				base: 'v8-module.js'
-				lineNum: 17
+				lineNum: 16
 				colNum: 10
 				}
 			}
@@ -111,7 +111,7 @@ test "line 21", (t) =>
 			source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
 			hFile: {
 				base: 'v8-stack.test.js'
-				lineNum: 86
+				lineNum: 85
 				colNum: 17
 				}
 			}

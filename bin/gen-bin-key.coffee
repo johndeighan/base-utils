@@ -1,3 +1,5 @@
+`#!/usr/bin/env node
+`
 # gen-bin-key.coffee
 
 import {nonEmpty} from '@jdeighan/base-utils'
@@ -22,32 +24,58 @@ if ! isDir(binDir)
 	console.log "Missing directory #{binDir}"
 	process.exit()
 
-# 4. For every *.coffee file in the `bin` directory:
+# 4. For every *.coffee file in the 'bin' directory:
 #       - error if no corresponding JS file
 #       - save stub and filename in hBin
-#    For every *.js file
-#       - add a shebang line if not already there
+#       - add shebang line if not present
+#    For every *.js file in the 'bin' directory:
+#       - add shebang line if not present
 
 hBin = {}
 forEachFileInDir binDir, (fname) =>
-	if lMatches = fname.match(/// ^ (.*) \. (coffee | js) $ ///)
+	if lMatches = fname.match(/^(.*)\.(coffee|js)$/)
+		console.log "FOUND #{fname}"
 		[_, stub, ext] = lMatches
+		console.log "NOTE: ext = #{ext}"
 		jsFileName = "#{stub}.js"
 		jsPath = mkpath(dir, 'bin', jsFileName)
-		switch ext
-			when 'coffee'
-				assert isFile(jsPath), "Missing file #{jsPath}"
-				console.log "FOUND #{fname} and #{jsFileName}"
-				hBin[stub] = "./bin/#{jsFileName}"
-			when 'js'
-				jsCode = slurp jsPath
-				if ! jsCode.startsWith("#!/usr/bin/env node")
-					console.log "Adding shebang line to #{jsFileName}"
-					rmFileSync jsPath
-					barf jsPath, "#!/usr/bin/env node\n" + jsCode
+		coffeeFileName = "#{stub}.coffee"
+		coffeePath = mkpath(dir, 'bin', coffeeFileName)
+		if (ext == 'coffee')
+			assert isFile(jsPath), "Missing file #{jsPath}"
+			hBin[stub] = "./bin/#{jsFileName}"
+
+			# --- Add shebang line if not present
+			coffeeCode = slurp coffeePath
+
+			pos = coffeeCode.indexOf('\n')
+			if (pos == -1)
+				firstLine = coffeeCode
+			else
+				firstLine = coffeeCode.substring(0, pos)
+
+			if (firstLine.indexOf("#!/usr/bin/env node") == -1)
+				console.log "   - adding shebang line to #{coffeeFileName}"
+#				rmFileSync coffeePath
+				barf coffeePath, "`#!/usr/bin/env node\n`\n" + coffeeCode
+			else
+				console.log "   - file has shebang line"
+		else if (ext == 'js')
+			console.log "HAS js ext"
+			jsCode = slurp jsPath
+			console.log "AFTER slurp"
+			flag = jsCode.startsWith("#!/usr/bin/env node")
+			console.log "FLAG = #{flag}"
+			if flag
+				console.log "   - has shebang line
+			if ! flag
+				console.log "   - adding shebang line to #{jsFileName}"
+#				rmFileSync jsPath
+				barf jsPath, "#!/usr/bin/env node\n" + jsCode
 
 # 5. Add sub-keys to key 'bin' in package.json (create if not exists)
 if nonEmpty(hBin)
+	console.log "SET 'bin' key in package.json"
 	hJson = slurpJson pkgJsonPath
 	if ! hJson.hasOwnProperty('bin')
 		hJson.bin = {}

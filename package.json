@@ -19,7 +19,7 @@
 		"./package.json": "./package.json"
 	},
 	"scripts": {
-		"build": "cls && coffee -c .",
+		"build": "cls && coffee -c --no-header --bare .",
 		"test": "npm run build && npx ava ./test/*.test.js && git status"
 	},
 	"keywords": [

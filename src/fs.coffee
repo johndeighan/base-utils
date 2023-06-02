@@ -2,25 +2,52 @@
 
 import fs from 'fs'
 
-import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {nonEmpty} from '@jdeighan/base-utils'
+import {assert, croak} from '@jdeighan/base-utils/exceptions'
+import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 
 # ---------------------------------------------------------------------------
 
-export isFile = (fullpath) =>
+export mkpath = (lParts...) =>
 
+	dbgEnter 'mkpath', lParts
+	lParts = lParts.filter((x) => nonEmpty(x))
+	str = lParts.join('/')
+	str = str.replaceAll('\\', '/')
+	if lMatches = str.match(/^([A-Z])\:(.*)$/)
+		[_, drive, rest] = lMatches
+		str = "#{drive.toLowerCase()}:#{rest}"
+	dbgReturn 'mkpath', str
+	return str
+
+# ---------------------------------------------------------------------------
+
+export isFile = (lParts...) =>
+
+	dbgEnter 'isFile', lParts
+	filePath = mkpath(lParts...)
+	dbg "filePath is '#{filePath}'"
 	try
-		return fs.lstatSync(fullpath).isFile()
+		result = fs.lstatSync(filePath).isFile()
+		dbgReturn 'isFile', result
+		return result
 	catch
+		dbgReturn 'isFile', false
 		return false
 
 # ---------------------------------------------------------------------------
 
-export isDir = (fullpath) =>
+export isDir = (lParts...) =>
 
+	dbgEnter 'isDir', lParts
+	dirPath = mkpath(lParts...)
+	dbg "dirPath is '#{dirPath}'"
 	try
-		return fs.lstatSync(fullpath).isDirectory()
+		result = fs.lstatSync(dirPath).isDirectory()
+		dbgReturn 'isDir', result
+		return result
 	catch
+		dbgReturn 'isDir', false
 		return false
 
 # ---------------------------------------------------------------------------
@@ -92,13 +119,6 @@ export forEachFileInDir = (dir, func) =>
 
 # ---------------------------------------------------------------------------
 
-export mkpath = (lParts...) =>
+export hasPackageJson = (lParts...) =>
 
-	lParts = lParts.filter((x) => nonEmpty(x))
-	str = lParts.join('/')
-	str = str.replaceAll('\\', '/')
-	if lMatches = str.match(/^([A-Z])\:(.*)$/)
-		[_, drive, rest] = lMatches
-		return "#{drive.toLowerCase()}:#{rest}"
-	else
-		return str
+	return isFile(lParts...)
