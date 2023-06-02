@@ -2,7 +2,7 @@
 
 import fs from 'fs'
 
-import {nonEmpty} from '@jdeighan/base-utils'
+import {nonEmpty, isHash} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 
@@ -19,6 +19,14 @@ export mkpath = (lParts...) =>
 		str = "#{drive.toLowerCase()}:#{rest}"
 	dbgReturn 'mkpath', str
 	return str
+
+# ---------------------------------------------------------------------------
+
+export getPkgJsonPath = () =>
+
+	filePath = mkpath(process.cwd(), 'package.json')
+	assert isFile(filePath), "Missing pacakge.json at cur dir"
+	return filePath
 
 # ---------------------------------------------------------------------------
 
@@ -75,35 +83,62 @@ export mkdirSync = (dirpath) =>
 # ---------------------------------------------------------------------------
 #   slurp - read a file into a string
 
-export slurp = (filepath) =>
+export slurp = (lParts...) =>
 
-	filepath = filepath.replace(/\//g, "\\")
-	return fs.readFileSync(filepath, 'utf8').toString()
+	assert (lParts.length > 0), "Missing file path"
+	filePath = mkpath(lParts...)
+	return fs.readFileSync(filePath, 'utf8').toString()
 
 # ---------------------------------------------------------------------------
 #   barf - write a string to a file
 
-export barf = (filepath, contents) =>
+export barf = (contents, lParts...) =>
 
-	fs.writeFileSync(filepath, contents)
+	assert (lParts.length > 0), "Missing file path"
+	filePath = mkpath(lParts...)
+	fs.writeFileSync(filePath, contents)
 	return
 
 # ---------------------------------------------------------------------------
-#   slurpJson - read a file into a string
+#   slurpJson - read a file into a hash
 
-export slurpJson = (filepath) =>
+export slurpJson = (lParts...) =>
 
-	filepath = filepath.replace(/\//g, "\\")
-	contents = fs.readFileSync(filepath, 'utf8').toString()
-	return JSON.parse(contents)
+	return JSON.parse(slurp(lParts...))
+
+# ---------------------------------------------------------------------------
+#   slurpPkgJson - read package.json into a hash
+
+export slurpPkgJson = (lParts...) =>
+
+	if (lParts.length == 0)
+		pkgJsonPath = getPkgJsonPath()
+	else
+		pkgJsonPath = mkpath(lParts...)
+		assert isFile(pkgJsonPath), "Missing package.json at cur dir"
+	return slurpJson(pkgJsonPath)
 
 # ---------------------------------------------------------------------------
 #   barfJson - write a string to a file
 
-export barfJson = (filepath, hJson) =>
+export barfJson = (hJson, lParts...) =>
 
+	assert isHash(hJson), "hJson not a hash"
 	contents = JSON.stringify(hJson, null, "\t")
-	fs.writeFileSync(filepath, contents)
+	barf(contents, lParts)
+	return
+
+# ---------------------------------------------------------------------------
+#   barfJson - write a string to a file
+
+export barfPkgJson = (filepath, hJson) =>
+
+	if (lParts.length == 0)
+		pkgJsonPath = getPkgJsonPath()
+	else
+		pkgJsonPath = mkpath(lParts...)
+		assert isFile(pkgJsonPath), "Missing package.json at cur dir"
+	barfJson(hJson, pkgJsonPath)
 	return
 
 # ---------------------------------------------------------------------------

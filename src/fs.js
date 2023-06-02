@@ -2,7 +2,8 @@
 import fs from 'fs';
 
 import {
-  nonEmpty
+  nonEmpty,
+  isHash
 } from '@jdeighan/base-utils';
 
 import {
@@ -31,6 +32,14 @@ export var mkpath = (...lParts) => {
   }
   dbgReturn('mkpath', str);
   return str;
+};
+
+// ---------------------------------------------------------------------------
+export var getPkgJsonPath = () => {
+  var filePath;
+  filePath = mkpath(process.cwd(), 'package.json');
+  assert(isFile(filePath), "Missing pacakge.json at cur dir");
+  return filePath;
 };
 
 // ---------------------------------------------------------------------------
@@ -89,32 +98,61 @@ export var mkdirSync = (dirpath) => {
 
 // ---------------------------------------------------------------------------
 //   slurp - read a file into a string
-export var slurp = (filepath) => {
-  filepath = filepath.replace(/\//g, "\\");
-  return fs.readFileSync(filepath, 'utf8').toString();
+export var slurp = (...lParts) => {
+  var filePath;
+  assert(lParts.length > 0, "Missing file path");
+  filePath = mkpath(...lParts);
+  return fs.readFileSync(filePath, 'utf8').toString();
 };
 
 // ---------------------------------------------------------------------------
 //   barf - write a string to a file
-export var barf = (filepath, contents) => {
-  fs.writeFileSync(filepath, contents);
+export var barf = (contents, ...lParts) => {
+  var filePath;
+  assert(lParts.length > 0, "Missing file path");
+  filePath = mkpath(...lParts);
+  fs.writeFileSync(filePath, contents);
 };
 
 // ---------------------------------------------------------------------------
-//   slurpJson - read a file into a string
-export var slurpJson = (filepath) => {
-  var contents;
-  filepath = filepath.replace(/\//g, "\\");
-  contents = fs.readFileSync(filepath, 'utf8').toString();
-  return JSON.parse(contents);
+//   slurpJson - read a file into a hash
+export var slurpJson = (...lParts) => {
+  return JSON.parse(slurp(...lParts));
+};
+
+// ---------------------------------------------------------------------------
+//   slurpPkgJson - read package.json into a hash
+export var slurpPkgJson = (...lParts) => {
+  var pkgJsonPath;
+  if (lParts.length === 0) {
+    pkgJsonPath = getPkgJsonPath();
+  } else {
+    pkgJsonPath = mkpath(...lParts);
+    assert(isFile(pkgJsonPath), "Missing package.json at cur dir");
+  }
+  return slurpJson(pkgJsonPath);
 };
 
 // ---------------------------------------------------------------------------
 //   barfJson - write a string to a file
-export var barfJson = (filepath, hJson) => {
+export var barfJson = (hJson, ...lParts) => {
   var contents;
+  assert(isHash(hJson), "hJson not a hash");
   contents = JSON.stringify(hJson, null, "\t");
-  fs.writeFileSync(filepath, contents);
+  barf(contents, lParts);
+};
+
+// ---------------------------------------------------------------------------
+//   barfJson - write a string to a file
+export var barfPkgJson = (filepath, hJson) => {
+  var pkgJsonPath;
+  if (lParts.length === 0) {
+    pkgJsonPath = getPkgJsonPath();
+  } else {
+    pkgJsonPath = mkpath(...lParts);
+    assert(isFile(pkgJsonPath), "Missing package.json at cur dir");
+  }
+  barfJson(hJson, pkgJsonPath);
 };
 
 // ---------------------------------------------------------------------------
