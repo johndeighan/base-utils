@@ -1,9 +1,14 @@
 // fs.coffee
 import fs from 'fs';
 
+import NReadLines from 'n-readlines';
+
 import {
+  undef,
+  defined,
   nonEmpty,
-  isHash
+  isHash,
+  toBlock
 } from '@jdeighan/base-utils';
 
 import {
@@ -116,10 +121,32 @@ export var toJSON = (hJson) => {
 // ---------------------------------------------------------------------------
 //   slurp - read a file into a string
 export var slurp = (...lParts) => {
-  var filePath;
-  assert(lParts.length > 0, "Missing file path");
+  var buffer, contents, filePath, hOptions, lLines, maxLines, nLines, reader;
+  // --- last argument can be an options hash
+  //     Valid options:
+  //        maxLines: <int>
+  assert(lParts.length > 0, "No parameters");
+  if (isHash(lParts[lParts.length - 1])) {
+    hOptions = lParts.pop();
+    assert(lParts.length > 0, "Options hash but no parameters");
+    ({maxLines} = hOptions);
+  }
   filePath = mkpath(...lParts);
-  return fs.readFileSync(filePath, 'utf8').toString();
+  if (defined(maxLines)) {
+    lLines = [];
+    reader = new NReadLines(filePath);
+    nLines = 0;
+    while ((buffer = reader.next()) && (nLines < maxLines)) {
+      nLines += 1;
+      // --- text is split on \n chars,
+      //     we also need to remove \r chars
+      lLines.push(buffer.toString().replace(/\r/g, ''));
+    }
+    contents = toBlock(lLines);
+  } else {
+    contents = fs.readFileSync(filePath, 'utf8').toString();
+  }
+  return contents;
 };
 
 // ---------------------------------------------------------------------------
