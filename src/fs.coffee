@@ -129,7 +129,7 @@ export slurp = (lParts...) =>
 	return contents
 
 # ---------------------------------------------------------------------------
-#   slurpJson - read a file into a hash
+#   slurpJSON - read a file into a hash
 
 export slurpJSON = (lParts...) =>
 
@@ -143,56 +143,56 @@ export slurpTAML = (lParts...) =>
 	return fromTAML(slurp(lParts...))
 
 # ---------------------------------------------------------------------------
-#   slurpPkgJson - read package.json into a hash
+#   slurpPkgJSON - read package.json into a hash
 
-export slurpPkgJson = (lParts...) =>
+export slurpPkgJSON = (lParts...) =>
 
 	if (lParts.length == 0)
 		pkgJsonPath = getPkgJsonPath()
 	else
 		pkgJsonPath = mkpath(lParts...)
 		assert isFile(pkgJsonPath), "Missing package.json at cur dir"
-	return slurpJson(pkgJsonPath)
+	return slurpJSON(pkgJsonPath)
 
 # ---------------------------------------------------------------------------
 #   barf - write a string to a file
 
-export barf = (contents, lParts...) =>
+export barf = (text, lParts...) =>
 
 	assert (lParts.length > 0), "Missing file path"
 	filePath = mkpath(lParts...)
-	fs.writeFileSync(filePath, contents)
+	fs.writeFileSync(filePath, text)
 	return
 
 # ---------------------------------------------------------------------------
-#   barfJson - write a string to a file
+#   barfJSON - write a string to a file
 
 export barfJSON = (hJson, lParts...) =>
 
 	assert isHash(hJson), "hJson not a hash"
-	barf(toJSON(hJson), lParts)
+	barf(toJSON(hJson), lParts...)
 	return
 
 # ---------------------------------------------------------------------------
 #   barfTAML - write a string to a file
 
-export barfTAML = (hJson, lParts...) =>
+export barfTAML = (ds, lParts...) =>
 
 	assert isHash(hJson), "hJson not a hash"
-	barf(toTAML(hJson), lParts)
+	barf(toTAML(ds), lParts...)
 	return
 
 # ---------------------------------------------------------------------------
-#   barfJson - write a string to a file
+#   barfPkgJSON - write a string to a file
 
-export barfPkgJson = (filepath, hJson) =>
+export barfPkgJSON = (hJson, lParts...) =>
 
 	if (lParts.length == 0)
 		pkgJsonPath = getPkgJsonPath()
 	else
 		pkgJsonPath = mkpath(lParts...)
 		assert isFile(pkgJsonPath), "Missing package.json at cur dir"
-	barfJson(hJson, pkgJsonPath)
+	barfJSON(hJson, pkgJsonPath)
 	return
 
 # ---------------------------------------------------------------------------

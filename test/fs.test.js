@@ -100,3 +100,29 @@ ghi
 jkl
 mno`);
 });
+
+// --- Test without building path first
+test("line 52", (t) => {
+  return t.is(slurp(dir, 'test', 'readline.txt', {
+    maxLines: 2
+  }), `abc
+def`);
+});
+
+test("line 57", (t) => {
+  return t.is(slurp(dir, 'test', 'readline.txt', {
+    maxLines: 3
+  }), `abc
+def
+ghi`);
+});
+
+test("line 63", (t) => {
+  return t.is(slurp(dir, 'test', 'readline.txt', {
+    maxLines: 1000
+  }), `abc
+def
+ghi
+jkl
+mno`);
+});

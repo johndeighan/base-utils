@@ -150,7 +150,7 @@ export var slurp = (...lParts) => {
 };
 
 // ---------------------------------------------------------------------------
-//   slurpJson - read a file into a hash
+//   slurpJSON - read a file into a hash
 export var slurpJSON = (...lParts) => {
   return fromJSON(slurp(...lParts));
 };
@@ -162,8 +162,8 @@ export var slurpTAML = (...lParts) => {
 };
 
 // ---------------------------------------------------------------------------
-//   slurpPkgJson - read package.json into a hash
-export var slurpPkgJson = (...lParts) => {
+//   slurpPkgJSON - read package.json into a hash
+export var slurpPkgJSON = (...lParts) => {
   var pkgJsonPath;
   if (lParts.length === 0) {
     pkgJsonPath = getPkgJsonPath();
@@ -171,35 +171,35 @@ export var slurpPkgJson = (...lParts) => {
     pkgJsonPath = mkpath(...lParts);
     assert(isFile(pkgJsonPath), "Missing package.json at cur dir");
   }
-  return slurpJson(pkgJsonPath);
+  return slurpJSON(pkgJsonPath);
 };
 
 // ---------------------------------------------------------------------------
 //   barf - write a string to a file
-export var barf = (contents, ...lParts) => {
+export var barf = (text, ...lParts) => {
   var filePath;
   assert(lParts.length > 0, "Missing file path");
   filePath = mkpath(...lParts);
-  fs.writeFileSync(filePath, contents);
+  fs.writeFileSync(filePath, text);
 };
 
 // ---------------------------------------------------------------------------
-//   barfJson - write a string to a file
+//   barfJSON - write a string to a file
 export var barfJSON = (hJson, ...lParts) => {
   assert(isHash(hJson), "hJson not a hash");
-  barf(toJSON(hJson), lParts);
+  barf(toJSON(hJson), ...lParts);
 };
 
 // ---------------------------------------------------------------------------
 //   barfTAML - write a string to a file
-export var barfTAML = (hJson, ...lParts) => {
+export var barfTAML = (ds, ...lParts) => {
   assert(isHash(hJson), "hJson not a hash");
-  barf(toTAML(hJson), lParts);
+  barf(toTAML(ds), ...lParts);
 };
 
 // ---------------------------------------------------------------------------
-//   barfJson - write a string to a file
-export var barfPkgJson = (filepath, hJson) => {
+//   barfPkgJSON - write a string to a file
+export var barfPkgJSON = (hJson, ...lParts) => {
   var pkgJsonPath;
   if (lParts.length === 0) {
     pkgJsonPath = getPkgJsonPath();
@@ -207,7 +207,7 @@ export var barfPkgJson = (filepath, hJson) => {
     pkgJsonPath = mkpath(...lParts);
     assert(isFile(pkgJsonPath), "Missing package.json at cur dir");
   }
-  barfJson(hJson, pkgJsonPath);
+  barfJSON(hJson, pkgJsonPath);
 };
 
 // ---------------------------------------------------------------------------
