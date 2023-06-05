@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 ;
-var binDir, dir, hBin, hJson, key, pkgJsonPath, value;
+var LOG, binDir, dir, hBin, hJson, key, pkgJsonPath, value;
 
 import {
   // gen-bin-key.coffee
@@ -15,6 +15,7 @@ import {
 } from '@jdeighan/base-utils/exceptions';
 
 import {
+  // import {LOG} from '@jdeighan/base-utils/log'
   isFile,
   isDir,
   mkpath,
@@ -30,19 +31,27 @@ dir = process.cwd();
 
 pkgJsonPath = mkpath(dir, 'package.json');
 
-binDir = mkpath(dir, 'bin');
+binDir = mkpath(dir, 'src', 'bin');
+
+LOG = (str) => {
+  return console.log(str);
+};
 
 // ---------------------------------------------------------------------------
 
 // 1. Error if current directory has no `package.json` file
 assert(isFile(pkgJsonPath), "Not in package root dir");
 
+LOG("package.json exists");
+
 if (!isDir(binDir)) {
   console.log(`No ${binDir} dir, exiting`);
   process.exit();
 }
 
-// 4. For every *.coffee file in the 'bin' directory:
+LOG(`dir ${binDir} exists`);
+
+// 3. For every *.coffee file in the 'bin' directory:
 //       - error if no corresponding JS file
 //       - save stub and filename in hBin
 //    For every *.js file in the 'bin' directory:
@@ -50,29 +59,29 @@ if (!isDir(binDir)) {
 hBin = {};
 
 forEachFileInDir(binDir, (fname) => {
-  var _, coffeeFileName, coffeePath, ext, jsCode, jsFileName, jsPath, lMatches, stub;
-  if (lMatches = fname.match(/^(.*)\.(coffee|js)$/)) {
-    console.log(`FOUND ${fname}`);
-    [_, stub, ext] = lMatches;
+  var _, coffeeFileName, coffeePath, jsCode, jsFileName, jsPath, lMatches, stub;
+  if (lMatches = fname.match(/^(.*)\.coffee$/)) {
+    [_, stub] = lMatches;
     jsFileName = `${stub}.js`;
-    jsPath = mkpath(dir, 'bin', jsFileName);
+    jsPath = mkpath(dir, 'src', 'bin', jsFileName);
     coffeeFileName = `${stub}.coffee`;
-    coffeePath = mkpath(dir, 'bin', coffeeFileName);
-    if (ext === 'coffee') {
-      assert(isFile(jsPath), `Missing file ${jsPath}`);
-      return hBin[stub] = `./bin/${jsFileName}`;
-    } else if (ext === 'js') {
-      jsCode = slurp(jsPath);
-      return assert(jsCode.startsWith("#!/usr/bin/env node"), "Missing shebang");
-    }
+    coffeePath = mkpath(dir, 'src', 'bin', coffeeFileName);
+    LOG(`FOUND ${fname}`);
+    // --- Check that corresponding *.js file exists
+    assert(isFile(jsPath), `Missing file ${jsPath}`);
+    // --- Check that *.js file has shebang line
+    jsCode = slurp(jsPath);
+    assert(jsCode.startsWith("#!/usr/bin/env node"), "Missing shebang");
+    hBin[stub] = `./src/bin/${jsFileName}`;
+    return LOG(`   ${stub} => ${hBin[stub]}`);
   }
 });
 
-// 5. Add sub-keys to key 'bin' in package.json (create if not exists)
+// 4. Add sub-keys to key 'bin' in package.json (create if not exists)
 if (isEmpty(hBin)) {
-  console.log("No bin keys to set");
+  LOG("No bin keys to set");
 } else {
-  console.log("SET 'bin' key in package.json");
+  LOG("SET 'bin' key in package.json");
   hJson = slurpJSON(pkgJsonPath);
   if (!hJson.hasOwnProperty('bin')) {
     hJson.bin = {};
@@ -84,4 +93,4 @@ if (isEmpty(hBin)) {
   barfJSON(hJson, pkgJsonPath);
 }
 
-console.log("DONE");
+LOG("DONE");
