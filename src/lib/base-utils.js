@@ -1,7 +1,25 @@
-// base-utils.coffee
-export const undef = void 0;
+  // base-utils.coffee
 var assert, hTimers, myHandler, myReplacer,
   hasProp = {}.hasOwnProperty;
+
+import assertLib from 'node:assert';
+
+export const undef = void 0;
+
+// ---------------------------------------------------------------------------
+export var deepEqual = (a, b) => {
+  var error;
+  try {
+    assertLib.deepEqual(a, b);
+  } catch (error1) {
+    error = error1;
+    if (error.name === "AssertionError") {
+      return false;
+    }
+    throw error;
+  }
+  return true;
+};
 
 // ---------------------------------------------------------------------------
 // assert() for use in this file only
@@ -218,8 +236,8 @@ export var deepCopy = (obj) => {
   objStr = JSON.stringify(obj);
   try {
     newObj = JSON.parse(objStr);
-  } catch (error) {
-    err = error;
+  } catch (error1) {
+    err = error1;
     throw new Error("ERROR: err.message");
   }
   return newObj;
@@ -363,8 +381,8 @@ export var isConstructor = (x) => {
   }
   try {
     return !!(new (new Proxy(x, myHandler))());
-  } catch (error) {
-    e = error;
+  } catch (error1) {
+    e = error1;
     return false;
   }
 };

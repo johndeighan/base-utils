@@ -1,1 +1,11 @@
+logs/
 node_modules/
+typings/
+*.tsbuildinfo
+.npm
+
+# dotenv environment variables file
+.env
+.env.test
+
+test/temp*.*

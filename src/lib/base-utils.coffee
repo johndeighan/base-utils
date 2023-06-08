@@ -1,6 +1,20 @@
 # base-utils.coffee
 
+import assertLib  from 'node:assert'
+
 `export const undef = void 0`
+
+# ---------------------------------------------------------------------------
+
+export deepEqual = (a, b) =>
+
+	try
+		assertLib.deepEqual(a, b)
+	catch error
+		if (error.name == "AssertionError")
+			return false
+		throw error
+	return true
 
 # ---------------------------------------------------------------------------
 # assert() for use in this file only
