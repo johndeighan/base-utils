@@ -55,6 +55,13 @@ export class Machine
 
 	# ..........................................................
 
-	var: (varname) ->
+	getVar: (varname) ->
 
 		return @hData[varname]
+
+	# ..........................................................
+
+	setVar: (varname, value) ->
+
+		@hData[varname] = value
+		return

@@ -63,8 +63,13 @@ export var Machine = class Machine {
   }
 
   // ..........................................................
-  var(varname) {
+  getVar(varname) {
     return this.hData[varname];
+  }
+
+  // ..........................................................
+  setVar(varname, value) {
+    this.hData[varname] = value;
   }
 
 };
