@@ -3,6 +3,10 @@ var SimpleUnitTester;
 
 import test from 'ava';
 
+import {
+  isFunction
+} from '@jdeighan/base-utils';
+
 // ---------------------------------------------------------------------------
 SimpleUnitTester = class SimpleUnitTester {
   constructor() {
@@ -41,6 +45,44 @@ SimpleUnitTester = class SimpleUnitTester {
     lineNum = this.getLineNum(lineNum);
     return test(`line ${lineNum}`, (t) => {
       return t.deepEqual(val1, val2);
+    });
+  }
+
+  // ..........................................................
+  fails(lineNum, func) {
+    var err, ok;
+    lineNum = this.getLineNum(lineNum);
+    if (typeof func !== 'function') {
+      throw new Error("SimpleUnitTester.fails(): function expected");
+    }
+    try {
+      func();
+      ok = true;
+    } catch (error) {
+      err = error;
+      ok = false;
+    }
+    return test(`line ${lineNum}`, (t) => {
+      return t.falsy(ok);
+    });
+  }
+
+  // ..........................................................
+  succeeds(lineNum, func) {
+    var err, ok;
+    lineNum = this.getLineNum(lineNum);
+    if (typeof func !== 'function') {
+      throw new Error("SimpleUnitTester.fails(): function expected");
+    }
+    try {
+      func();
+      ok = true;
+    } catch (error) {
+      err = error;
+      ok = false;
+    }
+    return test(`line ${lineNum}`, (t) => {
+      return t.truthy(ok);
     });
   }
 

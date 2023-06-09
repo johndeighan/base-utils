@@ -3,7 +3,7 @@
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	undef, defined, notdefined, OL,
-	isString, isNonEmptyString,
+	isString, isHash, isNonEmptyString,
 	} from '@jdeighan/base-utils'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 
@@ -15,60 +15,46 @@ export class Machine
 
 		dbgEnter 'Machine', initialState
 		assert isNonEmptyString(initialState), "not a non-empty string"
-		@curState = initialState
-		@hTransitions = {}    # <state> -> <event> -> {nextState, callback}
-		@anyCallback = undef
-		@addState(initialState)
+		@state = initialState
+		@hData = {}
 		dbgReturn 'Machine', this
 
 	# ..........................................................
 
-	on: (state, event, nextState, callback=undef) ->
+	inState: (x) ->
 
-		assert @isState(state), "not a state: #{state}"
-		@addState nextState
+		return (@state == x)
 
-		if defined(@hTransitions[state][event])
-			croak "transition for (#{state},#{event} already defined"
-		else
-			@hTransitions[state][event] = {
-				nextState
-				callback
-				}
+	# ..........................................................
+
+	setState: (newState, hNewData={}) ->
+
+		assert isHash(hNewData), "new data not a hash"
+		Object.assign @hData, hNewData
+		@state = newState
 		return
 
 	# ..........................................................
 
-	onAny: (callback) ->
+	expectState: (lStates...) ->
 
-		assert isFunction(callback), "callback not a function"
-		@anyCallback = callback
+		if ! lStates.includes(@state)
+			if lStates.length == 1
+				croak "state is '#{@state}', expected #{lStates[0]}"
+			else
+				croak "state is '#{@state}', expected one of #{OL(lStates)}"
 		return
 
 	# ..........................................................
 
-	addState: (state) ->
+	expectDefined: (lVarNames...) ->
 
-		assert isNonEmptyString(state), "not a non-empty string"
-		if notdefined(@hTransitions[state])
-			@hTransitions[state] = {}
+		for varname in lVarNames
+			assert defined(@hData[varname]), "#{varname} should be defined"
 		return
 
 	# ..........................................................
 
-	isState: (state) ->
+	var: (varname) ->
 
-		return defined(@hTransitions[state])
-
-	# ..........................................................
-
-	emit: (event) ->
-
-		hTrans = @hTransitions[@curState][event]
-		assert defined(hTrans), "bad event #{event} in state #{@curState}"
-		@curState = hTrans.nextState
-		if defined(hTrans.callback)
-			hTrans.callback(@curState, event)
-		if defined(@anyCallback)
-			@anyCallback(@curState, event)
-		return
+		return @hData[varname]
