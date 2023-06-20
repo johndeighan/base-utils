@@ -99,19 +99,28 @@ export dumpLog = (label, theLog, hOptions={}) =>
 export PUTSTR = (str) =>
 
 	str = rtrim(str)
+
+	# --- If running in browser, just use console.log
+	if defined(globalThis.navigator)
+		if defined(putstr) && (putstr != console.log)
+			putstr str
+		else
+			console.log untabify(str)
+		return
+
 	caller = getMyOutsideCaller()
 	if notdefined(caller) || ! caller.source
-		return undef
+		return
 	lNamedLogs.push {
 		caller: caller.source,
 		str
 		}
 
 	if defined(hEchoLogs[caller.source])
-		if (putstr == console.log) || notdefined(putstr)
-			console.log untabify(str)
-		else
+		if defined(putstr) && (putstr != console.log)
 			putstr str
+		else
+			console.log untabify(str)
 	return
 
 # ---------------------------------------------------------------------------
@@ -221,6 +230,22 @@ export LOGTAML = (label, value, prefix="", itemPrefix=undef) =>
 	PUTSTR "#{prefix}#{label} ="
 	for str in blockToArray(toTAML(value, {sortKeys: true}))
 		PUTSTR "#{itemPrefix}#{str}"
+	return true
+
+# ---------------------------------------------------------------------------
+
+export LOGJSON = (label, value, prefix="") =>
+
+	if internalDebugging
+		str1 = OL(label)
+		str2 = OL(value)
+		str3 = OL(prefix)
+		console.log "CALL LOGJSON(#{str1}, #{str2}), prefix=#{str3}"
+	assert nonEmpty(label), "label is empty"
+
+	PUTSTR "#{prefix}#{label} ="
+	for str in blockToArray(JSON.stringify(value, null, 3))
+		PUTSTR "#{prefix}#{str}"
 	return true
 
 # ---------------------------------------------------------------------------

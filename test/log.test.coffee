@@ -11,7 +11,7 @@ import {
 	setLogWidth, resetLogWidth, debugLogging,
 	setStringifier, resetStringifier,
 	stringify, tamlStringify, orderedStringify,
-	LOG, LOGVALUE, LOGTAML,
+	LOG, LOGVALUE, LOGTAML, LOGJSON,
 	clearAllLogs, getMyLog,
 	} from '@jdeighan/base-utils/log'
 
@@ -279,4 +279,19 @@ test "line 271", (t) =>
 			- 42
 			- false
 			- undef
+		"""
+
+test "line 284", (t) =>
+	clearAllLogs('noecho')
+	setLogWidth 5
+	LOGJSON 'lItems', ['xyz', 42, false, undef]
+	resetLogWidth()
+	t.is getMyLog(), """
+		lItems =
+		[
+		   "xyz",
+		   42,
+		   false,
+		   null
+		]
 		"""
