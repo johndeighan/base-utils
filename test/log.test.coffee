@@ -274,11 +274,11 @@ test "line 271", (t) =>
 	resetLogWidth()
 	t.is getMyLog(), """
 		lItems =
-			---
-			- xyz
-			- 42
-			- false
-			- undef
+		   ---
+		   - xyz
+		   - 42
+		   - false
+		   - undef
 		"""
 
 test "line 284", (t) =>

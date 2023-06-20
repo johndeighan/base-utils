@@ -292,11 +292,11 @@ test("line 271", (t) => {
   LOGTAML('lItems', ['xyz', 42, false, undef]);
   resetLogWidth();
   return t.is(getMyLog(), `lItems =
-	---
-	- xyz
-	- 42
-	- false
-	- undef`);
+   ---
+   - xyz
+   - 42
+   - false
+   - undef`);
 });
 
 test("line 284", (t) => {

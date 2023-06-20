@@ -212,6 +212,16 @@ export orderedStringify = (obj, escape=false) =>
 
 # ---------------------------------------------------------------------------
 
+export prefixed = (prefix, lStrings...) =>
+
+	lLines = []
+	for str in lStrings
+		lLines = lLines.concat(blockToArray(str))
+	result = arrayToBlock(lLines.map((x) => "#{prefix}#{x}"))
+	return result
+
+# ---------------------------------------------------------------------------
+
 export LOGTAML = (label, value, prefix="", itemPrefix=undef) =>
 
 	if internalDebugging
@@ -227,9 +237,8 @@ export LOGTAML = (label, value, prefix="", itemPrefix=undef) =>
 	if handleSimpleCase(label, value, prefix)
 		return true
 
-	PUTSTR "#{prefix}#{label} ="
-	for str in blockToArray(toTAML(value, {sortKeys: true}))
-		PUTSTR "#{itemPrefix}#{str}"
+	desc = toTAML(value, {sortKeys: true})
+	PUTSTR prefixed(prefix, "#{prefix}#{label} =", prefixed('   ', desc))
 	return true
 
 # ---------------------------------------------------------------------------
@@ -243,9 +252,8 @@ export LOGJSON = (label, value, prefix="") =>
 		console.log "CALL LOGJSON(#{str1}, #{str2}), prefix=#{str3}"
 	assert nonEmpty(label), "label is empty"
 
-	PUTSTR "#{prefix}#{label} ="
-	for str in blockToArray(JSON.stringify(value, null, 3))
-		PUTSTR "#{prefix}#{str}"
+	desc = JSON.stringify(value, null, 3)
+	PUTSTR prefixed(prefix, "#{prefix}#{label} =", desc)
 	return true
 
 # ---------------------------------------------------------------------------

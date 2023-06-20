@@ -255,8 +255,22 @@ export var orderedStringify = (obj, escape = false) => {
 };
 
 // ---------------------------------------------------------------------------
+export var prefixed = (prefix, ...lStrings) => {
+  var i, lLines, len, result, str;
+  lLines = [];
+  for (i = 0, len = lStrings.length; i < len; i++) {
+    str = lStrings[i];
+    lLines = lLines.concat(blockToArray(str));
+  }
+  result = arrayToBlock(lLines.map((x) => {
+    return `${prefix}${x}`;
+  }));
+  return result;
+};
+
+// ---------------------------------------------------------------------------
 export var LOGTAML = (label, value, prefix = "", itemPrefix = undef) => {
-  var i, len, ref, str, str1, str2, str3;
+  var desc, str1, str2, str3;
   if (internalDebugging) {
     str1 = OL(label);
     str2 = OL(value);
@@ -270,20 +284,16 @@ export var LOGTAML = (label, value, prefix = "", itemPrefix = undef) => {
   if (handleSimpleCase(label, value, prefix)) {
     return true;
   }
-  PUTSTR(`${prefix}${label} =`);
-  ref = blockToArray(toTAML(value, {
+  desc = toTAML(value, {
     sortKeys: true
-  }));
-  for (i = 0, len = ref.length; i < len; i++) {
-    str = ref[i];
-    PUTSTR(`${itemPrefix}${str}`);
-  }
+  });
+  PUTSTR(prefixed(prefix, `${prefix}${label} =`, prefixed('   ', desc)));
   return true;
 };
 
 // ---------------------------------------------------------------------------
 export var LOGJSON = (label, value, prefix = "") => {
-  var i, len, ref, str, str1, str2, str3;
+  var desc, str1, str2, str3;
   if (internalDebugging) {
     str1 = OL(label);
     str2 = OL(value);
@@ -291,12 +301,8 @@ export var LOGJSON = (label, value, prefix = "") => {
     console.log(`CALL LOGJSON(${str1}, ${str2}), prefix=${str3}`);
   }
   assert(nonEmpty(label), "label is empty");
-  PUTSTR(`${prefix}${label} =`);
-  ref = blockToArray(JSON.stringify(value, null, 3));
-  for (i = 0, len = ref.length; i < len; i++) {
-    str = ref[i];
-    PUTSTR(`${prefix}${str}`);
-  }
+  desc = JSON.stringify(value, null, 3);
+  PUTSTR(prefixed(prefix, `${prefix}${label} =`, desc));
   return true;
 };
 
