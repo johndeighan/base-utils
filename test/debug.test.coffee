@@ -9,7 +9,7 @@ import {
 	undef, defined, notdefined,
 	} from '@jdeighan/base-utils'
 import {
-	LOG, LOGVALUE, LOGSTRING, clearAllLogs, getMyLog,
+	LOG, LOGVALUE, LOGSTRING, clearAllLogs, getMyLogs,
 	} from '@jdeighan/base-utils/log'
 import {CallStack} from '@jdeighan/base-utils/stack'
 import {
@@ -104,7 +104,7 @@ TEST = (lineNum, debugWhat, func, expectedDbg, expectedLog) ->
 	func()
 
 	dbgStr = getDebugLog()
-	logStr = getMyLog()
+	logStr = getMyLogs()
 
 	test "line #{lineNum}-DEBUG", (t) =>
 		t.is dbgStr, expectedDbg
@@ -118,7 +118,7 @@ TEST = (lineNum, debugWhat, func, expectedDbg, expectedLog) ->
 # ---------------------------------------------------------------------------
 
 (() ->
-	TEST 107, undef, main, undef, """
+	TEST 107, undef, main, '', """
 		26
 		14
 		30

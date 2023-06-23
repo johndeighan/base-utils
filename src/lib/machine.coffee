@@ -9,15 +9,15 @@ import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 
 # ---------------------------------------------------------------------------
 
-export class Machine
+export class StateMachine
 
 	constructor: (initialState) ->
 
-		dbgEnter 'Machine', initialState
+		dbgEnter 'StateMachine', initialState
 		assert isNonEmptyString(initialState), "not a non-empty string"
 		@state = initialState
 		@hData = {}
-		dbgReturn 'Machine', this
+		dbgReturn 'StateMachine', this
 
 	# ..........................................................
 

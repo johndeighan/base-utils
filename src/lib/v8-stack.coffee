@@ -35,9 +35,14 @@ export getV8StackStr = (maxDepth=Infinity) =>
 	Error.stackTraceLimit = maxDepth + 1
 
 	stackStr = new Error().stack
+	assert nonEmpty(stackStr), "stackStr is empty!"
 
 	# --- reset to previous value
 	Error.stackTraceLimit = oldLimit
+
+	if internalDebugging
+		console.log "STACK STRING:"
+		console.log stackStr
 
 	return stackStr
 
@@ -61,11 +66,24 @@ export getMyself = (depth=3) =>
 
 export getMyDirectCaller = (depth=3) =>
 
-	stackStr = getV8StackStr(depth)
+	if internalDebugging
+		console.log "in getMyDirectCaller()"
+
+	try
+		stackStr = getV8StackStr(depth)
+	catch err
+		console.log sep_eq
+		console.log "ERROR in getV8Stack(): #{err.message}"
+		console.log sep_eq
+# --- unfortunately, process.exit() prevents the above console logs
+#		process.exit()
+		return undef
+
 	for hNode from stackFrames(stackStr)
 		if (hNode.depth == depth)
 			return hNode
-	return
+
+	return undef
 
 # ---------------------------------------------------------------------------
 
@@ -73,32 +91,63 @@ export getMyOutsideCaller = () =>
 
 	if internalDebugging
 		console.log "in getMyOutsideCaller()"
+
 	try
 		stackStr = getV8StackStr(10)
 	catch err
 		console.log sep_eq
 		console.log "ERROR in getV8Stack(): #{err.message}"
 		console.log sep_eq
-		process.exit()
+# --- unfortunately, process.exit() prevents the above console logs
+#		process.exit()
+		return undef
 
 	try
-		# --- list of distinct sources
-		#     when we find the 3rd, we return it
-		lSources = []
+		# --- states:
+		#        1 - no source yet
+		#        2 - source is this module
+		#        3 - source is calling module
+		#        4 - source is caller outside calling module
+		state = 1
+		source = undef
 		for hNode from stackFrames(stackStr)
-			source = hNode.source
-			if (lSources.indexOf(source) == -1)
-				lSources.push source
-			if (lSources.length == 3)
-				result = hNode
-				break
+			orgstate = state
+			switch state
+				when 1
+					source = hNode.source
+					state = 2
+				when 2
+					if (hNode.source != source)
+						source = hNode.source
+						state = 3
+				when 3
+					if (hNode.source != source)
+						if internalDebugging
+							console.log "   RETURN:"
+							console.log hNode
+						return hNode
+			if internalDebugging
+				console.log "   #{orgstate} => #{state}"
+
 	catch err
 		console.log sep_eq
 		console.log "ERROR in stackFrames(): #{err.message}"
 		console.log sep_eq
-		process.exit()
+# --- unfortunately, process.exit() prevents the above console logs
+#		process.exit()
+		return undef
 
 	return result
+
+# ---------------------------------------------------------------------------
+
+export getMyOutsideSource = () ->
+
+	caller = getMyOutsideCaller()
+	if caller
+		return caller.source
+	else
+		return undef
 
 # ---------------------------------------------------------------------------
 
@@ -132,49 +181,57 @@ export stackFrames = (stackStr) ->
 	#     generator of nodes
 	#
 	#     Each node has keys:
-	#        type = function | method | script
-	#        depth (starting at 0)
-	#        source - full path name to source file
 	#        isAsync
-	#        funcName
-	#        objName   - if a method call
-	#        hFile
-	#           root
-	#           dir
-	#           base
-	#           ext
-	#           name
-	#           lineNum
-	#           colNum
+	#        depth (starting at 0)
+	#
+	#        source - full path name to source file
+	#        dir - directory part of source
+	#        filename - filename part of source
+	#        lineNum
+	#        colNum
+	#
+	#        type = 'function | method | script
+	#           script
+	#              scriptName
+	#           function
+	#              funcName
+	#           method
+	#              objName
+	#              funcName
+	#        desc - type plus script/function/method name
 
+	assert nonEmpty(stackStr), "stackStr is empty in stackFrames()"
 	curDepth = 0
-	if internalDebugging && (root = getRoot())
-		console.log "ROOT = #{OL(root)}"
-	try
-		for line in stackStr.split("\n")
-			hNode = parseLine(line, curDepth)
-			if defined(hNode)
-				hNode.depth = curDepth
-				curDepth += 1
-				yield hNode
-	catch err
-		console.log "ERROR IN stackFrames(): #{err.message}"
-		throw err
+	for line in stackStr.split("\n")
+		hNode = parseLine(line, curDepth)
+		if defined(hNode)
+			hNode.depth = curDepth
+			curDepth += 1
+			yield hNode
 	return
 
 # ---------------------------------------------------------------------------
 
-mksource = (dir, base) =>
+export dumpNode = (hNode) =>
 
-	return "#{dir}/#{base}"
+	console.log "   source = #{hNode.source}"
+	console.log "   desc = #{hNode.desc}"
+	return
 
 # ---------------------------------------------------------------------------
 
 export parseLine = (line, depth) =>
 
+	assert defined(line), "line is undef in parseLine()"
 	line = line.trim()
 	if internalDebugging
 		console.log "LINE: '#{shorten(line)}'"
+
+	if (line == 'Error')
+		if internalDebugging
+			console.log "   - no match (was 'Error')"
+		return undef
+
 	lMatches = line.match(///^
 			at
 			\s+
@@ -183,60 +240,75 @@ export parseLine = (line, depth) =>
 			(?:
 				\s*
 				\(
-				([^)]+)   # containing file
+				([^)]+)   # containing file | node:internal
 				\)
 				)?
 			$///)
-	if ! lMatches
-		if internalDebugging
-			console.log "   - no match"
-		return undef
 
-	[_, async, funcName, inFile] = lMatches
+	assert defined(lMatches), "BAD LINE: '#{line}'"
+
+	[_, async, fromWhere, fileURL] = lMatches
+
+	# --- check for NodeJS internal functions
+	if defined(fileURL) && lMatches = fileURL.match(///^
+			node : internal /
+			(.*)
+			: (\d+)
+			: (\d+)
+			$///)
+
+		[_, module, lineNum, colNum] = lMatches
+		hNode = {
+			isAsync: !!async
+			depth
+			source: 'node'
+			lineNum
+			colNum
+			desc: "node #{module}"
+			}
+		if internalDebugging
+			dumpNode hNode
+		return hNode
+
+	# --- Parse file URL, set lParts, set type
+	if (fromWhere.indexOf('file://') == 0)
+		assert isEmpty(fileURL), "two file URLs present"
+		type = 'script'
+		h = parseFileURL(fromWhere)
+	else
+		lParts = isFunctionName(fromWhere)
+		assert defined(lParts), "Bad line: '#{line}'"
+		if (lParts.length == 1)
+			type = 'function'
+		else
+			type = 'method'
+		h = parseFileURL(fileURL)
+
+	# --- construct hNode
 	hNode = {
 		isAsync: !!async
+		depth
+		source: h.source
+		dir: h.dir
+		filename: h.base
+		lineNum: h.lineNum
+		colNum: h.colNum
+		type
 		}
-	if defined(funcName) && (funcName.indexOf('file://') == 0)
-		if internalDebugging
-			console.log "   - [#{depth}] file URL"
-		hNode.type = 'script'
-		h = parseFileURL(funcName)
-		hNode.hFile = h
-		hNode.source = mksource(h.dir, h.base)
-
-	else if lParts = isFunctionName(funcName)
-		if (lParts.length == 1)
-			hNode.type = 'function'
-			hNode.funcName = funcName
-			if internalDebugging
-				console.log "   - [#{depth}] function #{funcName}"
-		else   # must be 2
-			hNode.type = 'method'
-			[objName, funcName] = lParts
-			Object.assign(hNode, {objName, funcName})
-			if internalDebugging
-				console.log "   - [#{depth}] method #{objName}.#{funcName}"
-		if defined(inFile)
-			if (inFile.indexOf('file://') == 0)
-				h = parseFileURL(inFile)
-				hNode.hFile = h
-				hNode.source = mksource(h.dir, h.base)
-			else if lMatches = inFile.match(///^
-					node : internal /
-					(.*)
-					: (\d+)
-					: (\d+)
-					$///)
-				[_, module, lineNum, colNum] = lMatches
-				hNode.hFile = {
-					root: 'node'
-					base: module
-					lineNum
-					colNum
-					}
+	switch type
+		when 'script'
+			hNode.scriptName = hNode.base
+			hNode.desc = "script #{h.base}"
+		when 'function'
+			hNode.funcName = lParts[0]
+			hNode.desc = "function #{lParts[0]}"
+		when 'method'
+			hNode.objName = lParts[0]
+			hNode.funcName = lParts[1]
+			hNode.desc = "method #{lParts[0]}.#{lParts[1]}"
 
 	if internalDebugging
-		console.log "   - from #{shorten(hNode.source)} - #{hNode.type}"
+		dumpNode(hNode)
 	return hNode
 
 # ---------------------------------------------------------------------------
@@ -251,6 +323,7 @@ export parseFileURL = (url) =>
 	#        lineNum
 	#        colNum
 
+	assert defined(url), "url is undef in parseFileURL()"
 	lMatches = url.match(///^
 			file : \/\/
 			(.*)
@@ -267,6 +340,9 @@ export parseFileURL = (url) =>
 	{dir, base} = hParsed
 	if defined(dir) && (dir.indexOf('/') == 0)
 		hParsed.dir = dir.substr(1)
+		hParsed.source = "#{hParsed.dir}/#{base}"
+	else
+		hParsed.source = "./#{base}"
 	return hParsed
 
 # ---------------------------------------------------------------------------

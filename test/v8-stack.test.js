@@ -28,11 +28,11 @@ import {
 } from '@jdeighan/base-utils/v8-stack';
 
 import {
-  getCallers
+  getBoth
 } from './v8-module.js';
 
 // ---------------------------------------------------------------------------
-test("line 21", (t) => {
+test("line 17", (t) => {
   var expStr, orgStr, replace;
   orgStr = "(file:///C:/Users/johnd/base-utils/src/v8-stack.js)";
   replace = "file:///C:/Users/johnd";
@@ -56,14 +56,8 @@ test("line 21", (t) => {
   hExpected = fromTAML(`---
 type: function
 funcName: main
-source: C:/Users/johnd/base-utils/test/v8-stack.test.js
-hFile:
-	base: v8-stack.test.js
-	dir: C:/Users/johnd/base-utils/test
-	ext: .js
-	name: v8-stack.test
-	root: /`);
-  return test("line 60", (t) => {
+source: C:/Users/johnd/base-utils/test/v8-stack.test.js`);
+  return test("line 48", (t) => {
     main();
     return t.like(hCaller, hExpected);
   });
@@ -79,52 +73,32 @@ hFile:
     return func2();
   };
   func1 = function() {
-    return lCallers1 = getCallers();
+    return lCallers1 = getBoth();
   };
   func2 = function() {
-    lCallers2 = getCallers();
+    lCallers2 = getBoth();
   };
-  return test("line 83", (t) => {
+  return test("line 70", (t) => {
     main();
     t.like(lCallers1[0], {
       type: 'function',
       funcName: 'secondFunc',
-      source: 'C:/Users/johnd/base-utils/test/v8-module.js',
-      hFile: {
-        base: 'v8-module.js',
-        lineNum: 16,
-        colNum: 10
-      }
+      source: 'C:/Users/johnd/base-utils/test/v8-module.js'
     });
     t.like(lCallers1[1], {
       type: 'function',
       funcName: 'func1',
-      source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js',
-      hFile: {
-        base: 'v8-stack.test.js',
-        lineNum: 82,
-        colNum: 24
-      }
+      source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
     });
     t.like(lCallers2[0], {
       type: 'function',
       funcName: 'secondFunc',
-      source: 'C:/Users/johnd/base-utils/test/v8-module.js',
-      hFile: {
-        base: 'v8-module.js',
-        lineNum: 16,
-        colNum: 10
-      }
+      source: 'C:/Users/johnd/base-utils/test/v8-module.js'
     });
     return t.like(lCallers2[1], {
       type: 'function',
       funcName: 'func2',
-      source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js',
-      hFile: {
-        base: 'v8-stack.test.js',
-        lineNum: 85,
-        colNum: 17
-      }
+      source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
     });
   });
 })();

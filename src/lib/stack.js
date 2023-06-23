@@ -31,7 +31,7 @@ import {
 import {
   LOG,
   LOGVALUE,
-  getMyLog
+  getMyLogs
 } from '@jdeighan/base-utils/log';
 
 mainName = '_MAIN_';
@@ -57,7 +57,7 @@ export var Node = class Node {
 
 // ---------------------------------------------------------------------------
 export var getStackLog = () => {
-  return getMyLog() || '';
+  return getMyLogs() || '';
 };
 
 export var CallStack = (function() {

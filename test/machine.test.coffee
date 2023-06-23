@@ -4,12 +4,12 @@ import {
 	undef, defined, notdefined, pass, escapeStr,
 	} from '@jdeighan/base-utils'
 import {utest} from '@jdeighan/base-utils/utest'
-import {Machine} from '@jdeighan/base-utils/machine'
+import {StateMachine} from '@jdeighan/base-utils/machine'
 
 # ---------------------------------------------------------------------------
 
 (() ->
-	mach = new Machine('init')
+	mach = new StateMachine('init')
 
 	utest.truthy 16, mach.inState('init')
 	utest.falsy  17, mach.inState('not')
@@ -22,7 +22,7 @@ import {Machine} from '@jdeighan/base-utils/machine'
 #    init --FIRST--> middle --SECOND--> final
 
 (() ->
-	class SimpleMachine extends Machine
+	class SimpleStateMachine extends StateMachine
 
 		constructor: () ->
 			super 'init'
@@ -35,12 +35,12 @@ import {Machine} from '@jdeighan/base-utils/machine'
 			@expectState 'middle'
 			@setState 'final'
 
-	mach1 = new SimpleMachine()
+	mach1 = new SimpleStateMachine()
 
-	mach2 = new SimpleMachine()
+	mach2 = new SimpleStateMachine()
 	mach2.FIRST()
 
-	mach3 = new SimpleMachine()
+	mach3 = new SimpleStateMachine()
 	mach3.FIRST()
 	mach3.SECOND()
 

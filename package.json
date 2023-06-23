@@ -6,6 +6,7 @@
 	"main": "index.js",
 	"exports": {
 		".": "./src/lib/base-utils.js",
+		"./named-logs": "./src/lib/NamedLogs.js",
 		"./log": "./src/lib/log.js",
 		"./debug": "./src/lib/debug.js",
 		"./stack": "./src/lib/stack.js",

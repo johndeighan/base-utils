@@ -12,13 +12,13 @@ import {
 } from '@jdeighan/base-utils/utest';
 
 import {
-  Machine
+  StateMachine
 } from '@jdeighan/base-utils/machine';
 
 // ---------------------------------------------------------------------------
 (function() {
   var mach;
-  mach = new Machine('init');
+  mach = new StateMachine('init');
   utest.truthy(16, mach.inState('init'));
   utest.falsy(17, mach.inState('not'));
   return utest.equal(18, mach.state, 'init');
@@ -29,8 +29,8 @@ import {
 
 //    init --FIRST--> middle --SECOND--> final
 (function() {
-  var SimpleMachine, mach1, mach2, mach3;
-  SimpleMachine = class SimpleMachine extends Machine {
+  var SimpleStateMachine, mach1, mach2, mach3;
+  SimpleStateMachine = class SimpleStateMachine extends StateMachine {
     constructor() {
       super('init');
     }
@@ -46,10 +46,10 @@ import {
     }
 
   };
-  mach1 = new SimpleMachine();
-  mach2 = new SimpleMachine();
+  mach1 = new SimpleStateMachine();
+  mach2 = new SimpleStateMachine();
   mach2.FIRST();
-  mach3 = new SimpleMachine();
+  mach3 = new SimpleStateMachine();
   mach3.FIRST();
   mach3.SECOND();
   utest.truthy(47, mach1.inState('init'));

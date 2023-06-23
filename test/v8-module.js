@@ -7,18 +7,37 @@ import {
 } from '@jdeighan/base-utils/v8-stack';
 
 // ---------------------------------------------------------------------------
-export var getCallers = function() {
-  return secondFunc();
+export var getBoth = function() {
+  return secondFunc('both');
 };
 
 // ---------------------------------------------------------------------------
-secondFunc = function() {
-  return thirdFunc();
+export var getDirect = function() {
+  return secondFunc('direct');
 };
 
 // ---------------------------------------------------------------------------
-thirdFunc = function() {
+export var getOutside = function() {
+  return secondFunc('outside');
+};
+
+// ---------------------------------------------------------------------------
+secondFunc = function(type) {
+  return thirdFunc(type);
+};
+
+// ---------------------------------------------------------------------------
+thirdFunc = function(type) {
   // --- direct caller should be 'secondFunc'
   //     outside caller should be the function that called getCaller()
-  return [getMyDirectCaller(), getMyOutsideCaller()];
+  switch (type) {
+    case 'both':
+      return [getMyDirectCaller(), getMyOutsideCaller()];
+    case 'direct':
+      return getMyDirectCaller();
+    case 'outside':
+      return getMyOutsideCaller();
+    default:
+      return croak(`Unknown type: ${type}`);
+  }
 };

@@ -1,5 +1,5 @@
 // log.coffee
-var hEchoLogs, handleSimpleCase, internalDebugging, lNamedLogs, putstr, threeSpaces;
+var handleSimpleCase, internalDebugging, logs, putstr, threeSpaces;
 
 import {
   assert,
@@ -47,8 +47,12 @@ import {
 } from '@jdeighan/base-utils/prefix';
 
 import {
-  getMyOutsideCaller
+  getMyOutsideSource
 } from '@jdeighan/base-utils/v8-stack';
+
+import {
+  NamedLogs
+} from '@jdeighan/base-utils/named-logs';
 
 export var logWidth = 42;
 
@@ -66,110 +70,53 @@ threeSpaces = '   ';
 //     ONLY called directly in PUTSTR, set in setLogger()
 putstr = undef;
 
-lNamedLogs = []; // array of {caller, str}
-
-hEchoLogs = {}; // { <source> => true }
-
+logs = new NamedLogs({
+  doEcho: true
+});
 
 // ---------------------------------------------------------------------------
 export var echoMyLogs = (flag = true) => {
-  var caller;
-  caller = getMyOutsideCaller();
-  if (notdefined(caller) || !caller.source) {
-    return;
-  }
-  if (flag) {
-    hEchoLogs[caller.source] = true;
-  } else {
-    delete hEchoLogs[caller.source];
-  }
+  var source;
+  // --- NOTE: source can be undef - NamedLogs handles that OK
+  source = getMyOutsideSource();
+  logs.setKey(source, 'doEcho', flag);
 };
 
 // ---------------------------------------------------------------------------
 export var clearMyLogs = () => {
-  var caller, h, i, lNewLogs, len;
-  caller = getMyOutsideCaller();
-  if (notdefined(caller) || !caller.source) {
-    return;
-  }
-  lNewLogs = [];
-  for (i = 0, len = lNamedLogs.length; i < len; i++) {
-    h = lNamedLogs[i];
-    if (h.caller !== caller.source) {
-      lNewLogs.push(h);
-    }
-  }
-  lNamedLogs = lNewLogs;
+  var source;
+  source = getMyOutsideSource();
+  logs.clear(source);
 };
 
 // ---------------------------------------------------------------------------
 export var clearAllLogs = () => {
-  lNamedLogs = [];
+  logs.clearAllLogs();
 };
 
 // ---------------------------------------------------------------------------
-export var getMyLog = () => {
-  var caller, h, i, lLines, len, result;
-  caller = getMyOutsideCaller();
-  if (notdefined(caller) || !caller.source) {
-    return undef;
-  }
-  lLines = [];
-  for (i = 0, len = lNamedLogs.length; i < len; i++) {
-    h = lNamedLogs[i];
-    if (h.caller === caller.source) {
-      lLines.push(h.str);
-    }
-  }
-  result = lLines.join("\n");
-  if (isEmpty(result)) {
-    return undef;
-  } else {
-    return result;
-  }
+export var getMyLogs = () => {
+  var source;
+  source = getMyOutsideSource();
+  return logs.getLogs(source);
 };
 
 // ---------------------------------------------------------------------------
 export var getAllLogs = () => {
-  var h, i, lLines, len;
-  lLines = [];
-  for (i = 0, len = lNamedLogs.length; i < len; i++) {
-    h = lNamedLogs[i];
-    lLines.push(h.str);
-  }
-  return lLines.join("\n");
-};
-
-// ---------------------------------------------------------------------------
-export var dumpLog = (label, theLog, hOptions = {}) => {
-  DUMP(label, theLog, hOptions);
+  return logs.getAllLogs();
 };
 
 // ---------------------------------------------------------------------------
 export var PUTSTR = (str) => {
-  var caller;
+  var source;
   str = rtrim(str);
-  // --- If running in browser, just use console.log
-  if (defined(globalThis.navigator)) {
+  source = getMyOutsideSource();
+  logs.log(source, str);
+  if (logs.getKey('doEcho')) {
     if (defined(putstr) && (putstr !== console.log)) {
       putstr(str);
     } else {
-      console.log(untabify(str));
-    }
-    return;
-  }
-  caller = getMyOutsideCaller();
-  if (notdefined(caller) || !caller.source) {
-    return;
-  }
-  lNamedLogs.push({
-    caller: caller.source,
-    str
-  });
-  if (defined(hEchoLogs[caller.source])) {
-    if (defined(putstr) && (putstr !== console.log)) {
-      putstr(str);
-    } else {
+      // --- console doesn't handle TABs correctly, so...
       console.log(untabify(str));
     }
   }

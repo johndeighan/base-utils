@@ -21,13 +21,13 @@ import {
 } from '@jdeighan/base-utils/debug';
 
 // ---------------------------------------------------------------------------
-export var Machine = class Machine {
+export var StateMachine = class StateMachine {
   constructor(initialState) {
-    dbgEnter('Machine', initialState);
+    dbgEnter('StateMachine', initialState);
     assert(isNonEmptyString(initialState), "not a non-empty string");
     this.state = initialState;
     this.hData = {};
-    dbgReturn('Machine', this);
+    dbgReturn('StateMachine', this);
   }
 
   // ..........................................................

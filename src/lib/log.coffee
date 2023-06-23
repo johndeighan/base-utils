@@ -10,7 +10,8 @@ import {
 	} from '@jdeighan/base-utils'
 import {toTAML} from '@jdeighan/base-utils/taml'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
-import {getMyOutsideCaller} from '@jdeighan/base-utils/v8-stack'
+import {getMyOutsideSource} from '@jdeighan/base-utils/v8-stack'
+import {NamedLogs} from '@jdeighan/base-utils/named-logs'
 
 export logWidth = 42
 export sep_dash = '-'.repeat(logWidth)
@@ -24,75 +25,44 @@ threeSpaces  = '   '
 #     ONLY called directly in PUTSTR, set in setLogger()
 putstr = undef
 
-lNamedLogs = []    # array of {caller, str}
-hEchoLogs = {}     # { <source> => true }
+logs = new NamedLogs({doEcho: true})
 
 # ---------------------------------------------------------------------------
 
 export echoMyLogs = (flag=true) =>
 
-	caller = getMyOutsideCaller()
-	if notdefined(caller) || ! caller.source
-		return
-	if flag
-		hEchoLogs[caller.source] = true
-	else
-		delete hEchoLogs[caller.source]
+	# --- NOTE: source can be undef - NamedLogs handles that OK
+	source = getMyOutsideSource()
+	logs.setKey source, 'doEcho', flag
 	return
 
 # ---------------------------------------------------------------------------
 
 export clearMyLogs = () =>
 
-	caller = getMyOutsideCaller()
-	if notdefined(caller) || ! caller.source
-		return
-	lNewLogs = []
-	for h in lNamedLogs
-		if (h.caller != caller.source)
-			lNewLogs.push h
-	lNamedLogs = lNewLogs
+	source = getMyOutsideSource()
+	logs.clear source
 	return
 
 # ---------------------------------------------------------------------------
 
 export clearAllLogs = () =>
 
-	lNamedLogs = []
+	logs.clearAllLogs()
 	return
 
 # ---------------------------------------------------------------------------
 
-export getMyLog = () =>
+export getMyLogs = () =>
 
-	caller = getMyOutsideCaller()
-	if notdefined(caller) || ! caller.source
-		return undef
-	lLines = []
-	for h in lNamedLogs
-		if (h.caller == caller.source)
-			lLines.push h.str
-	result = lLines.join("\n")
-	if isEmpty(result)
-		return undef
-	else
-		return result
+	source = getMyOutsideSource()
+	return logs.getLogs(source)
 
 # ---------------------------------------------------------------------------
 
 export getAllLogs = () =>
 
-	lLines = []
-	for h in lNamedLogs
-		lLines.push h.str
-	return lLines.join("\n")
-
-# ---------------------------------------------------------------------------
-
-export dumpLog = (label, theLog, hOptions={}) =>
-
-	DUMP label, theLog, hOptions
-	return
+	return logs.getAllLogs()
 
 # ---------------------------------------------------------------------------
 
@@ -100,26 +70,13 @@ export PUTSTR = (str) =>
 
 	str = rtrim(str)
 
-	# --- If running in browser, just use console.log
-	if defined(globalThis.navigator)
+	source = getMyOutsideSource()
+	logs.log source, str
+	if logs.getKey('doEcho')
 		if defined(putstr) && (putstr != console.log)
 			putstr str
 		else
-			console.log untabify(str)
-		return
-
-	caller = getMyOutsideCaller()
-	if notdefined(caller) || ! caller.source
-		return
-	lNamedLogs.push {
-		caller: caller.source,
-		str
-		}
-
-	if defined(hEchoLogs[caller.source])
-		if defined(putstr) && (putstr != console.log)
-			putstr str
-		else
+			# --- console doesn't handle TABs correctly, so...
 			console.log untabify(str)
 	return
 

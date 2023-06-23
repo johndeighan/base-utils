@@ -12,7 +12,7 @@ import {
 	setStringifier, resetStringifier,
 	stringify, tamlStringify, orderedStringify,
 	LOG, LOGVALUE, LOGTAML, LOGJSON,
-	clearAllLogs, getMyLog,
+	clearAllLogs, getMyLogs,
 	} from '@jdeighan/base-utils/log'
 
 fourSpaces = '    '
@@ -56,7 +56,7 @@ test "line 53", (t) => t.is(getPrefix(2), fourSpaces + fourSpaces)
 test "line 57", (t) =>
 	clearAllLogs('noecho')
 	LOG "abc"
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		abc
 		"""
 
@@ -64,7 +64,7 @@ test "line 64", (t) =>
 	clearAllLogs('noecho')
 	LOG "abc"
 	LOG "def"
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		abc
 		def
 		"""
@@ -74,7 +74,7 @@ test "line 73", (t) =>
 	LOG "abc"
 	LOG "def", getPrefix(1)
 	LOG "ghi", getPrefix(2)
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		abc
 		    def
 		        ghi
@@ -85,49 +85,49 @@ test "line 73", (t) =>
 test "line 86", (t) =>
 	clearAllLogs('noecho')
 	LOGVALUE 'x', undef
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		x = undef
 		"""
 
 test "line 93", (t) =>
 	clearAllLogs('noecho')
 	LOGVALUE 'x', null
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		x = null
 		"""
 
 test "line 100", (t) =>
 	clearAllLogs('noecho')
 	LOGVALUE 'x', 'abc'
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		x = 'abc'
 		"""
 
 test "line 107", (t) =>
 	clearAllLogs('noecho')
 	LOGVALUE 'x', 'abc def'
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		x = 'abc˳def'
 		"""
 
 test "line 114", (t) =>
 	clearAllLogs('noecho')
 	LOGVALUE 'x', '"abc"'
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		x = '"abc"'
 		"""
 
 test "line 121", (t) =>
 	clearAllLogs('noecho')
 	LOGVALUE 'x', "'abc'"
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		x = "'abc'"
 		"""
 
 test "line 128", (t) =>
 	clearAllLogs('noecho')
 	LOGVALUE 'x', "'\"abc\"'"
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		x = <'"abc"'>
 		"""
 
@@ -136,7 +136,7 @@ test "line 128", (t) =>
 test "line 137", (t) =>
 	clearAllLogs('noecho')
 	LOGVALUE 'x', 'a'.repeat(80)
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		x = \"\"\"
 			#{'a'.repeat(80)}
 			\"\"\"
@@ -147,7 +147,7 @@ test "line 137", (t) =>
 test "line 148", (t) =>
 	clearAllLogs('noecho')
 	LOGVALUE 'x', 'abc\ndef'
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		x = 'abc®def'
 		"""
 
@@ -158,7 +158,7 @@ test "line 157", (t) =>
 	setLogWidth 5
 	LOGVALUE 'h', {xyz: 42, abc: 99}
 	resetLogWidth()
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		h =
 			---
 			abc: 99
@@ -170,7 +170,7 @@ test "line 157", (t) =>
 test "line 171", (t) =>
 	clearAllLogs('noecho')
 	LOGVALUE 'h', {xyz: 42, abc: 99}
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		h = {"xyz":42,"abc":99}
 		"""
 
@@ -181,7 +181,7 @@ test "line 180", (t) =>
 	setLogWidth 5
 	LOGVALUE 'l', ['xyz', 42, false, undef]
 	resetLogWidth()
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		l =
 			---
 			- xyz
@@ -195,7 +195,7 @@ test "line 180", (t) =>
 test "line 196", (t) =>
 	clearAllLogs('noecho')
 	LOGVALUE 'l', ['xyz', 42, false, undef]
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		l = ["xyz",42,false,null]
 		"""
 
@@ -209,7 +209,7 @@ node1 = new Node1('abc', 2)
 test "line 210", (t) =>
 	clearAllLogs('noecho')
 	LOGVALUE 'Node1', node1
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		Node1 =
 			---
 			level: 2
@@ -239,7 +239,7 @@ node2 = new Node2('abc', 2)
 test "line 240", (t) =>
 	clearAllLogs('noecho')
 	LOGVALUE 'Node2', node2
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		Node2 =
 			HERE IT IS
 			str is abc
@@ -259,7 +259,7 @@ test "line 252", (t) =>
 
 	LOGVALUE 'hProc', hProc
 
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		hProc =
 			---
 			Script: '[Function: Script]'
@@ -272,7 +272,7 @@ test "line 271", (t) =>
 	setLogWidth 5
 	LOGTAML 'lItems', ['xyz', 42, false, undef]
 	resetLogWidth()
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		lItems =
 		   ---
 		   - xyz
@@ -286,7 +286,7 @@ test "line 284", (t) =>
 	setLogWidth 5
 	LOGJSON 'lItems', ['xyz', 42, false, undef]
 	resetLogWidth()
-	t.is getMyLog(), """
+	t.is getMyLogs(), """
 		lItems =
 		[
 		   "xyz",

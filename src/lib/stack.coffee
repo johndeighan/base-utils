@@ -7,7 +7,7 @@ import {
 	isEmpty, nonEmpty, isNonEmptyString,
 	spaces, tabs, getOptions,
 	} from '@jdeighan/base-utils'
-import {LOG, LOGVALUE, getMyLog} from '@jdeighan/base-utils/log'
+import {LOG, LOGVALUE, getMyLogs} from '@jdeighan/base-utils/log'
 
 mainName = '_MAIN_'
 
@@ -31,7 +31,7 @@ export class Node
 
 export getStackLog = () =>
 
-	return getMyLog() || ''
+	return getMyLogs() || ''
 
 # ---------------------------------------------------------------------------
 

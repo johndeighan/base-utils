@@ -19,7 +19,7 @@ import {
   LOGVALUE,
   LOGSTRING,
   clearAllLogs,
-  getMyLog
+  getMyLogs
 } from '@jdeighan/base-utils/log';
 
 import {
@@ -122,7 +122,7 @@ TEST = function(lineNum, debugWhat, func, expectedDbg, expectedLog) {
   clearAllLogs();
   func();
   dbgStr = getDebugLog();
-  logStr = getMyLog();
+  logStr = getMyLogs();
   test(`line ${lineNum}-DEBUG`, (t) => {
     return t.is(dbgStr, expectedDbg);
   });
@@ -138,7 +138,7 @@ TEST = function(lineNum, debugWhat, func, expectedDbg, expectedLog) {
 
 // ---------------------------------------------------------------------------
 (function() {
-  return TEST(107, undef, main, undef, `26
+  return TEST(107, undef, main, '', `26
 14
 30
 16`);

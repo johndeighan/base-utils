@@ -43,7 +43,7 @@ import {
   stringFits,
   debugLogging,
   clearMyLogs,
-  getMyLog,
+  getMyLogs,
   echoMyLogs
 } from '@jdeighan/base-utils/log';
 
@@ -92,7 +92,7 @@ export var clearDebugLog = () => {
 
 // ---------------------------------------------------------------------------
 export var getDebugLog = () => {
-  return getMyLog();
+  return getMyLogs();
 };
 
 // ---------------------------------------------------------------------------

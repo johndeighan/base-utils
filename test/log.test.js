@@ -32,7 +32,7 @@ import {
   LOGTAML,
   LOGJSON,
   clearAllLogs,
-  getMyLog
+  getMyLogs
 } from '@jdeighan/base-utils/log';
 
 fourSpaces = '    ';
@@ -83,14 +83,14 @@ test("line 53", (t) => {
 test("line 57", (t) => {
   clearAllLogs('noecho');
   LOG("abc");
-  return t.is(getMyLog(), `abc`);
+  return t.is(getMyLogs(), `abc`);
 });
 
 test("line 64", (t) => {
   clearAllLogs('noecho');
   LOG("abc");
   LOG("def");
-  return t.is(getMyLog(), `abc
+  return t.is(getMyLogs(), `abc
 def`);
 });
 
@@ -99,7 +99,7 @@ test("line 73", (t) => {
   LOG("abc");
   LOG("def", getPrefix(1));
   LOG("ghi", getPrefix(2));
-  return t.is(getMyLog(), `abc
+  return t.is(getMyLogs(), `abc
     def
         ghi`);
 });
@@ -108,50 +108,50 @@ test("line 73", (t) => {
 test("line 86", (t) => {
   clearAllLogs('noecho');
   LOGVALUE('x', undef);
-  return t.is(getMyLog(), `x = undef`);
+  return t.is(getMyLogs(), `x = undef`);
 });
 
 test("line 93", (t) => {
   clearAllLogs('noecho');
   LOGVALUE('x', null);
-  return t.is(getMyLog(), `x = null`);
+  return t.is(getMyLogs(), `x = null`);
 });
 
 test("line 100", (t) => {
   clearAllLogs('noecho');
   LOGVALUE('x', 'abc');
-  return t.is(getMyLog(), `x = 'abc'`);
+  return t.is(getMyLogs(), `x = 'abc'`);
 });
 
 test("line 107", (t) => {
   clearAllLogs('noecho');
   LOGVALUE('x', 'abc def');
-  return t.is(getMyLog(), `x = 'abc˳def'`);
+  return t.is(getMyLogs(), `x = 'abc˳def'`);
 });
 
 test("line 114", (t) => {
   clearAllLogs('noecho');
   LOGVALUE('x', '"abc"');
-  return t.is(getMyLog(), `x = '"abc"'`);
+  return t.is(getMyLogs(), `x = '"abc"'`);
 });
 
 test("line 121", (t) => {
   clearAllLogs('noecho');
   LOGVALUE('x', "'abc'");
-  return t.is(getMyLog(), `x = "'abc'"`);
+  return t.is(getMyLogs(), `x = "'abc'"`);
 });
 
 test("line 128", (t) => {
   clearAllLogs('noecho');
   LOGVALUE('x', "'\"abc\"'");
-  return t.is(getMyLog(), `x = <'"abc"'>`);
+  return t.is(getMyLogs(), `x = <'"abc"'>`);
 });
 
 // --- long string
 test("line 137", (t) => {
   clearAllLogs('noecho');
   LOGVALUE('x', 'a'.repeat(80));
-  return t.is(getMyLog(), `x = \"\"\"
+  return t.is(getMyLogs(), `x = \"\"\"
 	${'a'.repeat(80)}
 	\"\"\"`);
 });
@@ -160,7 +160,7 @@ test("line 137", (t) => {
 test("line 148", (t) => {
   clearAllLogs('noecho');
   LOGVALUE('x', 'abc\ndef');
-  return t.is(getMyLog(), `x = 'abc®def'`);
+  return t.is(getMyLogs(), `x = 'abc®def'`);
 });
 
 // --- hash (OL doesn't fit)
@@ -172,7 +172,7 @@ test("line 157", (t) => {
     abc: 99
   });
   resetLogWidth();
-  return t.is(getMyLog(), `h =
+  return t.is(getMyLogs(), `h =
 	---
 	abc: 99
 	xyz: 42`);
@@ -185,7 +185,7 @@ test("line 171", (t) => {
     xyz: 42,
     abc: 99
   });
-  return t.is(getMyLog(), `h = {"xyz":42,"abc":99}`);
+  return t.is(getMyLogs(), `h = {"xyz":42,"abc":99}`);
 });
 
 // --- array  (OL doesn't fit)
@@ -194,7 +194,7 @@ test("line 180", (t) => {
   setLogWidth(5);
   LOGVALUE('l', ['xyz', 42, false, undef]);
   resetLogWidth();
-  return t.is(getMyLog(), `l =
+  return t.is(getMyLogs(), `l =
 	---
 	- xyz
 	- 42
@@ -206,7 +206,7 @@ test("line 180", (t) => {
 test("line 196", (t) => {
   clearAllLogs('noecho');
   LOGVALUE('l', ['xyz', 42, false, undef]);
-  return t.is(getMyLog(), `l = ["xyz",42,false,null]`);
+  return t.is(getMyLogs(), `l = ["xyz",42,false,null]`);
 });
 
 // --- object
@@ -224,7 +224,7 @@ node1 = new Node1('abc', 2);
 test("line 210", (t) => {
   clearAllLogs('noecho');
   LOGVALUE('Node1', node1);
-  return t.is(getMyLog(), `Node1 =
+  return t.is(getMyLogs(), `Node1 =
 	---
 	level: 2
 	name: node1
@@ -256,7 +256,7 @@ node2 = new Node2('abc', 2);
 test("line 240", (t) => {
   clearAllLogs('noecho');
   LOGVALUE('Node2', node2);
-  return t.is(getMyLog(), `Node2 =
+  return t.is(getMyLogs(), `Node2 =
 	HERE IT IS
 	str is abc
 	name is node2
@@ -279,7 +279,7 @@ test("line 252", (t) => {
     }
   };
   LOGVALUE('hProc', hProc);
-  return t.is(getMyLog(), `hProc =
+  return t.is(getMyLogs(), `hProc =
 	---
 	Script: '[Function: Script]'
 	code: '[Function: code]'
@@ -291,7 +291,7 @@ test("line 271", (t) => {
   setLogWidth(5);
   LOGTAML('lItems', ['xyz', 42, false, undef]);
   resetLogWidth();
-  return t.is(getMyLog(), `lItems =
+  return t.is(getMyLogs(), `lItems =
    ---
    - xyz
    - 42
@@ -304,7 +304,7 @@ test("line 284", (t) => {
   setLogWidth(5);
   LOGJSON('lItems', ['xyz', 42, false, undef]);
   resetLogWidth();
-  return t.is(getMyLog(), `lItems =
+  return t.is(getMyLogs(), `lItems =
 [
    "xyz",
    42,
