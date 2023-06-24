@@ -1,7 +1,10 @@
 // taml.coffee
 var compareFunc, myReplacer, squote;
 
-import yaml from 'js-yaml';
+import {
+  parse,
+  stringify
+} from 'yaml';
 
 import {
   assert,
@@ -50,7 +53,8 @@ export var fromTAML = (text) => {
     assert(!hasChar(prefix, ' '), `space char in prefix: ${OL(line)}`);
     lLines.push(' '.repeat(prefix.length) + tamlFix(str));
   }
-  return yaml.load(arrayToBlock(lLines), {
+  //	return yaml.load(arrayToBlock(lLines), {skipInvalid: true})
+  return parse(arrayToBlock(lLines), {
     skipInvalid: true
   });
 };
@@ -82,16 +86,18 @@ export var fixValStr = (valStr) => {
 // ---------------------------------------------------------------------------
 // --- a replacer is (key, value) -> newvalue
 myReplacer = (name, value) => {
+  var result;
   if (value === undef) {
     // --- We need this, otherwise js-yaml will convert undef to null
-    return "<UNDEFINED_VALUE>";
+    result = "<UNDEFINED_VALUE>";
   } else if (isString(value)) {
-    return escapeStr(value);
+    result = escapeStr(value);
   } else if (isFunction(value)) {
-    return `[Function: ${value.name}]`;
+    result = `[Function: ${value.name}]`;
   } else {
-    return value;
+    result = value;
   }
+  return result;
 };
 
 // ---------------------------------------------------------------------------
@@ -133,12 +139,15 @@ export var toTAML = (obj, hOptions = {
     };
   }
   assert(isBoolean(sortKeys) || isFunction(sortKeys), "option sortKeys must be boolean, array or function");
-  str = yaml.dump(obj, {
-    skipInvalid: true,
-    indent: 3,
-    sortKeys,
-    lineWidth: -1,
-    replacer
+  //	str = yaml.dump(obj, {
+  //		skipInvalid: true
+  //		indent: 3
+  //		sortKeys
+  //		lineWidth: -1
+  //		replacer
+  //		})
+  str = stringify(obj, myReplacer, {
+    sortMapEntries: true
   });
   str = str.replace(/<UNDEFINED_VALUE>/g, 'undef');
   if (useTabs) {

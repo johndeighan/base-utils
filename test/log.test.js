@@ -32,19 +32,21 @@ import {
   LOGTAML,
   LOGJSON,
   clearAllLogs,
-  getMyLogs
+  getMyLogs,
+  echoLogsByDefault
 } from '@jdeighan/base-utils/log';
 
 fourSpaces = '    ';
+
+echoLogsByDefault(false);
 
 // ---------------------------------------------------------------------------
 test("line 23", (t) => {
   return t.deepEqual(orderedStringify(['a', 42, [1, 2]]), `---
 - a
 - 42
--
-   - 1
-   - 2`);
+- - 1
+  - 2`);
 });
 
 // ---------------------------------------------------------------------------
@@ -281,9 +283,9 @@ test("line 252", (t) => {
   LOGVALUE('hProc', hProc);
   return t.is(getMyLogs(), `hProc =
 	---
-	Script: '[Function: Script]'
-	code: '[Function: code]'
-	html: '[Function: html]'`);
+	Script: "[Function: Script]"
+	code: "[Function: code]"
+	html: "[Function: html]"`);
 });
 
 test("line 271", (t) => {
@@ -291,7 +293,7 @@ test("line 271", (t) => {
   setLogWidth(5);
   LOGTAML('lItems', ['xyz', 42, false, undef]);
   resetLogWidth();
-  return t.is(getMyLogs(), `lItems =
+  return t.is(getMyLogs(), `lItems = <<<
    ---
    - xyz
    - 42

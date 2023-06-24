@@ -12,10 +12,11 @@ import {
 	setStringifier, resetStringifier,
 	stringify, tamlStringify, orderedStringify,
 	LOG, LOGVALUE, LOGTAML, LOGJSON,
-	clearAllLogs, getMyLogs,
+	clearAllLogs, getMyLogs, echoLogsByDefault,
 	} from '@jdeighan/base-utils/log'
 
 fourSpaces = '    '
+echoLogsByDefault(false)
 
 # ---------------------------------------------------------------------------
 
@@ -24,9 +25,8 @@ test "line 23", (t) =>
 		---
 		- a
 		- 42
-		-
-		   - 1
-		   - 2
+		- - 1
+		  - 2
 		"""
 
 # ---------------------------------------------------------------------------
@@ -262,9 +262,9 @@ test "line 252", (t) =>
 	t.is getMyLogs(), """
 		hProc =
 			---
-			Script: '[Function: Script]'
-			code: '[Function: code]'
-			html: '[Function: html]'
+			Script: "[Function: Script]"
+			code: "[Function: code]"
+			html: "[Function: html]"
 		"""
 
 test "line 271", (t) =>
@@ -273,7 +273,7 @@ test "line 271", (t) =>
 	LOGTAML 'lItems', ['xyz', 42, false, undef]
 	resetLogWidth()
 	t.is getMyLogs(), """
-		lItems =
+		lItems = <<<
 		   ---
 		   - xyz
 		   - 42

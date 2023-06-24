@@ -8,8 +8,12 @@ import {
 import {
 	undef, defined, notdefined, words,
 	} from '@jdeighan/base-utils'
-import {clearAllLogs} from '@jdeighan/base-utils/log'
+import {
+	clearAllLogs, echoLogsByDefault,
+	} from '@jdeighan/base-utils/log'
 import {CallStack, getStackLog} from '@jdeighan/base-utils/stack'
+
+echoLogsByDefault false
 
 # ---------------------------------------------------------------------------
 

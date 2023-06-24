@@ -75,6 +75,19 @@ logs = new NamedLogs({
 });
 
 // ---------------------------------------------------------------------------
+export var echoLogsByDefault = (flag = true) => {
+  logs.hDefaultKeys.doEcho = flag;
+};
+
+// ---------------------------------------------------------------------------
+export var debugLogging = (flag = true) => {
+  internalDebugging = flag;
+  if (internalDebugging) {
+    console.log(`internalDebugging = ${flag}`);
+  }
+};
+
+// ---------------------------------------------------------------------------
 export var echoMyLogs = (flag = true) => {
   var source;
   // --- NOTE: source can be undef - NamedLogs handles that OK
@@ -108,11 +121,21 @@ export var getAllLogs = () => {
 
 // ---------------------------------------------------------------------------
 export var PUTSTR = (str) => {
-  var source;
+  var doEcho, source;
+  if (internalDebugging) {
+    console.log(`CALL PUTSTR(${OL(str)})`);
+    if (defined(putstr) && (putstr !== console.log)) {
+      console.log("   - use custom logger");
+    }
+  }
   str = rtrim(str);
   source = getMyOutsideSource();
+  doEcho = logs.getKey(source, 'doEcho');
+  if (internalDebugging) {
+    console.log(`   source = ${OL(source)}, doEcho = ${OL(doEcho)}`);
+  }
   logs.log(source, str);
-  if (logs.getKey('doEcho')) {
+  if (doEcho) {
     if (defined(putstr) && (putstr !== console.log)) {
       putstr(str);
     } else {
@@ -126,9 +149,6 @@ export var PUTSTR = (str) => {
 export var LOG = (str = "", prefix = "") => {
   if (internalDebugging) {
     console.log(`CALL LOG(${OL(str)}), prefix=${OL(prefix)}`);
-    if (defined(putstr) && (putstr !== console.log)) {
-      console.log("   - use custom logger");
-    }
   }
   PUTSTR(`${prefix}${str}`);
   return true; // to allow use in boolean expressions
@@ -145,14 +165,6 @@ export var setLogWidth = (w) => {
 // ---------------------------------------------------------------------------
 export var resetLogWidth = () => {
   setLogWidth(42);
-};
-
-// ---------------------------------------------------------------------------
-export var debugLogging = (flag = true) => {
-  internalDebugging = flag;
-  if (internalDebugging) {
-    console.log(`internalDebugging = ${flag}`);
-  }
 };
 
 // ---------------------------------------------------------------------------
@@ -234,7 +246,7 @@ export var LOGTAML = (label, value, prefix = "", itemPrefix = undef) => {
   desc = toTAML(value, {
     sortKeys: true
   });
-  PUTSTR(prefixed(prefix, `${prefix}${label} =`, prefixed('   ', desc)));
+  PUTSTR(prefixed(prefix, `${prefix}${label} = <<<`, prefixed('   ', desc)));
   return true;
 };
 

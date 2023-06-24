@@ -16,13 +16,16 @@ import {
 } from '@jdeighan/base-utils';
 
 import {
-  clearAllLogs
+  clearAllLogs,
+  echoLogsByDefault
 } from '@jdeighan/base-utils/log';
 
 import {
   CallStack,
   getStackLog
 } from '@jdeighan/base-utils/stack';
+
+echoLogsByDefault(false);
 
 // ---------------------------------------------------------------------------
 TEST = (t, stack, curFunc, strActive, strNonActive, logging, level = undef, logLevel = undef) => {

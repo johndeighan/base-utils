@@ -29,6 +29,22 @@ logs = new NamedLogs({doEcho: true})
 
 # ---------------------------------------------------------------------------
 
+export echoLogsByDefault = (flag=true) =>
+
+	logs.hDefaultKeys.doEcho = flag
+	return
+
+# ---------------------------------------------------------------------------
+
+export debugLogging = (flag=true) =>
+
+	internalDebugging = flag
+	if internalDebugging
+		console.log "internalDebugging = #{flag}"
+	return
+
+# ---------------------------------------------------------------------------
+
 export echoMyLogs = (flag=true) =>
 
 	# --- NOTE: source can be undef - NamedLogs handles that OK
@@ -68,11 +84,19 @@ export getAllLogs = () =>
 
 export PUTSTR = (str) =>
 
+	if internalDebugging
+		console.log "CALL PUTSTR(#{OL(str)})"
+		if defined(putstr) && (putstr != console.log)
+			console.log "   - use custom logger"
+
 	str = rtrim(str)
 
 	source = getMyOutsideSource()
+	doEcho = logs.getKey(source, 'doEcho')
+	if internalDebugging
+		console.log "   source = #{OL(source)}, doEcho = #{OL(doEcho)}"
 	logs.log source, str
-	if logs.getKey('doEcho')
+	if doEcho
 		if defined(putstr) && (putstr != console.log)
 			putstr str
 		else
@@ -86,8 +110,6 @@ export LOG = (str="", prefix="") =>
 
 	if internalDebugging
 		console.log "CALL LOG(#{OL(str)}), prefix=#{OL(prefix)}"
-		if defined(putstr) && (putstr != console.log)
-			console.log "   - use custom logger"
 
 	PUTSTR "#{prefix}#{str}"
 	return true   # to allow use in boolean expressions
@@ -106,15 +128,6 @@ export setLogWidth = (w) =>
 export resetLogWidth = () =>
 
 	setLogWidth(42)
-	return
-
-# ---------------------------------------------------------------------------
-
-export debugLogging = (flag=true) =>
-
-	internalDebugging = flag
-	if internalDebugging
-		console.log "internalDebugging = #{flag}"
 	return
 
 # ---------------------------------------------------------------------------
@@ -195,7 +208,7 @@ export LOGTAML = (label, value, prefix="", itemPrefix=undef) =>
 		return true
 
 	desc = toTAML(value, {sortKeys: true})
-	PUTSTR prefixed(prefix, "#{prefix}#{label} =", prefixed('   ', desc))
+	PUTSTR prefixed(prefix, "#{prefix}#{label} = <<<", prefixed('   ', desc))
 	return true
 
 # ---------------------------------------------------------------------------

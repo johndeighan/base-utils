@@ -9,7 +9,7 @@ import {
 	undef, defined, notdefined,
 	} from '@jdeighan/base-utils'
 import {
-	LOG, LOGVALUE, LOGSTRING, clearAllLogs, getMyLogs,
+	LOG, LOGVALUE, LOGSTRING, clearAllLogs, getMyLogs, echoLogsByDefault,
 	} from '@jdeighan/base-utils/log'
 import {CallStack} from '@jdeighan/base-utils/stack'
 import {
@@ -19,6 +19,7 @@ import {
 	clearDebugLog, getDebugLog, stdLogString,
 	} from '@jdeighan/base-utils/debug'
 
+echoLogsByDefault false
 setDebugging undef, 'noecho'
 
 # ---------------------------------------------------------------------------

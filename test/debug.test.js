@@ -19,7 +19,8 @@ import {
   LOGVALUE,
   LOGSTRING,
   clearAllLogs,
-  getMyLogs
+  getMyLogs,
+  echoLogsByDefault
 } from '@jdeighan/base-utils/log';
 
 import {
@@ -41,6 +42,8 @@ import {
   getDebugLog,
   stdLogString
 } from '@jdeighan/base-utils/debug';
+
+echoLogsByDefault(false);
 
 setDebugging(undef, 'noecho');
 

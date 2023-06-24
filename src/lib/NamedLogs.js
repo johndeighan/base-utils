@@ -10,9 +10,10 @@ import {
   undef,
   defined,
   notdefined,
+  OL,
   isString,
   isNonEmptyString,
-  OL
+  isHash
 } from '@jdeighan/base-utils';
 
 // ---------------------------------------------------------------------------
@@ -25,6 +26,14 @@ export var NamedLogs = class NamedLogs {
 
   
     // ..........................................................
+  dump() {
+    console.log("hDefaultKeys:");
+    console.log(JSON.stringify(this.hDefaultKeys, null, 3));
+    console.log("hLogs:");
+    console.log(JSON.stringify(this.hLogs, null, 3));
+  }
+
+  // ..........................................................
   log(name, str) {
     var h;
     h = this.getHash(name);
@@ -78,12 +87,15 @@ export var NamedLogs = class NamedLogs {
 
   // ..........................................................
   getKey(name, key) {
-    var h;
+    var h, result;
     h = this.getHash(name);
+    assert(isHash(h), `in getKey(), h = ${OL(h)}`);
     if (h.hasOwnProperty(key)) {
-      return h[key];
+      result = h[key];
+      return result;
     } else if (this.hDefaultKeys.hasOwnProperty(key)) {
-      return this.hDefaultKeys[key];
+      result = this.hDefaultKeys[key];
+      return result;
     } else {
       return undef;
     }
