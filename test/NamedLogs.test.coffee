@@ -147,3 +147,28 @@ import {NamedLogs} from '@jdeighan/base-utils/named-logs'
 		second log
 		"""
 	)()
+
+# ---------------------------------------------------------------------------
+# --- test: using a filter function
+(() ->
+	logs = new NamedLogs()
+
+	logs.log undef, 'first log'
+	logs.log undef, 'junk'
+	logs.log undef, 'second log'
+	logs.log 'B', 'first log'
+	logs.log 'B', 'junk'
+	logs.log 'B', 'second log'
+
+	func = (str) =>
+		str.match(/log/)
+
+	utest.equal 145, logs.getLogs(undef, func), """
+		first log
+		second log
+		"""
+	utest.equal 145, logs.getLogs('B', func), """
+		first log
+		second log
+		"""
+	)()

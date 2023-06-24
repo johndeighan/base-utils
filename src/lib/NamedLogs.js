@@ -13,7 +13,8 @@ import {
   OL,
   isString,
   isNonEmptyString,
-  isHash
+  isHash,
+  isFunction
 } from '@jdeighan/base-utils';
 
 // ---------------------------------------------------------------------------
@@ -41,14 +42,19 @@ export var NamedLogs = class NamedLogs {
   }
 
   // ..........................................................
-  getLogs(name) {
+  getLogs(name, func = undef) {
     var h;
     h = this.getHash(name);
-    return h.lLogs.join("\n");
+    if (defined(func)) {
+      assert(isFunction(func), "filter not a function");
+      return h.lLogs.filter(func).join("\n");
+    } else {
+      return h.lLogs.join("\n");
+    }
   }
 
   // ..........................................................
-  getAllLogs() {
+  getAllLogs(func = undef) {
     var h, lAllLogs, name, ref;
     lAllLogs = [];
     ref = this.hLogs;
@@ -57,7 +63,12 @@ export var NamedLogs = class NamedLogs {
       h = ref[name];
       lAllLogs.push(this.getLogs(name));
     }
-    return lAllLogs.join("\n");
+    if (defined(func)) {
+      assert(isFunction(func), "filter not a function");
+      return lAllLogs.filter(func).join("\n");
+    } else {
+      return lAllLogs.join("\n");
+    }
   }
 
   // ..........................................................

@@ -131,3 +131,23 @@ second log`);
   return utest.equal(145, logs.getLogs(undef), `first log
 second log`);
 })();
+
+// ---------------------------------------------------------------------------
+// --- test: using a filter function
+(function() {
+  var func, logs;
+  logs = new NamedLogs();
+  logs.log(undef, 'first log');
+  logs.log(undef, 'junk');
+  logs.log(undef, 'second log');
+  logs.log('B', 'first log');
+  logs.log('B', 'junk');
+  logs.log('B', 'second log');
+  func = (str) => {
+    return str.match(/log/);
+  };
+  utest.equal(145, logs.getLogs(undef, func), `first log
+second log`);
+  return utest.equal(145, logs.getLogs('B', func), `first log
+second log`);
+})();

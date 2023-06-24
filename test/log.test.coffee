@@ -16,7 +16,7 @@ import {
 	} from '@jdeighan/base-utils/log'
 
 fourSpaces = '    '
-echoLogsByDefault(false)
+echoLogsByDefault false
 
 # ---------------------------------------------------------------------------
 

@@ -3,7 +3,7 @@
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	undef, defined, notdefined, OL,
-	isString, isNonEmptyString, isHash,
+	isString, isNonEmptyString, isHash, isFunction,
 	} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
@@ -35,19 +35,27 @@ export class NamedLogs
 
 	# ..........................................................
 
-	getLogs: (name) ->
+	getLogs: (name, func=undef) ->
 
 		h = @getHash(name)
-		return h.lLogs.join("\n")
+		if defined(func)
+			assert isFunction(func), "filter not a function"
+			return h.lLogs.filter(func).join("\n")
+		else
+			return h.lLogs.join("\n")
 
 	# ..........................................................
 
-	getAllLogs: () ->
+	getAllLogs: (func=undef) ->
 
 		lAllLogs = []
 		for own name,h of @hLogs
 			lAllLogs.push @getLogs(name)
-		return lAllLogs.join("\n")
+		if defined(func)
+			assert isFunction(func), "filter not a function"
+			return lAllLogs.filter(func).join("\n")
+		else
+			return lAllLogs.join("\n")
 
 	# ..........................................................
 
