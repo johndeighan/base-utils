@@ -609,351 +609,357 @@ test("line 184", (t) => {
     }));
   });
   test("line 295", (t) => {
-    return t.falsy(isFunction(42));
+    return t.falsy(isFunction(undef));
   });
   test("line 296", (t) => {
-    return t.falsy(isFunction(n));
+    return t.falsy(isFunction(null));
+  });
+  test("line 297", (t) => {
+    return t.falsy(isFunction(42));
   });
   test("line 298", (t) => {
-    return t.truthy(isRegExp(/^abc$/));
-  });
-  test("line 299", (t) => {
-    return t.truthy(isRegExp(/^\s*where\s+areyou$/));
+    return t.falsy(isFunction(n));
   });
   test("line 300", (t) => {
-    return t.falsy(isRegExp(42));
+    return t.truthy(isRegExp(/^abc$/));
   });
   test("line 301", (t) => {
-    return t.falsy(isRegExp('abc'));
+    return t.truthy(isRegExp(/^\s*where\s+areyou$/));
   });
   test("line 302", (t) => {
-    return t.falsy(isRegExp([1, 'a']));
+    return t.falsy(isRegExp(42));
   });
   test("line 303", (t) => {
+    return t.falsy(isRegExp('abc'));
+  });
+  test("line 304", (t) => {
+    return t.falsy(isRegExp([1, 'a']));
+  });
+  test("line 305", (t) => {
     return t.falsy(isRegExp({
       a: 1,
       b: 'ccc'
     }));
   });
-  test("line 304", (t) => {
+  test("line 306", (t) => {
     return t.falsy(isRegExp(undef));
   });
-  test("line 305", (t) => {
+  test("line 307", (t) => {
     return t.truthy(isRegExp(/\.coffee/));
   });
-  test("line 307", (t) => {
+  test("line 309", (t) => {
     return t.falsy(isObject(h));
   });
-  test("line 308", (t) => {
+  test("line 310", (t) => {
     return t.falsy(isObject(l));
   });
-  test("line 309", (t) => {
+  test("line 311", (t) => {
     return t.truthy(isObject(o));
   });
-  test("line 310", (t) => {
+  test("line 312", (t) => {
     return t.truthy(isObject(o, ['name', 'doIt']));
   });
-  test("line 311", (t) => {
-    return t.truthy(isObject(o, "name doIt"));
-  });
-  test("line 312", (t) => {
-    return t.falsy(isObject(o, ['name', 'doIt', 'missing']));
-  });
   test("line 313", (t) => {
-    return t.falsy(isObject(o, "name doIt missing"));
+    return t.truthy(isObject(o, "name doIt"));
   });
   test("line 314", (t) => {
-    return t.falsy(isObject(n));
+    return t.falsy(isObject(o, ['name', 'doIt', 'missing']));
   });
   test("line 315", (t) => {
-    return t.falsy(isObject(n2));
+    return t.falsy(isObject(o, "name doIt missing"));
   });
   test("line 316", (t) => {
-    return t.falsy(isObject(s));
+    return t.falsy(isObject(n));
   });
   test("line 317", (t) => {
-    return t.falsy(isObject(s2));
+    return t.falsy(isObject(n2));
   });
   test("line 318", (t) => {
-    return t.truthy(isObject(o, "name doIt"));
+    return t.falsy(isObject(s));
   });
   test("line 319", (t) => {
-    return t.truthy(isObject(o, "name doIt meth"));
+    return t.falsy(isObject(s2));
   });
   test("line 320", (t) => {
-    return t.truthy(isObject(o, "name &doIt &meth"));
+    return t.truthy(isObject(o, "name doIt"));
   });
   test("line 321", (t) => {
-    return t.falsy(isObject(o, "&name"));
+    return t.truthy(isObject(o, "name doIt meth"));
+  });
+  test("line 322", (t) => {
+    return t.truthy(isObject(o, "name &doIt &meth"));
   });
   test("line 323", (t) => {
-    return t.deepEqual(jsType(undef), [undef, 'undef']);
-  });
-  test("line 324", (t) => {
-    return t.deepEqual(jsType(null), [undef, 'null']);
+    return t.falsy(isObject(o, "&name"));
   });
   test("line 325", (t) => {
-    return t.deepEqual(jsType(s), ['string', undef]);
+    return t.deepEqual(jsType(undef), [undef, 'undef']);
   });
   test("line 326", (t) => {
-    return t.deepEqual(jsType(''), ['string', 'empty']);
+    return t.deepEqual(jsType(null), [undef, 'null']);
   });
   test("line 327", (t) => {
-    return t.deepEqual(jsType("\t\t"), ['string', 'empty']);
+    return t.deepEqual(jsType(s), ['string', undef]);
   });
   test("line 328", (t) => {
-    return t.deepEqual(jsType("  "), ['string', 'empty']);
+    return t.deepEqual(jsType(''), ['string', 'empty']);
   });
   test("line 329", (t) => {
-    return t.deepEqual(jsType(h), ['hash', undef]);
+    return t.deepEqual(jsType("\t\t"), ['string', 'empty']);
   });
   test("line 330", (t) => {
-    return t.deepEqual(jsType({}), ['hash', 'empty']);
+    return t.deepEqual(jsType("  "), ['string', 'empty']);
   });
   test("line 331", (t) => {
-    return t.deepEqual(jsType(3.14159), ['number', undef]);
-  });
-  test("line 332", (t) => {
-    return t.deepEqual(jsType(42), ['number', 'integer']);
-  });
-  test("line 333", (t) => {
-    return t.deepEqual(jsType(true), ['boolean', undef]);
-  });
-  test("line 334", (t) => {
-    return t.deepEqual(jsType(false), ['boolean', undef]);
-  });
-  test("line 335", (t) => {
     return t.deepEqual(jsType(h), ['hash', undef]);
   });
-  test("line 336", (t) => {
+  test("line 332", (t) => {
     return t.deepEqual(jsType({}), ['hash', 'empty']);
   });
+  test("line 333", (t) => {
+    return t.deepEqual(jsType(3.14159), ['number', undef]);
+  });
+  test("line 334", (t) => {
+    return t.deepEqual(jsType(42), ['number', 'integer']);
+  });
+  test("line 335", (t) => {
+    return t.deepEqual(jsType(true), ['boolean', undef]);
+  });
+  test("line 336", (t) => {
+    return t.deepEqual(jsType(false), ['boolean', undef]);
+  });
   test("line 337", (t) => {
-    return t.deepEqual(jsType(l), ['array', undef]);
+    return t.deepEqual(jsType(h), ['hash', undef]);
   });
   test("line 338", (t) => {
-    return t.deepEqual(jsType([]), ['array', 'empty']);
+    return t.deepEqual(jsType({}), ['hash', 'empty']);
   });
   test("line 339", (t) => {
+    return t.deepEqual(jsType(l), ['array', undef]);
+  });
+  test("line 340", (t) => {
+    return t.deepEqual(jsType([]), ['array', 'empty']);
+  });
+  test("line 341", (t) => {
     return t.deepEqual(jsType(/abc/), ['regexp', undef]);
   });
   func1 = function(x) {};
   func2 = (x) => {};
   // --- NOTE: regular functions can't be distinguished from constructors
-  test("line 348", (t) => {
+  test("line 350", (t) => {
     return t.deepEqual(jsType(func1), ['class', undef]);
   });
-  test("line 350", (t) => {
+  test("line 352", (t) => {
     return t.deepEqual(jsType(func2), ['function', undef]);
   });
-  test("line 351", (t) => {
+  test("line 353", (t) => {
     return t.deepEqual(jsType(NewClass), ['class', undef]);
   });
-  return test("line 352", (t) => {
+  return test("line 354", (t) => {
     return t.deepEqual(jsType(o), ['object', undef]);
   });
 })();
 
 // ---------------------------------------------------------------------------
-test("line 357", (t) => {
+test("line 359", (t) => {
   return t.truthy(isEmpty(''));
 });
 
-test("line 358", (t) => {
+test("line 360", (t) => {
   return t.truthy(isEmpty('  \t\t'));
 });
 
-test("line 359", (t) => {
+test("line 361", (t) => {
   return t.truthy(isEmpty([]));
 });
 
-test("line 360", (t) => {
+test("line 362", (t) => {
   return t.truthy(isEmpty({}));
 });
 
-test("line 362", (t) => {
+test("line 364", (t) => {
   return t.truthy(nonEmpty('a'));
 });
 
-test("line 363", (t) => {
+test("line 365", (t) => {
   return t.truthy(nonEmpty('.'));
 });
 
-test("line 364", (t) => {
+test("line 366", (t) => {
   return t.truthy(nonEmpty([2]));
 });
 
-test("line 365", (t) => {
+test("line 367", (t) => {
   return t.truthy(nonEmpty({
     width: 2
   }));
 });
 
 // ---------------------------------------------------------------------------
-test("line 369", (t) => {
+test("line 371", (t) => {
   return t.deepEqual(blockToArray(undef), []);
 });
 
-test("line 370", (t) => {
+test("line 372", (t) => {
   return t.deepEqual(blockToArray(''), []);
 });
 
-test("line 371", (t) => {
+test("line 373", (t) => {
   return t.deepEqual(blockToArray('a'), ['a']);
 });
 
-test("line 372", (t) => {
+test("line 374", (t) => {
   return t.deepEqual(blockToArray("a\nb"), ['a', 'b']);
 });
 
-test("line 373", (t) => {
+test("line 375", (t) => {
   return t.deepEqual(blockToArray("a\r\nb"), ['a', 'b']);
 });
 
-test("line 374", (t) => {
+test("line 376", (t) => {
   return t.deepEqual(blockToArray("abc\nxyz"), ['abc', 'xyz']);
 });
 
-test("line 379", (t) => {
+test("line 381", (t) => {
   return t.deepEqual(blockToArray("abc\nxyz"), ['abc', 'xyz']);
 });
 
-test("line 384", (t) => {
+test("line 386", (t) => {
   return t.deepEqual(blockToArray("abc\n\nxyz"), ['abc', '', 'xyz']);
 });
 
 // ---------------------------------------------------------------------------
-test("line 392", (t) => {
+test("line 394", (t) => {
   return t.deepEqual(toArray("abc\ndef"), ['abc', 'def']);
 });
 
-test("line 393", (t) => {
+test("line 395", (t) => {
   return t.deepEqual(toArray(['a', 'b']), ['a', 'b']);
 });
 
-test("line 395", (t) => {
+test("line 397", (t) => {
   return t.deepEqual(toArray(["a\nb", "c\nd"]), ['a', 'b', 'c', 'd']);
 });
 
 // ---------------------------------------------------------------------------
-test("line 399", (t) => {
+test("line 401", (t) => {
   return t.deepEqual(arrayToBlock(undef), '');
 });
 
-test("line 400", (t) => {
+test("line 402", (t) => {
   return t.deepEqual(arrayToBlock([]), '');
 });
 
-test("line 401", (t) => {
+test("line 403", (t) => {
   return t.deepEqual(arrayToBlock([undef]), '');
 });
 
-test("line 402", (t) => {
+test("line 404", (t) => {
   return t.deepEqual(arrayToBlock(['a  ', 'b\t\t']), "a\nb");
 });
 
-test("line 403", (t) => {
+test("line 405", (t) => {
   return t.deepEqual(arrayToBlock(['a', 'b', 'c']), "a\nb\nc");
 });
 
-test("line 404", (t) => {
+test("line 406", (t) => {
   return t.deepEqual(arrayToBlock(['a', undef, 'b', 'c']), "a\nb\nc");
 });
 
-test("line 405", (t) => {
+test("line 407", (t) => {
   return t.deepEqual(arrayToBlock([undef, 'a', 'b', 'c', undef]), "a\nb\nc");
 });
 
 // ---------------------------------------------------------------------------
-test("line 409", (t) => {
+test("line 411", (t) => {
   return t.deepEqual(toBlock(['abc', 'def']), "abc\ndef");
 });
 
-test("line 410", (t) => {
+test("line 412", (t) => {
   return t.deepEqual(toBlock("abc\ndef"), "abc\ndef");
 });
 
 // ---------------------------------------------------------------------------
-test("line 414", (t) => {
+test("line 416", (t) => {
   return t.is(rtrim("abc"), "abc");
 });
 
-test("line 415", (t) => {
+test("line 417", (t) => {
   return t.is(rtrim("  abc"), "  abc");
 });
 
-test("line 416", (t) => {
+test("line 418", (t) => {
   return t.is(rtrim("abc  "), "abc");
 });
 
-test("line 417", (t) => {
+test("line 419", (t) => {
   return t.is(rtrim("  abc  "), "  abc");
 });
 
 // ---------------------------------------------------------------------------
-test("line 421", (t) => {
+test("line 423", (t) => {
   return t.deepEqual(words(''), []);
 });
 
-test("line 422", (t) => {
+test("line 424", (t) => {
   return t.deepEqual(words('  \t\t'), []);
 });
 
-test("line 423", (t) => {
+test("line 425", (t) => {
   return t.deepEqual(words('a b c'), ['a', 'b', 'c']);
 });
 
-test("line 424", (t) => {
+test("line 426", (t) => {
   return t.deepEqual(words('  a   b   c  '), ['a', 'b', 'c']);
 });
 
-test("line 425", (t) => {
+test("line 427", (t) => {
   return t.deepEqual(words('a b', 'c d'), ['a', 'b', 'c', 'd']);
 });
 
-test("line 426", (t) => {
+test("line 428", (t) => {
   return t.deepEqual(words(' my word ', ' is  word  '), ['my', 'word', 'is', 'word']);
 });
 
-test("line 428", (t) => {
+test("line 430", (t) => {
   return t.truthy(hasChar('abc', 'b'));
 });
 
-test("line 429", (t) => {
+test("line 431", (t) => {
   return t.falsy(hasChar('abc', 'x'));
 });
 
-test("line 430", (t) => {
+test("line 432", (t) => {
   return t.falsy(hasChar("\t\t", ' '));
 });
 
 // ---------------------------------------------------------------------------
-test("line 434", (t) => {
+test("line 436", (t) => {
   return t.is(quoted('abc'), "'abc'");
 });
 
-test("line 435", (t) => {
+test("line 437", (t) => {
   return t.is(quoted('"abc"'), "'\"abc\"'");
 });
 
-test("line 436", (t) => {
+test("line 438", (t) => {
   return t.is(quoted("'abc'"), "\"'abc'\"");
 });
 
-test("line 437", (t) => {
+test("line 439", (t) => {
   return t.is(quoted("'\"abc\"'"), "<'\"abc\"'>");
 });
 
-test("line 438", (t) => {
+test("line 440", (t) => {
   return t.is(quoted("'\"<abc>\"'"), "<'\"<abc>\"'>");
 });
 
 // ---------------------------------------------------------------------------
-test("line 442", (t) => {
+test("line 444", (t) => {
   return t.deepEqual(getOptions(), {});
 });
 
-test("line 443", (t) => {
+test("line 445", (t) => {
   return t.deepEqual(getOptions(undef, {
     x: 1
   }), {
@@ -961,7 +967,7 @@ test("line 443", (t) => {
   });
 });
 
-test("line 444", (t) => {
+test("line 446", (t) => {
   return t.deepEqual(getOptions({
     x: 1
   }, {
@@ -973,31 +979,31 @@ test("line 444", (t) => {
   });
 });
 
-test("line 445", (t) => {
+test("line 447", (t) => {
   return t.deepEqual(getOptions('asText'), {
     asText: true
   });
 });
 
-test("line 446", (t) => {
+test("line 448", (t) => {
   return t.deepEqual(getOptions('!binary'), {
     binary: false
   });
 });
 
-test("line 447", (t) => {
+test("line 449", (t) => {
   return t.deepEqual(getOptions('label=this'), {
     label: 'this'
   });
 });
 
-test("line 448", (t) => {
+test("line 450", (t) => {
   return t.deepEqual(getOptions('width=42'), {
     width: 42
   });
 });
 
-test("line 449", (t) => {
+test("line 451", (t) => {
   return t.deepEqual(getOptions('asText !binary label=this'), {
     asText: true,
     binary: false,
@@ -1006,69 +1012,69 @@ test("line 449", (t) => {
 });
 
 // ---------------------------------------------------------------------------
-test("line 457", (t) => {
+test("line 459", (t) => {
   return t.deepEqual(range(3), [0, 1, 2]);
 });
 
 // ---------------------------------------------------------------------------
-utest.truthy(461, isHashComment('#'));
+utest.truthy(463, isHashComment('#'));
 
-utest.truthy(462, isHashComment('# a comment'));
+utest.truthy(464, isHashComment('# a comment'));
 
-utest.truthy(463, isHashComment('#\ta comment'));
+utest.truthy(465, isHashComment('#\ta comment'));
 
-utest.falsy(464, isHashComment('#comment'));
+utest.falsy(466, isHashComment('#comment'));
 
-utest.falsy(465, isHashComment(''));
+utest.falsy(467, isHashComment(''));
 
-utest.falsy(466, isHashComment('a comment'));
+utest.falsy(468, isHashComment('a comment'));
 
 // ---------------------------------------------------------------------------
-utest.truthy(470, isEmpty(''));
+utest.truthy(472, isEmpty(''));
 
-utest.truthy(471, isEmpty('  \t\t'));
+utest.truthy(473, isEmpty('  \t\t'));
 
-utest.truthy(472, isEmpty([]));
+utest.truthy(474, isEmpty([]));
 
-utest.truthy(473, isEmpty({}));
+utest.truthy(475, isEmpty({}));
 
-utest.truthy(475, nonEmpty('a'));
+utest.truthy(477, nonEmpty('a'));
 
-utest.truthy(476, nonEmpty('.'));
+utest.truthy(478, nonEmpty('.'));
 
-utest.truthy(477, nonEmpty([2]));
+utest.truthy(479, nonEmpty([2]));
 
-utest.truthy(478, nonEmpty({
+utest.truthy(480, nonEmpty({
   width: 2
 }));
 
-utest.truthy(480, isNonEmptyString('abc'));
+utest.truthy(482, isNonEmptyString('abc'));
 
-utest.falsy(481, isNonEmptyString(undef));
+utest.falsy(483, isNonEmptyString(undef));
 
-utest.falsy(482, isNonEmptyString(''));
+utest.falsy(484, isNonEmptyString(''));
 
-utest.falsy(483, isNonEmptyString('   '));
+utest.falsy(485, isNonEmptyString('   '));
 
-utest.falsy(484, isNonEmptyString("\t\t\t"));
+utest.falsy(486, isNonEmptyString("\t\t\t"));
 
-utest.falsy(485, isNonEmptyString(5));
-
-// ---------------------------------------------------------------------------
-utest.truthy(489, oneof('a', 'a', 'b', 'c'));
-
-utest.truthy(490, oneof('b', 'a', 'b', 'c'));
-
-utest.truthy(491, oneof('c', 'a', 'b', 'c'));
-
-utest.falsy(492, oneof('d', 'a', 'b', 'c'));
-
-utest.falsy(493, oneof('x'));
+utest.falsy(487, isNonEmptyString(5));
 
 // ---------------------------------------------------------------------------
-utest.equal(497, uniq([1, 2, 2, 3, 3]), [1, 2, 3]);
+utest.truthy(491, oneof('a', 'a', 'b', 'c'));
 
-utest.equal(498, uniq(['a', 'b', 'b', 'c', 'c']), ['a', 'b', 'c']);
+utest.truthy(492, oneof('b', 'a', 'b', 'c'));
+
+utest.truthy(493, oneof('c', 'a', 'b', 'c'));
+
+utest.falsy(494, oneof('d', 'a', 'b', 'c'));
+
+utest.falsy(495, oneof('x'));
+
+// ---------------------------------------------------------------------------
+utest.equal(499, uniq([1, 2, 2, 3, 3]), [1, 2, 3]);
+
+utest.equal(500, uniq(['a', 'b', 'b', 'c', 'c']), ['a', 'b', 'c']);
 
 // ---------------------------------------------------------------------------
 // CURRENTLY DOES NOT PASS
@@ -1082,21 +1088,21 @@ utest.equal(498, uniq(['a', 'b', 'b', 'c', 'c']), ['a', 'b', 'c']);
 // 		"""
 
 // ---------------------------------------------------------------------------
-utest.equal(513, rtrim("abc"), "abc");
+utest.equal(515, rtrim("abc"), "abc");
 
-utest.equal(514, rtrim("  abc"), "  abc");
+utest.equal(516, rtrim("  abc"), "  abc");
 
-utest.equal(515, rtrim("abc  "), "abc");
+utest.equal(517, rtrim("abc  "), "abc");
 
-utest.equal(516, rtrim("  abc  "), "  abc");
-
-// ---------------------------------------------------------------------------
-utest.equal(520, words('a b c'), ['a', 'b', 'c']);
-
-utest.equal(521, words('  a   b   c  '), ['a', 'b', 'c']);
+utest.equal(518, rtrim("  abc  "), "  abc");
 
 // ---------------------------------------------------------------------------
-utest.equal(525, escapeStr("\t\tXXX\n"), "→→XXX®");
+utest.equal(522, words('a b c'), ['a', 'b', 'c']);
+
+utest.equal(523, words('  a   b   c  '), ['a', 'b', 'c']);
+
+// ---------------------------------------------------------------------------
+utest.equal(527, escapeStr("\t\tXXX\n"), "→→XXX®");
 
 hEsc = {
   "\n": "\\n",
@@ -1104,42 +1110,42 @@ hEsc = {
   "\"": "\\\""
 };
 
-utest.equal(531, escapeStr("\thas quote: \"\nnext line", hEsc), "\\thas quote: \\\"\\nnext line");
+utest.equal(533, escapeStr("\thas quote: \"\nnext line", hEsc), "\\thas quote: \\\"\\nnext line");
 
 // ---------------------------------------------------------------------------
-utest.equal(536, rtrunc('/user/lib/.env', 5), '/user/lib');
+utest.equal(538, rtrunc('/user/lib/.env', 5), '/user/lib');
 
-utest.equal(537, ltrunc('abcdefg', 3), 'defg');
+utest.equal(539, ltrunc('abcdefg', 3), 'defg');
 
-utest.equal(539, CWS(`abc
+utest.equal(541, CWS(`abc
 def
 		ghi`), "abc def ghi");
 
 // ---------------------------------------------------------------------------
-utest.truthy(547, isArrayOfStrings([]));
+utest.truthy(549, isArrayOfStrings([]));
 
-utest.truthy(548, isArrayOfStrings(['a', 'b', 'c']));
+utest.truthy(550, isArrayOfStrings(['a', 'b', 'c']));
 
-utest.truthy(549, isArrayOfStrings(['a', undef, null, 'b']));
+utest.truthy(551, isArrayOfStrings(['a', undef, null, 'b']));
 
 // ---------------------------------------------------------------------------
-utest.truthy(553, isArrayOfArrays([]));
+utest.truthy(555, isArrayOfArrays([]));
 
-utest.truthy(554, isArrayOfArrays([[], []]));
+utest.truthy(556, isArrayOfArrays([[], []]));
 
-utest.truthy(555, isArrayOfArrays([[1, 2], []]));
+utest.truthy(557, isArrayOfArrays([[1, 2], []]));
 
-utest.truthy(556, isArrayOfArrays([[1, 2, [1, 2, 3]], []]));
+utest.truthy(558, isArrayOfArrays([[1, 2, [1, 2, 3]], []]));
 
-utest.truthy(557, isArrayOfArrays([[1, 2], undef, null, []]));
+utest.truthy(559, isArrayOfArrays([[1, 2], undef, null, []]));
 
-utest.falsy(559, isArrayOfArrays({}));
+utest.falsy(561, isArrayOfArrays({}));
 
-utest.falsy(560, isArrayOfArrays([1, 2, 3]));
+utest.falsy(562, isArrayOfArrays([1, 2, 3]));
 
-utest.falsy(561, isArrayOfArrays([[1, 2, [3, 4]], 4]));
+utest.falsy(563, isArrayOfArrays([[1, 2, [3, 4]], 4]));
 
-utest.falsy(562, isArrayOfArrays([
+utest.falsy(564, isArrayOfArrays([
   [1,
   2,
   [3,
@@ -1151,18 +1157,18 @@ utest.falsy(562, isArrayOfArrays([
   }
 ]));
 
-utest.truthy(564, isArrayOfArrays([[1, 2], [3, 4], [4, 5]], 2));
+utest.truthy(566, isArrayOfArrays([[1, 2], [3, 4], [4, 5]], 2));
 
-utest.falsy(565, isArrayOfArrays([[1, 2], [3], [4, 5]], 2));
+utest.falsy(567, isArrayOfArrays([[1, 2], [3], [4, 5]], 2));
 
-utest.falsy(566, isArrayOfArrays([[1, 2], [3, 4, 5], [4, 5]], 2));
+utest.falsy(568, isArrayOfArrays([[1, 2], [3, 4, 5], [4, 5]], 2));
 
 // ---------------------------------------------------------------------------
-utest.truthy(570, isArrayOfHashes([]));
+utest.truthy(572, isArrayOfHashes([]));
 
-utest.truthy(571, isArrayOfHashes([{}, {}]));
+utest.truthy(573, isArrayOfHashes([{}, {}]));
 
-utest.truthy(572, isArrayOfHashes([
+utest.truthy(574, isArrayOfHashes([
   {
     a: 1,
     b: 2
@@ -1170,7 +1176,7 @@ utest.truthy(572, isArrayOfHashes([
   {}
 ]));
 
-utest.truthy(573, isArrayOfHashes([
+utest.truthy(575, isArrayOfHashes([
   {
     a: 1,
     b: 2,
@@ -1181,7 +1187,7 @@ utest.truthy(573, isArrayOfHashes([
   {}
 ]));
 
-utest.truthy(574, isArrayOfHashes([
+utest.truthy(576, isArrayOfHashes([
   {
     a: 1,
     b: 2
@@ -1191,11 +1197,11 @@ utest.truthy(574, isArrayOfHashes([
   {}
 ]));
 
-utest.falsy(576, isArrayOfHashes({}));
+utest.falsy(578, isArrayOfHashes({}));
 
-utest.falsy(577, isArrayOfHashes([1, 2, 3]));
+utest.falsy(579, isArrayOfHashes([1, 2, 3]));
 
-utest.falsy(578, isArrayOfHashes([
+utest.falsy(580, isArrayOfHashes([
   {
     a: 1,
     b: 2,
@@ -1206,7 +1212,7 @@ utest.falsy(578, isArrayOfHashes([
   4
 ]));
 
-utest.falsy(579, isArrayOfHashes([
+utest.falsy(581, isArrayOfHashes([
   {
     a: 1,
     b: 2,
@@ -1243,160 +1249,160 @@ utest.falsy(579, isArrayOfHashes([
   n2 = new Number(42);
   s = 'utest';
   s2 = new String('abc');
-  utest.truthy(598, isHash(h));
-  utest.falsy(599, isHash(l));
-  utest.falsy(600, isHash(o));
-  utest.falsy(601, isHash(n));
-  utest.falsy(602, isHash(n2));
-  utest.falsy(603, isHash(s));
-  utest.falsy(604, isHash(s2));
-  utest.falsy(606, isArray(h));
-  utest.truthy(607, isArray(l));
-  utest.falsy(608, isArray(o));
-  utest.falsy(609, isArray(n));
-  utest.falsy(610, isArray(n2));
-  utest.falsy(611, isArray(s));
-  utest.falsy(612, isArray(s2));
-  utest.falsy(614, isString(undef));
-  utest.falsy(615, isString(h));
-  utest.falsy(616, isString(l));
-  utest.falsy(617, isString(o));
-  utest.falsy(618, isString(n));
-  utest.falsy(619, isString(n2));
-  utest.truthy(620, isString(s));
-  utest.truthy(621, isString(s2));
-  utest.falsy(623, isObject(h));
-  utest.falsy(624, isObject(l));
-  utest.truthy(625, isObject(o));
-  utest.truthy(626, isObject(o, ['name', 'doIt']));
-  utest.falsy(627, isObject(o, ['name', 'doIt', 'missing']));
-  utest.falsy(628, isObject(n));
-  utest.falsy(629, isObject(n2));
-  utest.falsy(630, isObject(s));
-  utest.falsy(631, isObject(s2));
-  utest.falsy(633, isNumber(h));
-  utest.falsy(634, isNumber(l));
-  utest.falsy(635, isNumber(o));
-  utest.truthy(636, isNumber(n));
-  utest.truthy(637, isNumber(n2));
-  utest.falsy(638, isNumber(s));
-  utest.falsy(639, isNumber(s2));
-  utest.truthy(641, isNumber(42.0, {
+  utest.truthy(600, isHash(h));
+  utest.falsy(601, isHash(l));
+  utest.falsy(602, isHash(o));
+  utest.falsy(603, isHash(n));
+  utest.falsy(604, isHash(n2));
+  utest.falsy(605, isHash(s));
+  utest.falsy(606, isHash(s2));
+  utest.falsy(608, isArray(h));
+  utest.truthy(609, isArray(l));
+  utest.falsy(610, isArray(o));
+  utest.falsy(611, isArray(n));
+  utest.falsy(612, isArray(n2));
+  utest.falsy(613, isArray(s));
+  utest.falsy(614, isArray(s2));
+  utest.falsy(616, isString(undef));
+  utest.falsy(617, isString(h));
+  utest.falsy(618, isString(l));
+  utest.falsy(619, isString(o));
+  utest.falsy(620, isString(n));
+  utest.falsy(621, isString(n2));
+  utest.truthy(622, isString(s));
+  utest.truthy(623, isString(s2));
+  utest.falsy(625, isObject(h));
+  utest.falsy(626, isObject(l));
+  utest.truthy(627, isObject(o));
+  utest.truthy(628, isObject(o, ['name', 'doIt']));
+  utest.falsy(629, isObject(o, ['name', 'doIt', 'missing']));
+  utest.falsy(630, isObject(n));
+  utest.falsy(631, isObject(n2));
+  utest.falsy(632, isObject(s));
+  utest.falsy(633, isObject(s2));
+  utest.falsy(635, isNumber(h));
+  utest.falsy(636, isNumber(l));
+  utest.falsy(637, isNumber(o));
+  utest.truthy(638, isNumber(n));
+  utest.truthy(639, isNumber(n2));
+  utest.falsy(640, isNumber(s));
+  utest.falsy(641, isNumber(s2));
+  utest.truthy(643, isNumber(42.0, {
     min: 42.0
   }));
-  utest.falsy(642, isNumber(42.0, {
+  utest.falsy(644, isNumber(42.0, {
     min: 42.1
   }));
-  utest.truthy(643, isNumber(42.0, {
+  utest.truthy(645, isNumber(42.0, {
     max: 42.0
   }));
-  return utest.falsy(644, isNumber(42.0, {
+  return utest.falsy(646, isNumber(42.0, {
     max: 41.9
   }));
 })();
 
 // ---------------------------------------------------------------------------
-utest.truthy(649, isFunction(function() {
+utest.truthy(651, isFunction(function() {
   return pass;
 }));
 
-utest.falsy(650, isFunction(23));
+utest.falsy(652, isFunction(23));
 
-utest.truthy(652, isInteger(42));
+utest.truthy(654, isInteger(42));
 
-utest.truthy(653, isInteger(new Number(42)));
+utest.truthy(655, isInteger(new Number(42)));
 
-utest.falsy(654, isInteger('abc'));
+utest.falsy(656, isInteger('abc'));
 
-utest.falsy(655, isInteger({}));
+utest.falsy(657, isInteger({}));
 
-utest.falsy(656, isInteger([]));
+utest.falsy(658, isInteger([]));
 
-utest.truthy(657, isInteger(42, {
+utest.truthy(659, isInteger(42, {
   min: 0
 }));
 
-utest.falsy(658, isInteger(42, {
+utest.falsy(660, isInteger(42, {
   min: 50
 }));
 
-utest.truthy(659, isInteger(42, {
+utest.truthy(661, isInteger(42, {
   max: 50
 }));
 
-utest.falsy(660, isInteger(42, {
+utest.falsy(662, isInteger(42, {
   max: 0
 }));
 
 // ---------------------------------------------------------------------------
-utest.equal(664, OL(undef), "undef");
+utest.equal(666, OL(undef), "undef");
 
-utest.equal(665, OL("\t\tabc\nxyz"), "'→→abc®xyz'");
+utest.equal(667, OL("\t\tabc\nxyz"), "'→→abc®xyz'");
 
-utest.equal(666, OL({
+utest.equal(668, OL({
   a: 1,
   b: 'xyz'
 }), '{"a":1,"b":"xyz"}');
 
 // ---------------------------------------------------------------------------
-utest.equal(670, CWS(`a utest
+utest.equal(672, CWS(`a utest
 error message`), "a utest error message");
 
 // ---------------------------------------------------------------------------
 // test isRegExp()
-utest.truthy(678, isRegExp(/^abc$/));
+utest.truthy(680, isRegExp(/^abc$/));
 
-utest.truthy(679, isRegExp(/^\s*where\s+areyou$/));
+utest.truthy(681, isRegExp(/^\s*where\s+areyou$/));
 
-utest.falsy(685, isRegExp(42));
+utest.falsy(687, isRegExp(42));
 
-utest.falsy(686, isRegExp('abc'));
+utest.falsy(688, isRegExp('abc'));
 
-utest.falsy(687, isRegExp([1, 'a']));
+utest.falsy(689, isRegExp([1, 'a']));
 
-utest.falsy(688, isRegExp({
+utest.falsy(690, isRegExp({
   a: 1,
   b: 'ccc'
 }));
 
-utest.falsy(689, isRegExp(undef));
+utest.falsy(691, isRegExp(undef));
 
-utest.truthy(691, isRegExp(/\.coffee/));
-
-// ---------------------------------------------------------------------------
-utest.equal(695, extractMatches("..3 and 4 plus 5", /\d+/g, parseInt), [3, 4, 5]);
-
-utest.equal(697, extractMatches("And This Is A String", /A/g), ['A', 'A']);
+utest.truthy(693, isRegExp(/\.coffee/));
 
 // ---------------------------------------------------------------------------
-utest.truthy(701, notdefined(undef));
+utest.equal(697, extractMatches("..3 and 4 plus 5", /\d+/g, parseInt), [3, 4, 5]);
 
-utest.truthy(702, notdefined(null));
-
-utest.truthy(703, defined(''));
-
-utest.truthy(704, defined(5));
-
-utest.truthy(705, defined([]));
-
-utest.truthy(706, defined({}));
-
-utest.falsy(708, defined(undef));
-
-utest.falsy(709, defined(null));
-
-utest.falsy(710, notdefined(''));
-
-utest.falsy(711, notdefined(5));
-
-utest.falsy(712, notdefined([]));
-
-utest.falsy(713, notdefined({}));
+utest.equal(699, extractMatches("And This Is A String", /A/g), ['A', 'A']);
 
 // ---------------------------------------------------------------------------
-utest.truthy(717, isIterable([]));
+utest.truthy(703, notdefined(undef));
 
-utest.truthy(718, isIterable(['a', 'b']));
+utest.truthy(704, notdefined(null));
+
+utest.truthy(705, defined(''));
+
+utest.truthy(706, defined(5));
+
+utest.truthy(707, defined([]));
+
+utest.truthy(708, defined({}));
+
+utest.falsy(710, defined(undef));
+
+utest.falsy(711, defined(null));
+
+utest.falsy(712, notdefined(''));
+
+utest.falsy(713, notdefined(5));
+
+utest.falsy(714, notdefined([]));
+
+utest.falsy(715, notdefined({}));
+
+// ---------------------------------------------------------------------------
+utest.truthy(719, isIterable([]));
+
+utest.truthy(720, isIterable(['a', 'b']));
 
 gen = function*() {
   yield 1;
@@ -1404,7 +1410,7 @@ gen = function*() {
   yield 3;
 };
 
-utest.truthy(726, isIterable(gen()));
+utest.truthy(728, isIterable(gen()));
 
 // ---------------------------------------------------------------------------
 (function() {
@@ -1415,21 +1421,21 @@ utest.truthy(726, isIterable(gen()));
     }
 
   };
-  return utest.equal(735, className(MyClass), 'MyClass');
+  return utest.equal(737, className(MyClass), 'MyClass');
 })();
 
 // ---------------------------------------------------------------------------
-utest.equal(741, getOptions('a b c'), {
+utest.equal(743, getOptions('a b c'), {
   'a': true,
   'b': true,
   'c': true
 });
 
-utest.equal(742, getOptions('abc'), {
+utest.equal(744, getOptions('abc'), {
   'abc': true
 });
 
-utest.equal(743, getOptions({
+utest.equal(745, getOptions({
   'a': true,
   'b': false,
   'c': 42
@@ -1439,7 +1445,7 @@ utest.equal(743, getOptions({
   'c': 42
 });
 
-utest.equal(744, getOptions(), {});
+utest.equal(746, getOptions(), {});
 
 // ---------------------------------------------------------------------------
 // --- test forEachLine
@@ -1453,7 +1459,7 @@ ghi`;
     lResult.push(line.toUpperCase());
     return false;
   });
-  return utest.equal(759, lResult, ['ABC', 'DEF', 'GHI']);
+  return utest.equal(761, lResult, ['ABC', 'DEF', 'GHI']);
 })();
 
 (() => {
@@ -1469,7 +1475,7 @@ ghi`;
     lResult.push(line.toUpperCase());
     return false;
   });
-  return utest.equal(775, lResult, ['ABC', 'DEF']);
+  return utest.equal(777, lResult, ['ABC', 'DEF']);
 })();
 
 (() => {
@@ -1480,7 +1486,7 @@ ghi`;
     lResult.push(line.toUpperCase());
     return false;
   });
-  return utest.equal(784, lResult, ['ABC', 'DEF', 'GHI']);
+  return utest.equal(786, lResult, ['ABC', 'DEF', 'GHI']);
 })();
 
 (() => {
@@ -1494,7 +1500,7 @@ ghi`;
     lResult.push(line.toUpperCase());
     return false;
   });
-  return utest.equal(796, lResult, ['ABC', 'DEF']);
+  return utest.equal(798, lResult, ['ABC', 'DEF']);
 })();
 
 (() => {
@@ -1508,7 +1514,7 @@ ghi`;
     lResult.push(`${hInfo.lineNum} ${line.toUpperCase()} ${hInfo.nextLine}`);
     return false;
   });
-  return utest.equal(808, lResult, ['1 ABC def', '2 DEF ghi']);
+  return utest.equal(810, lResult, ['1 ABC def', '2 DEF ghi']);
 })();
 
 // ---------------------------------------------------------------------------
@@ -1521,7 +1527,7 @@ ghi`;
   newblock = mapEachLine(block, (line) => {
     return line.toUpperCase();
   });
-  return utest.equal(822, newblock, `ABC
+  return utest.equal(824, newblock, `ABC
 DEF
 GHI`);
 })();
@@ -1538,7 +1544,7 @@ ghi`;
       return line.toUpperCase();
     }
   });
-  return utest.equal(840, newblock, `ABC
+  return utest.equal(842, newblock, `ABC
 GHI`);
 })();
 
@@ -1548,7 +1554,7 @@ GHI`);
   newblock = mapEachLine(item, (line) => {
     return line.toUpperCase();
   });
-  return utest.equal(850, newblock, ['ABC', 'DEF', 'GHI']);
+  return utest.equal(852, newblock, ['ABC', 'DEF', 'GHI']);
 })();
 
 (() => {
@@ -1561,7 +1567,7 @@ GHI`);
       return line.toUpperCase();
     }
   });
-  return utest.equal(864, newblock, ['ABC', 'GHI']);
+  return utest.equal(866, newblock, ['ABC', 'GHI']);
 })();
 
 (() => {
@@ -1576,7 +1582,7 @@ GHI`);
       return `${hInfo.lineNum} ${line.toUpperCase()}`;
     }
   });
-  return utest.equal(879, newblock, ['1 ABC def', '3 GHI']);
+  return utest.equal(881, newblock, ['1 ABC def', '3 GHI']);
 })();
 
 // ---------------------------------------------------------------------------
@@ -1604,7 +1610,7 @@ GHI`);
     start: 0,
     type: 'Program'
   };
-  return utest.equal(905, removeKeys(hAST, ['start', 'end']), {
+  return utest.equal(907, removeKeys(hAST, ['start', 'end']), {
     body: [
       {
         declarations: Array([{}],
@@ -1642,7 +1648,7 @@ GHI`);
     start: 0,
     type: 'Program'
   };
-  return utest.equal(936, removeKeys(hAST, ['start', 'end']), {
+  return utest.equal(938, removeKeys(hAST, ['start', 'end']), {
     body: [
       {
         declarations: Array([{}],
@@ -1679,14 +1685,14 @@ GHI`);
       }
     }
   });
-  utest.equal(976, hToDo.task, 'go shopping');
-  utest.equal(977, h.task, 'GO SHOPPING');
+  utest.equal(978, hToDo.task, 'go shopping');
+  utest.equal(979, h.task, 'GO SHOPPING');
   h.task = 'do something';
-  utest.equal(980, hToDo.task, 'do something');
-  utest.equal(981, h.task, 'DO SOMETHING');
+  utest.equal(982, hToDo.task, 'do something');
+  utest.equal(983, h.task, 'DO SOMETHING');
   h.task = 'nothing';
-  utest.equal(984, hToDo.task, 'do something');
-  return utest.equal(985, h.task, 'DO SOMETHING');
+  utest.equal(986, hToDo.task, 'do something');
+  return utest.equal(987, h.task, 'DO SOMETHING');
 })();
 
 // ---------------------------------------------------------------------------
@@ -1706,7 +1712,7 @@ GHI`);
     await sleep(5);
     return lLines.join(',');
   };
-  return utest.equal(1006, (await run1()), 'abc,def,ghi');
+  return utest.equal(1008, (await run1()), 'abc,def,ghi');
 })();
 
 (async() => {
@@ -1723,5 +1729,5 @@ GHI`);
     await sleep(5);
     return lLines.join(',');
   };
-  return utest.equal(1023, (await run2()), 'def,ghi');
+  return utest.equal(1025, (await run2()), 'def,ghi');
 })();
