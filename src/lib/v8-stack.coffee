@@ -158,7 +158,7 @@ export nodeStr = (node) =>
 			when 'function', 'method'
 				return "#{node.funcName}() #{getFilePos(node)}"
 			when 'script'
-				return "script #{node.hFile.filename} #{getFilePos(node)}"
+				return "script #{node.filename} #{getFilePos(node)}"
 			else
 				return "Unknown node type: '#{node.type}'"
 	catch err
