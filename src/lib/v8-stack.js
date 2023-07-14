@@ -180,7 +180,7 @@ export var nodeStr = (node) => {
       case 'method':
         return `${node.funcName}() ${getFilePos(node)}`;
       case 'script':
-        return `script ${node.hFile.base} ${getFilePos(node)}`;
+        return `script ${node.hFile.filename} ${getFilePos(node)}`;
       default:
         return `Unknown node type: '${node.type}'`;
     }
