@@ -153,13 +153,16 @@ export getMyOutsideSource = () ->
 
 export nodeStr = (node) =>
 
-	switch node.type
-
-		when 'function', 'method'
-			return "#{node.funcName}() #{getFilePos(node)}"
-
-		when 'script'
-			return "script #{node.hFile.base} #{getFilePos(node)}"
+	try
+		switch node.type
+			when 'function', 'method'
+				return "#{node.funcName}() #{getFilePos(node)}"
+			when 'script'
+				return "script #{node.hFile.base} #{getFilePos(node)}"
+			else
+				return "Unknown node type: '#{node.type}'"
+	catch err
+		return "ERROR: #{err.message} in: '#{JSON.stringify(node)}'"
 
 # ---------------------------------------------------------------------------
 

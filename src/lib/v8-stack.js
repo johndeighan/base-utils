@@ -173,12 +173,20 @@ export var getMyOutsideSource = function() {
 
 // ---------------------------------------------------------------------------
 export var nodeStr = (node) => {
-  switch (node.type) {
-    case 'function':
-    case 'method':
-      return `${node.funcName}() ${getFilePos(node)}`;
-    case 'script':
-      return `script ${node.hFile.base} ${getFilePos(node)}`;
+  var err;
+  try {
+    switch (node.type) {
+      case 'function':
+      case 'method':
+        return `${node.funcName}() ${getFilePos(node)}`;
+      case 'script':
+        return `script ${node.hFile.base} ${getFilePos(node)}`;
+      default:
+        return `Unknown node type: '${node.type}'`;
+    }
+  } catch (error) {
+    err = error;
+    return `ERROR: ${err.message} in: '${JSON.stringify(node)}'`;
   }
 };
 
