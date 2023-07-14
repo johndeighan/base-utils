@@ -17,6 +17,7 @@ import {
 	oneof, uniq, rtrunc, ltrunc, CWS, className,
 	isArrayOfStrings, isArrayOfHashes, isArrayOfArrays,
 	forEachLine, mapEachLine, getProxy, sleep, schedule,
+	eachCharInString,
 	} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
@@ -1024,3 +1025,10 @@ utest.equal 746, getOptions(), {}
 
 	utest.equal 1025, await run2(), 'def,ghi'
 	)()
+
+# ---------------------------------------------------------------------------
+# test eachCharInString()
+
+utest.truthy 1032, eachCharInString 'ABC', (ch) => ch == ch.toUpperCase()
+utest.falsy  1033, eachCharInString 'abc', (ch) => ch == ch.toUpperCase()
+utest.falsy  1034, eachCharInString 'AbC', (ch) => ch == ch.toUpperCase()

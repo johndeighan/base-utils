@@ -935,6 +935,15 @@ export getDumpStr = (label, str, hOptions={}) =>
 
 # ---------------------------------------------------------------------------
 
+export eachCharInString = (str, func) =>
+
+	for ch in Array.from(str)
+		if !func(ch)
+			return false
+	return true
+
+# ---------------------------------------------------------------------------
+
 export DUMP = (label, obj, hOptions={}) =>
 
 	assert isString(label), "no label"
