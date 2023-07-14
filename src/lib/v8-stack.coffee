@@ -162,7 +162,9 @@ export nodeStr = (node) =>
 			else
 				return "Unknown node type: '#{node.type}'"
 	catch err
-		return "ERROR: #{err.message} in: '#{JSON.stringify(node)}'"
+		errmsg = "ERROR: #{err.message} in: '#{JSON.stringify(node)}'"
+		console.log errmsg
+		return errmsg
 
 # ---------------------------------------------------------------------------
 
