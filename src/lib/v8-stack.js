@@ -173,7 +173,7 @@ export var getMyOutsideSource = function() {
 
 // ---------------------------------------------------------------------------
 export var nodeStr = (node) => {
-  var err;
+  var err, errmsg;
   try {
     switch (node.type) {
       case 'function':
@@ -186,7 +186,9 @@ export var nodeStr = (node) => {
     }
   } catch (error) {
     err = error;
-    return `ERROR: ${err.message} in: '${JSON.stringify(node)}'`;
+    errmsg = `ERROR: ${err.message} in: '${JSON.stringify(node)}'`;
+    console.log(errmsg);
+    return errmsg;
   }
 };
 
