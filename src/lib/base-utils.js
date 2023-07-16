@@ -4,7 +4,28 @@ var assert, hTimers, myHandler, myReplacer,
 
 import assertLib from 'node:assert';
 
+import {
+  execSync
+} from 'child_process';
+
 export const undef = void 0;
+
+// ---------------------------------------------------------------------------
+export var runCmd = (cmd) => {
+  var err, result;
+  try {
+    result = execSync(cmd, {
+      stdio: 'pipe',
+      windowsHide: true,
+      encoding: 'utf8'
+    });
+    return result || "<STDOUT>";
+  } catch (error1) {
+    err = error1;
+    console.error(`Failed to execute cmd '${cmd}'`, err);
+    return undef;
+  }
+};
 
 // ---------------------------------------------------------------------------
 export var deepEqual = (a, b) => {

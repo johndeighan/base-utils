@@ -73,7 +73,8 @@ import {
   getProxy,
   sleep,
   schedule,
-  eachCharInString
+  eachCharInString,
+  runCmd
 } from '@jdeighan/base-utils';
 
 // ---------------------------------------------------------------------------
@@ -1746,3 +1747,9 @@ utest.falsy(1033, eachCharInString('abc', (ch) => {
 utest.falsy(1034, eachCharInString('AbC', (ch) => {
   return ch === ch.toUpperCase();
 }));
+
+// ---------------------------------------------------------------------------
+// test runCmd()
+utest.equal(1039, runCmd("echo abc"), "abc\r\n");
+
+utest.equal(1040, runCmd("noSuchCmd"), undef);

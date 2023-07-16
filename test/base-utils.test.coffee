@@ -17,7 +17,7 @@ import {
 	oneof, uniq, rtrunc, ltrunc, CWS, className,
 	isArrayOfStrings, isArrayOfHashes, isArrayOfArrays,
 	forEachLine, mapEachLine, getProxy, sleep, schedule,
-	eachCharInString,
+	eachCharInString, runCmd,
 	} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
@@ -1032,3 +1032,9 @@ utest.equal 746, getOptions(), {}
 utest.truthy 1032, eachCharInString 'ABC', (ch) => ch == ch.toUpperCase()
 utest.falsy  1033, eachCharInString 'abc', (ch) => ch == ch.toUpperCase()
 utest.falsy  1034, eachCharInString 'AbC', (ch) => ch == ch.toUpperCase()
+
+# ---------------------------------------------------------------------------
+# test runCmd()
+
+utest.equal 1039, runCmd("echo abc"), "abc\r\n"
+utest.equal 1040, runCmd("noSuchCmd"), undef

@@ -1,8 +1,24 @@
 # base-utils.coffee
 
 import assertLib  from 'node:assert'
+import {execSync} from 'child_process'
 
 `export const undef = void 0`
+
+# ---------------------------------------------------------------------------
+
+export runCmd = (cmd) =>
+
+	try
+		result = execSync cmd, {
+			stdio: 'pipe'
+			windowsHide: true
+			encoding: 'utf8'
+			}
+		return result || "<STDOUT>"
+	catch err
+		console.error "Failed to execute cmd '#{cmd}'", err
+		return undef
 
 # ---------------------------------------------------------------------------
 
