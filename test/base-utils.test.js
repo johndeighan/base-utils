@@ -9,7 +9,8 @@ import {
 
 import {
   assert,
-  croak
+  croak,
+  suppressExceptionLogging
 } from '@jdeighan/base-utils/exceptions';
 
 import {
@@ -76,6 +77,8 @@ import {
   eachCharInString,
   runCmd
 } from '@jdeighan/base-utils';
+
+suppressExceptionLogging();
 
 // ---------------------------------------------------------------------------
 test("line 24", (t) => {
