@@ -3,7 +3,9 @@
 import test from 'ava'
 
 import {utest} from '@jdeighan/base-utils/utest'
-import {assert, croak} from '@jdeighan/base-utils/exceptions'
+import {
+	assert, croak, suppressExceptionLogging,
+	} from '@jdeighan/base-utils/exceptions'
 import {
 	undef, pass, defined, notdefined, tabify, untabify, prefixBlock,
 	escapeStr, OL, OLS, inList,  isHashComment, splitPrefix, hasPrefix,
@@ -19,6 +21,8 @@ import {
 	forEachLine, mapEachLine, getProxy, sleep, schedule,
 	eachCharInString, runCmd,
 	} from '@jdeighan/base-utils'
+
+suppressExceptionLogging()
 
 # ---------------------------------------------------------------------------
 
