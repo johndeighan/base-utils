@@ -1,4 +1,4 @@
-# machine.coffee
+# state-machine.coffee
 
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
@@ -8,15 +8,17 @@ import {
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 
 # ---------------------------------------------------------------------------
+# You should override this class, adding methods (uppercase by convention)
+#    that expect one or more states and assign a new state
+# then only use those methods, not setState() directly
 
 export class StateMachine
 
-	constructor: (initialState) ->
+	constructor: (@state, @hData={}) ->
 
-		dbgEnter 'StateMachine', initialState
-		assert isNonEmptyString(initialState), "not a non-empty string"
-		@state = initialState
-		@hData = {}
+		dbgEnter 'StateMachine', @state, @hData
+		assert isNonEmptyString(@state), "not a non-empty string"
+		assert isHash(@hData), "data not a hash"
 		dbgReturn 'StateMachine', this
 
 	# ..........................................................
@@ -30,7 +32,11 @@ export class StateMachine
 	setState: (newState, hNewData={}) ->
 
 		assert isHash(hNewData), "new data not a hash"
-		Object.assign @hData, hNewData
+		for own key,val of hNewData
+			if defined(val)
+				@hData[key] = val
+			else
+				delete @hData[key]
 		@state = newState
 		return
 

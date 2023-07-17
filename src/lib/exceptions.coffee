@@ -9,22 +9,6 @@ doHaltOnError = false
 doLog = true
 
 # ---------------------------------------------------------------------------
-
-export suppressExceptionLogging = () =>
-
-	doLog = false
-	return
-
-# ---------------------------------------------------------------------------
-
-export haltOnError = (flag=true) =>
-	# --- return existing setting
-
-	save = doHaltOnError
-	doHaltOnError = flag
-	return save
-
-# ---------------------------------------------------------------------------
 # simple redirect to an array - useful in unit tests
 
 lExceptionLog = undef
@@ -37,6 +21,23 @@ export exGetLog = () =>
 	result = lExceptionLog.join("\n")
 	lExceptionLog = undef
 	return result
+
+# ---------------------------------------------------------------------------
+
+export suppressExceptionLogging = () =>
+
+	doLog = false
+	exReset()
+	return
+
+# ---------------------------------------------------------------------------
+
+export haltOnError = (flag=true) =>
+	# --- return existing setting
+
+	save = doHaltOnError
+	doHaltOnError = flag
+	return save
 
 # ---------------------------------------------------------------------------
 

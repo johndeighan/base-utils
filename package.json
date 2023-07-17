@@ -12,7 +12,7 @@
 		"./stack": "./src/lib/stack.js",
 		"./prefix": "./src/lib/prefix.js",
 		"./taml": "./src/lib/taml.js",
-		"./machine": "./src/lib/machine.js",
+		"./state-machine": "./src/lib/state-machine.js",
 		"./exceptions": "./src/lib/exceptions.js",
 		"./v8-stack": "./src/lib/v8-stack.js",
 		"./utest": "./src/lib/SimpleUnitTester.js",
