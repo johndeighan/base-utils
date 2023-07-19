@@ -47,12 +47,14 @@ export var fromTAML = (text) => {
   for (i = j = 0, len = ref.length; j < len; i = ++j) {
     line = ref[i];
     if (i === 0) {
+      assert(line === '---', "Invalid TAML marker");
       continue;
     }
     [_, prefix, str] = line.match(/^(\s*)(.*)$/);
     str = str.trim();
     assert(!hasChar(prefix, ' '), `space char in prefix: ${OL(line)}`);
-    lLines.push(' '.repeat(prefix.length) + tamlFix(str));
+    // --- Convert each TAB char to 2 spaces
+    lLines.push('  '.repeat(prefix.length) + tamlFix(str));
   }
   return parse(arrayToBlock(lLines), {
     skipInvalid: true

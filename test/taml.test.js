@@ -1,5 +1,5 @@
 // taml.test.coffee
-var h;
+var h, str;
 
 import test from 'ava';
 
@@ -55,4 +55,29 @@ h = {
 
 test("line 19", (t) => {
   return t.is(toTAML(h), '---\nh:\n\t- a: 1\n\t- b: 2');
+});
+
+str = `---
+- index: 0
+	state: learning
+- index: 1
+	state: learning
+- index: 2
+	state: learning`;
+
+test("line 37", (t) => {
+  return t.deepEqual(fromTAML(str), [
+    {
+      index: 0,
+      state: 'learning'
+    },
+    {
+      index: 1,
+      state: 'learning'
+    },
+    {
+      index: 2,
+      state: 'learning'
+    }
+  ]);
 });
