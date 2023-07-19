@@ -79,6 +79,7 @@ export var StateMachine = class StateMachine {
 
   // ..........................................................
   getVar(varname) {
+    this.expectDefined(varname);
     return this.hData[varname];
   }
 

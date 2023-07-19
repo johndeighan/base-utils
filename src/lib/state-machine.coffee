@@ -63,6 +63,7 @@ export class StateMachine
 
 	getVar: (varname) ->
 
+		@expectDefined varname
 		return @hData[varname]
 
 	# ..........................................................

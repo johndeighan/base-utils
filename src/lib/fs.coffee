@@ -4,7 +4,7 @@ import fs from 'fs'
 import NReadLines from 'n-readlines'
 
 import {
-	undef, defined, nonEmpty, isHash, toBlock,
+	undef, defined, nonEmpty, isHash, isArray, toBlock,
 	} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
@@ -178,7 +178,7 @@ export barfJSON = (hJson, lParts...) =>
 
 export barfTAML = (ds, lParts...) =>
 
-	assert isHash(hJson), "hJson not a hash"
+	assert isHash(ds) || isArray(ds), "ds not a hash or array"
 	barf(toTAML(ds), lParts...)
 	return
 

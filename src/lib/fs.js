@@ -8,6 +8,7 @@ import {
   defined,
   nonEmpty,
   isHash,
+  isArray,
   toBlock
 } from '@jdeighan/base-utils';
 
@@ -193,7 +194,7 @@ export var barfJSON = (hJson, ...lParts) => {
 // ---------------------------------------------------------------------------
 //   barfTAML - write a string to a file
 export var barfTAML = (ds, ...lParts) => {
-  assert(isHash(hJson), "hJson not a hash");
+  assert(isHash(ds) || isArray(ds), "ds not a hash or array");
   barf(toTAML(ds), ...lParts);
 };
 
