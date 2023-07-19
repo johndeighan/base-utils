@@ -4,7 +4,7 @@ import {parse, stringify} from 'yaml'
 
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
-	undef, defined, notdefined, OL, hasChar,
+	undef, defined, notdefined, OL, hasChar, getOptions,
 	isEmpty, isString, isFunction, isBoolean, isArray,
 	blockToArray, arrayToBlock, escapeStr, rtrim,
 	} from '@jdeighan/base-utils'
@@ -34,7 +34,6 @@ export fromTAML = (text) =>
 		assert ! hasChar(prefix, ' '), "space char in prefix: #{OL(line)}"
 		lLines.push ' '.repeat(prefix.length) + tamlFix(str)
 
-#	return yaml.load(arrayToBlock(lLines), {skipInvalid: true})
 	return parse(arrayToBlock(lLines), {skipInvalid: true})
 
 # ---------------------------------------------------------------------------
@@ -87,15 +86,15 @@ myReplacer = (name, value) =>
 
 # ---------------------------------------------------------------------------
 
-export toTAML = (obj, hOptions={sortKeys: true}) =>
+export toTAML = (obj, hOptions={}) =>
+
+	{useTabs, sortKeys, escape, replacer} = getOptions(hOptions, {useTabs: true, sortKeys: true})
 
 	if (obj == undef)
 		return "---\nundef"
 
 	if (obj == null)
 		return "---\nnull"
-
-	{useTabs, sortKeys, escape, replacer} = hOptions
 
 	if notdefined(replacer)
 		replacer = myReplacer
@@ -118,14 +117,9 @@ export toTAML = (obj, hOptions={sortKeys: true}) =>
 					return compareFunc(a, b)
 	assert isBoolean(sortKeys) || isFunction(sortKeys),
 		"option sortKeys must be boolean, array or function"
-#	str = yaml.dump(obj, {
-#		skipInvalid: true
-#		indent: 3
-#		sortKeys
-#		lineWidth: -1
-#		replacer
-#		})
-	str = stringify(obj, myReplacer, {sortMapEntries: true})
+
+	hStrOptions = {sortMapEntries: true, indent: 3}
+	str = stringify(obj, myReplacer, hStrOptions)
 	str = str.replace(/<UNDEFINED_VALUE>/g, 'undef')
 	if useTabs
 		str = str.replace(/   /g, "\t")
