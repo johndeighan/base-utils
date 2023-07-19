@@ -118,11 +118,11 @@ export toTAML = (obj, hOptions={}) =>
 	assert isBoolean(sortKeys) || isFunction(sortKeys),
 		"option sortKeys must be boolean, array or function"
 
-	hStrOptions = {sortMapEntries: true, indent: 3}
+	hStrOptions = {sortMapEntries: true}
 	str = stringify(obj, myReplacer, hStrOptions)
 	str = str.replace(/<UNDEFINED_VALUE>/g, 'undef')
 	if useTabs
-		str = str.replace(/   /g, "\t")
+		str = str.replace(/  /g, "\t")
 	return "---\n" + rtrim(str)
 
 # ---------------------------------------------------------------------------
