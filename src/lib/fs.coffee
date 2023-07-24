@@ -1,13 +1,15 @@
 # fs.coffee
 
+import pathLib from 'node:path'
 import fs from 'fs'
 import NReadLines from 'n-readlines'
 
 import {
-	undef, defined, nonEmpty, toBlock,
-	isHash, isArray, isIterable,
+	undef, defined, nonEmpty, toBlock, getOptions,
+	isString, isHash, isArray, isIterable,
 	} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
+import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 import {toTAML, fromTAML} from '@jdeighan/base-utils/taml'
 
@@ -198,20 +200,20 @@ export barfPkgJSON = (hJson, lParts...) =>
 
 # ---------------------------------------------------------------------------
 
-export forEachFileInDir = (dir, func) =>
-	# --- callback will get parms (filename, dir)
-	#     NOT RECURSIVE
-
-	for ent in fs.readdirSync(dir, {withFileTypes: true})
-		if ent.isFile()
-			func(ent.name, dir)
-	return
-
-# ---------------------------------------------------------------------------
-
 export hasPackageJson = (lParts...) =>
 
 	return isFile(lParts...)
+
+# ---------------------------------------------------------------------------
+
+export forEachFileInDir = (dir, func, hContext={}) =>
+	# --- callback will get parms (filepath, hContext)
+	#     DOES NOT RECURSE INTO SUBDIRECTORIES
+
+	for ent in fs.readdirSync(dir, {withFileTypes: true})
+		if ent.isFile()
+			func(ent.name, dir, hContext)
+	return
 
 # ---------------------------------------------------------------------------
 
@@ -238,7 +240,7 @@ export forEachItem = (iter, func, hContext={}) =>
 
 # ---------------------------------------------------------------------------
 
-export fileIterator = (filepath) ->
+export lineIterator = (filepath) ->
 
 	reader = new NReadLines(filepath)
 	while (buffer = reader.next())
@@ -258,4 +260,92 @@ export forEachLineInFile = (filepath, func, hContext={}) =>
 		hContext.lineNum = hContext.index + 1
 		return func(line, hContext)
 
-	return forEachItem(fileIterator(filepath), linefunc, hContext)
+	return forEachItem(lineIterator(filepath), linefunc, hContext)
+
+# ---------------------------------------------------------------------------
+
+export class FileProcessor
+
+	constructor: (@src, hOptions={}) ->
+		# --- Valid options:
+		#        debug
+		# --- hOptions should not contain keys:
+		#        filepath
+		#        ext
+		#        lineNum
+
+		assert isString(@src), "Source not a string"
+		@src = pathLib.resolve(@src)
+		@hOptions = getOptions(hOptions)
+		@debug = !! @hOptions.debug
+
+	# ..........................................................
+
+	init: () ->
+
+	# ..........................................................
+
+	all: () ->
+		# --- yields items
+
+		@init()
+		if isDir(@src)
+			if @debug
+				console.log "Source is a directory"
+			for ent in fs.readdirSync(@src, {withFileTypes: true})
+				if ent.isFile()
+					yield from @handleFile mkpath(@src, ent.name)
+		else if isFile(@src)
+			if @debug
+				console.log "Source is a file"
+			yield from @handleFile @src
+		else
+			croak "Source not a file or directory"
+		return
+
+	# ..........................................................
+
+	getAll: () ->
+		# --- Returns an array of items
+
+		lItems = for item from @all()
+			item
+		return lItems
+
+	# ..........................................................
+
+	filter: () ->
+
+		return true    # by default, handle all files in dir
+
+	# ..........................................................
+
+	handleFile: (filepath) ->
+
+		@hOptions.filepath = filepath
+		hInfo = pathLib.parse(filepath)
+		@hOptions.ext = hInfo.ext
+		@hOptions.filename = hInfo.base
+		@hOptions.stub = hInfo.name
+		if @debug
+			LOGVALUE 'hOptions', @hOptions
+		if @filter()
+			if @debug
+				console.log "filter() returned true"
+			@hOptions.lineNum = 1
+
+			for line from lineIterator(filepath)
+				result = @handleLine(line)
+				if defined(result)
+					yield result
+				@hOptions.lineNum += 1
+		else
+			if @debug
+				console.log "filter() returned false"
+		return
+
+	# ..........................................................
+
+	handleLine: (line) ->
+
+		return "[#{@hOptions.filename}:#{@hOptions.lineNum}] #{line}"

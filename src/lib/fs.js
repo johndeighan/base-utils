@@ -1,4 +1,6 @@
 // fs.coffee
+import pathLib from 'node:path';
+
 import fs from 'fs';
 
 import NReadLines from 'n-readlines';
@@ -8,6 +10,8 @@ import {
   defined,
   nonEmpty,
   toBlock,
+  getOptions,
+  isString,
   isHash,
   isArray,
   isIterable
@@ -17,6 +21,11 @@ import {
   assert,
   croak
 } from '@jdeighan/base-utils/exceptions';
+
+import {
+  LOG,
+  LOGVALUE
+} from '@jdeighan/base-utils/log';
 
 import {
   dbgEnter,
@@ -213,24 +222,24 @@ export var barfPkgJSON = (hJson, ...lParts) => {
 };
 
 // ---------------------------------------------------------------------------
-export var forEachFileInDir = (dir, func) => {
+export var hasPackageJson = (...lParts) => {
+  return isFile(...lParts);
+};
+
+// ---------------------------------------------------------------------------
+export var forEachFileInDir = (dir, func, hContext = {}) => {
   var ent, i, len, ref;
   ref = fs.readdirSync(dir, {
     withFileTypes: true
   });
-  // --- callback will get parms (filename, dir)
-  //     NOT RECURSIVE
+  // --- callback will get parms (filepath, hContext)
+  //     DOES NOT RECURSE INTO SUBDIRECTORIES
   for (i = 0, len = ref.length; i < len; i++) {
     ent = ref[i];
     if (ent.isFile()) {
-      func(ent.name, dir);
+      func(ent.name, dir, hContext);
     }
   }
-};
-
-// ---------------------------------------------------------------------------
-export var hasPackageJson = (...lParts) => {
-  return isFile(...lParts);
 };
 
 // ---------------------------------------------------------------------------
@@ -262,7 +271,7 @@ export var forEachItem = (iter, func, hContext = {}) => {
 };
 
 // ---------------------------------------------------------------------------
-export var fileIterator = function*(filepath) {
+export var lineIterator = function*(filepath) {
   var buffer, reader;
   reader = new NReadLines(filepath);
   while ((buffer = reader.next())) {
@@ -282,5 +291,112 @@ export var forEachLineInFile = (filepath, func, hContext = {}) => {
     hContext.lineNum = hContext.index + 1;
     return func(line, hContext);
   };
-  return forEachItem(fileIterator(filepath), linefunc, hContext);
+  return forEachItem(lineIterator(filepath), linefunc, hContext);
+};
+
+// ---------------------------------------------------------------------------
+export var FileProcessor = class FileProcessor {
+  constructor(src, hOptions = {}) {
+    this.src = src;
+    // --- Valid options:
+    //        debug
+    // --- hOptions should not contain keys:
+    //        filepath
+    //        ext
+    //        lineNum
+    assert(isString(this.src), "Source not a string");
+    this.src = pathLib.resolve(this.src);
+    this.hOptions = getOptions(hOptions);
+    this.debug = !!this.hOptions.debug;
+  }
+
+  // ..........................................................
+  init() {}
+
+  // ..........................................................
+  * all() {
+    var ent, i, len, ref;
+    // --- yields items
+    this.init();
+    if (isDir(this.src)) {
+      if (this.debug) {
+        console.log("Source is a directory");
+      }
+      ref = fs.readdirSync(this.src, {
+        withFileTypes: true
+      });
+      for (i = 0, len = ref.length; i < len; i++) {
+        ent = ref[i];
+        if (ent.isFile()) {
+          yield* this.handleFile(mkpath(this.src, ent.name));
+        }
+      }
+    } else if (isFile(this.src)) {
+      if (this.debug) {
+        console.log("Source is a file");
+      }
+      yield* this.handleFile(this.src);
+    } else {
+      croak("Source not a file or directory");
+    }
+  }
+
+  // ..........................................................
+  getAll() {
+    var item, lItems;
+    // --- Returns an array of items
+    lItems = (function() {
+      var ref, results;
+      ref = this.all();
+      results = [];
+      for (item of ref) {
+        results.push(item);
+      }
+      return results;
+    }).call(this);
+    return lItems;
+  }
+
+  // ..........................................................
+  filter() {
+    return true; // by default, handle all files in dir
+  }
+
+  
+    // ..........................................................
+  * handleFile(filepath) {
+    var hInfo, line, ref, result;
+    this.hOptions.filepath = filepath;
+    hInfo = pathLib.parse(filepath);
+    this.hOptions.ext = hInfo.ext;
+    this.hOptions.filename = hInfo.base;
+    this.hOptions.stub = hInfo.name;
+    if (this.debug) {
+      LOGVALUE('hOptions', this.hOptions);
+    }
+    if (this.filter()) {
+      if (this.debug) {
+        console.log("filter() returned true");
+      }
+      this.hOptions.lineNum = 1;
+      ref = lineIterator(filepath);
+      for (line of ref) {
+        result = this.handleLine(line);
+        if (defined(result)) {
+          yield result;
+        }
+        this.hOptions.lineNum += 1;
+      }
+    } else {
+      if (this.debug) {
+        console.log("filter() returned false");
+      }
+    }
+  }
+
+  // ..........................................................
+  handleLine(line) {
+    return `[${this.hOptions.filename}:${this.hOptions.lineNum}] ${line}`;
+  }
+
 };

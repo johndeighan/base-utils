@@ -5,7 +5,7 @@ import {undef} from '@jdeighan/base-utils'
 import {setDebugging} from '@jdeighan/base-utils/debug'
 import {
 	isFile, isDir, mkpath, mkdirSync, slurp, barf, forEachFileInDir,
-	forEachItem, fileIterator, forEachLineInFile,
+	forEachItem, lineIterator, forEachLineInFile,
 	} from '@jdeighan/base-utils/fs'
 
 dir = process.cwd()     # should be root directory of @jdeighan/base-utils
@@ -13,10 +13,10 @@ testDir = mkpath(dir, 'test')
 testPath = mkpath(dir, 'test', 'readline.txt')
 
 # ---------------------------------------------------------------------------
-# --- test fileIterator()
+# --- test lineIterator()
 
 (() =>
-	iter = fileIterator(testPath)
+	iter = lineIterator(testPath)
 	# --- Contents:
 	#        abc
 	#        def

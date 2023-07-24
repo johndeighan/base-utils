@@ -20,7 +20,7 @@ import {
   barf,
   forEachFileInDir,
   forEachItem,
-  fileIterator,
+  lineIterator,
   forEachLineInFile
 } from '@jdeighan/base-utils/fs';
 
@@ -31,10 +31,10 @@ testDir = mkpath(dir, 'test');
 testPath = mkpath(dir, 'test', 'readline.txt');
 
 // ---------------------------------------------------------------------------
-// --- test fileIterator()
+// --- test lineIterator()
 (() => {
   var iter, lLines, line;
-  iter = fileIterator(testPath);
+  iter = lineIterator(testPath);
   // --- Contents:
   //        abc
   //        def
