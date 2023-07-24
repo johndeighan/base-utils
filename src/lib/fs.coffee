@@ -4,7 +4,8 @@ import fs from 'fs'
 import NReadLines from 'n-readlines'
 
 import {
-	undef, defined, nonEmpty, isHash, isArray, toBlock,
+	undef, defined, nonEmpty, toBlock,
+	isHash, isArray, isIterable,
 	} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
@@ -211,3 +212,50 @@ export forEachFileInDir = (dir, func) =>
 export hasPackageJson = (lParts...) =>
 
 	return isFile(lParts...)
+
+# ---------------------------------------------------------------------------
+
+export forEachItem = (iter, func, hContext={}) =>
+	# --- func() gets (item, hContext)
+
+	assert isIterable(iter), "not an iterable"
+	lItems = []
+	index = 0
+	for item from iter
+		hContext.index = index
+		index += 1
+		try
+			result = func(item, hContext)
+			if defined(result)
+				lItems.push result
+		catch err
+			reader.close()
+			if isString(err)
+				return lItems
+			else
+				throw err    # rethrow the error
+	return lItems
+
+# ---------------------------------------------------------------------------
+
+export fileIterator = (filepath) ->
+
+	reader = new NReadLines(filepath)
+	while (buffer = reader.next())
+		yield buffer.toString().replace(/\r/g, '')
+	return
+
+# ---------------------------------------------------------------------------
+
+export forEachLineInFile = (filepath, func, hContext={}) =>
+	# --- func gets (line, hContext) - lineNum starts at 1
+	#     hContext will include keys:
+	#        filepath
+	#        lineNum - first line is line 1
+
+	linefunc = (line, hContext) =>
+		hContext.filepath = filepath
+		hContext.lineNum = hContext.index + 1
+		return func(line, hContext)
+
+	return forEachItem(fileIterator(filepath), linefunc, hContext)

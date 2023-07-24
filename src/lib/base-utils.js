@@ -383,8 +383,8 @@ export var hasChar = (str, ch) => {
 };
 
 // ---------------------------------------------------------------------------
-export var inList = (item, ...lStrings) => {
-  return lStrings.indexOf(item) >= 0;
+export var inList = (item, ...lItems) => {
+  return lItems.indexOf(item) >= 0;
 };
 
 // ---------------------------------------------------------------------------

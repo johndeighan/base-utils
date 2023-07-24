@@ -4,6 +4,7 @@ import test from 'ava'
 import {setDebugging} from '@jdeighan/base-utils/debug'
 import {
 	isFile, isDir, mkpath, mkdirSync, slurp, barf, forEachFileInDir,
+	forEachItem, fileIterator, forEachLineInFile,
 	} from '@jdeighan/base-utils/fs'
 
 dir = process.cwd()     # should be root directory of @jdeighan/base-utils

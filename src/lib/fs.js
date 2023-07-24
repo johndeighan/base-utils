@@ -7,9 +7,10 @@ import {
   undef,
   defined,
   nonEmpty,
+  toBlock,
   isHash,
   isArray,
-  toBlock
+  isIterable
 } from '@jdeighan/base-utils';
 
 import {
@@ -230,4 +231,56 @@ export var forEachFileInDir = (dir, func) => {
 // ---------------------------------------------------------------------------
 export var hasPackageJson = (...lParts) => {
   return isFile(...lParts);
+};
+
+// ---------------------------------------------------------------------------
+export var forEachItem = (iter, func, hContext = {}) => {
+  var err, index, item, lItems, result;
+  // --- func() gets (item, hContext)
+  assert(isIterable(iter), "not an iterable");
+  lItems = [];
+  index = 0;
+  for (item of iter) {
+    hContext.index = index;
+    index += 1;
+    try {
+      result = func(item, hContext);
+      if (defined(result)) {
+        lItems.push(result);
+      }
+    } catch (error) {
+      err = error;
+      reader.close();
+      if (isString(err)) {
+        return lItems;
+      } else {
+        throw err; // rethrow the error
+      }
+    }
+  }
+  return lItems;
+};
+
+// ---------------------------------------------------------------------------
+export var fileIterator = function*(filepath) {
+  var buffer, reader;
+  reader = new NReadLines(filepath);
+  while ((buffer = reader.next())) {
+    yield buffer.toString().replace(/\r/g, '');
+  }
+};
+
+// ---------------------------------------------------------------------------
+export var forEachLineInFile = (filepath, func, hContext = {}) => {
+  var linefunc;
+  // --- func gets (line, hContext) - lineNum starts at 1
+  //     hContext will include keys:
+  //        filepath
+  //        lineNum - first line is line 1
+  linefunc = (line, hContext) => {
+    hContext.filepath = filepath;
+    hContext.lineNum = hContext.index + 1;
+    return func(line, hContext);
+  };
+  return forEachItem(fileIterator(filepath), linefunc, hContext);
 };

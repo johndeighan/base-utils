@@ -14,7 +14,10 @@ import {
   mkdirSync,
   slurp,
   barf,
-  forEachFileInDir
+  forEachFileInDir,
+  forEachItem,
+  fileIterator,
+  forEachLineInFile
 } from '@jdeighan/base-utils/fs';
 
 dir = process.cwd(); // should be root directory of @jdeighan/base-utils

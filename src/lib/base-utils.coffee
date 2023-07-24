@@ -343,9 +343,9 @@ export hasChar = (str, ch) =>
 
 # ---------------------------------------------------------------------------
 
-export inList = (item, lStrings...) =>
+export inList = (item, lItems...) =>
 
-	return (lStrings.indexOf(item) >= 0)
+	return (lItems.indexOf(item) >= 0)
 
 # ---------------------------------------------------------------------------
 # see: https://stackoverflow.com/questions/40922531/how-to-check-if-a-javascript-function-is-a-constructor
