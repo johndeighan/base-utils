@@ -2,6 +2,9 @@
 
 import pathLib from 'node:path'
 import fs from 'fs'
+import {
+	readFile, writeFile, rm, rmdir,   #  rmSync, rmdirSync,
+	} from 'node:fs/promises'
 import NReadLines from 'n-readlines'
 
 import {
@@ -36,6 +39,8 @@ export getPkgJsonPath = () =>
 	return filePath
 
 # ---------------------------------------------------------------------------
+#    file functions
+# ---------------------------------------------------------------------------
 
 export isFile = (lParts...) =>
 
@@ -50,6 +55,23 @@ export isFile = (lParts...) =>
 		dbgReturn 'isFile', false
 		return false
 
+# ---------------------------------------------------------------------------
+
+export rmFile = (filepath) =>
+
+	await rm filepath
+	return
+
+# ---------------------------------------------------------------------------
+
+export rmFileSync = (filepath) =>
+
+	assert isFile(filepath), "#{filepath} is not a file"
+	fs.rmSync filepath
+	return
+
+# ---------------------------------------------------------------------------
+#    directory functions
 # ---------------------------------------------------------------------------
 
 export isDir = (lParts...) =>
@@ -67,14 +89,6 @@ export isDir = (lParts...) =>
 
 # ---------------------------------------------------------------------------
 
-export rmFileSync = (filepath) =>
-
-	assert isFile(filepath), "#{filepath} is not a file"
-	fs.rmSync filepath
-	return
-
-# ---------------------------------------------------------------------------
-
 export mkdirSync = (dirpath) =>
 
 	try
@@ -87,6 +101,21 @@ export mkdirSync = (dirpath) =>
 		process.exit 1
 	return
 
+# ---------------------------------------------------------------------------
+
+export rmDir = (dirpath) =>
+
+	await rmdir dirpath, {recursive: true}
+	return
+
+# ---------------------------------------------------------------------------
+
+export rmDirSync = (dirpath) =>
+
+	fs.rmdirSync dirpath, {recursive: true}
+	return
+
+# ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 
 export fromJSON = (strJson) =>

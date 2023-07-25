@@ -3,6 +3,13 @@ import pathLib from 'node:path';
 
 import fs from 'fs';
 
+import {
+  readFile,
+  writeFile,
+  rm,
+  rmdir //  rmSync, rmdirSync,
+} from 'node:fs/promises';
+
 import NReadLines from 'n-readlines';
 
 import {
@@ -64,6 +71,8 @@ export var getPkgJsonPath = () => {
 };
 
 // ---------------------------------------------------------------------------
+//    file functions
+// ---------------------------------------------------------------------------
 export var isFile = (...lParts) => {
   var filePath, result;
   dbgEnter('isFile', lParts);
@@ -80,6 +89,19 @@ export var isFile = (...lParts) => {
 };
 
 // ---------------------------------------------------------------------------
+export var rmFile = async(filepath) => {
+  await rm(filepath);
+};
+
+// ---------------------------------------------------------------------------
+export var rmFileSync = (filepath) => {
+  assert(isFile(filepath), `${filepath} is not a file`);
+  fs.rmSync(filepath);
+};
+
+// ---------------------------------------------------------------------------
+//    directory functions
+// ---------------------------------------------------------------------------
 export var isDir = (...lParts) => {
   var dirPath, result;
   dbgEnter('isDir', lParts);
@@ -93,12 +115,6 @@ export var isDir = (...lParts) => {
     dbgReturn('isDir', false);
     return false;
   }
-};
-
-// ---------------------------------------------------------------------------
-export var rmFileSync = (filepath) => {
-  assert(isFile(filepath), `${filepath} is not a file`);
-  fs.rmSync(filepath);
 };
 
 // ---------------------------------------------------------------------------
@@ -117,6 +133,21 @@ export var mkdirSync = (dirpath) => {
   }
 };
 
+// ---------------------------------------------------------------------------
+export var rmDir = async(dirpath) => {
+  await rmdir(dirpath, {
+    recursive: true
+  });
+};
+
+// ---------------------------------------------------------------------------
+export var rmDirSync = (dirpath) => {
+  fs.rmdirSync(dirpath, {
+    recursive: true
+  });
+};
+
+// ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 export var fromJSON = (strJson) => {
   // --- string to data structure
