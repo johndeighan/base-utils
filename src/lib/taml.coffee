@@ -25,23 +25,35 @@ export fromTAML = (text) =>
 	assert isTAML(text), "string #{OL(text)} isn't TAML"
 
 	# --- TAML uses TAB characters for indentation
+	#     convert to 2 spaces per TAB
 	lLines = ['---']
 	for line,i in blockToArray(text)
 		if (i == 0)
 			assert (line == '---'), "Invalid TAML marker"
 			continue
 		[_, prefix, str] = line.match(/^(\s*)(.*)$/)
-		str = str.trim()
 		assert ! hasChar(prefix, ' '), "space char in prefix: #{OL(line)}"
+		str = str.trim()
 
 		# --- Convert each TAB char to 2 spaces
 		lLines.push '  '.repeat(prefix.length) + tamlFix(str)
 
-	return parse(arrayToBlock(lLines), {skipInvalid: true})
+	block = arrayToBlock(lLines)
+	try
+		result = parse(block, {skipInvalid: true})
+	catch err
+		console.log '---------------------------------------'
+		console.log "ERROR in TAML:"
+		console.log block
+		console.log '---------------------------------------'
+	return result
 
 # ---------------------------------------------------------------------------
 
-export tamlFix = (str) =>
+export llSplit = (str) =>
+	# --- Returns ["<key>: ", <rest>]
+	#        OR   ["- ", <rest>]
+	#        OR   undef
 
 	if lMatches = str.match(///^
 			([A-Za-z_][A-Za-z0-9_]*)    # the key
@@ -50,26 +62,55 @@ export tamlFix = (str) =>
 			\s*
 			(.*)
 			$///)
-		[_, key, valStr] = lMatches
-		if isEmpty(valStr)
-			return "#{key}:"
-		else
-			return "#{key}: #{fixValStr(valStr)}"
+		[_, key, rest] = lMatches
+		result = ["#{key}: ", rest]
+	else if lMatches = str.match(///^
+			\-
+			\s*
+			(.*)
+			$///)
+		[_, rest] = lMatches
+		result = ['- ', rest]
 	else
-		return str
+		result = undef
+	return result
+
+# ---------------------------------------------------------------------------
+
+export splitTaml = (str) =>
+	# --- returns [ ("<key>: " || "- "), ..., <val> ] - <val> may be ''
+
+	lParts = []
+	while lResult = llSplit(str)
+		lParts.push lResult[0]
+		str = lResult[1]
+	lParts.push fixValStr(str)
+	return lParts
+
+# ---------------------------------------------------------------------------
+
+export tamlFix = (str) =>
+	# --- str has been trimmed
+
+	lParts = splitTaml(str)
+	result = lParts.join('')
+	return result
 
 # ---------------------------------------------------------------------------
 
 export fixValStr = (valStr) =>
 
 	if isEmpty(valStr) \
+			|| (valStr == '[]') \
+			|| (valStr == '{}') \
 			|| valStr.match(/^\d+(?:\.\d*)?$/) \   # a number
 			|| valStr.match(/^\".*\"$/) \          # " quoted string
 			|| valStr.match(/^\'.*\'$/) \          # ' quoted string
 			|| (valStr == 'true') || (valStr == 'false')
-		return valStr
+		result = valStr
 	else
-		return "'" + valStr.replace(/'/g, "''") + "'"
+		result = "'" + valStr.replace(/'/g, "''") + "'"
+	return result
 
 # ---------------------------------------------------------------------------
 # --- a replacer is (key, value) -> newvalue

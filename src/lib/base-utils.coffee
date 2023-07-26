@@ -376,7 +376,7 @@ export jsType = (x) =>
 	switch (typeof x)
 		when 'number'
 			if Number.isNaN(x)
-				return [undef, 'NaN']
+				return ['number', 'NaN']
 			else if Number.isInteger(x)
 				return ['number', 'integer']
 			else

@@ -38,10 +38,11 @@ export var isTAML = (text) => {
 // ---------------------------------------------------------------------------
 //   taml - convert valid TAML string to a JavaScript value
 export var fromTAML = (text) => {
-  var _, i, j, lLines, len, line, prefix, ref, str;
+  var _, block, err, i, j, lLines, len, line, prefix, ref, result, str;
   assert(defined(text), "text is undef");
   assert(isTAML(text), `string ${OL(text)} isn't TAML`);
   // --- TAML uses TAB characters for indentation
+  //     convert to 2 spaces per TAB
   lLines = ['---'];
   ref = blockToArray(text);
   for (i = j = 0, len = ref.length; j < len; i = ++j) {
@@ -51,38 +52,75 @@ export var fromTAML = (text) => {
       continue;
     }
     [_, prefix, str] = line.match(/^(\s*)(.*)$/);
-    str = str.trim();
     assert(!hasChar(prefix, ' '), `space char in prefix: ${OL(line)}`);
+    str = str.trim();
     // --- Convert each TAB char to 2 spaces
     lLines.push('  '.repeat(prefix.length) + tamlFix(str));
   }
-  return parse(arrayToBlock(lLines), {
-    skipInvalid: true
-  });
+  block = arrayToBlock(lLines);
+  try {
+    result = parse(block, {
+      skipInvalid: true
+    });
+  } catch (error) {
+    err = error;
+    console.log('---------------------------------------');
+    console.log("ERROR in TAML:");
+    console.log(block);
+    console.log('---------------------------------------');
+  }
+  return result;
+};
+
+// ---------------------------------------------------------------------------
+export var llSplit = (str) => {
+  var _, key, lMatches, rest, result;
+  // --- Returns ["<key>: ", <rest>]
+  //        OR   ["- ", <rest>]
+  //        OR   undef
+  if (lMatches = str.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(.*)$/)) { // the key
+    [_, key, rest] = lMatches;
+    result = [`${key}: `, rest];
+  } else if (lMatches = str.match(/^\-\s*(.*)$/)) {
+    [_, rest] = lMatches;
+    result = ['- ', rest];
+  } else {
+    result = undef;
+  }
+  return result;
+};
+
+// ---------------------------------------------------------------------------
+export var splitTaml = (str) => {
+  var lParts, lResult;
+  // --- returns [ ("<key>: " || "- "), ..., <val> ] - <val> may be ''
+  lParts = [];
+  while (lResult = llSplit(str)) {
+    lParts.push(lResult[0]);
+    str = lResult[1];
+  }
+  lParts.push(fixValStr(str));
+  return lParts;
 };
 
 // ---------------------------------------------------------------------------
 export var tamlFix = (str) => {
-  var _, key, lMatches, valStr;
-  if (lMatches = str.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(.*)$/)) { // the key
-    [_, key, valStr] = lMatches;
-    if (isEmpty(valStr)) {
-      return `${key}:`;
-    } else {
-      return `${key}: ${fixValStr(valStr)}`;
-    }
-  } else {
-    return str;
-  }
+  var lParts, result;
+  // --- str has been trimmed
+  lParts = splitTaml(str);
+  result = lParts.join('');
+  return result;
 };
 
 // ---------------------------------------------------------------------------
 export var fixValStr = (valStr) => {
-  if (isEmpty(valStr) || valStr.match(/^\d+(?:\.\d*)?$/) || valStr.match(/^\".*\"$/) || valStr.match(/^\'.*\'$/) || (valStr === 'true') || (valStr === 'false')) { // a number // " quoted string // ' quoted string
-    return valStr;
+  var result;
+  if (isEmpty(valStr) || (valStr === '[]') || (valStr === '{}') || valStr.match(/^\d+(?:\.\d*)?$/) || valStr.match(/^\".*\"$/) || valStr.match(/^\'.*\'$/) || (valStr === 'true') || (valStr === 'false')) { // a number // " quoted string // ' quoted string
+    result = valStr;
   } else {
-    return "'" + valStr.replace(/'/g, "''") + "'";
+    result = "'" + valStr.replace(/'/g, "''") + "'";
   }
+  return result;
 };
 
 // ---------------------------------------------------------------------------
