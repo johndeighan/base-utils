@@ -244,7 +244,7 @@ test "line 184", (t) => t.falsy( inList('a', 'b', 'c'))
 
 	test "line 240", (t) => t.falsy(isNumber(undef))
 	test "line 241", (t) => t.falsy(isNumber(null))
-	test "line 242", (t) => t.falsy(isNumber(NaN))
+	test "line 242", (t) => t.truthy(isNumber(NaN))
 	test "line 243", (t) => t.falsy(isNumber(h))
 	test "line 244", (t) => t.falsy(isNumber(l))
 	test "line 245", (t) => t.falsy(isNumber(o))

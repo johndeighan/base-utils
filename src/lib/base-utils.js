@@ -420,7 +420,7 @@ export var jsType = (x) => {
   switch (typeof x) {
     case 'number':
       if (Number.isNaN(x)) {
-        return [undef, 'NaN'];
+        return ['number', 'NaN'];
       } else if (Number.isInteger(x)) {
         return ['number', 'integer'];
       } else {

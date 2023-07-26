@@ -13,7 +13,7 @@ import {
 # ---------------------------------------------------------------------------
 
 test "line 15", (t) => t.deepEqual llSplit("a: 53"), ["a: ","53"]
-test "line 16", (t) => t.deepEqual llSplit("a:53"), ["a: ","53"]
+test "line 16", (t) => t.deepEqual llSplit("a: 53"), ["a: ","53"]
 test "line 17", (t) => t.deepEqual llSplit("a  :   53"), ["a: ","53"]
 
 test "line 19", (t) => t.deepEqual llSplit("- abc"), ["- ","abc"]
@@ -105,4 +105,21 @@ test "line 72", (t) => t.is toTAML(h), '---\nh:\n\t- a: 1\n\t- b: 2'
 	test "line 105", (t) => t.deepEqual fromTAML(str), [
 		{ en: 'sad', index: 5, type: 'adjective', zh: []}
 		]
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() =>
+	str = """
+		---
+		type: function
+		funcName: main
+		source: C:/Users/johnd/base-utils/test/v8-stack.test.js
+		"""
+
+	test "line 120", (t) => t.deepEqual fromTAML(str), {
+		type: 'function'
+		funcName: 'main'
+		source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
+		}
 	)()

@@ -53,10 +53,11 @@ test("line 17", (t) => {
     hCaller = getMyDirectCaller();
   };
   // ------------------------------------------------------------------------
-  hExpected = fromTAML(`---
-type: function
-funcName: main
-source: C:/Users/johnd/base-utils/test/v8-stack.test.js`);
+  hExpected = {
+    type: 'function',
+    funcName: 'main',
+    source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
+  };
   return test("line 48", (t) => {
     main();
     return t.like(hCaller, hExpected);

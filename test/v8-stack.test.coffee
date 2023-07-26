@@ -38,15 +38,15 @@ test "line 17", (t) =>
 
 	# ------------------------------------------------------------------------
 
-	hExpected = fromTAML """
-		---
-		type: function
-		funcName: main
-		source: C:/Users/johnd/base-utils/test/v8-stack.test.js
-		"""
+	hExpected = {
+		type: 'function'
+		funcName: 'main'
+		source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
+		}
 
 	test "line 48", (t) =>
 		main()
+
 		t.like hCaller, hExpected
 	)()
 

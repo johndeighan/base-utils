@@ -59,14 +59,14 @@ export llSplit = (str) =>
 			([A-Za-z_][A-Za-z0-9_]*)    # the key
 			\s*
 			:
-			\s*
+			\s+
 			(.*)
 			$///)
 		[_, key, rest] = lMatches
 		result = ["#{key}: ", rest]
 	else if lMatches = str.match(///^
 			\-
-			\s*
+			\s+
 			(.*)
 			$///)
 		[_, rest] = lMatches

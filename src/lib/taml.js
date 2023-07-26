@@ -78,10 +78,10 @@ export var llSplit = (str) => {
   // --- Returns ["<key>: ", <rest>]
   //        OR   ["- ", <rest>]
   //        OR   undef
-  if (lMatches = str.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(.*)$/)) { // the key
+  if (lMatches = str.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*:\s+(.*)$/)) { // the key
     [_, key, rest] = lMatches;
     result = [`${key}: `, rest];
-  } else if (lMatches = str.match(/^\-\s*(.*)$/)) {
+  } else if (lMatches = str.match(/^\-\s+(.*)$/)) {
     [_, rest] = lMatches;
     result = ['- ', rest];
   } else {

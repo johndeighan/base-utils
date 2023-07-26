@@ -459,7 +459,7 @@ test("line 184", (t) => {
     return t.falsy(isNumber(null));
   });
   test("line 242", (t) => {
-    return t.falsy(isNumber(0/0));
+    return t.truthy(isNumber(0/0));
   });
   test("line 243", (t) => {
     return t.falsy(isNumber(h));

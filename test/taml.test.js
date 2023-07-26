@@ -28,7 +28,7 @@ test("line 15", (t) => {
 });
 
 test("line 16", (t) => {
-  return t.deepEqual(llSplit("a:53"), ["a: ", "53"]);
+  return t.deepEqual(llSplit("a: 53"), ["a: ", "53"]);
 });
 
 test("line 17", (t) => {
@@ -207,5 +207,21 @@ test("line 72", (t) => {
         zh: []
       }
     ]);
+  });
+})();
+
+// ---------------------------------------------------------------------------
+(() => {
+  var str;
+  str = `---
+type: function
+funcName: main
+source: C:/Users/johnd/base-utils/test/v8-stack.test.js`;
+  return test("line 120", (t) => {
+    return t.deepEqual(fromTAML(str), {
+      type: 'function',
+      funcName: 'main',
+      source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
+    });
   });
 })();
