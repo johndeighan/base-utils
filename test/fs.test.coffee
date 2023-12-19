@@ -16,7 +16,7 @@ testPath = mkpath(dir, 'test', 'readline.txt')
 
 test "line 17", (t) => t.is(mkpath("abc","def"), "abc/def")
 test "line 18", (t) => t.is(mkpath("c:\\Users","johnd"), "c:/Users/johnd")
-test "line 19", (t) => t.is(mkpath("C:\\Users","johnd"), "c:/Users/johnd")
+test "line 19", (t) => t.is(mkpath("C:\\Users","johnd"), "C:/Users/johnd")
 
 test "line 21", (t) => t.truthy(isFile(mkpath(dir, 'package.json')))
 test "line 22", (t) => t.falsy (isFile(mkpath(dir, 'doesNotExist.txt')))
@@ -79,31 +79,32 @@ test "line 65", (t) => t.is slurp(dir, 'test', 'readline.txt', {maxLines: 1000})
 		constructor: () ->
 			super './test'
 
-		filter: () ->
-			{stub, ext} = @hOptions
-			return (ext == '.txt') && stub.match(/^readline/)
-
 		init: () ->
-			# --- We need to clear out hWords each time all() is called
-			@hOptions.hWords = {}
+			# --- We need to clear out hWords each time procAll() is called
+			@hWords = {}
 			return
 
+		filter: (hFileInfo) ->
+			@log "FILTER hFileInfo:"
+			@log hFileInfo
+			{stub, ext} = hFileInfo
+			@log "stub='#{stub}' ext='#{ext}'"
+			return (ext == '.txt') && stub.match(/^readline/)
+
 		handleLine: (line) ->
-			{hWords} = @hOptions
-			if hWords.hasOwnProperty(line)
-				return undef
-			hWords[line] = true
-			return line.toUpperCase()
+			@log "HANDLE LINE: #{line}"
+			@hWords[line.toUpperCase()] = true
+			return
 
 	fp = new TestProcessor()
-	lItems = fp.getAll()
-	test "line 100", (t) => t.deepEqual(lItems, [
-		'ABC'
-		'DEF'
-		'GHI'
-		'JKL'
-		'MNO'
-		'PQR'
-		])
+	fp.procAll()
+	test "line 101", (t) => t.deepEqual(fp.hWords, {
+		'ABC': true
+		'DEF': true
+		'GHI': true
+		'JKL': true
+		'MNO': true
+		'PQR': true
+		})
 
 	)()

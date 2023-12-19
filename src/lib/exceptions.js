@@ -10,7 +10,7 @@ import {
   undef,
   defined,
   notdefined
-} from '@jdeighan/base-utils';
+} from '@jdeighan/base-utils/ll-utils';
 
 doHaltOnError = false;
 
@@ -32,6 +32,8 @@ export var exGetLog = () => {
 };
 
 // ---------------------------------------------------------------------------
+/** prevents logging of exceptions */;
+
 export var suppressExceptionLogging = () => {
   doLog = false;
   exReset();
@@ -61,15 +63,12 @@ EXLOG = (str) => {
 export var assert = (cond, msg) => {
   var i, lFrames, len, node;
   if (!cond) {
-    lFrames = getV8Stack().slice(3);
+    lFrames = getV8Stack();
     EXLOG('-------------------------');
     EXLOG('JavaScript CALL STACK:');
     for (i = 0, len = lFrames.length; i < len; i++) {
       node = lFrames[i];
       EXLOG(`   ${nodeStr(node)}`);
-      if (node.type === 'script') {
-        break;
-      }
     }
     EXLOG('-------------------------');
     EXLOG(`ERROR: ${msg}`);
@@ -104,3 +103,5 @@ ${JSON.stringify(obj)}`;
     throw new Error(newmsg);
   }
 };
+
+//# sourceMappingURL=exceptions.js.map

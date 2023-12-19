@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "source.js",
+  "sourceRoot": "..\\",
+  "sources": [
+    "test\\source.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAmB;AAAA,IAAA,KAAA,EAAA;;AAEnB,OAAA;EAAQ,KAAR;CAAA,MAAA,gCAFmB;;;AAMnB,KAAA,GAAQ,CAAC,CAAD,CAAA,GAAA,EAAA;;AAGP,SAAO,CAAA,GAAI;AAHJ,EANW;;;AAanB,KAAA,GAAQ,CAAC,CAAD,CAAA,GAAA,EAAA;;AAGP,SAAO,CAAA,GAAI;AAHJ;;AAKR,OAAO,CAAC,GAAR,CAAY,MAAZ",
+  "sourcesContent": [
+    "# source-map.coffee\r\n\r\nimport {undef} from '@jdeighan/base-utils/ll-utils'\r\n\r\n# ---------------------------------------------------------------------------\r\n\r\nfunc1 = (x) =>\r\n\r\n\t# return twice the argument\r\n\treturn 2 * x\r\n\r\n# ---------------------------------------------------------------------------\r\n\r\nfunc2 = (x) =>\r\n\r\n\t# --- return half the argument\r\n\treturn x / 2\r\n\r\nconsole.log \"DONE\"\r\n"
+  ]
+}

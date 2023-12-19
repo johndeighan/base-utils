@@ -1,5 +1,0 @@
-log
-===
-
-[Back](./README.md)
-

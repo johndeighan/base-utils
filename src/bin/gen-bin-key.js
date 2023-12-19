@@ -94,3 +94,5 @@ if (isEmpty(hBin)) {
 }
 
 LOG("DONE");
+
+//# sourceMappingURL=gen-bin-key.js.map

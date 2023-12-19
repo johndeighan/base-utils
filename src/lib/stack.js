@@ -364,3 +364,5 @@ export var CallStack = (function() {
   return CallStack;
 
 }).call(this);
+
+//# sourceMappingURL=stack.js.map

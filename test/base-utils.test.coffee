@@ -4,25 +4,20 @@ import test from 'ava'
 
 import {utest} from '@jdeighan/base-utils/utest'
 import {
-	assert, croak, suppressExceptionLogging,
-	} from '@jdeighan/base-utils/exceptions'
-import {
 	undef, pass, defined, notdefined, tabify, untabify, prefixBlock,
-	escapeStr, OL, OLS, inList,  isHashComment, splitPrefix, hasPrefix,
+	escapeStr, OL, OLS,  isHashComment, splitPrefix, hasPrefix,
 	isString, isNumber, isInteger, isHash, isArray, isBoolean,
 	isClass, isConstructor, removeKeys, extractMatches,
 	isFunction, isRegExp, isObject, jsType, deepEqual,
 	isEmpty, nonEmpty, isNonEmptyString, isIdentifier,
 	isFunctionName, isIterable, hashFromString,
 	blockToArray, arrayToBlock, toArray, toBlock,
-	rtrim, words, hasChar, quoted, getOptions, range,
+	rtrim, words, hasChar, quoted, getOptions, range, rev_range,
 	oneof, uniq, rtrunc, ltrunc, CWS, className,
 	isArrayOfStrings, isArrayOfHashes, isArrayOfArrays,
 	forEachLine, mapEachLine, getProxy, sleep, schedule,
 	eachCharInString, runCmd,
 	} from '@jdeighan/base-utils'
-
-suppressExceptionLogging()
 
 # ---------------------------------------------------------------------------
 
@@ -185,8 +180,8 @@ test "line 179", (t) => t.is(OLS([undef, {a:1}]), 'undef,{"a":1}')
 
 # ---------------------------------------------------------------------------
 
-test "line 99",  (t) => t.truthy(inList('a', 'b', 'a', 'c'))
-test "line 184", (t) => t.falsy( inList('a', 'b', 'c'))
+test "line 99",  (t) => t.truthy(oneof('a', 'b', 'a', 'c'))
+test "line 184", (t) => t.falsy( oneof('a', 'b', 'c'))
 
 # ---------------------------------------------------------------------------
 #        jsTypes:
@@ -361,34 +356,22 @@ test "line 184", (t) => t.falsy( inList('a', 'b', 'c'))
 
 # ---------------------------------------------------------------------------
 
-test "line 359", (t) => t.truthy(isEmpty(''))
-test "line 360", (t) => t.truthy(isEmpty('  \t\t'))
-test "line 361", (t) => t.truthy(isEmpty([]))
-test "line 362", (t) => t.truthy(isEmpty({}))
-
-test "line 364", (t) => t.truthy(nonEmpty('a'))
-test "line 365", (t) => t.truthy(nonEmpty('.'))
-test "line 366", (t) => t.truthy(nonEmpty([2]))
-test "line 367", (t) => t.truthy(nonEmpty({width: 2}))
-
-# ---------------------------------------------------------------------------
-
-test "line 371", (t) => t.deepEqual(blockToArray(undef), [])
-test "line 372", (t) => t.deepEqual(blockToArray(''), [])
-test "line 373", (t) => t.deepEqual(blockToArray('a'), ['a'])
-test "line 374", (t) => t.deepEqual(blockToArray("a\nb"), ['a','b'])
-test "line 375", (t) => t.deepEqual(blockToArray("a\r\nb"), ['a','b'])
-test "line 376", (t) => t.deepEqual(blockToArray("abc\nxyz"), [
+test "line 359", (t) => t.deepEqual(blockToArray(undef), [])
+test "line 360", (t) => t.deepEqual(blockToArray(''), [])
+test "line 361", (t) => t.deepEqual(blockToArray('a'), ['a'])
+test "line 362", (t) => t.deepEqual(blockToArray("a\nb"), ['a','b'])
+test "line 363", (t) => t.deepEqual(blockToArray("a\r\nb"), ['a','b'])
+test "line 364", (t) => t.deepEqual(blockToArray("abc\nxyz"), [
 	'abc'
 	'xyz'
 	])
 
-test "line 381", (t) => t.deepEqual(blockToArray("abc\nxyz"), [
+test "line 369", (t) => t.deepEqual(blockToArray("abc\nxyz"), [
 	'abc'
 	'xyz'
 	])
 
-test "line 386", (t) => t.deepEqual(blockToArray("abc\n\nxyz"), [
+test "line 374", (t) => t.deepEqual(blockToArray("abc\n\nxyz"), [
 	'abc'
 	''
 	'xyz'
@@ -396,64 +379,64 @@ test "line 386", (t) => t.deepEqual(blockToArray("abc\n\nxyz"), [
 
 # ---------------------------------------------------------------------------
 
-test "line 394", (t) => t.deepEqual(toArray("abc\ndef"), ['abc','def'])
-test "line 395", (t) => t.deepEqual(toArray(['a','b']), ['a','b'])
+test "line 382", (t) => t.deepEqual(toArray("abc\ndef"), ['abc','def'])
+test "line 383", (t) => t.deepEqual(toArray(['a','b']), ['a','b'])
 
-test "line 397", (t) => t.deepEqual(toArray(["a\nb","c\nd"]), ['a','b','c','d'])
-
-# ---------------------------------------------------------------------------
-
-test "line 401", (t) => t.deepEqual(arrayToBlock(undef), '')
-test "line 402", (t) => t.deepEqual(arrayToBlock([]), '')
-test "line 403", (t) => t.deepEqual(arrayToBlock([undef]), '')
-test "line 404", (t) => t.deepEqual(arrayToBlock(['a  ','b\t\t']), "a\nb")
-test "line 405", (t) => t.deepEqual(arrayToBlock(['a','b','c']), "a\nb\nc")
-test "line 406", (t) => t.deepEqual(arrayToBlock(['a',undef,'b','c']), "a\nb\nc")
-test "line 407", (t) => t.deepEqual(arrayToBlock([undef,'a','b','c',undef]), "a\nb\nc")
+test "line 385", (t) => t.deepEqual(toArray(["a\nb","c\nd"]), ['a','b','c','d'])
 
 # ---------------------------------------------------------------------------
 
-test "line 411", (t) => t.deepEqual(toBlock(['abc','def']), "abc\ndef")
-test "line 412", (t) => t.deepEqual(toBlock("abc\ndef"), "abc\ndef")
+test "line 389", (t) => t.deepEqual(arrayToBlock(undef), '')
+test "line 390", (t) => t.deepEqual(arrayToBlock([]), '')
+test "line 391", (t) => t.deepEqual(arrayToBlock([undef]), '')
+test "line 392", (t) => t.deepEqual(arrayToBlock(['a  ','b\t\t']), "a\nb")
+test "line 393", (t) => t.deepEqual(arrayToBlock(['a','b','c']), "a\nb\nc")
+test "line 394", (t) => t.deepEqual(arrayToBlock(['a',undef,'b','c']), "a\nb\nc")
+test "line 395", (t) => t.deepEqual(arrayToBlock([undef,'a','b','c',undef]), "a\nb\nc")
 
 # ---------------------------------------------------------------------------
 
-test "line 416", (t) => t.is(rtrim("abc"), "abc")
-test "line 417", (t) => t.is(rtrim("  abc"), "  abc")
-test "line 418", (t) => t.is(rtrim("abc  "), "abc")
-test "line 419", (t) => t.is(rtrim("  abc  "), "  abc")
+test "line 399", (t) => t.deepEqual(toBlock(['abc','def']), "abc\ndef")
+test "line 400", (t) => t.deepEqual(toBlock("abc\ndef"), "abc\ndef")
 
 # ---------------------------------------------------------------------------
 
-test "line 423", (t) => t.deepEqual(words(''), [])
-test "line 424", (t) => t.deepEqual(words('  \t\t'), [])
-test "line 425", (t) => t.deepEqual(words('a b c'), ['a', 'b', 'c'])
-test "line 426", (t) => t.deepEqual(words('  a   b   c  '), ['a', 'b', 'c'])
-test "line 427", (t) => t.deepEqual(words('a b', 'c d'), ['a', 'b', 'c', 'd'])
-test "line 428", (t) => t.deepEqual(words(' my word ', ' is  word  '), ['my', 'word', 'is', 'word'])
-
-test "line 430", (t) => t.truthy hasChar('abc', 'b')
-test "line 431", (t) => t.falsy  hasChar('abc', 'x')
-test "line 432", (t) => t.falsy  hasChar("\t\t", ' ')
+test "line 404", (t) => t.is(rtrim("abc"), "abc")
+test "line 405", (t) => t.is(rtrim("  abc"), "  abc")
+test "line 406", (t) => t.is(rtrim("abc  "), "abc")
+test "line 407", (t) => t.is(rtrim("  abc  "), "  abc")
 
 # ---------------------------------------------------------------------------
 
-test "line 436", (t) => t.is(quoted('abc'), "'abc'")
-test "line 437", (t) => t.is(quoted('"abc"'), "'\"abc\"'")
-test "line 438", (t) => t.is(quoted("'abc'"), "\"'abc'\"")
-test "line 439", (t) => t.is(quoted("'\"abc\"'"), "<'\"abc\"'>")
-test "line 440", (t) => t.is(quoted("'\"<abc>\"'"), "<'\"<abc>\"'>")
+test "line 411", (t) => t.deepEqual(words(''), [])
+test "line 412", (t) => t.deepEqual(words('  \t\t'), [])
+test "line 413", (t) => t.deepEqual(words('a b c'), ['a', 'b', 'c'])
+test "line 414", (t) => t.deepEqual(words('  a   b   c  '), ['a', 'b', 'c'])
+test "line 415", (t) => t.deepEqual(words('a b', 'c d'), ['a', 'b', 'c', 'd'])
+test "line 416", (t) => t.deepEqual(words(' my word ', ' is  word  '), ['my', 'word', 'is', 'word'])
+
+test "line 418", (t) => t.truthy hasChar('abc', 'b')
+test "line 419", (t) => t.falsy  hasChar('abc', 'x')
+test "line 420", (t) => t.falsy  hasChar("\t\t", ' ')
 
 # ---------------------------------------------------------------------------
 
-test "line 444", (t) => t.deepEqual(getOptions(), {})
-test "line 445", (t) => t.deepEqual(getOptions(undef, {x:1}), {x:1})
-test "line 446", (t) => t.deepEqual(getOptions({x:1}, {x:3,y:4}), {x:1,y:4})
-test "line 447", (t) => t.deepEqual(getOptions('asText'), {asText: true})
-test "line 448", (t) => t.deepEqual(getOptions('!binary'), {binary: false})
-test "line 449", (t) => t.deepEqual(getOptions('label=this'), {label: 'this'})
-test "line 450", (t) => t.deepEqual(getOptions('width=42'), {width: 42})
-test "line 451", (t) => t.deepEqual(getOptions('asText !binary label=this'), {
+test "line 424", (t) => t.is(quoted('abc'), "'abc'")
+test "line 425", (t) => t.is(quoted('"abc"'), "'\"abc\"'")
+test "line 426", (t) => t.is(quoted("'abc'"), "\"'abc'\"")
+test "line 427", (t) => t.is(quoted("'\"abc\"'"), "<'\"abc\"'>")
+test "line 428", (t) => t.is(quoted("'\"<abc>\"'"), "<'\"<abc>\"'>")
+
+# ---------------------------------------------------------------------------
+
+test "line 432", (t) => t.deepEqual(getOptions(), {})
+test "line 433", (t) => t.deepEqual(getOptions(undef, {x:1}), {x:1})
+test "line 434", (t) => t.deepEqual(getOptions({x:1}, {x:3,y:4}), {x:1,y:4})
+test "line 435", (t) => t.deepEqual(getOptions('asText'), {asText: true})
+test "line 436", (t) => t.deepEqual(getOptions('!binary'), {binary: false})
+test "line 437", (t) => t.deepEqual(getOptions('label=this'), {label: 'this'})
+test "line 438", (t) => t.deepEqual(getOptions('width=42'), {width: 42})
+test "line 439", (t) => t.deepEqual(getOptions('asText !binary label=this'), {
 	asText: true
 	binary: false
 	label: 'this'
@@ -461,48 +444,49 @@ test "line 451", (t) => t.deepEqual(getOptions('asText !binary label=this'), {
 
 # ---------------------------------------------------------------------------
 
-test "line 459", (t) => t.deepEqual(range(3), [0,1,2])
+test "line 447", (t) => t.deepEqual(range(3), [0,1,2])
+test "line 448", (t) => t.deepEqual(rev_range(3), [2,1,0])
 
 # ---------------------------------------------------------------------------
 
-utest.truthy 463, isHashComment('#')
-utest.truthy 464, isHashComment('# a comment')
-utest.truthy 465, isHashComment('#\ta comment')
-utest.falsy  466, isHashComment('#comment')
-utest.falsy  467, isHashComment('')
-utest.falsy  468, isHashComment('a comment')
+utest.truthy 452, isHashComment('#')
+utest.truthy 453, isHashComment('# a comment')
+utest.truthy 454, isHashComment('#\ta comment')
+utest.falsy  455, isHashComment('#comment')
+utest.falsy  456, isHashComment('')
+utest.falsy  457, isHashComment('a comment')
 
 # ---------------------------------------------------------------------------
 
-utest.truthy 472, isEmpty('')
-utest.truthy 473, isEmpty('  \t\t')
-utest.truthy 474, isEmpty([])
-utest.truthy 475, isEmpty({})
+utest.truthy 461, isEmpty('')
+utest.truthy 462, isEmpty('  \t\t')
+utest.truthy 463, isEmpty([])
+utest.truthy 464, isEmpty({})
 
-utest.truthy 477, nonEmpty('a')
-utest.truthy 478, nonEmpty('.')
-utest.truthy 479, nonEmpty([2])
-utest.truthy 480, nonEmpty({width: 2})
+utest.truthy 466, nonEmpty('a')
+utest.truthy 467, nonEmpty('.')
+utest.truthy 468, nonEmpty([2])
+utest.truthy 469, nonEmpty({width: 2})
 
-utest.truthy 482, isNonEmptyString('abc')
-utest.falsy  483, isNonEmptyString(undef)
-utest.falsy  484, isNonEmptyString('')
-utest.falsy  485, isNonEmptyString('   ')
-utest.falsy  486, isNonEmptyString("\t\t\t")
-utest.falsy  487, isNonEmptyString(5)
-
-# ---------------------------------------------------------------------------
-
-utest.truthy 491, oneof('a', 'a', 'b', 'c')
-utest.truthy 492, oneof('b', 'a', 'b', 'c')
-utest.truthy 493, oneof('c', 'a', 'b', 'c')
-utest.falsy  494, oneof('d', 'a', 'b', 'c')
-utest.falsy  495, oneof('x')
+utest.truthy 471, isNonEmptyString('abc')
+utest.falsy  472, isNonEmptyString(undef)
+utest.falsy  473, isNonEmptyString('')
+utest.falsy  474, isNonEmptyString('   ')
+utest.falsy  475, isNonEmptyString("\t\t\t")
+utest.falsy  476, isNonEmptyString(5)
 
 # ---------------------------------------------------------------------------
 
-utest.equal 499, uniq([1,2,2,3,3]), [1,2,3]
-utest.equal 500, uniq(['a','b','b','c','c']),['a','b','c']
+utest.truthy 480, oneof('a', 'a', 'b', 'c')
+utest.truthy 481, oneof('b', 'a', 'b', 'c')
+utest.truthy 482, oneof('c', 'a', 'b', 'c')
+utest.falsy  483, oneof('d', 'a', 'b', 'c')
+utest.falsy  484, oneof('x')
+
+# ---------------------------------------------------------------------------
+
+utest.equal 488, uniq([1,2,2,3,3]), [1,2,3]
+utest.equal 489, uniq(['a','b','b','c','c']),['a','b','c']
 
 # ---------------------------------------------------------------------------
 # CURRENTLY DOES NOT PASS
@@ -517,33 +501,33 @@ utest.equal 500, uniq(['a','b','b','c','c']),['a','b','c']
 
 # ---------------------------------------------------------------------------
 
-utest.equal 515, rtrim("abc"), "abc"
-utest.equal 516, rtrim("  abc"), "  abc"
-utest.equal 517, rtrim("abc  "), "abc"
-utest.equal 518, rtrim("  abc  "), "  abc"
+utest.equal 504, rtrim("abc"), "abc"
+utest.equal 505, rtrim("  abc"), "  abc"
+utest.equal 506, rtrim("abc  "), "abc"
+utest.equal 507, rtrim("  abc  "), "  abc"
 
 # ---------------------------------------------------------------------------
 
-utest.equal 522, words('a b c'), ['a', 'b', 'c']
-utest.equal 523, words('  a   b   c  '), ['a', 'b', 'c']
+utest.equal 511, words('a b c'), ['a', 'b', 'c']
+utest.equal 512, words('  a   b   c  '), ['a', 'b', 'c']
 
 # ---------------------------------------------------------------------------
 
-utest.equal 527, escapeStr("\t\tXXX\n"), "→→XXX®"
+utest.equal 516, escapeStr("\t\tXXX\n"), "→→XXX®"
 hEsc = {
 	"\n": "\\n"
 	"\t": "\\t"
 	"\"": "\\\""
 	}
-utest.equal 533, escapeStr("\thas quote: \"\nnext line", hEsc), \
+utest.equal 522, escapeStr("\thas quote: \"\nnext line", hEsc), \
 	"\\thas quote: \\\"\\nnext line"
 
 # ---------------------------------------------------------------------------
 
-utest.equal 538, rtrunc('/user/lib/.env', 5), '/user/lib'
-utest.equal 539, ltrunc('abcdefg', 3), 'defg'
+utest.equal 527, rtrunc('/user/lib/.env', 5), '/user/lib'
+utest.equal 528, ltrunc('abcdefg', 3), 'defg'
 
-utest.equal 541, CWS("""
+utest.equal 530, CWS("""
 		abc
 		def
 				ghi
@@ -551,39 +535,39 @@ utest.equal 541, CWS("""
 
 # ---------------------------------------------------------------------------
 
-utest.truthy 549, isArrayOfStrings([])
-utest.truthy 550, isArrayOfStrings(['a','b','c'])
-utest.truthy 551, isArrayOfStrings(['a',undef, null, 'b'])
+utest.truthy 538, isArrayOfStrings([])
+utest.truthy 539, isArrayOfStrings(['a','b','c'])
+utest.truthy 540, isArrayOfStrings(['a',undef, null, 'b'])
 
 # ---------------------------------------------------------------------------
 
-utest.truthy 555, isArrayOfArrays([])
-utest.truthy 556, isArrayOfArrays([[], []])
-utest.truthy 557, isArrayOfArrays([[1,2], []])
-utest.truthy 558, isArrayOfArrays([[1,2,[1,2,3]], []])
-utest.truthy 559, isArrayOfArrays([[1,2], undef, null, []])
+utest.truthy 544, isArrayOfArrays([])
+utest.truthy 545, isArrayOfArrays([[], []])
+utest.truthy 546, isArrayOfArrays([[1,2], []])
+utest.truthy 547, isArrayOfArrays([[1,2,[1,2,3]], []])
+utest.truthy 548, isArrayOfArrays([[1,2], undef, null, []])
 
-utest.falsy  561, isArrayOfArrays({})
-utest.falsy  562, isArrayOfArrays([1,2,3])
-utest.falsy  563, isArrayOfArrays([[1,2,[3,4]], 4])
-utest.falsy  564, isArrayOfArrays([[1,2,[3,4]], [], {a:1,b:2}])
+utest.falsy  550, isArrayOfArrays({})
+utest.falsy  551, isArrayOfArrays([1,2,3])
+utest.falsy  552, isArrayOfArrays([[1,2,[3,4]], 4])
+utest.falsy  553, isArrayOfArrays([[1,2,[3,4]], [], {a:1,b:2}])
 
-utest.truthy 566, isArrayOfArrays([[1,2],[3,4],[4,5]], 2)
-utest.falsy  567, isArrayOfArrays([[1,2],[3],[4,5]], 2)
-utest.falsy  568, isArrayOfArrays([[1,2],[3,4,5],[4,5]], 2)
+utest.truthy 555, isArrayOfArrays([[1,2],[3,4],[4,5]], 2)
+utest.falsy  556, isArrayOfArrays([[1,2],[3],[4,5]], 2)
+utest.falsy  557, isArrayOfArrays([[1,2],[3,4,5],[4,5]], 2)
 
 # ---------------------------------------------------------------------------
 
-utest.truthy 572, isArrayOfHashes([])
-utest.truthy 573, isArrayOfHashes([{}, {}])
-utest.truthy 574, isArrayOfHashes([{a:1, b:2}, {}])
-utest.truthy 575, isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, {}])
-utest.truthy 576, isArrayOfHashes([{a:1, b:2}, undef, null, {}])
+utest.truthy 561, isArrayOfHashes([])
+utest.truthy 562, isArrayOfHashes([{}, {}])
+utest.truthy 563, isArrayOfHashes([{a:1, b:2}, {}])
+utest.truthy 564, isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, {}])
+utest.truthy 565, isArrayOfHashes([{a:1, b:2}, undef, null, {}])
 
-utest.falsy  578, isArrayOfHashes({})
-utest.falsy  579, isArrayOfHashes([1,2,3])
-utest.falsy  580, isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, 4])
-utest.falsy  581, isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, {}, [1,2]])
+utest.falsy  567, isArrayOfHashes({})
+utest.falsy  568, isArrayOfHashes([1,2,3])
+utest.falsy  569, isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, 4])
+utest.falsy  570, isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, {}, [1,2]])
 
 # ---------------------------------------------------------------------------
 
@@ -602,79 +586,79 @@ utest.falsy  581, isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, {}, [1,2]])
 	s = 'utest'
 	s2 = new String('abc')
 
-	utest.truthy 600, isHash(h)
-	utest.falsy  601, isHash(l)
-	utest.falsy  602, isHash(o)
-	utest.falsy  603, isHash(n)
-	utest.falsy  604, isHash(n2)
-	utest.falsy  605, isHash(s)
-	utest.falsy  606, isHash(s2)
+	utest.truthy 589, isHash(h)
+	utest.falsy  590, isHash(l)
+	utest.falsy  591, isHash(o)
+	utest.falsy  592, isHash(n)
+	utest.falsy  593, isHash(n2)
+	utest.falsy  594, isHash(s)
+	utest.falsy  595, isHash(s2)
 
-	utest.falsy  608, isArray(h)
-	utest.truthy 609, isArray(l)
-	utest.falsy  610, isArray(o)
-	utest.falsy  611, isArray(n)
-	utest.falsy  612, isArray(n2)
-	utest.falsy  613, isArray(s)
-	utest.falsy  614, isArray(s2)
+	utest.falsy  597, isArray(h)
+	utest.truthy 598, isArray(l)
+	utest.falsy  599, isArray(o)
+	utest.falsy  600, isArray(n)
+	utest.falsy  601, isArray(n2)
+	utest.falsy  602, isArray(s)
+	utest.falsy  603, isArray(s2)
 
-	utest.falsy  616, isString(undef)
-	utest.falsy  617, isString(h)
-	utest.falsy  618, isString(l)
-	utest.falsy  619, isString(o)
-	utest.falsy  620, isString(n)
-	utest.falsy  621, isString(n2)
-	utest.truthy 622, isString(s)
-	utest.truthy 623, isString(s2)
+	utest.falsy  605, isString(undef)
+	utest.falsy  606, isString(h)
+	utest.falsy  607, isString(l)
+	utest.falsy  608, isString(o)
+	utest.falsy  609, isString(n)
+	utest.falsy  610, isString(n2)
+	utest.truthy 611, isString(s)
+	utest.truthy 612, isString(s2)
 
-	utest.falsy  625, isObject(h)
-	utest.falsy  626, isObject(l)
-	utest.truthy 627, isObject(o)
-	utest.truthy 628, isObject(o, ['name','doIt'])
-	utest.falsy  629, isObject(o, ['name','doIt','missing'])
-	utest.falsy  630, isObject(n)
-	utest.falsy  631, isObject(n2)
-	utest.falsy  632, isObject(s)
-	utest.falsy  633, isObject(s2)
+	utest.falsy  614, isObject(h)
+	utest.falsy  615, isObject(l)
+	utest.truthy 616, isObject(o)
+	utest.truthy 617, isObject(o, ['name','doIt'])
+	utest.falsy  618, isObject(o, ['name','doIt','missing'])
+	utest.falsy  619, isObject(n)
+	utest.falsy  620, isObject(n2)
+	utest.falsy  621, isObject(s)
+	utest.falsy  622, isObject(s2)
 
-	utest.falsy  635, isNumber(h)
-	utest.falsy  636, isNumber(l)
-	utest.falsy  637, isNumber(o)
-	utest.truthy 638, isNumber(n)
-	utest.truthy 639, isNumber(n2)
-	utest.falsy  640, isNumber(s)
-	utest.falsy  641, isNumber(s2)
+	utest.falsy  624, isNumber(h)
+	utest.falsy  625, isNumber(l)
+	utest.falsy  626, isNumber(o)
+	utest.truthy 627, isNumber(n)
+	utest.truthy 628, isNumber(n2)
+	utest.falsy  629, isNumber(s)
+	utest.falsy  630, isNumber(s2)
 
-	utest.truthy 643, isNumber(42.0, {min: 42.0})
-	utest.falsy  644, isNumber(42.0, {min: 42.1})
-	utest.truthy 645, isNumber(42.0, {max: 42.0})
-	utest.falsy  646, isNumber(42.0, {max: 41.9})
+	utest.truthy 632, isNumber(42.0, {min: 42.0})
+	utest.falsy  633, isNumber(42.0, {min: 42.1})
+	utest.truthy 634, isNumber(42.0, {max: 42.0})
+	utest.falsy  635, isNumber(42.0, {max: 41.9})
 	)()
 
 # ---------------------------------------------------------------------------
 
-utest.truthy 651, isFunction(() -> pass)
-utest.falsy  652, isFunction(23)
+utest.truthy 640, isFunction(() -> pass)
+utest.falsy  641, isFunction(23)
 
-utest.truthy 654, isInteger(42)
-utest.truthy 655, isInteger(new Number(42))
-utest.falsy  656, isInteger('abc')
-utest.falsy  657, isInteger({})
-utest.falsy  658, isInteger([])
-utest.truthy 659, isInteger(42, {min:  0})
-utest.falsy  660, isInteger(42, {min: 50})
-utest.truthy 661, isInteger(42, {max: 50})
-utest.falsy  662, isInteger(42, {max:  0})
-
-# ---------------------------------------------------------------------------
-
-utest.equal 666, OL(undef), "undef"
-utest.equal 667, OL("\t\tabc\nxyz"), "'→→abc®xyz'"
-utest.equal 668, OL({a:1, b:'xyz'}), '{"a":1,"b":"xyz"}'
+utest.truthy 643, isInteger(42)
+utest.truthy 644, isInteger(new Number(42))
+utest.falsy  645, isInteger('abc')
+utest.falsy  646, isInteger({})
+utest.falsy  647, isInteger([])
+utest.truthy 648, isInteger(42, {min:  0})
+utest.falsy  649, isInteger(42, {min: 50})
+utest.truthy 650, isInteger(42, {max: 50})
+utest.falsy  651, isInteger(42, {max:  0})
 
 # ---------------------------------------------------------------------------
 
-utest.equal 672, CWS("""
+utest.equal 655, OL(undef), "undef"
+utest.equal 656, OL("\t\tabc\nxyz"), "'→→abc®xyz'"
+utest.equal 657, OL({a:1, b:'xyz'}), '{"a":1,"b":"xyz"}'
+
+# ---------------------------------------------------------------------------
+
+utest.equal 661, CWS("""
 		a utest
 		error message
 		"""), "a utest error message"
@@ -682,47 +666,47 @@ utest.equal 672, CWS("""
 # ---------------------------------------------------------------------------
 # test isRegExp()
 
-utest.truthy 680, isRegExp(/^abc$/)
-utest.truthy 681, isRegExp(///^
+utest.truthy 669, isRegExp(/^abc$/)
+utest.truthy 670, isRegExp(///^
 		\s*
 		where
 		\s+
 		areyou
 		$///)
-utest.falsy  687, isRegExp(42)
-utest.falsy  688, isRegExp('abc')
-utest.falsy  689, isRegExp([1,'a'])
-utest.falsy  690, isRegExp({a:1, b:'ccc'})
-utest.falsy  691, isRegExp(undef)
+utest.falsy  676, isRegExp(42)
+utest.falsy  677, isRegExp('abc')
+utest.falsy  678, isRegExp([1,'a'])
+utest.falsy  679, isRegExp({a:1, b:'ccc'})
+utest.falsy  680, isRegExp(undef)
 
-utest.truthy 693, isRegExp(/\.coffee/)
+utest.truthy 682, isRegExp(/\.coffee/)
 
 # ---------------------------------------------------------------------------
 
-utest.equal 697, extractMatches("..3 and 4 plus 5", /\d+/g, parseInt),
+utest.equal 686, extractMatches("..3 and 4 plus 5", /\d+/g, parseInt),
 	[3, 4, 5]
-utest.equal 699, extractMatches("And This Is A String", /A/g), ['A','A']
+utest.equal 688, extractMatches("And This Is A String", /A/g), ['A','A']
 
 # ---------------------------------------------------------------------------
 
-utest.truthy 703, notdefined(undef)
-utest.truthy 704, notdefined(null)
-utest.truthy 705, defined('')
-utest.truthy 706, defined(5)
-utest.truthy 707, defined([])
-utest.truthy 708, defined({})
+utest.truthy 692, notdefined(undef)
+utest.truthy 693, notdefined(null)
+utest.truthy 694, defined('')
+utest.truthy 695, defined(5)
+utest.truthy 696, defined([])
+utest.truthy 697, defined({})
 
-utest.falsy 710, defined(undef)
-utest.falsy 711, defined(null)
-utest.falsy 712, notdefined('')
-utest.falsy 713, notdefined(5)
-utest.falsy 714, notdefined([])
-utest.falsy 715, notdefined({})
+utest.falsy 699, defined(undef)
+utest.falsy 700, defined(null)
+utest.falsy 701, notdefined('')
+utest.falsy 702, notdefined(5)
+utest.falsy 703, notdefined([])
+utest.falsy 704, notdefined({})
 
 # ---------------------------------------------------------------------------
 
-utest.truthy 719, isIterable([])
-utest.truthy 720, isIterable(['a','b'])
+utest.truthy 708, isIterable([])
+utest.truthy 709, isIterable(['a','b'])
 
 gen = () ->
 	yield 1
@@ -730,7 +714,7 @@ gen = () ->
 	yield 3
 	return
 
-utest.truthy 728, isIterable(gen())
+utest.truthy 717, isIterable(gen())
 
 # ---------------------------------------------------------------------------
 
@@ -739,16 +723,16 @@ utest.truthy 728, isIterable(gen())
 		constructor: (str) ->
 			@mystr = str
 
-	utest.equal 737, className(MyClass), 'MyClass'
+	utest.equal 726, className(MyClass), 'MyClass'
 
 	)()
 
 # ---------------------------------------------------------------------------
 
-utest.equal 743, getOptions('a b c'), {'a':true, 'b':true, 'c':true}
-utest.equal 744, getOptions('abc'), {'abc':true}
-utest.equal 745, getOptions({'a':true, 'b':false, 'c':42}), {'a':true, 'b':false, 'c':42}
-utest.equal 746, getOptions(), {}
+utest.equal 732, getOptions('a b c'), {'a':true, 'b':true, 'c':true}
+utest.equal 733, getOptions('abc'), {'abc':true}
+utest.equal 734, getOptions({'a':true, 'b':false, 'c':42}), {'a':true, 'b':false, 'c':42}
+utest.equal 735, getOptions(), {}
 
 # ---------------------------------------------------------------------------
 # --- test forEachLine
@@ -763,7 +747,7 @@ utest.equal 746, getOptions(), {}
 	forEachLine block, (line) =>
 		lResult.push line.toUpperCase()
 		return false
-	utest.equal 761, lResult, ['ABC','DEF', 'GHI']
+	utest.equal 750, lResult, ['ABC','DEF', 'GHI']
 	)()
 
 (() =>
@@ -779,7 +763,7 @@ utest.equal 746, getOptions(), {}
 		lResult.push line.toUpperCase()
 		return false
 
-	utest.equal 777, lResult, ['ABC','DEF']
+	utest.equal 766, lResult, ['ABC','DEF']
 	)()
 
 (() =>
@@ -788,7 +772,7 @@ utest.equal 746, getOptions(), {}
 	forEachLine item, (line) =>
 		lResult.push line.toUpperCase()
 		return false
-	utest.equal 786, lResult, ['ABC','DEF', 'GHI']
+	utest.equal 775, lResult, ['ABC','DEF', 'GHI']
 	)()
 
 (() =>
@@ -800,7 +784,7 @@ utest.equal 746, getOptions(), {}
 		lResult.push line.toUpperCase()
 		return false
 
-	utest.equal 798, lResult, ['ABC','DEF']
+	utest.equal 787, lResult, ['ABC','DEF']
 	)()
 
 (() =>
@@ -812,7 +796,7 @@ utest.equal 746, getOptions(), {}
 		lResult.push "#{hInfo.lineNum} #{line.toUpperCase()} #{hInfo.nextLine}"
 		return false
 
-	utest.equal 810, lResult, ['1 ABC def','2 DEF ghi']
+	utest.equal 799, lResult, ['1 ABC def','2 DEF ghi']
 	)()
 
 # ---------------------------------------------------------------------------
@@ -826,7 +810,7 @@ utest.equal 746, getOptions(), {}
 		"""
 	newblock = mapEachLine block, (line) =>
 		return line.toUpperCase()
-	utest.equal 824, newblock, """
+	utest.equal 813, newblock, """
 		ABC
 		DEF
 		GHI
@@ -844,7 +828,7 @@ utest.equal 746, getOptions(), {}
 			return undef
 		else
 			return line.toUpperCase()
-	utest.equal 842, newblock, """
+	utest.equal 831, newblock, """
 		ABC
 		GHI
 		"""
@@ -854,7 +838,7 @@ utest.equal 746, getOptions(), {}
 	item = ['abc','def','ghi']
 	newblock = mapEachLine item, (line) =>
 		return line.toUpperCase()
-	utest.equal 852, newblock, [
+	utest.equal 841, newblock, [
 		'ABC'
 		'DEF'
 		'GHI'
@@ -868,7 +852,7 @@ utest.equal 746, getOptions(), {}
 			return undef
 		else
 			return line.toUpperCase()
-	utest.equal 866, newblock, [
+	utest.equal 855, newblock, [
 		'ABC'
 		'GHI'
 		]
@@ -883,7 +867,7 @@ utest.equal 746, getOptions(), {}
 			return "#{hInfo.lineNum} #{line.toUpperCase()} #{hInfo.nextLine}"
 		else
 			return "#{hInfo.lineNum} #{line.toUpperCase()}"
-	utest.equal 881, newblock, [
+	utest.equal 870, newblock, [
 		'1 ABC def'
 		'3 GHI'
 		]
@@ -909,7 +893,7 @@ utest.equal 746, getOptions(), {}
 		type: 'Program',
 		}
 
-	utest.equal 907, removeKeys(hAST, ['start','end']), {
+	utest.equal 896, removeKeys(hAST, ['start','end']), {
 		body: [
 			{
 				declarations: Array [{}],
@@ -940,7 +924,7 @@ utest.equal 746, getOptions(), {}
 		type: 'Program',
 		}
 
-	utest.equal 938, removeKeys(hAST, ['start','end']), {
+	utest.equal 927, removeKeys(hAST, ['start','end']), {
 		body: [
 			{
 				declarations: Array [{}],
@@ -980,16 +964,16 @@ utest.equal 746, getOptions(), {}
 				return value
 		}
 
-	utest.equal 978, hToDo.task, 'go shopping'
-	utest.equal 979, h.task, 'GO SHOPPING'
+	utest.equal 967, hToDo.task, 'go shopping'
+	utest.equal 968, h.task, 'GO SHOPPING'
 
 	h.task = 'do something'
-	utest.equal 982, hToDo.task, 'do something'
-	utest.equal 983, h.task, 'DO SOMETHING'
+	utest.equal 971, hToDo.task, 'do something'
+	utest.equal 972, h.task, 'DO SOMETHING'
 
 	h.task = 'nothing'
-	utest.equal 986, hToDo.task, 'do something'
-	utest.equal 987, h.task, 'DO SOMETHING'
+	utest.equal 975, hToDo.task, 'do something'
+	utest.equal 976, h.task, 'DO SOMETHING'
 
 	)()
 
@@ -1010,7 +994,7 @@ utest.equal 746, getOptions(), {}
 		await sleep 5
 		return lLines.join(',')
 
-	utest.equal 1008, await run1(), 'abc,def,ghi'
+	utest.equal 997, await run1(), 'abc,def,ghi'
 	)()
 
 (() =>
@@ -1027,18 +1011,18 @@ utest.equal 746, getOptions(), {}
 		await sleep 5
 		return lLines.join(',')
 
-	utest.equal 1025, await run2(), 'def,ghi'
+	utest.equal 1014, await run2(), 'def,ghi'
 	)()
 
 # ---------------------------------------------------------------------------
 # test eachCharInString()
 
-utest.truthy 1032, eachCharInString 'ABC', (ch) => ch == ch.toUpperCase()
-utest.falsy  1033, eachCharInString 'abc', (ch) => ch == ch.toUpperCase()
-utest.falsy  1034, eachCharInString 'AbC', (ch) => ch == ch.toUpperCase()
+utest.truthy 1020, eachCharInString 'ABC', (ch) => ch == ch.toUpperCase()
+utest.falsy  1021, eachCharInString 'abc', (ch) => ch == ch.toUpperCase()
+utest.falsy  1022, eachCharInString 'AbC', (ch) => ch == ch.toUpperCase()
 
 # ---------------------------------------------------------------------------
 # test runCmd()
 
-utest.equal 1039, runCmd("echo abc"), "abc\r\n"
-utest.equal 1040, runCmd("noSuchCmd"), undef
+utest.equal 1027, runCmd("echo abc"), "abc\r\n"
+utest.equal 1028, runCmd("noSuchCmd"), undef

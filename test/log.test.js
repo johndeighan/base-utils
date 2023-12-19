@@ -314,3 +314,5 @@ test("line 284", (t) => {
    null
 ]`);
 });
+
+//# sourceMappingURL=log.test.js.map

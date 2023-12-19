@@ -8,9 +8,9 @@ import {
 	isNumber, isInteger, isString, isHash, isFunction, isBoolean,
 	isEmpty, nonEmpty, hEscNoNL, jsType, hasChar, quoted,
 	} from '@jdeighan/base-utils'
-import {toTAML} from '@jdeighan/base-utils/taml'
+import {toTAML} from '@jdeighan/base-utils/ll-taml'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
-import {getMyOutsideSource} from '@jdeighan/base-utils/v8-stack'
+import {getMyOutsideCaller} from '@jdeighan/base-utils/ll-v8-stack'
 import {NamedLogs} from '@jdeighan/base-utils/named-logs'
 
 export logWidth = 42
@@ -47,17 +47,17 @@ export debugLogging = (flag=true) =>
 
 export echoMyLogs = (flag=true) =>
 
-	# --- NOTE: source can be undef - NamedLogs handles that OK
-	source = getMyOutsideSource()
-	logs.setKey source, 'doEcho', flag
+	# --- NOTE: hFrame can be undef - NamedLogs handles that OK
+	filePath = getMyOutsideCaller().filePath
+	logs.setKey filePath, 'doEcho', flag
 	return
 
 # ---------------------------------------------------------------------------
 
 export clearMyLogs = () =>
 
-	source = getMyOutsideSource()
-	logs.clear source
+	filePath = getMyOutsideCaller().filePath
+	logs.clear filePath
 	return
 
 # ---------------------------------------------------------------------------
@@ -71,8 +71,8 @@ export clearAllLogs = () =>
 
 export getMyLogs = () =>
 
-	source = getMyOutsideSource()
-	return logs.getLogs(source)
+	filePath = getMyOutsideCaller().filePath
+	return logs.getLogs(filePath)
 
 # ---------------------------------------------------------------------------
 
@@ -91,11 +91,11 @@ export PUTSTR = (str) =>
 
 	str = rtrim(str)
 
-	source = getMyOutsideSource()
-	doEcho = logs.getKey(source, 'doEcho')
+	filePath = getMyOutsideCaller().filePath
+	doEcho = logs.getKey(filePath, 'doEcho')
 	if internalDebugging
-		console.log "   source = #{OL(source)}, doEcho = #{OL(doEcho)}"
-	logs.log source, str
+		console.log "   filePath = #{OL(filePath)}, doEcho = #{OL(doEcho)}"
+	logs.log filePath, str
 	if doEcho
 		if defined(putstr) && (putstr != console.log)
 			putstr str

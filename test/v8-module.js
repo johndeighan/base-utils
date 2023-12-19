@@ -4,7 +4,7 @@ var secondFunc, thirdFunc;
 import {
   getMyDirectCaller,
   getMyOutsideCaller
-} from '@jdeighan/base-utils/v8-stack';
+} from '@jdeighan/base-utils/ll-v8-stack';
 
 // ---------------------------------------------------------------------------
 export var getBoth = function() {
@@ -41,3 +41,5 @@ thirdFunc = function(type) {
       return croak(`Unknown type: ${type}`);
   }
 };
+
+//# sourceMappingURL=v8-module.js.map

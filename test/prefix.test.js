@@ -43,3 +43,5 @@ test("line 19", (t) => {
 test("line 20", (t) => {
   return t.is(getPrefix(2), un('˳˳˳˳˳˳˳˳'));
 });
+
+//# sourceMappingURL=prefix.test.js.map

@@ -92,3 +92,5 @@ suppressExceptionLogging();
     return mach1.setState('some state');
   });
 })();
+
+//# sourceMappingURL=state-machine.test.js.map

@@ -1,14 +1,33 @@
   // base-utils.coffee
-var assert, hTimers, myHandler, myReplacer,
+var hTimers, myHandler, myReplacer,
   hasProp = {}.hasOwnProperty;
-
-import assertLib from 'node:assert';
 
 import {
   execSync
 } from 'child_process';
 
-export const undef = void 0;
+import assertLib from 'node:assert';
+
+import {
+  pass,
+  undef,
+  defined,
+  notdefined,
+  assert,
+  isEmpty,
+  nonEmpty,
+  deepCopy
+} from '@jdeighan/base-utils/ll-utils';
+
+export {
+  pass,
+  undef,
+  defined,
+  notdefined,
+  isEmpty,
+  nonEmpty,
+  deepCopy
+};
 
 // ---------------------------------------------------------------------------
 export var runCmd = (cmd) => {
@@ -43,15 +62,6 @@ export var deepEqual = (a, b) => {
 };
 
 // ---------------------------------------------------------------------------
-// assert() for use in this file only
-assert = (cond, msg) => {
-  if (!cond) {
-    throw new Error(msg);
-  }
-  return true;
-};
-
-// ---------------------------------------------------------------------------
 export var isHashComment = (line) => {
   var _, lMatches, prefix, text, ws;
   // --- true if:
@@ -78,22 +88,6 @@ export var isHashComment = (line) => {
   } else {
     return undef;
   }
-};
-
-// ---------------------------------------------------------------------------
-//   pass - do nothing
-export var pass = () => {
-  return true;
-};
-
-// ---------------------------------------------------------------------------
-export var defined = (obj) => {
-  return (obj !== undef) && (obj !== null);
-};
-
-// ---------------------------------------------------------------------------
-export var notdefined = (obj) => {
-  return (obj === undef) || (obj === null);
 };
 
 // ---------------------------------------------------------------------------
@@ -243,28 +237,6 @@ export var mapEachLine = (item, func) => {
 };
 
 // ---------------------------------------------------------------------------
-export var oneof = (word, ...lWords) => {
-  return lWords.indexOf(word) >= 0;
-};
-
-// ---------------------------------------------------------------------------
-//   deepCopy - deep copy an array or object
-export var deepCopy = (obj) => {
-  var err, newObj, objStr;
-  if (obj === undef) {
-    return undef;
-  }
-  objStr = JSON.stringify(obj);
-  try {
-    newObj = JSON.parse(objStr);
-  } catch (error1) {
-    err = error1;
-    throw new Error("ERROR: err.message");
-  }
-  return newObj;
-};
-
-// ---------------------------------------------------------------------------
 // --- a replacer is (key, value) -> newvalue
 myReplacer = (name, value) => {
   if (value === undef) {
@@ -383,8 +355,8 @@ export var hasChar = (str, ch) => {
 };
 
 // ---------------------------------------------------------------------------
-export var inList = (item, ...lItems) => {
-  return lItems.indexOf(item) >= 0;
+export var oneof = (word, ...lWords) => {
+  return lWords.indexOf(word) >= 0;
 };
 
 // ---------------------------------------------------------------------------
@@ -781,33 +753,6 @@ export var isScalar = (x) => {
 };
 
 // ---------------------------------------------------------------------------
-//   isEmpty
-//      - string is whitespace, array has no elements, hash has no keys
-export var isEmpty = (x) => {
-  if ((x === undef) || (x === null)) {
-    return true;
-  }
-  if (isString(x)) {
-    return x.match(/^\s*$/);
-  }
-  if (isArray(x)) {
-    return x.length === 0;
-  }
-  if (isHash(x)) {
-    return Object.keys(x).length === 0;
-  } else {
-    return false;
-  }
-};
-
-// ---------------------------------------------------------------------------
-//   nonEmpty
-//      - string has non-whitespace, array has elements, hash has keys
-export var nonEmpty = (x) => {
-  return !isEmpty(x);
-};
-
-// ---------------------------------------------------------------------------
 //   blockToArray - split a block into lines
 export var blockToArray = (block) => {
   var lLines;
@@ -977,6 +922,16 @@ export var range = (n) => {
     for (var j = 0, ref = n - 1; 0 <= ref ? j <= ref : j >= ref; 0 <= ref ? j++ : j--){ results.push(j); }
     return results;
   }).apply(this);
+};
+
+// ---------------------------------------------------------------------------
+export var rev_range = (n) => {
+  var ref;
+  return (function() {
+    var results = [];
+    for (var j = 0, ref = n - 1; 0 <= ref ? j <= ref : j >= ref; 0 <= ref ? j++ : j--){ results.push(j); }
+    return results;
+  }).apply(this).reverse();
 };
 
 // ---------------------------------------------------------------------------
@@ -1159,3 +1114,5 @@ export var schedule = (secs, keyVal, func, ...lArgs) => {
   }
   hTimers[keyVal] = setTimeout(func, 1000 * secs, ...lArgs);
 };
+
+//# sourceMappingURL=base-utils.js.map

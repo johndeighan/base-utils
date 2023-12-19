@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "exceptions.test.js",
+  "sourceRoot": "..\\",
+  "sources": [
+    "test\\exceptions.test.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAwB;AAExB,OAAO,IAAP,MAAA;;AAEA,OAAA;EACC,MADD;EACS,KADT;EACgB,wBADhB;CAAA,MAAA,kCAJwB;;;AAUxB,IAAA,CAAK,SAAL,EAAgB,CAAC,CAAD,CAAA,GAAA;SACf,CAAC,CAAC,MAAF,CAAS,QAAA,CAAA,CAAA;IACR,wBAAA,CAAyB,IAAzB;WACA,KAAA,CAAM,KAAN;EAFQ,CAAT;AADe,CAAhB;;AAKA,IAAA,CAAK,SAAL,EAAgB,CAAC,CAAD,CAAA,GAAA;SACf,CAAC,CAAC,MAAF,CAAS,QAAA,CAAA,CAAA;IACR,wBAAA,CAAyB,IAAzB;WACA,MAAA,CAAO,CAAA,GAAE,CAAF,KAAO,CAAd,EAAiB,WAAjB;EAFQ,CAAT;AADe,CAAhB;;AAKA,IAAA,CAAK,SAAL,EAAgB,CAAC,CAAD,CAAA,GAAA;SACf,CAAC,CAAC,SAAF,CAAY,QAAA,CAAA,CAAA;WACX,MAAA,CAAO,CAAA,GAAE,CAAF,KAAO,CAAd;EADW,CAAZ;AADe,CAAhB",
+  "sourcesContent": [
+    "# exceptions.test.coffee\n\nimport test from 'ava'\n\nimport {\n\tassert, croak, suppressExceptionLogging,\n\t} from '@jdeighan/base-utils/exceptions'\n\n# ---------------------------------------------------------------------------\n\ntest \"line 12\", (t) =>\n\tt.throws(() ->\n\t\tsuppressExceptionLogging true\n\t\tcroak(\"BAD\")\n\t\t)\ntest \"line 13\", (t) =>\n\tt.throws(() ->\n\t\tsuppressExceptionLogging true\n\t\tassert(2+2 != 4, 'EXCEPTION'))\n\ntest \"line 14\", (t) =>\n\tt.notThrows(() ->\n\t\tassert(2+2 == 4))\n"
+  ]
+}

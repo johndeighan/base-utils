@@ -3,7 +3,7 @@
 import {getV8Stack, nodeStr} from '@jdeighan/base-utils/v8-stack'
 import {
 	undef, defined, notdefined,
-	} from '@jdeighan/base-utils'
+	} from '@jdeighan/base-utils/ll-utils'
 
 doHaltOnError = false
 doLog = true
@@ -23,7 +23,7 @@ export exGetLog = () =>
 	return result
 
 # ---------------------------------------------------------------------------
-
+`/** prevents logging of exceptions */`
 export suppressExceptionLogging = () =>
 
 	doLog = false
@@ -55,14 +55,12 @@ EXLOG = (str) =>
 export assert = (cond, msg) =>
 
 	if ! cond
-		lFrames = getV8Stack().slice(3)
+		lFrames = getV8Stack()
 
 		EXLOG '-------------------------'
 		EXLOG 'JavaScript CALL STACK:'
 		for node in lFrames
 			EXLOG "   #{nodeStr(node)}"
-			if (node.type == 'script')
-				break
 		EXLOG '-------------------------'
 		EXLOG "ERROR: #{msg}"
 		croak msg

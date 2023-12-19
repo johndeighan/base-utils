@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "coffeeall.js",
+  "sourceRoot": "..\\..\\",
+  "sources": [
+    "src\\bin\\coffeeall.coffee"
+  ],
+  "names": [],
+  "mappings": "AACkB;;AAElB,OAAO,CAAC,GAAR,CAAY,gBAAZ",
+  "sourcesContent": [
+    "#!/usr/bin/env node\r\n# coffeeall.coffee\r\n\r\nconsole.log \"Hello Coffee++\"\r\n"
+  ]
+}

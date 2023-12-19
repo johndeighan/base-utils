@@ -239,3 +239,5 @@ ENTER 'func1' 13
 	RETURN FROM 'func2' 'def'
 RETURN FROM 'func1'`);
 });
+
+//# sourceMappingURL=stack.test.js.map

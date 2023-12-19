@@ -12,7 +12,7 @@ import {
 
 import {
   fromTAML
-} from '@jdeighan/base-utils/taml';
+} from '@jdeighan/base-utils/ll-taml';
 
 import {
   LOG,
@@ -42,7 +42,7 @@ test("line 17", (t) => {
 
 // ---------------------------------------------------------------------------
 (function() {
-  var func1, func2, hCaller, hExpected, main;
+  var func1, func2, hCaller, main;
   hCaller = undef;
   main = function() {
     func1();
@@ -53,14 +53,13 @@ test("line 17", (t) => {
     hCaller = getMyDirectCaller();
   };
   // ------------------------------------------------------------------------
-  hExpected = {
-    type: 'function',
-    funcName: 'main',
-    source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
-  };
   return test("line 48", (t) => {
     main();
-    return t.like(hCaller, hExpected);
+    return t.like(hCaller, {
+      type: 'function',
+      functionName: 'main',
+      fileName: 'v8-stack.test.js'
+    });
   });
 })();
 
@@ -83,23 +82,25 @@ test("line 17", (t) => {
     main();
     t.like(lCallers1[0], {
       type: 'function',
-      funcName: 'secondFunc',
-      source: 'C:/Users/johnd/base-utils/test/v8-module.js'
+      functionName: 'secondFunc',
+      fileName: 'v8-module.js'
     });
     t.like(lCallers1[1], {
       type: 'function',
-      funcName: 'func1',
-      source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
+      functionName: 'func1',
+      fileName: 'v8-stack.test.js'
     });
     t.like(lCallers2[0], {
       type: 'function',
-      funcName: 'secondFunc',
-      source: 'C:/Users/johnd/base-utils/test/v8-module.js'
+      functionName: 'secondFunc',
+      fileName: 'v8-module.js'
     });
     return t.like(lCallers2[1], {
       type: 'function',
-      funcName: 'func2',
-      source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
+      functionName: 'func2',
+      fileName: 'v8-stack.test.js'
     });
   });
 })();
+
+//# sourceMappingURL=v8-stack.test.js.map

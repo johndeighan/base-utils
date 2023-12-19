@@ -6,16 +6,19 @@
 	"main": "index.js",
 	"exports": {
 		".": "./src/lib/base-utils.js",
+		"./ll-utils": "./src/lib/ll-utils.js",
+		"./source-map": "./src/lib/source-map.js",
+		"./ll-v8-stack": "./src/lib/ll-v8-stack.js",
+		"./utest": "./src/lib/utest.js",
 		"./named-logs": "./src/lib/NamedLogs.js",
 		"./log": "./src/lib/log.js",
 		"./debug": "./src/lib/debug.js",
 		"./stack": "./src/lib/stack.js",
 		"./prefix": "./src/lib/prefix.js",
-		"./taml": "./src/lib/taml.js",
+		"./ll-taml": "./src/lib/ll-taml.js",
 		"./state-machine": "./src/lib/state-machine.js",
 		"./exceptions": "./src/lib/exceptions.js",
 		"./v8-stack": "./src/lib/v8-stack.js",
-		"./utest": "./src/lib/SimpleUnitTester.js",
 		"./fs": "./src/lib/fs.js",
 		"./package.json": "./package.json"
 	},
@@ -23,7 +26,8 @@
 		"gen-bin-key": "./src/bin/gen-bin-key.js"
 	},
 	"scripts": {
-		"build": "cls && coffee -c --no-header --bare .",
+		"coffeeall": "coffee -c ./src/bin/coffeeall.coffee && node ./src/bin/coffeeall.js",
+		"build": "cls && coffee -c -m -b --no-header ./test && coffee -c -m -b --no-header ./src",
 		"test": "npm run build && npx ava ./test/*.test.js && git status"
 	},
 	"keywords": [
@@ -35,7 +39,13 @@
 		"ava": "^5.3.0",
 		"js-yaml": "^4.1.0",
 		"n-readlines": "^1.0.1",
+		"node-sync": "^0.5.6",
+		"source-map": "^0.7.4",
+		"source-map-sync": "^0.8.0-beta.2",
 		"stack-utils": "^2.0.6",
 		"yaml": "^2.3.1"
+	},
+	"devDependencies": {
+		"gulp": "^4.0.2"
 	}
 }

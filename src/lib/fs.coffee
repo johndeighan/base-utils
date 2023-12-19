@@ -1,12 +1,14 @@
 # fs.coffee
 
 import pathLib from 'node:path'
+import urlLib from 'url'
 import fs from 'fs'
 import {
 	readFile, writeFile, rm, rmdir,   #  rmSync, rmdirSync,
 	} from 'node:fs/promises'
 import NReadLines from 'n-readlines'
 
+import {mydir} from '@jdeighan/base-utils/ll-utils'
 import {
 	undef, defined, nonEmpty, toBlock, getOptions,
 	isString, isHash, isArray, isIterable,
@@ -14,7 +16,7 @@ import {
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
-import {toTAML, fromTAML} from '@jdeighan/base-utils/taml'
+import {toTAML, fromTAML} from '@jdeighan/base-utils/ll-taml'
 
 # ---------------------------------------------------------------------------
 
@@ -22,13 +24,75 @@ export mkpath = (lParts...) =>
 
 	dbgEnter 'mkpath', lParts
 	lParts = lParts.filter((x) => nonEmpty(x))
-	str = lParts.join('/')
+	if lParts[0].match(/[\/\\]$/)
+		root = lParts.shift().toLowerCase()
+		str = root + lParts.join('/')
+	else
+		str = lParts.join('/')
 	str = str.replaceAll('\\', '/')
-	if lMatches = str.match(/^([A-Z])\:(.*)$/)
-		[_, drive, rest] = lMatches
-		str = "#{drive.toLowerCase()}:#{rest}"
 	dbgReturn 'mkpath', str
 	return str
+
+# ---------------------------------------------------------------------------
+
+export parsePath = (lParts...) =>
+	# --- returns:
+	#        root: '/' in Linux, like 'C:/' in Windows
+	#        lDirs - array of directory names
+	#        filename - name of file, if it's a file
+
+	dbgEnter 'parsePath', lParts
+	path = mkpath(lParts...)
+	dbg 'path', path
+	{root, dir, base} = pathLib.parse(path)
+	root = root.toUpperCase().replace('\\', '/')
+	lDirs = dir.split(/[\/\\]/)
+	if isFile(path)
+		hResult = {
+			root
+			lDirs
+			filename: base
+			}
+	else if isDir(path)
+		lDirs.push base
+		hResult = {
+			root
+			lDirs
+			}
+	else
+		croak "Not a file or directory: '#{path}'"
+	dbgReturn 'parsePath', hResult
+	return hResult
+
+# ---------------------------------------------------------------------------
+
+export allDirs = (root, lDirs) ->
+
+	len = lDirs.length
+	while (len > 0)
+		yield mkpath(root, lDirs)
+		lDirs
+
+# ---------------------------------------------------------------------------
+
+export getPkgJsonDir = () =>
+
+	pkgJsonDir = undef
+
+	# --- First, get the directory this file is in
+	dir = mydir(import.meta.url)
+
+	# --- parse into parts
+	{root, lDirs} = parsePath(dir)
+
+	# --- search upward for package.json
+	while (lDirs.length > 0)
+		path = mkpath(root, lDirs, 'package.json')
+		if isFile(path)
+			return mkpath(root, lDirs)
+		lDirs.pop()
+
+		dir = pathLib.resolve('..', dir)
 
 # ---------------------------------------------------------------------------
 
@@ -293,88 +357,160 @@ export forEachLineInFile = (filepath, func, hContext={}) =>
 
 # ---------------------------------------------------------------------------
 
+export parseSource = (source) =>
+	# --- returns {
+	#        dir
+	#        fileName, filename
+	#        filePath, filepath
+	#        stub
+	#        ext
+	#        purpose
+	#        }
+	# --- NOTE: source may be a file URL, e.g. import.meta.url
+
+	dbgEnter 'parseSource', source
+	assert isString(source), "parseSource(): source not a string"
+	if source.match(/^file\:\/\//)
+		source = urlLib.fileURLToPath(source)
+
+	if isDir(source)
+		hSourceInfo = {
+			dir: source
+			filePath: source
+			filepath: source
+			}
+	else
+		assert isFile(source), "source not a file or directory"
+		hInfo = pathLib.parse(source)
+		dir = hInfo.dir
+		if dir
+			hSourceInfo = {
+				dir: dir.replaceAll("\\", "/")
+				filePath: mkpath(dir, hInfo.base)
+				filepath: mkpath(dir, hInfo.base)
+				fileName: hInfo.base
+				filename: hInfo.base
+				stub: hInfo.name
+				ext: hInfo.ext
+				}
+		else
+			hSourceInfo = {
+				fileName: hInfo.base
+				filename: hInfo.base
+				stub: hInfo.name
+				ext: hInfo.ext
+				}
+
+		# --- check for a 'purpose'
+		if lMatches = hSourceInfo.stub.match(///
+				\.
+				([A-Za-z_]+)
+				$///)
+			hSourceInfo.purpose = lMatches[1]
+	dbgReturn 'parseSource', hSourceInfo
+	return hSourceInfo
+
+# ---------------------------------------------------------------------------
+
+allFilesIn = (src) ->
+	# --- yields hFileInfo with keys:
+	#        filepath, filename, stub, ext
+	# --- src must be full path to a file or directory
+
+	dbgEnter 'allFilesIn', src
+	if isDir(src)
+		dbg "DIR: #{src}"
+		for ent in fs.readdirSync(src, {withFileTypes: true})
+			dbg "ENT:", ent
+			if ent.isFile()
+				yield parseSource(mkpath(src, ent.name))
+			else if ent.isDirectory()
+				yield from allFilesIn(ent.name)
+	else if isFile(src)
+		dbg "FILE: #{src}"
+		yield parseSource(src)
+	else
+		croak "Source not a file or directory"
+	dbgReturn 'allFilesIn'
+	return
+
+# ---------------------------------------------------------------------------
+
 export class FileProcessor
 
 	constructor: (@src, hOptions={}) ->
 		# --- Valid options:
 		#        debug
-		# --- hOptions should not contain keys:
-		#        filepath
-		#        ext
-		#        lineNum
 
+		# --- convert src to a full path
 		assert isString(@src), "Source not a string"
 		@src = pathLib.resolve(@src)
+
 		@hOptions = getOptions(hOptions)
 		@debug = !! @hOptions.debug
+		@log "constructed"
 
 	# ..........................................................
+
+	log: (obj) ->
+
+		if @debug
+			if isString(obj)
+				console.log "DEBUG: #{obj}"
+			else
+				console.log obj
+		return
+
+	# ..........................................................
+	# --- called at beginning of @procAll()
 
 	init: () ->
 
-	# ..........................................................
-
-	all: () ->
-		# --- yields items
-
-		@init()
-		if isDir(@src)
-			if @debug
-				console.log "Source is a directory"
-			for ent in fs.readdirSync(@src, {withFileTypes: true})
-				if ent.isFile()
-					yield from @handleFile mkpath(@src, ent.name)
-		else if isFile(@src)
-			if @debug
-				console.log "Source is a file"
-			yield from @handleFile @src
-		else
-			croak "Source not a file or directory"
+		@log "init() called"
 		return
 
 	# ..........................................................
 
-	getAll: () ->
-		# --- Returns an array of items
-
-		lItems = for item from @all()
-			item
-		return lItems
-
-	# ..........................................................
-
-	filter: () ->
+	filter: (hFileInfo) ->
 
 		return true    # by default, handle all files in dir
 
 	# ..........................................................
 
-	handleFile: (filepath) ->
+	procAll: () ->
 
-		@hOptions.filepath = filepath
-		hInfo = pathLib.parse(filepath)
-		@hOptions.ext = hInfo.ext
-		@hOptions.filename = hInfo.base
-		@hOptions.stub = hInfo.name
 		if @debug
-			LOGVALUE 'hOptions', @hOptions
-		if @filter()
-			if @debug
-				console.log "filter() returned true"
-			@hOptions.lineNum = 1
+			@log "calling init()"
+		@init()
 
-			for line from lineIterator(filepath)
-				result = @handleLine(line)
-				if defined(result)
-					yield result
-				@hOptions.lineNum += 1
-		else
-			if @debug
-				console.log "filter() returned false"
+		# --- NOTE: If @src is a file, allFilesIn() will
+		#           only yield a single hFileInfo
+		@log "process all files in '#{@src}'"
+		for hFileInfo from allFilesIn(@src)
+			@log hFileInfo
+			if @filter(hFileInfo)
+				@log "Handle file #{hFileInfo.filepath}"
+				@handleFile hFileInfo
+			else
+				@log "Removed by filter: #{hFileInfo.filepath}"
+		return
+
+	# ..........................................................
+	# --- default handleFile() calls handleLine() for each line
+
+	handleFile: (hFileInfo) ->
+
+		lineNum = 1
+		for line from lineIterator(hFileInfo.filepath)
+			result = @handleLine(line, lineNum, hFileInfo)
+			switch result
+				when 'abort'
+					return
+			lineNum += 1
 		return
 
 	# ..........................................................
 
-	handleLine: (line) ->
+	handleLine: (line, lineNum, hFileInfo) ->
 
-		return "[#{@hOptions.filename}:#{@hOptions.lineNum}] #{line}"
+		return

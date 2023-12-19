@@ -4,7 +4,7 @@ import test from 'ava'
 
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {undef} from '@jdeighan/base-utils'
-import {fromTAML} from '@jdeighan/base-utils/taml'
+import {fromTAML} from '@jdeighan/base-utils/ll-taml'
 import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
 import {
 	getMyDirectCaller, getMyOutsideCaller,
@@ -38,16 +38,14 @@ test "line 17", (t) =>
 
 	# ------------------------------------------------------------------------
 
-	hExpected = {
-		type: 'function'
-		funcName: 'main'
-		source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
-		}
-
 	test "line 48", (t) =>
 		main()
 
-		t.like hCaller, hExpected
+		t.like hCaller, {
+			type: 'function'
+			functionName: 'main'
+			fileName: 'v8-stack.test.js'
+			}
 	)()
 
 # ---------------------------------------------------------------------------
@@ -71,22 +69,22 @@ test "line 17", (t) =>
 		main()
 		t.like lCallers1[0], {
 			type: 'function'
-			funcName: 'secondFunc'
-			source: 'C:/Users/johnd/base-utils/test/v8-module.js'
+			functionName: 'secondFunc'
+			fileName: 'v8-module.js'
 			}
 		t.like lCallers1[1], {
 			type: 'function'
-			funcName: 'func1'
-			source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
+			functionName: 'func1'
+			fileName: 'v8-stack.test.js'
 			}
 		t.like lCallers2[0], {
 			type: 'function'
-			funcName: 'secondFunc'
-			source: 'C:/Users/johnd/base-utils/test/v8-module.js'
+			functionName: 'secondFunc'
+			fileName: 'v8-module.js'
 			}
 		t.like lCallers2[1], {
 			type: 'function'
-			funcName: 'func2'
-			source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
+			functionName: 'func2'
+			fileName: 'v8-stack.test.js'
 			}
 	)()

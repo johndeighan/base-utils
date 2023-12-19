@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "testlib.js",
+  "sourceRoot": "..\\",
+  "sources": [
+    "test\\testlib.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAgB;AAAA,IAAA,KAAA,EAAA;;AAEhB,OAAA;EAAQ,KAAR;CAAA,MAAA;;AACA,OAAA;EACC,kBADD;CAAA,MAAA,mCAHgB;;;AAShB,OAAA,IAAO,WAAA,GAAc,CAAA,CAAA,GAAA;EAEpB,KAAA,CAAA;AACA,SAAO,KAAA,CAAA;AAHa,EATL;;;AAgBhB,KAAA,GAAQ,QAAA,CAAA,CAAA,EAAA,EAhBQ;;;AAsBhB,KAAA,GAAQ,QAAA,CAAA,CAAA;AACR,MAAA;EAAC,KAAA,GAAQ,kBAAA,CAAA;AACR,SAAO;AAFA",
+  "sourcesContent": [
+    "# testlib.coffee\r\n\r\nimport {undef} from '@jdeighan/base-utils'\r\nimport {\r\n\tgetMyOutsideCaller,\r\n\t} from '@jdeighan/base-utils/ll-v8-stack'\r\n\r\n# ---------------------------------------------------------------------------\r\n\r\nexport getMyCaller = () =>\r\n\r\n\tfunc1()\r\n\treturn func2()\r\n\r\n# ---------------------------------------------------------------------------\r\n\r\nfunc1 = () ->\r\n\r\n\treturn\r\n\r\n# ---------------------------------------------------------------------------\r\n\r\nfunc2 = () ->\r\n\thNode = getMyOutsideCaller()\r\n\treturn hNode\r\n"
+  ]
+}

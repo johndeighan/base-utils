@@ -41,7 +41,7 @@ test("line 18", (t) => {
 });
 
 test("line 19", (t) => {
-  return t.is(mkpath("C:\\Users", "johnd"), "c:/Users/johnd");
+  return t.is(mkpath("C:\\Users", "johnd"), "C:/Users/johnd");
 });
 
 test("line 21", (t) => {
@@ -138,37 +138,44 @@ mno`);
 // ---------------------------------------------------------------------------
 // --- test FileProcessor
 (() => {
-  var TestProcessor, fp, lItems;
+  var TestProcessor, fp;
   TestProcessor = class TestProcessor extends FileProcessor {
     constructor() {
       super('./test');
     }
 
-    filter() {
+    init() {
+      // --- We need to clear out hWords each time procAll() is called
+      this.hWords = {};
+    }
+
+    filter(hFileInfo) {
       var ext, stub;
-      ({stub, ext} = this.hOptions);
+      this.log("FILTER hFileInfo:");
+      this.log(hFileInfo);
+      ({stub, ext} = hFileInfo);
+      this.log(`stub='${stub}' ext='${ext}'`);
       return (ext === '.txt') && stub.match(/^readline/);
     }
 
-    init() {
-      // --- We need to clear out hWords each time all() is called
-      this.hOptions.hWords = {};
-    }
-
     handleLine(line) {
-      var hWords;
-      ({hWords} = this.hOptions);
-      if (hWords.hasOwnProperty(line)) {
-        return undef;
-      }
-      hWords[line] = true;
-      return line.toUpperCase();
+      this.log(`HANDLE LINE: ${line}`);
+      this.hWords[line.toUpperCase()] = true;
     }
 
   };
   fp = new TestProcessor();
-  lItems = fp.getAll();
-  return test("line 100", (t) => {
-    return t.deepEqual(lItems, ['ABC', 'DEF', 'GHI', 'JKL', 'MNO', 'PQR']);
+  fp.procAll();
+  return test("line 101", (t) => {
+    return t.deepEqual(fp.hWords, {
+      'ABC': true,
+      'DEF': true,
+      'GHI': true,
+      'JKL': true,
+      'MNO': true,
+      'PQR': true
+    });
   });
 })();
+
+//# sourceMappingURL=fs.test.js.map

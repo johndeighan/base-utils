@@ -1,5 +1,9 @@
 // fs.coffee
+var allFilesIn;
+
 import pathLib from 'node:path';
+
+import urlLib from 'url';
 
 import fs from 'fs';
 
@@ -11,6 +15,10 @@ import {
 } from 'node:fs/promises';
 
 import NReadLines from 'n-readlines';
+
+import {
+  mydir
+} from '@jdeighan/base-utils/ll-utils';
 
 import {
   undef,
@@ -43,23 +51,84 @@ import {
 import {
   toTAML,
   fromTAML
-} from '@jdeighan/base-utils/taml';
+} from '@jdeighan/base-utils/ll-taml';
 
 // ---------------------------------------------------------------------------
 export var mkpath = (...lParts) => {
-  var _, drive, lMatches, rest, str;
+  var root, str;
   dbgEnter('mkpath', lParts);
   lParts = lParts.filter((x) => {
     return nonEmpty(x);
   });
-  str = lParts.join('/');
-  str = str.replaceAll('\\', '/');
-  if (lMatches = str.match(/^([A-Z])\:(.*)$/)) {
-    [_, drive, rest] = lMatches;
-    str = `${drive.toLowerCase()}:${rest}`;
+  if (lParts[0].match(/[\/\\]$/)) {
+    root = lParts.shift().toLowerCase();
+    str = root + lParts.join('/');
+  } else {
+    str = lParts.join('/');
   }
+  str = str.replaceAll('\\', '/');
   dbgReturn('mkpath', str);
   return str;
+};
+
+// ---------------------------------------------------------------------------
+export var parsePath = (...lParts) => {
+  var base, dir, hResult, lDirs, path, root;
+  // --- returns:
+  //        root: '/' in Linux, like 'C:/' in Windows
+  //        lDirs - array of directory names
+  //        filename - name of file, if it's a file
+  dbgEnter('parsePath', lParts);
+  path = mkpath(...lParts);
+  dbg('path', path);
+  ({root, dir, base} = pathLib.parse(path));
+  root = root.toUpperCase().replace('\\', '/');
+  lDirs = dir.split(/[\/\\]/);
+  if (isFile(path)) {
+    hResult = {
+      root,
+      lDirs,
+      filename: base
+    };
+  } else if (isDir(path)) {
+    lDirs.push(base);
+    hResult = {root, lDirs};
+  } else {
+    croak(`Not a file or directory: '${path}'`);
+  }
+  dbgReturn('parsePath', hResult);
+  return hResult;
+};
+
+// ---------------------------------------------------------------------------
+export var allDirs = function*(root, lDirs) {
+  var len, results;
+  len = lDirs.length;
+  results = [];
+  while (len > 0) {
+    yield mkpath(root, lDirs);
+    results.push(lDirs);
+  }
+  return results;
+};
+
+// ---------------------------------------------------------------------------
+export var getPkgJsonDir = () => {
+  var dir, lDirs, path, pkgJsonDir, root;
+  pkgJsonDir = undef;
+  // --- First, get the directory this file is in
+  dir = mydir(import.meta.url);
+  // --- parse into parts
+  ({root, lDirs} = parsePath(dir));
+  // --- search upward for package.json
+  while (lDirs.length > 0) {
+    path = mkpath(root, lDirs, 'package.json');
+    if (isFile(path)) {
+      return mkpath(root, lDirs);
+    }
+    lDirs.pop();
+    dir = pathLib.resolve('..', dir);
+  }
 };
 
 // ---------------------------------------------------------------------------
@@ -259,13 +328,13 @@ export var hasPackageJson = (...lParts) => {
 
 // ---------------------------------------------------------------------------
 export var forEachFileInDir = (dir, func, hContext = {}) => {
-  var ent, i, len, ref;
+  var ent, i, len1, ref;
   ref = fs.readdirSync(dir, {
     withFileTypes: true
   });
   // --- callback will get parms (filepath, hContext)
   //     DOES NOT RECURSE INTO SUBDIRECTORIES
-  for (i = 0, len = ref.length; i < len; i++) {
+  for (i = 0, len1 = ref.length; i < len1; i++) {
     ent = ref[i];
     if (ent.isFile()) {
       func(ent.name, dir, hContext);
@@ -326,108 +395,168 @@ export var forEachLineInFile = (filepath, func, hContext = {}) => {
 };
 
 // ---------------------------------------------------------------------------
+export var parseSource = (source) => {
+  var dir, hInfo, hSourceInfo, lMatches;
+  // --- returns {
+  //        dir
+  //        fileName, filename
+  //        filePath, filepath
+  //        stub
+  //        ext
+  //        purpose
+  //        }
+  // --- NOTE: source may be a file URL, e.g. import.meta.url
+  dbgEnter('parseSource', source);
+  assert(isString(source), "parseSource(): source not a string");
+  if (source.match(/^file\:\/\//)) {
+    source = urlLib.fileURLToPath(source);
+  }
+  if (isDir(source)) {
+    hSourceInfo = {
+      dir: source,
+      filePath: source,
+      filepath: source
+    };
+  } else {
+    assert(isFile(source), "source not a file or directory");
+    hInfo = pathLib.parse(source);
+    dir = hInfo.dir;
+    if (dir) {
+      hSourceInfo = {
+        dir: dir.replaceAll("\\", "/"),
+        filePath: mkpath(dir, hInfo.base),
+        filepath: mkpath(dir, hInfo.base),
+        fileName: hInfo.base,
+        filename: hInfo.base,
+        stub: hInfo.name,
+        ext: hInfo.ext
+      };
+    } else {
+      hSourceInfo = {
+        fileName: hInfo.base,
+        filename: hInfo.base,
+        stub: hInfo.name,
+        ext: hInfo.ext
+      };
+    }
+    // --- check for a 'purpose'
+    if (lMatches = hSourceInfo.stub.match(/\.([A-Za-z_]+)$/)) {
+      hSourceInfo.purpose = lMatches[1];
+    }
+  }
+  dbgReturn('parseSource', hSourceInfo);
+  return hSourceInfo;
+};
+
+// ---------------------------------------------------------------------------
+allFilesIn = function*(src) {
+  var ent, i, len1, ref;
+  // --- yields hFileInfo with keys:
+  //        filepath, filename, stub, ext
+  // --- src must be full path to a file or directory
+  dbgEnter('allFilesIn', src);
+  if (isDir(src)) {
+    dbg(`DIR: ${src}`);
+    ref = fs.readdirSync(src, {
+      withFileTypes: true
+    });
+    for (i = 0, len1 = ref.length; i < len1; i++) {
+      ent = ref[i];
+      dbg("ENT:", ent);
+      if (ent.isFile()) {
+        yield parseSource(mkpath(src, ent.name));
+      } else if (ent.isDirectory()) {
+        yield* allFilesIn(ent.name);
+      }
+    }
+  } else if (isFile(src)) {
+    dbg(`FILE: ${src}`);
+    yield parseSource(src);
+  } else {
+    croak("Source not a file or directory");
+  }
+  dbgReturn('allFilesIn');
+};
+
+// ---------------------------------------------------------------------------
 export var FileProcessor = class FileProcessor {
-  constructor(src, hOptions = {}) {
-    this.src = src;
+  constructor(src1, hOptions = {}) {
+    this.src = src1;
     // --- Valid options:
     //        debug
-    // --- hOptions should not contain keys:
-    //        filepath
-    //        ext
-    //        lineNum
+
+    // --- convert src to a full path
     assert(isString(this.src), "Source not a string");
     this.src = pathLib.resolve(this.src);
     this.hOptions = getOptions(hOptions);
     this.debug = !!this.hOptions.debug;
+    this.log("constructed");
   }
 
   // ..........................................................
-  init() {}
-
-  // ..........................................................
-  * all() {
-    var ent, i, len, ref;
-    // --- yields items
-    this.init();
-    if (isDir(this.src)) {
-      if (this.debug) {
-        console.log("Source is a directory");
+  log(obj) {
+    if (this.debug) {
+      if (isString(obj)) {
+        console.log(`DEBUG: ${obj}`);
+      } else {
+        console.log(obj);
       }
-      ref = fs.readdirSync(this.src, {
-        withFileTypes: true
-      });
-      for (i = 0, len = ref.length; i < len; i++) {
-        ent = ref[i];
-        if (ent.isFile()) {
-          yield* this.handleFile(mkpath(this.src, ent.name));
-        }
-      }
-    } else if (isFile(this.src)) {
-      if (this.debug) {
-        console.log("Source is a file");
-      }
-      yield* this.handleFile(this.src);
-    } else {
-      croak("Source not a file or directory");
     }
   }
 
   // ..........................................................
-  getAll() {
-    var item, lItems;
-    // --- Returns an array of items
-    lItems = (function() {
-      var ref, results;
-      ref = this.all();
-      results = [];
-      for (item of ref) {
-        results.push(item);
-      }
-      return results;
-    }).call(this);
-    return lItems;
+  // --- called at beginning of @procAll()
+  init() {
+    this.log("init() called");
   }
 
   // ..........................................................
-  filter() {
+  filter(hFileInfo) {
     return true; // by default, handle all files in dir
   }
 
   
     // ..........................................................
-  * handleFile(filepath) {
-    var hInfo, line, ref, result;
-    this.hOptions.filepath = filepath;
-    hInfo = pathLib.parse(filepath);
-    this.hOptions.ext = hInfo.ext;
-    this.hOptions.filename = hInfo.base;
-    this.hOptions.stub = hInfo.name;
+  procAll() {
+    var hFileInfo, ref;
     if (this.debug) {
-      LOGVALUE('hOptions', this.hOptions);
+      this.log("calling init()");
     }
-    if (this.filter()) {
-      if (this.debug) {
-        console.log("filter() returned true");
-      }
-      this.hOptions.lineNum = 1;
-      ref = lineIterator(filepath);
-      for (line of ref) {
-        result = this.handleLine(line);
-        if (defined(result)) {
-          yield result;
-        }
-        this.hOptions.lineNum += 1;
-      }
-    } else {
-      if (this.debug) {
-        console.log("filter() returned false");
+    this.init();
+    // --- NOTE: If @src is a file, allFilesIn() will
+    //           only yield a single hFileInfo
+    this.log(`process all files in '${this.src}'`);
+    ref = allFilesIn(this.src);
+    for (hFileInfo of ref) {
+      this.log(hFileInfo);
+      if (this.filter(hFileInfo)) {
+        this.log(`Handle file ${hFileInfo.filepath}`);
+        this.handleFile(hFileInfo);
+      } else {
+        this.log(`Removed by filter: ${hFileInfo.filepath}`);
       }
     }
   }
 
   // ..........................................................
-  handleLine(line) {
-    return `[${this.hOptions.filename}:${this.hOptions.lineNum}] ${line}`;
+  // --- default handleFile() calls handleLine() for each line
+  handleFile(hFileInfo) {
+    var line, lineNum, ref, result;
+    lineNum = 1;
+    ref = lineIterator(hFileInfo.filepath);
+    for (line of ref) {
+      result = this.handleLine(line, lineNum, hFileInfo);
+      switch (result) {
+        case 'abort':
+          return;
+      }
+      lineNum += 1;
+    }
   }
 
+  // ..........................................................
+  handleLine(line, lineNum, hFileInfo) {}
+
 };
+
+//# sourceMappingURL=fs.js.map

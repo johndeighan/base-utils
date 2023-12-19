@@ -40,15 +40,15 @@ import {
 
 import {
   toTAML
-} from '@jdeighan/base-utils/taml';
+} from '@jdeighan/base-utils/ll-taml';
 
 import {
   getPrefix
 } from '@jdeighan/base-utils/prefix';
 
 import {
-  getMyOutsideSource
-} from '@jdeighan/base-utils/v8-stack';
+  getMyOutsideCaller
+} from '@jdeighan/base-utils/ll-v8-stack';
 
 import {
   NamedLogs
@@ -89,17 +89,17 @@ export var debugLogging = (flag = true) => {
 
 // ---------------------------------------------------------------------------
 export var echoMyLogs = (flag = true) => {
-  var source;
-  // --- NOTE: source can be undef - NamedLogs handles that OK
-  source = getMyOutsideSource();
-  logs.setKey(source, 'doEcho', flag);
+  var filePath;
+  // --- NOTE: hFrame can be undef - NamedLogs handles that OK
+  filePath = getMyOutsideCaller().filePath;
+  logs.setKey(filePath, 'doEcho', flag);
 };
 
 // ---------------------------------------------------------------------------
 export var clearMyLogs = () => {
-  var source;
-  source = getMyOutsideSource();
-  logs.clear(source);
+  var filePath;
+  filePath = getMyOutsideCaller().filePath;
+  logs.clear(filePath);
 };
 
 // ---------------------------------------------------------------------------
@@ -109,9 +109,9 @@ export var clearAllLogs = () => {
 
 // ---------------------------------------------------------------------------
 export var getMyLogs = () => {
-  var source;
-  source = getMyOutsideSource();
-  return logs.getLogs(source);
+  var filePath;
+  filePath = getMyOutsideCaller().filePath;
+  return logs.getLogs(filePath);
 };
 
 // ---------------------------------------------------------------------------
@@ -121,7 +121,7 @@ export var getAllLogs = () => {
 
 // ---------------------------------------------------------------------------
 export var PUTSTR = (str) => {
-  var doEcho, source;
+  var doEcho, filePath;
   if (internalDebugging) {
     console.log(`CALL PUTSTR(${OL(str)})`);
     if (defined(putstr) && (putstr !== console.log)) {
@@ -129,12 +129,12 @@ export var PUTSTR = (str) => {
     }
   }
   str = rtrim(str);
-  source = getMyOutsideSource();
-  doEcho = logs.getKey(source, 'doEcho');
+  filePath = getMyOutsideCaller().filePath;
+  doEcho = logs.getKey(filePath, 'doEcho');
   if (internalDebugging) {
-    console.log(`   source = ${OL(source)}, doEcho = ${OL(doEcho)}`);
+    console.log(`   filePath = ${OL(filePath)}, doEcho = ${OL(doEcho)}`);
   }
-  logs.log(source, str);
+  logs.log(filePath, str);
   if (doEcho) {
     if (defined(putstr) && (putstr !== console.log)) {
       putstr(str);
@@ -434,3 +434,5 @@ handleSimpleCase = (label, value, prefix) => {
 setStringifier(orderedStringify);
 
 resetLogger();
+
+//# sourceMappingURL=log.js.map

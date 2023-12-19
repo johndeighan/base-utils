@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "v8-stack-str.test.js",
+  "sourceRoot": "..\\",
+  "sources": [
+    "test\\v8-stack-str.test.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAqB;AAErB,OAAO,IAAP,MAAA;;AAEA,OAAA;EAAQ,KAAR;EAAe,OAAf;CAAA,MAAA;;AACA,OAAA;EAAQ,UAAR;EAAoB,aAApB;CAAA,MAAA;;AACA,OAAA;EAAQ,QAAR;EAAkB,SAAlB;CAAA,MAAA,eANqB;;;AAUrB,CAAC,CAAA,CAAA,GAAA;AACD,MAAA,KAAA,EAAA;EAAC,KAAA,GAAQ,KAAA,CAAA,CAAA,GAAA;AACP,WAAO,CAAA,MAAM,KAAA,CAAA,CAAN;EADA;EAGR,KAAA,GAAQ,KAAA,CAAA,CAAA,GAAA;AACT,QAAA;IAAE,QAAA,GAAW,CAAA,MAAM,aAAA,CAAA,CAAN;AACX,WAAO;EAFA;SAIR,IAAA,CAAK,SAAL,EAAgB,KAAA,CAAC,CAAD,CAAA,GAAA;WAAO,CAAC,CAAC,EAAF,CAAK,CAAA,MAAM,KAAA,CAAA,CAAN,CAAL,EAAoB,CAAA;;;oCAAA,CAApB;EAAP,CAAhB;AARA,CAAD,CAAA,CAAA,EAVqB;;;AA4BrB,CAAC,CAAA,CAAA,GAAA;AACD,MAAA,KAAA,EAAA;EAAC,KAAA,GAAQ,KAAA,CAAA,CAAA,GAAA;IACP,KAAA,CAAA;AACA,WAAO,CAAA,MAAM,aAAA,CAAc,OAAd,CAAN;EAFA;EAIR,KAAA,GAAQ,CAAA,CAAA,GAAA;AACT,QAAA;IAAE,CAAA,GAAI,CAAA,GAAI;AACR,WAAO;EAFA;SAIR,IAAA,CAAK,SAAL,EAAgB,KAAA,CAAC,CAAD,CAAA,GAAA;WAAO,CAAC,CAAC,EAAF,CAAK,CAAA,MAAM,KAAA,CAAA,CAAN,CAAL,EAAoB,CAAA;;oCAAA,CAApB;EAAP,CAAhB;AATA,CAAD,CAAA,CAAA",
+  "sourcesContent": [
+    "# v8-stack-str.coffee\n\nimport test from 'ava'\n\nimport {undef, defined} from '@jdeighan/base-utils'\nimport {getV8Stack, getV8StackStr} from '@jdeighan/base-utils/v8-stack'\nimport {getStack, getCaller} from './templib.js'\n\n# ---------------------------------------------------------------------------\n\n(() =>\n\tfunc1 = () =>\n\t\treturn await func2()\n\n\tfunc2 = () =>\n\t\tstackStr = await getV8StackStr()\n\t\treturn stackStr\n\n\ttest \"line 19\", (t) => t.is(await func1(), \"\"\"\n\t\tfunction at v8-stack.js:73:19\n\t\tfunction at v8-stack-str.test.js:27:23\n\t\tfunction at v8-stack-str.test.js:23:19\n\t\tscript at v8-stack-str.test.js:31:24\n\t\t\"\"\")\n\t)()\n\n# ---------------------------------------------------------------------------\n\n(() =>\n\tfunc1 = () =>\n\t\tfunc2()\n\t\treturn await getV8StackStr('debug')\n\n\tfunc2 = () =>\n\t\tx = 2 * 2\n\t\treturn x\n\n\ttest \"line 38\", (t) => t.is(await func1(), \"\"\"\n\t\tfunction at v8-stack.js:73:19\n\t\tfunction at v8-stack-str.test.js:43:19\n\t\tscript at v8-stack-str.test.js:51:24\n\t\t\"\"\")\n\t)()\n"
+  ]
+}

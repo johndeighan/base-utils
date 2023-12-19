@@ -101,3 +101,5 @@ testPath = mkpath(dir, 'test', 'readline.txt');
     return t.deepEqual(result, ['--> def', '--> jkl']);
   });
 })();
+
+//# sourceMappingURL=readline.test.js.map

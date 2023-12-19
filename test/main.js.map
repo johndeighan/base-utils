@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "main.js",
+  "sourceRoot": "..\\",
+  "sources": [
+    "test\\main.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAA,IAAA,CAAA,EAAA,CAAA,EAAA;;AAAA,CAAA,GAAI,QAAA,CAAA,CAAA;AACJ,MAAA,GAAA,EAAA,OAAA,EAAA;AAAC;AAAA;EAAA,KAAA,QAAA;iBACC,MAAA,CAAO,CAAP;EADD,CAAA;;AADG;;AAIJ,CAAA,GAAI,SAAA,CAAA,CAAA;EACH,MAAA,CAAO,EAAP;EACA,MAAM;SACN,CAAA,OAAW,CAAA,CAAA,CAAX;AAHG;;AAKJ,CAAA,GAAI,SAAA,CAAA,CAAA;EACH,MAAM;SACN,CAAA,MAAM,CAAN;AAFG",
+  "sourcesContent": [
+    "A = () ->\r\n\tfor x from B()\r\n\t\toutput x\r\n\r\nB = () ->\r\n\toutput 13\r\n\tyield 5\r\n\tyield from D()\r\n\r\nD = () ->\r\n\tyield 1\r\n\tyield 2\r\n"
+  ]
+}

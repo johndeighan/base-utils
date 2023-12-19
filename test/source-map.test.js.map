@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "source-map.test.js",
+  "sourceRoot": "..\\",
+  "sources": [
+    "test\\source-map.test.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAwB;AAAA,IAAA,MAAA,EAAA,OAAA,EAAA;;AAExB,OAAO,IAAP,MAAA;;AAEA,OAAA;EAAQ,SAAR;CAAA,MAAA;;AACA,OAAA;EACC,SADD;EACY,YADZ;CAAA,MAAA;;AAIA,MAAA,GAAS,SAAA,CAAU,sBAAV;;AACT,MAAA,GAAS,SAAA,CAAU,kBAAV,EAVe;;AAWxB,MAAM,CAAC,IAAP,GAAc;;AACd,MAAM,CAAC,MAAP,GAAgB;;AAEhB,OAAA,GAAU,YAAA,CAAa,MAAb;;AAEV,IAAA,CAAK,SAAL,EAAgB,CAAC,CAAD,CAAA,GAAA;SAAO,CAAC,CAAC,MAAF,CAAS,MAAM,CAAC,OAAP,CAAe,OAAf,CAAA,GAA0B,CAAnC;AAAP,CAAhB;;AACA,IAAA,CAAK,SAAL,EAAgB,CAAC,CAAD,CAAA,GAAA;SAAO,CAAC,CAAC,MAAF,CAAS,MAAM,CAAC,OAAP,CAAe,OAAf,CAAA,GAA0B,CAAnC;AAAP,CAAhB;;AACA,IAAA,CAAK,SAAL,EAAgB,CAAC,CAAD,CAAA,GAAA;SAAO,CAAC,CAAC,KAAF,CAAQ,MAAM,CAAC,OAAP,CAAe,OAAf,CAAA,GAA0B,CAAlC;AAAP,CAAhB,EAlBwB;;;AAsBxB,CAAC,CAAA,CAAA,GAAA;SACA,IAAA,CAAK,SAAL,EAAgB,CAAC,CAAD,CAAA,GAAA;WAAO,CAAC,CAAC,EAAF,CAAK,OAAO,CAAC,IAAb,EAAmB,CAAnB;EAAP,CAAhB;AADA,CAAD,CAAA,CAAA",
+  "sourcesContent": [
+    "# source-map.test.coffee\n\nimport test from 'ava'\n\nimport {parsePath} from '@jdeighan/base-utils/ll-utils'\nimport {\n\tgetRawMap, mapSourcePos,\n\t} from '@jdeighan/base-utils/source-map'\n\nrawMap = getRawMap(\"./test/source.js.map\")\nhFrame = parsePath(\"./test/source.js\")  # no line or column yet\nhFrame.line = 9\nhFrame.column = 0\n\nhMapped = mapSourcePos(hFrame)\n\ntest \"line 17\", (t) => t.truthy(rawMap.indexOf('func1') > 0)\ntest \"line 18\", (t) => t.truthy(rawMap.indexOf('func2') > 0)\ntest \"line 19\", (t) => t.falsy(rawMap.indexOf('func3') > 0)\n\n# ---------------------------------------------------------------------------\n\n(() =>\n\ttest \"line 24\", (t) => t.is(hMapped.line, 9)\n\t)()\n"
+  ]
+}

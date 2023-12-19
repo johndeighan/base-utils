@@ -119,3 +119,5 @@ export var removeLastVbar = (prefix) => {
   }
   return result;
 };
+
+//# sourceMappingURL=prefix.js.map

@@ -1,9 +1,14 @@
 # base-utils.coffee
 
-import assertLib  from 'node:assert'
 import {execSync} from 'child_process'
+import assertLib from 'node:assert'
 
-`export const undef = void 0`
+import {
+	pass, undef, defined, notdefined, assert,
+	isEmpty, nonEmpty, deepCopy
+	} from '@jdeighan/base-utils/ll-utils'
+
+export {pass, undef, defined, notdefined, isEmpty, nonEmpty, deepCopy}
 
 # ---------------------------------------------------------------------------
 
@@ -33,15 +38,6 @@ export deepEqual = (a, b) =>
 	return true
 
 # ---------------------------------------------------------------------------
-# assert() for use in this file only
-
-assert = (cond, msg) =>
-
-	if !cond
-		throw new Error(msg)
-	return true
-
-# ---------------------------------------------------------------------------
 
 export isHashComment = (line) =>
 	# --- true if:
@@ -64,25 +60,6 @@ export isHashComment = (line) =>
 			return undef
 	else
 		return undef
-
-# ---------------------------------------------------------------------------
-#   pass - do nothing
-
-export pass = () =>
-
-	return true
-
-# ---------------------------------------------------------------------------
-
-export defined = (obj) =>
-
-	return (obj != undef) && (obj != null)
-
-# ---------------------------------------------------------------------------
-
-export notdefined = (obj) =>
-
-	return (obj == undef) || (obj == null)
 
 # ---------------------------------------------------------------------------
 
@@ -224,27 +201,6 @@ export mapEachLine = (item, func) =>
 		return toBlock(lLines)
 
 # ---------------------------------------------------------------------------
-
-export oneof = (word, lWords...) =>
-
-	return (lWords.indexOf(word) >= 0)
-
-# ---------------------------------------------------------------------------
-#   deepCopy - deep copy an array or object
-
-export deepCopy = (obj) =>
-
-	if (obj == undef)
-		return undef
-	objStr = JSON.stringify(obj)
-	try
-		newObj = JSON.parse(objStr)
-	catch err
-		throw new Error("ERROR: err.message")
-
-	return newObj
-
-# ---------------------------------------------------------------------------
 # --- a replacer is (key, value) -> newvalue
 
 myReplacer = (name, value) =>
@@ -343,9 +299,9 @@ export hasChar = (str, ch) =>
 
 # ---------------------------------------------------------------------------
 
-export inList = (item, lItems...) =>
+export oneof = (word, lWords...) =>
 
-	return (lItems.indexOf(item) >= 0)
+	return (lWords.indexOf(word) >= 0)
 
 # ---------------------------------------------------------------------------
 # see: https://stackoverflow.com/questions/40922531/how-to-check-if-a-javascript-function-is-a-constructor
@@ -686,31 +642,6 @@ export isScalar = (x) =>
 	return isNumber(x) || isString(x) || isBoolean(x)
 
 # ---------------------------------------------------------------------------
-#   isEmpty
-#      - string is whitespace, array has no elements, hash has no keys
-
-export isEmpty = (x) =>
-
-	if (x == undef) || (x == null)
-		return true
-	if isString(x)
-		return x.match(/^\s*$/)
-	if isArray(x)
-		return x.length == 0
-	if isHash(x)
-		return Object.keys(x).length == 0
-	else
-		return false
-
-# ---------------------------------------------------------------------------
-#   nonEmpty
-#      - string has non-whitespace, array has elements, hash has keys
-
-export nonEmpty = (x) =>
-
-	return ! isEmpty(x)
-
-# ---------------------------------------------------------------------------
 #   blockToArray - split a block into lines
 
 export blockToArray = (block) =>
@@ -850,6 +781,12 @@ export getOptions = (options=undef, hDefault={}) =>
 export range = (n) =>
 
 	return [0..n-1]
+
+# ---------------------------------------------------------------------------
+
+export rev_range = (n) =>
+
+	return [0..n-1].reverse()
 
 # ---------------------------------------------------------------------------
 
