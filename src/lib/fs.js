@@ -59,6 +59,15 @@ export {
 
 
 // ---------------------------------------------------------------------------
+// --- convert "C:..." to "c:..."
+export var fixPath = (path) => {
+  if (path.charAt(1) === ':') {
+    return path.charAt(0).toLowerCase() + path.substring(1);
+  }
+  return path;
+};
+
+// ---------------------------------------------------------------------------
 export var mkpath = (...lParts) => {
   var root, str;
   dbgEnter('mkpath', lParts);
@@ -71,7 +80,7 @@ export var mkpath = (...lParts) => {
   } else {
     str = lParts.join('/');
   }
-  str = str.replaceAll('\\', '/');
+  str = fixPath(str.replaceAll('\\', '/'));
   dbgReturn('mkpath', str);
   return str;
 };

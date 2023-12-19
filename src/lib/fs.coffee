@@ -21,6 +21,15 @@ import {toTAML, fromTAML} from '@jdeighan/base-utils/ll-taml'
 export {mydir}    # re-export
 
 # ---------------------------------------------------------------------------
+# --- convert "C:..." to "c:..."
+
+export fixPath = (path) =>
+
+	if (path.charAt(1) == ':')
+		return path.charAt(0).toLowerCase() + path.substring(1)
+	return path
+
+# ---------------------------------------------------------------------------
 
 export mkpath = (lParts...) =>
 
@@ -31,7 +40,7 @@ export mkpath = (lParts...) =>
 		str = root + lParts.join('/')
 	else
 		str = lParts.join('/')
-	str = str.replaceAll('\\', '/')
+	str = fixPath(str.replaceAll('\\', '/'))
 	dbgReturn 'mkpath', str
 	return str
 

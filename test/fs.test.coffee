@@ -16,7 +16,7 @@ testPath = mkpath(dir, 'test', 'readline.txt')
 
 test "line 17", (t) => t.is(mkpath("abc","def"), "abc/def")
 test "line 18", (t) => t.is(mkpath("c:\\Users","johnd"), "c:/Users/johnd")
-test "line 19", (t) => t.is(mkpath("C:\\Users","johnd"), "C:/Users/johnd")
+test "line 19", (t) => t.is(mkpath("C:\\Users","johnd"), "c:/Users/johnd")
 
 test "line 21", (t) => t.truthy(isFile(mkpath(dir, 'package.json')))
 test "line 22", (t) => t.falsy (isFile(mkpath(dir, 'doesNotExist.txt')))

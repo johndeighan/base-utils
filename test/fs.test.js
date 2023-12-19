@@ -41,7 +41,7 @@ test("line 18", (t) => {
 });
 
 test("line 19", (t) => {
-  return t.is(mkpath("C:\\Users", "johnd"), "C:/Users/johnd");
+  return t.is(mkpath("C:\\Users", "johnd"), "c:/Users/johnd");
 });
 
 test("line 21", (t) => {
