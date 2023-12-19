@@ -53,6 +53,11 @@ import {
   fromTAML
 } from '@jdeighan/base-utils/ll-taml';
 
+export {
+  mydir // re-export
+};
+
+
 // ---------------------------------------------------------------------------
 export var mkpath = (...lParts) => {
   var root, str;
