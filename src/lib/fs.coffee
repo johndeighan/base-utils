@@ -18,6 +18,8 @@ import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 import {toTAML, fromTAML} from '@jdeighan/base-utils/ll-taml'
 
+export {mydir}    # re-export
+
 # ---------------------------------------------------------------------------
 
 export mkpath = (lParts...) =>
