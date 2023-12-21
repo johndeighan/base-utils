@@ -10,10 +10,13 @@ import {
   defined,
   notdefined,
   assert,
-  mydir,
   isEmpty,
   nonEmpty
 } from '@jdeighan/base-utils/ll-utils';
+
+import {
+  mydir
+} from '@jdeighan/base-utils/ll-fs';
 
 import {
   OL,
@@ -29,7 +32,8 @@ import {
 import {
   getV8Stack,
   getMyDirectCaller,
-  getMyOutsideCaller
+  getMyOutsideCaller,
+  nodeStr
 } from '@jdeighan/base-utils/ll-v8-stack';
 
 export {
@@ -61,13 +65,6 @@ export var isFile = (filePath) => {
 };
 
 // ---------------------------------------------------------------------------
-export var nodeStr = (hNode) => {
-  var column, fileName, line, type;
-  ({type, fileName, line, column} = hNode);
-  return `${type} at ${fileName}:${line}:${column}`;
-};
-
-// ---------------------------------------------------------------------------
 export var getV8StackStr = async(hOptions = {}) => {
   var hNode, lParts, lStack;
   lStack = (await getV8Stack(hOptions));
@@ -81,37 +78,6 @@ export var getV8StackStr = async(hOptions = {}) => {
     return results;
   })();
   return lParts.join("\n");
-};
-
-// ---------------------------------------------------------------------------
-export var shorten = (line) => {
-  var pos, root;
-  if (isEmpty(line)) {
-    return '';
-  }
-  root = getRoot();
-  if (isEmpty(root)) {
-    return line;
-  }
-  pos = line.indexOf(root);
-  if (pos === -1) {
-    return line;
-  } else {
-    return line.replace(root, 'ROOT');
-  }
-};
-
-// ---------------------------------------------------------------------------
-export var getRoot = () => {
-  var result;
-  // --- Alternatively, we could search up in the directory tree
-  //     for the directory that contains 'package.json'
-  result = process.env.ProjectRoot;
-  if (isEmpty(result)) {
-    return undef;
-  } else {
-    return result;
-  }
 };
 
 //# sourceMappingURL=v8-stack.js.map

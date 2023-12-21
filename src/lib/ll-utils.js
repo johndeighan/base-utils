@@ -1,44 +1,8 @@
 // ll-utils.coffee
-import urlLib from 'url';
-
-import pathLib from 'node:path';
-
 /**
  * undef is a synonym for undefined
  */
 export const undef = void 0;
-
-// ---------------------------------------------------------------------------
-/**
- * Should be called like: mydir(import.meta.url)
- * @returns {string} the directory that the current file is in
- */
-export var mydir = (url) => {
-  var dir, path;
-  path = urlLib.fileURLToPath(url);
-  dir = pathLib.dirname(path);
-  return dir.replaceAll('\\', '/');
-};
-
-// ---------------------------------------------------------------------------
-export var getFullPath = (...lPaths) => {
-  return pathLib.resolve(...lPaths).replaceAll("\\", "/");
-};
-
-// ---------------------------------------------------------------------------
-// --- Returned object has keys: dir, fileName, stub, ext
-export var parsePath = (...lPaths) => {
-  var fullPath, h;
-  fullPath = getFullPath(...lPaths);
-  h = pathLib.parse(fullPath);
-  return {
-    dir: h.dir,
-    fileName: h.base,
-    stub: h.name,
-    ext: h.ext
-  };
-};
-
 // ---------------------------------------------------------------------------
 //   pass - do nothing
 export var pass = () => {

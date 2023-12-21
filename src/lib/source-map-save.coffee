@@ -1,21 +1,21 @@
-# source-map.coffee
+# source-map-save.coffee
 
 import deasync from 'deasync'
 import {readFileSync, existsSync} from 'node:fs'
-import {SourceMapConsumer} from 'source-map-js'
+import {SourceMapConsumer} from 'source-map'
 
 import {
 	undef, pass, defined, notdefined, alldefined,
 	isEmpty, nonEmpty, deepCopy,
 	} from '@jdeighan/base-utils/ll-utils'
 import {isInteger} from '@jdeighan/base-utils'
-import {mkpath, resolve} from '@jdeighan/base-utils/ll-fs'
+import {mkpath} from '@jdeighan/base-utils/ll-fs'
 
 # --- cache to hold previously fetched file contents
 hSourceMaps = {}    # { filepath => rawMap, ... }
 
 # ---------------------------------------------------------------------------
-# This lib uses the library source-map-js
+# This lib uses mozilla's source-map library
 # ---------------------------------------------------------------------------
 
 export getRawMap = (mapFilePath) =>
@@ -30,20 +30,17 @@ export getRawMap = (mapFilePath) =>
 # ---------------------------------------------------------------------------
 # --- returns {source, line, column, name}
 
-export mapPos = (rawMap, hPos, debug=false) ->
+export mapPos = (rawMap, hPos) ->
 	# --- hPos should be {line, column}
 
-	if notdefined(rawMap)
-		console.log "empty map!"
-		process.exit()
+	hResult = undef
 
-	smc = new SourceMapConsumer(rawMap)
-	hResult = smc.originalPositionFor(hPos)
-	try
-		resolved = resolve(hResult.source)
-		source = mkpath(resolved)
-		hResult.source = source
-	return hResult
+	promise = SourceMapConsumer.with rawMap, null, (consumer) =>
+		hResult = consumer.originalPositionFor(hPos)
+		console.log "GOT RESULT"
+		console.log hResult
+
+	deasync.loopWhile () -> return notdefined(hResult)
 
 # ---------------------------------------------------------------------------
 
@@ -107,7 +104,7 @@ export mapSourcePos = (hFileInfo, line, column, debug=false) =>
 		console.log "MAP FILE FOUND: '#{mapFilePath}'"
 
 	# --- hMapped is {source, line, column, name}
-	hMapped = mapPos rawMap, {line, column}, debug
+	hMapped = mapPos rawMap, {line, column}
 	return hMapped
 
 	hMapped = undef

@@ -1,4 +1,4 @@
-// source-map.coffee
+// source-map-save.coffee
 var hSourceMaps;
 
 import deasync from 'deasync';
@@ -10,7 +10,7 @@ import {
 
 import {
   SourceMapConsumer
-} from 'source-map-js';
+} from 'source-map';
 
 import {
   undef,
@@ -28,8 +28,7 @@ import {
 } from '@jdeighan/base-utils';
 
 import {
-  mkpath,
-  resolve
+  mkpath
 } from '@jdeighan/base-utils/ll-fs';
 
 // --- cache to hold previously fetched file contents
@@ -37,7 +36,7 @@ hSourceMaps = {}; // { filepath => rawMap, ... }
 
 
 // ---------------------------------------------------------------------------
-// This lib uses the library source-map-js
+// This lib uses mozilla's source-map library
 // ---------------------------------------------------------------------------
 export var getRawMap = (mapFilePath) => {
   var rawMap;
@@ -52,21 +51,18 @@ export var getRawMap = (mapFilePath) => {
 
 // ---------------------------------------------------------------------------
 // --- returns {source, line, column, name}
-export var mapPos = function(rawMap, hPos, debug = false) {
-  var hResult, resolved, smc, source;
+export var mapPos = function(rawMap, hPos) {
+  var hResult, promise;
   // --- hPos should be {line, column}
-  if (notdefined(rawMap)) {
-    console.log("empty map!");
-    process.exit();
-  }
-  smc = new SourceMapConsumer(rawMap);
-  hResult = smc.originalPositionFor(hPos);
-  try {
-    resolved = resolve(hResult.source);
-    source = mkpath(resolved);
-    hResult.source = source;
-  } catch (error) {}
-  return hResult;
+  hResult = undef;
+  promise = SourceMapConsumer.with(rawMap, null, (consumer) => {
+    hResult = consumer.originalPositionFor(hPos);
+    console.log("GOT RESULT");
+    return console.log(hResult);
+  });
+  return deasync.loopWhile(function() {
+    return notdefined(hResult);
+  });
 };
 
 // ---------------------------------------------------------------------------
@@ -126,9 +122,9 @@ export var mapSourcePos = (hFileInfo, line, column, debug = false) => {
     console.log(`MAP FILE FOUND: '${mapFilePath}'`);
   }
   // --- hMapped is {source, line, column, name}
-  hMapped = mapPos(rawMap, {line, column}, debug);
+  hMapped = mapPos(rawMap, {line, column});
   return hMapped;
   return hMapped = undef;
 };
 
-//# sourceMappingURL=source-map.js.map
+//# sourceMappingURL=source-map-save.js.map

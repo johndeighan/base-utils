@@ -23,22 +23,12 @@ import {
   getMyDirectCaller,
   getMyOutsideCaller,
   getV8Stack,
-  debugV8Stack,
-  shorten
+  debugV8Stack
 } from '@jdeighan/base-utils/v8-stack';
 
 import {
   getBoth
 } from './v8-module.js';
-
-// ---------------------------------------------------------------------------
-test("line 17", (t) => {
-  var expStr, orgStr, replace;
-  orgStr = "(file:///C:/Users/johnd/base-utils/src/v8-stack.js)";
-  replace = "file:///C:/Users/johnd";
-  expStr = "(file:///ROOT/base-utils/src/v8-stack.js)";
-  return t.is(shorten(orgStr, replace), expStr);
-});
 
 // ---------------------------------------------------------------------------
 (function() {

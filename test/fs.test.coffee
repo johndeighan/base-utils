@@ -1,10 +1,11 @@
 # fs.test.coffee
 
 import test from 'ava'
-import {undef, defined} from '@jdeighan/base-utils'
+import {undef, defined, notdefined} from '@jdeighan/base-utils'
 import {setDebugging} from '@jdeighan/base-utils/debug'
+import {mkpath} from '@jdeighan/base-utils/ll-fs'
 import {
-	isFile, isDir, mkpath, mkdirSync, slurp, barf, forEachFileInDir,
+	isFile, isDir, mkdirSync, slurp, barf, forEachFileInDir,
 	forEachItem, forEachLineInFile, FileProcessor,
 	} from '@jdeighan/base-utils/fs'
 
@@ -13,10 +14,6 @@ testDir = mkpath(dir, 'test')
 testPath = mkpath(dir, 'test', 'readline.txt')
 
 # ---------------------------------------------------------------------------
-
-test "line 17", (t) => t.is(mkpath("abc","def"), "abc/def")
-test "line 18", (t) => t.is(mkpath("c:\\Users","johnd"), "c:/Users/johnd")
-test "line 19", (t) => t.is(mkpath("C:\\Users","johnd"), "c:/Users/johnd")
 
 test "line 21", (t) => t.truthy(isFile(mkpath(dir, 'package.json')))
 test "line 22", (t) => t.falsy (isFile(mkpath(dir, 'doesNotExist.txt')))
