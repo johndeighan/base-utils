@@ -5,7 +5,8 @@ import test from 'ava';
 
 import {
   undef,
-  defined
+  defined,
+  notdefined
 } from '@jdeighan/base-utils';
 
 import {
@@ -13,9 +14,12 @@ import {
 } from '@jdeighan/base-utils/debug';
 
 import {
+  mkpath
+} from '@jdeighan/base-utils/ll-fs';
+
+import {
   isFile,
   isDir,
-  mkpath,
   mkdirSync,
   slurp,
   barf,
@@ -32,18 +36,6 @@ testDir = mkpath(dir, 'test');
 testPath = mkpath(dir, 'test', 'readline.txt');
 
 // ---------------------------------------------------------------------------
-test("line 17", (t) => {
-  return t.is(mkpath("abc", "def"), "abc/def");
-});
-
-test("line 18", (t) => {
-  return t.is(mkpath("c:\\Users", "johnd"), "c:/Users/johnd");
-});
-
-test("line 19", (t) => {
-  return t.is(mkpath("C:\\Users", "johnd"), "c:/Users/johnd");
-});
-
 test("line 21", (t) => {
   return t.truthy(isFile(mkpath(dir, 'package.json')));
 });

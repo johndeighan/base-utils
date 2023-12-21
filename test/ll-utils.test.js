@@ -1,11 +1,10 @@
 // ll-utils.test.coffee
-var a, b, c, d, dir, e, fullPath;
+var a, b, c, d, e;
 
 import test from 'ava';
 
 import {
   undef,
-  mydir,
   pass,
   assert,
   defined,
@@ -13,7 +12,6 @@ import {
   alldefined,
   isEmpty,
   nonEmpty,
-  getFullPath,
   deepCopy
 } from '@jdeighan/base-utils/ll-utils';
 
@@ -22,88 +20,76 @@ import {
   getCaller
 } from './templib.js';
 
-dir = mydir(import.meta.url);
-
-fullPath = getFullPath('.');
-
 // ---------------------------------------------------------------------------
-test("line 16", (t) => {
+test("line 13", (t) => {
   return t.is(undef, void 0);
 });
 
-test("line 17", (t) => {
-  return t.truthy(dir.match(/\/base\-utils\/test$/));
-});
-
-test("line 18", (t) => {
+test("line 14", (t) => {
   return t.truthy(pass());
 });
 
-test("line 19", (t) => {
+test("line 15", (t) => {
   return t.truthy(defined(1));
 });
 
-test("line 20", (t) => {
+test("line 16", (t) => {
   return t.falsy(defined(void 0));
 });
 
-test("line 21", (t) => {
+test("line 17", (t) => {
   return t.truthy(notdefined(void 0));
 });
 
-test("line 22", (t) => {
+test("line 18", (t) => {
   return t.falsy(notdefined(12));
 });
 
-test("line 23", (t) => {
+test("line 19", (t) => {
   return t.notThrows(() => {
     return pass();
   });
 });
 
-test("line 24", (t) => {
+test("line 20", (t) => {
   return t.notThrows(() => {
     return assert(12 === 12, "BAD");
   });
 });
 
 // ---------------------------------------------------------------------------
-test("line 28", (t) => {
+test("line 24", (t) => {
   return t.truthy(isEmpty(''));
 });
 
-test("line 29", (t) => {
+test("line 25", (t) => {
   return t.truthy(isEmpty('  \t\t'));
 });
 
-test("line 30", (t) => {
+test("line 26", (t) => {
   return t.truthy(isEmpty([]));
 });
 
-test("line 31", (t) => {
+test("line 27", (t) => {
   return t.truthy(isEmpty({}));
 });
 
-test("line 33", (t) => {
+test("line 29", (t) => {
   return t.truthy(nonEmpty('a'));
 });
 
-test("line 34", (t) => {
+test("line 30", (t) => {
   return t.truthy(nonEmpty('.'));
 });
 
-test("line 35", (t) => {
+test("line 31", (t) => {
   return t.truthy(nonEmpty([2]));
 });
 
-test("line 36", (t) => {
+test("line 32", (t) => {
   return t.truthy(nonEmpty({
     width: 2
   }));
-});
-
-test("line 38", (t) => {
-  return t.is(fullPath, "C:/Users/johnd/base-utils");
 });
 
 // ---------------------------------------------------------------------------
@@ -119,23 +105,23 @@ e = {
   a: 42
 };
 
-test("line 48", (t) => {
+test("line 42", (t) => {
   return t.truthy(alldefined(c, d, e));
 });
 
-test("line 49", (t) => {
+test("line 43", (t) => {
   return t.falsy(alldefined(a, b, c, d, e));
 });
 
-test("line 50", (t) => {
+test("line 44", (t) => {
   return t.falsy(alldefined(a, c, d, e));
 });
 
-test("line 51", (t) => {
+test("line 45", (t) => {
   return t.falsy(alldefined(b, c, d, e));
 });
 
-test("line 53", (t) => {
+test("line 47", (t) => {
   return t.deepEqual(deepCopy(e), {
     a: 42
   });

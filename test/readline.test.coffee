@@ -3,8 +3,9 @@
 import test from 'ava'
 import {undef} from '@jdeighan/base-utils'
 import {setDebugging} from '@jdeighan/base-utils/debug'
+import {mkpath} from '@jdeighan/base-utils/ll-fs'
 import {
-	isFile, isDir, mkpath, mkdirSync, slurp, barf, forEachFileInDir,
+	isFile, isDir, mkdirSync, slurp, barf, forEachFileInDir,
 	forEachItem, lineIterator, forEachLineInFile,
 	} from '@jdeighan/base-utils/fs'
 

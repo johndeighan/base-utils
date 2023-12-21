@@ -1,5 +1,5 @@
 // source-map.coffee
-var blockUntil, hSourceMaps;
+var hSourceMaps;
 
 import {
   readFileSync,
@@ -8,9 +8,7 @@ import {
 
 import {
   SourceMapConsumer
-} from 'source-map';
-
-import Sync from 'node-sync';
+} from 'source-map-js';
 
 import {
   undef,
@@ -27,61 +25,68 @@ import {
   isInteger
 } from '@jdeighan/base-utils';
 
+import {
+  mkpath,
+  resolve
+} from '@jdeighan/base-utils/ll-fs';
+
+// --- cache to hold previously fetched file contents
 hSourceMaps = {}; // { filepath => rawMap, ... }
 
 
 // ---------------------------------------------------------------------------
-export var getRawMap = (mapFile) => {
+// This lib uses the library source-map-js
+// ---------------------------------------------------------------------------
+export var getRawMap = (mapFilePath) => {
   var rawMap;
-  if (hSourceMaps.hasOwnProperty(mapFile)) {
-    return hSourceMaps[mapFile];
+  if (hSourceMaps.hasOwnProperty(mapFilePath)) {
+    return hSourceMaps[mapFilePath];
   } else {
-    rawMap = readFileSync(mapFile, 'utf8');
-    hSourceMaps[mapFile] = rawMap;
+    rawMap = readFileSync(mapFilePath, 'utf8');
+    hSourceMaps[mapFilePath] = rawMap;
     return rawMap;
   }
 };
 
 // ---------------------------------------------------------------------------
-blockUntil = (func, cb = undef) => {
-  while (!func()) {
-    pass();
+// --- returns {source, line, column, name}
+export var mapPos = function(rawMap, hPos, debug = false) {
+  var hResult, resolved, smc, source;
+  // --- hPos should be {line, column}
+  if (notdefined(rawMap)) {
+    console.log("empty map!");
+    process.exit();
   }
-  if (!func()) {
-    // --- check condition every 100 ms.
-    setTimeout(blockUntil.bind(null, func, cb), 100);
-  } else {
-    cb();
-  }
+  smc = new SourceMapConsumer(rawMap);
+  hResult = smc.originalPositionFor(hPos);
+  try {
+    resolved = resolve(hResult.source);
+    source = mkpath(resolved);
+    hResult.source = source;
+  } catch (error) {}
+  return hResult;
 };
 
-// Usage:   blockUntil(() => return cond, () => console.log('done'))
 // ---------------------------------------------------------------------------
-export var mapSourcePos = (hFrame, debug = false) => {
-  var column, dir, ext, fileName, filePath, func, intvl, line, mapFile, promise, rawMap, stub;
-  //     hFrame must have keys:
-  //        line, column - both non-negative integers
-  //        EITHER:
-  //           dir, stub, ext
-  //           dir, fileName
-  //           filePath
-
-    // --- Can map only if:
-  //        1. ext is .js
-  //        2. <stub>.coffee and <stub>.js.map exist in dir
-
-  // --- Modifies hFrame if mapped
-  ({dir, stub, ext, fileName, filePath, line, column} = hFrame);
+export var mapSourcePos = (hFileInfo, line, column, debug = false) => {
+  var dir, ext, fileName, filePath, hMapped, mapFilePath, rawMap, stub;
   if (!isInteger(line, {
-    min: 0
-  }) || !isInteger(column, {
     min: 0
   })) {
     if (debug) {
-      console.log(`CANNOT MAP - line=${line}, column=${column}`);
+      console.log(`mapSourcePos: invalid line ${line}`);
     }
-    return;
+    return undef;
   }
+  if (!isInteger(column, {
+    min: 0
+  })) {
+    if (debug) {
+      console.log(`mapSourcePos: invalid column ${column}`);
+    }
+    return undef;
+  }
+  ({dir, stub, ext, fileName, filePath} = hFileInfo);
   if (!alldefined(dir, stub, ext)) {
     // --- Make sure filePath is defined
     if (notdefined(filePath) && alldefined(dir, fileName)) {
@@ -101,10 +106,10 @@ export var mapSourcePos = (hFrame, debug = false) => {
     }
     return;
   }
-  mapFile = `${dir}/${stub}.js.map`;
-  if (!existsSync(mapFile)) {
+  mapFilePath = `${dir}/${stub}.js.map`;
+  if (!existsSync(mapFilePath)) {
     if (debug) {
-      console.log(`CANNOT MAP - MISSING MAP FILE ${mapFile}`);
+      console.log(`CANNOT MAP - MISSING MAP FILE ${mapFilePath}`);
     }
     return;
   }
@@ -114,44 +119,14 @@ export var mapSourcePos = (hFrame, debug = false) => {
     }
     return;
   }
-  rawMap = getRawMap(mapFile); // get from cache if available
+  rawMap = getRawMap(mapFilePath); // get from cache if available
   if (debug) {
-    console.log(`MAP FILE FOUND: '${mapFile}'`);
+    console.log(`MAP FILE FOUND: '${mapFilePath}'`);
   }
-  // --- WAS await SourceMapConsumer...
-  promise = SourceMapConsumer.with(rawMap, null, (consumer) => {
-    var hMapped;
-    hMapped = consumer.originalPositionFor(hFrame);
-    if (defined(hMapped.line)) {
-      hFrame.js_line = line;
-      hFrame.js_column = column;
-      hFrame.js_fileName = `${stub}${ext}`;
-      hFrame.js_filePath = `${dir}/${stub}.js`;
-      hFrame.filePath = `${dir}/${stub}.coffee`;
-      hFrame.line = hMapped.line;
-      return hFrame.column = hMapped.column;
-    } else {
-      console.log("MAP FAILED:");
-      console.log("RAW MAP:");
-      console.log(rawMap);
-      console.log("STACK FRAME:");
-      console.log(hFrame);
-      console.log("MAPPED:");
-      return console.log(hMapped);
-    }
-  });
-  intvl = undef;
-  func = () => {
-    if (defined(hFrame.js_line)) {
-      clearInterval(intvl);
-    }
-  };
-  intvl = setInterval(func, 100);
-  if (debug) {
-    console.log("MAP TO:");
-    console.log(hFrame);
-  }
-  return deepCopy(hFrame);
+  // --- hMapped is {source, line, column, name}
+  hMapped = mapPos(rawMap, {line, column}, debug);
+  return hMapped;
+  return hMapped = undef;
 };
 
 //# sourceMappingURL=source-map.js.map

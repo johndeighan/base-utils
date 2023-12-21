@@ -4,12 +4,13 @@ var EXLOG, doHaltOnError, doLog, lExceptionLog;
 import {
   getV8Stack,
   nodeStr
-} from '@jdeighan/base-utils/v8-stack';
+} from '@jdeighan/base-utils/ll-v8-stack';
 
 import {
   undef,
   defined,
-  notdefined
+  notdefined,
+  isEmpty
 } from '@jdeighan/base-utils/ll-utils';
 
 doHaltOnError = false;
@@ -87,7 +88,7 @@ export var croak = (err, label = undef, obj = undef) => {
   } else {
     curmsg = err.message;
   }
-  if ((label === undef) || (label === null) || (label === '')) {
+  if (isEmpty(label)) {
     newmsg = `ERROR (croak): ${curmsg}`;
   } else {
     newmsg = `ERROR (croak): ${curmsg}

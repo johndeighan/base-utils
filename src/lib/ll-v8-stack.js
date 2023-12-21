@@ -25,6 +25,13 @@ import {
 //    column
 
 // ---------------------------------------------------------------------------
+export var nodeStr = (hNode) => {
+  var column, fileName, line, type;
+  ({type, fileName, line, column} = hNode);
+  return `${type} at ${fileName}:${line}:${column}`;
+};
+
+// ---------------------------------------------------------------------------
 // --- export only for unit tests
 export var extractFileName = (filePath) => {
   var lMatches;

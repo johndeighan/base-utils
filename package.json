@@ -7,6 +7,7 @@
 	"exports": {
 		".": "./src/lib/base-utils.js",
 		"./ll-utils": "./src/lib/ll-utils.js",
+		"./ll-fs": "./src/lib/ll-fs.js",
 		"./source-map": "./src/lib/source-map.js",
 		"./ll-v8-stack": "./src/lib/ll-v8-stack.js",
 		"./utest": "./src/lib/utest.js",
@@ -36,16 +37,15 @@
 	"author": "John Deighan",
 	"license": "MIT",
 	"dependencies": {
-		"ava": "^5.3.0",
+		"ava": "^6.0.1",
 		"js-yaml": "^4.1.0",
 		"n-readlines": "^1.0.1",
-		"node-sync": "^0.5.6",
-		"source-map": "^0.7.4",
-		"source-map-sync": "^0.8.0-beta.2",
+		"source-map-js": "^1.0.2",
 		"stack-utils": "^2.0.6",
 		"yaml": "^2.3.1"
 	},
 	"devDependencies": {
+		"deasync": "^0.1.29",
 		"gulp": "^4.0.2"
 	}
 }

@@ -1,6 +1,7 @@
 # ll-v8-stack.coffee
 
 import pathLib from 'node:path'
+
 import {
 	undef, defined, notdefined, alldefined, assert,
 	} from '@jdeighan/base-utils/ll-utils'
@@ -16,6 +17,13 @@ import {mapSourcePos} from '@jdeighan/base-utils/source-map'
 #    isAsync - true if an async function/method
 #    line
 #    column
+
+# ---------------------------------------------------------------------------
+
+export nodeStr = (hNode) =>
+
+	{type, fileName, line, column} = hNode
+	return "#{type} at #{fileName}:#{line}:#{column}"
 
 # ---------------------------------------------------------------------------
 # --- export only for unit tests

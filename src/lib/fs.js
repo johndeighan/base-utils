@@ -17,10 +17,6 @@ import {
 import NReadLines from 'n-readlines';
 
 import {
-  mydir
-} from '@jdeighan/base-utils/ll-utils';
-
-import {
   undef,
   defined,
   nonEmpty,
@@ -53,65 +49,16 @@ import {
   fromTAML
 } from '@jdeighan/base-utils/ll-taml';
 
-export {
-  mydir // re-export
-};
-
-
-// ---------------------------------------------------------------------------
-// --- convert "C:..." to "c:..."
-export var fixPath = (path) => {
-  if (path.charAt(1) === ':') {
-    return path.charAt(0).toLowerCase() + path.substring(1);
-  }
-  return path;
-};
+import {
+  fixPath,
+  mydir,
+  mkpath,
+  parsePath
+} from '@jdeighan/base-utils/ll-fs';
 
 // ---------------------------------------------------------------------------
-export var mkpath = (...lParts) => {
-  var root, str;
-  dbgEnter('mkpath', lParts);
-  lParts = lParts.filter((x) => {
-    return nonEmpty(x);
-  });
-  if (lParts[0].match(/[\/\\]$/)) {
-    root = lParts.shift().toLowerCase();
-    str = root + lParts.join('/');
-  } else {
-    str = lParts.join('/');
-  }
-  str = fixPath(str.replaceAll('\\', '/'));
-  dbgReturn('mkpath', str);
-  return str;
-};
-
-// ---------------------------------------------------------------------------
-export var parsePath = (...lParts) => {
-  var base, dir, hResult, lDirs, path, root;
-  // --- returns:
-  //        root: '/' in Linux, like 'C:/' in Windows
-  //        lDirs - array of directory names
-  //        filename - name of file, if it's a file
-  dbgEnter('parsePath', lParts);
-  path = mkpath(...lParts);
-  dbg('path', path);
-  ({root, dir, base} = pathLib.parse(path));
-  root = root.toUpperCase().replace('\\', '/');
-  lDirs = dir.split(/[\/\\]/);
-  if (isFile(path)) {
-    hResult = {
-      root,
-      lDirs,
-      filename: base
-    };
-  } else if (isDir(path)) {
-    lDirs.push(base);
-    hResult = {root, lDirs};
-  } else {
-    croak(`Not a file or directory: '${path}'`);
-  }
-  dbgReturn('parsePath', hResult);
-  return hResult;
+export var getFullPath = (...lPaths) => {
+  return fixPath(pathLib.resolve(...lPaths).replaceAll("\\", "/"));
 };
 
 // ---------------------------------------------------------------------------

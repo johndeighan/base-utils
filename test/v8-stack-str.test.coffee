@@ -17,7 +17,7 @@ import {getStack, getCaller} from './templib.js'
 		return stackStr
 
 	test "line 19", (t) => t.is(await func1(), """
-		function at v8-stack.js:73:19
+		function at v8-stack.js:70:19
 		function at v8-stack-str.test.js:27:23
 		function at v8-stack-str.test.js:23:19
 		script at v8-stack-str.test.js:31:24
@@ -36,7 +36,7 @@ import {getStack, getCaller} from './templib.js'
 		return x
 
 	test "line 38", (t) => t.is(await func1(), """
-		function at v8-stack.js:73:19
+		function at v8-stack.js:70:19
 		function at v8-stack-str.test.js:43:19
 		script at v8-stack-str.test.js:51:24
 		""")

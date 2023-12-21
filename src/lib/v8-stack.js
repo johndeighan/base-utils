@@ -10,10 +10,13 @@ import {
   defined,
   notdefined,
   assert,
-  mydir,
   isEmpty,
   nonEmpty
 } from '@jdeighan/base-utils/ll-utils';
+
+import {
+  mydir
+} from '@jdeighan/base-utils/ll-fs';
 
 import {
   OL,
@@ -27,6 +30,7 @@ import {
 } from '@jdeighan/base-utils/source-map';
 
 import {
+  nodeStr,
   getV8Stack,
   getMyDirectCaller,
   getMyOutsideCaller
@@ -61,13 +65,6 @@ export var isFile = (filePath) => {
 };
 
 // ---------------------------------------------------------------------------
-export var nodeStr = (hNode) => {
-  var column, fileName, line, type;
-  ({type, fileName, line, column} = hNode);
-  return `${type} at ${fileName}:${line}:${column}`;
-};
-
-// ---------------------------------------------------------------------------
 export var getV8StackStr = async(hOptions = {}) => {
   var hNode, lParts, lStack;
   lStack = (await getV8Stack(hOptions));
@@ -84,25 +81,7 @@ export var getV8StackStr = async(hOptions = {}) => {
 };
 
 // ---------------------------------------------------------------------------
-export var shorten = (line) => {
-  var pos, root;
-  if (isEmpty(line)) {
-    return '';
-  }
-  root = getRoot();
-  if (isEmpty(root)) {
-    return line;
-  }
-  pos = line.indexOf(root);
-  if (pos === -1) {
-    return line;
-  } else {
-    return line.replace(root, 'ROOT');
-  }
-};
-
-// ---------------------------------------------------------------------------
-export var getRoot = () => {
+export var getProjectRoot = () => {
   var result;
   // --- Alternatively, we could search up in the directory tree
   //     for the directory that contains 'package.json'

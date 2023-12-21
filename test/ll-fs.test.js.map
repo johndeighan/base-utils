@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "ll-fs.test.js",
+  "sourceRoot": "..\\",
+  "sources": [
+    "test\\ll-fs.test.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAmB;AAEnB,OAAA;EAAQ,KAAR;CAAA,MAAA;;AAEA,OAAA;EACC,OADD;EACU,KADV;EACiB,MADjB;EACyB,SADzB;CAAA,MAAA,6BAJmB;;;;;AAYnB,KAAK,CAAC,KAAN,CAAY,EAAZ,EAAgB,OAAA,CAAQ,cAAR,CAAhB,EAAyC,YAAzC;;AAEA,KAAK,CAAC,KAAN,CAAY,EAAZ,EAAgB,MAAA,CAAO,KAAP,EAAa,KAAb,CAAhB,EAAqC,SAArC;;AACA,KAAK,CAAC,KAAN,CAAY,EAAZ,EAAgB,MAAA,CAAO,WAAP,EAAmB,OAAnB,CAAhB,EAA6C,gBAA7C;;AACA,KAAK,CAAC,KAAN,CAAY,EAAZ,EAAgB,MAAA,CAAO,WAAP,EAAmB,OAAnB,CAAhB,EAA6C,gBAA7C",
+  "sourcesContent": [
+    "# ll-fs.test.coffee\n\nimport {utest} from '@jdeighan/base-utils/utest'\n\nimport {\n\tfixPath, mydir, mkpath, parsePath,\n\t} from '@jdeighan/base-utils/ll-fs'\n\n# ---------------------------------------------------------------------------\n\n# fixPath() should lower-case drive letters and replace \\ with /\n\nutest.equal 13, fixPath('C:\\\\test\\\\me'), 'c:/test/me'\n\nutest.equal 15, mkpath(\"abc\",\"def\"), \"abc/def\"\nutest.equal 16, mkpath(\"c:\\\\Users\",\"johnd\"), \"c:/Users/johnd\"\nutest.equal 17, mkpath(\"C:\\\\Users\",\"johnd\"), \"c:/Users/johnd\"\n"
+  ]
+}
