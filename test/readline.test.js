@@ -12,9 +12,12 @@ import {
 } from '@jdeighan/base-utils/debug';
 
 import {
+  mkpath
+} from '@jdeighan/base-utils/ll-fs';
+
+import {
   isFile,
   isDir,
-  mkpath,
   mkdirSync,
   slurp,
   barf,

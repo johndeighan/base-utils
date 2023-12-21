@@ -13,7 +13,7 @@ import {
 	} from '@jdeighan/base-utils'
 import {mapSourcePos} from '@jdeighan/base-utils/source-map'
 import {
-	getV8Stack, getMyDirectCaller, getMyOutsideCaller, nodeStr,
+	nodeStr, getV8Stack, getMyDirectCaller, getMyOutsideCaller,
 	} from '@jdeighan/base-utils/ll-v8-stack'
 
 export {getV8Stack, getMyDirectCaller, getMyOutsideCaller}

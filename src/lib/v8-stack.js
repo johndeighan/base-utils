@@ -30,10 +30,10 @@ import {
 } from '@jdeighan/base-utils/source-map';
 
 import {
+  nodeStr,
   getV8Stack,
   getMyDirectCaller,
-  getMyOutsideCaller,
-  nodeStr
+  getMyOutsideCaller
 } from '@jdeighan/base-utils/ll-v8-stack';
 
 export {

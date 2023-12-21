@@ -3,6 +3,14 @@ var SimpleUnitTester;
 
 import test from 'ava';
 
+import {
+  isInteger
+} from '@jdeighan/base-utils';
+
+import {
+  assert
+} from '@jdeighan/base-utils/exceptions';
+
 // ---------------------------------------------------------------------------
 SimpleUnitTester = class SimpleUnitTester {
   constructor() {
@@ -12,6 +20,7 @@ SimpleUnitTester = class SimpleUnitTester {
   
     // ..........................................................
   getLineNum(lineNum) {
+    assert(isInteger(lineNum), `${lineNum} is not an integer`);
     // --- patch lineNum to avoid duplicates
     while (this.hFound[lineNum]) {
       lineNum += 1000;
