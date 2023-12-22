@@ -8,7 +8,7 @@ import {
 	isNumber, isInteger, isString, isHash, isFunction, isBoolean,
 	isEmpty, nonEmpty, hEscNoNL, jsType, hasChar, quoted,
 	} from '@jdeighan/base-utils'
-import {toTAML} from '@jdeighan/base-utils/ll-taml'
+import {toTAML} from '@jdeighan/base-utils/taml'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {getMyOutsideCaller} from '@jdeighan/base-utils/ll-v8-stack'
 import {NamedLogs} from '@jdeighan/base-utils/named-logs'

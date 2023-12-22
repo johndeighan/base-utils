@@ -1,4 +1,4 @@
-# ll-taml.coffee
+# taml.coffee
 
 import {parse, stringify} from 'yaml'
 

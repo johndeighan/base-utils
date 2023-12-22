@@ -1,4 +1,4 @@
-// ll-taml.coffee
+// taml.coffee
 var compareFunc, myReplacer, squote;
 
 import {
@@ -207,4 +207,4 @@ squote = (text) => {
   return "'" + text.replace(/'/g, "''") + "'";
 };
 
-//# sourceMappingURL=ll-taml.js.map
+//# sourceMappingURL=taml.js.map

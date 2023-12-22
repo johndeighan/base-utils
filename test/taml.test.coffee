@@ -1,4 +1,4 @@
-# ll-taml.test.coffee
+# taml.test.coffee
 
 import test from 'ava'
 
@@ -8,7 +8,7 @@ import {
 import {
 	isTAML, toTAML, fromTAML,
 	llSplit, splitTaml, tamlFix, fixValStr,
-	} from '@jdeighan/base-utils/ll-taml'
+	} from '@jdeighan/base-utils/taml'
 
 # ---------------------------------------------------------------------------
 

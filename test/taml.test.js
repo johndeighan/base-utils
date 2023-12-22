@@ -1,4 +1,4 @@
-// ll-taml.test.coffee
+// taml.test.coffee
 var h;
 
 import test from 'ava';
@@ -20,7 +20,7 @@ import {
   splitTaml,
   tamlFix,
   fixValStr
-} from '@jdeighan/base-utils/ll-taml';
+} from '@jdeighan/base-utils/taml';
 
 // ---------------------------------------------------------------------------
 test("line 15", (t) => {
@@ -226,4 +226,4 @@ source: C:/Users/johnd/base-utils/test/v8-stack.test.js`;
   });
 })();
 
-//# sourceMappingURL=ll-taml.test.js.map
+//# sourceMappingURL=taml.test.js.map

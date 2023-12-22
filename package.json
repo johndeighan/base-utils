@@ -16,7 +16,7 @@
 		"./debug": "./src/lib/debug.js",
 		"./stack": "./src/lib/stack.js",
 		"./prefix": "./src/lib/prefix.js",
-		"./ll-taml": "./src/lib/ll-taml.js",
+		"./taml": "./src/lib/taml.js",
 		"./state-machine": "./src/lib/state-machine.js",
 		"./exceptions": "./src/lib/exceptions.js",
 		"./v8-stack": "./src/lib/v8-stack.js",

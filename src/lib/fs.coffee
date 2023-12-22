@@ -15,7 +15,7 @@ import {
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
-import {toTAML, fromTAML} from '@jdeighan/base-utils/ll-taml'
+import {toTAML, fromTAML} from '@jdeighan/base-utils/taml'
 import {
 	fixPath, mydir, mkpath, resolve, parsePath,
 	} from '@jdeighan/base-utils/ll-fs'

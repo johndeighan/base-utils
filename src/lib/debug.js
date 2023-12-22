@@ -48,7 +48,7 @@ import {
 
 import {
   toTAML
-} from '@jdeighan/base-utils/ll-taml';
+} from '@jdeighan/base-utils/taml';
 
 import {
   CallStack

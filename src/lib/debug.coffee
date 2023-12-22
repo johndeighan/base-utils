@@ -13,7 +13,7 @@ import {
 	LOG, LOGVALUE, stringFits, debugLogging,
 	clearMyLogs, getMyLogs, echoMyLogs,
 	} from '@jdeighan/base-utils/log'
-import {toTAML} from '@jdeighan/base-utils/ll-taml'
+import {toTAML} from '@jdeighan/base-utils/taml'
 import {CallStack} from '@jdeighan/base-utils/stack'
 
 export {debugLogging}

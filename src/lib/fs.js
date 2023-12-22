@@ -47,7 +47,7 @@ import {
 import {
   toTAML,
   fromTAML
-} from '@jdeighan/base-utils/ll-taml';
+} from '@jdeighan/base-utils/taml';
 
 import {
   fixPath,

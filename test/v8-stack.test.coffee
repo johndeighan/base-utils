@@ -4,7 +4,7 @@ import test from 'ava'
 
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {undef} from '@jdeighan/base-utils'
-import {fromTAML} from '@jdeighan/base-utils/ll-taml'
+import {fromTAML} from '@jdeighan/base-utils/taml'
 import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
 import {
 	getMyDirectCaller, getMyOutsideCaller,
