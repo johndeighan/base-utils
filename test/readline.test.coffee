@@ -29,7 +29,7 @@ testPath = mkpath(dir, 'test', 'readline.txt')
 	lLines = []
 	for line from iter
 		lLines.push line.toUpperCase()
-	test "line 29", (t) => t.deepEqual(lLines, ['ABC','DEF','GHI','JKL','MNO'])
+	test "line 32", (t) => t.deepEqual(lLines, ['ABC','DEF','GHI','JKL','MNO'])
 	)()
 
 # ---------------------------------------------------------------------------
@@ -50,7 +50,7 @@ testPath = mkpath(dir, 'test', 'readline.txt')
 			return undef
 
 	result = forEachItem countGenerator(), callback, {label: 'X'}
-	test "line 51", (t) => t.deepEqual(result, ['X 3', 'X 4'])
+	test "line 53", (t) => t.deepEqual(result, ['X 3', 'X 4'])
 	)()
 
 # ---------------------------------------------------------------------------
@@ -72,5 +72,5 @@ testPath = mkpath(dir, 'test', 'readline.txt')
 			return undef
 
 	result = forEachLineInFile testPath, callback, {label: '-->'}
-	test "line 74", (t) => t.deepEqual(result, ['--> def', '--> jkl'])
+	test "line 75", (t) => t.deepEqual(result, ['--> def', '--> jkl'])
 	)()

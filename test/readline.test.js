@@ -49,7 +49,7 @@ testPath = mkpath(dir, 'test', 'readline.txt');
   for (line of iter) {
     lLines.push(line.toUpperCase());
   }
-  return test("line 29", (t) => {
+  return test("line 32", (t) => {
     return t.deepEqual(lLines, ['ABC', 'DEF', 'GHI', 'JKL', 'MNO']);
   });
 })();
@@ -74,7 +74,7 @@ testPath = mkpath(dir, 'test', 'readline.txt');
   result = forEachItem(countGenerator(), callback, {
     label: 'X'
   });
-  return test("line 51", (t) => {
+  return test("line 53", (t) => {
     return t.deepEqual(result, ['X 3', 'X 4']);
   });
 })();
@@ -100,7 +100,7 @@ testPath = mkpath(dir, 'test', 'readline.txt');
   result = forEachLineInFile(testPath, callback, {
     label: '-->'
   });
-  return test("line 74", (t) => {
+  return test("line 75", (t) => {
     return t.deepEqual(result, ['--> def', '--> jkl']);
   });
 })();
