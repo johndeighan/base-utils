@@ -20,7 +20,7 @@ import {
 	fixPath, mydir, mkpath, resolve, parsePath,
 	} from '@jdeighan/base-utils/ll-fs'
 
-export {mydir, mkpath, resolve, parsePath}
+export {fixPath, mydir, mkpath, resolve, parsePath}
 
 # ---------------------------------------------------------------------------
 

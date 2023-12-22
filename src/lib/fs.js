@@ -58,6 +58,7 @@ import {
 } from '@jdeighan/base-utils/ll-fs';
 
 export {
+  fixPath,
   mydir,
   mkpath,
   resolve,
