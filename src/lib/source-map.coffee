@@ -1,6 +1,5 @@
 # source-map.coffee
 
-import deasync from 'deasync'
 import {readFileSync, existsSync} from 'node:fs'
 import {SourceMapConsumer} from 'source-map-js'
 

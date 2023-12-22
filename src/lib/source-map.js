@@ -1,8 +1,6 @@
 // source-map.coffee
 var hSourceMaps;
 
-import deasync from 'deasync';
-
 import {
   readFileSync,
   existsSync
