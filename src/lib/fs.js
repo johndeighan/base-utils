@@ -1,6 +1,4 @@
 // fs.coffee
-var allFilesIn;
-
 import pathLib from 'node:path';
 
 import urlLib from 'url';
@@ -388,7 +386,7 @@ export var parseSource = (source) => {
       filepath: source
     };
   } else {
-    assert(isFile(source), "source not a file or directory");
+    assert(isFile(source), `source ${source} not a file or directory`);
     hInfo = pathLib.parse(source);
     dir = hInfo.dir;
     if (dir) {
@@ -419,47 +417,48 @@ export var parseSource = (source) => {
 };
 
 // ---------------------------------------------------------------------------
-allFilesIn = function*(src) {
-  var ent, i, len1, ref;
+export var allFilesIn = function*(dir, recursive = true) {
+  var ent, hFileInfo, hOptions, i, len1, path, ref;
   // --- yields hFileInfo with keys:
   //        filepath, filename, stub, ext
-  // --- src must be full path to a file or directory
-  dbgEnter('allFilesIn', src);
-  if (isDir(src)) {
-    dbg(`DIR: ${src}`);
-    ref = fs.readdirSync(src, {
-      withFileTypes: true
-    });
-    for (i = 0, len1 = ref.length; i < len1; i++) {
-      ent = ref[i];
-      dbg("ENT:", ent);
-      if (ent.isFile()) {
-        yield parseSource(mkpath(src, ent.name));
-      } else if (ent.isDirectory()) {
-        yield* allFilesIn(ent.name);
-      }
+  // --- dir must be a directory
+  dbgEnter('allFilesIn', dir);
+  dbg(`DIR: ${dir}`);
+  assert(isDir(dir), `Not a directory: ${dir}`);
+  hOptions = {
+    withFileTypes: true,
+    recursive
+  };
+  ref = fs.readdirSync(dir, hOptions);
+  for (i = 0, len1 = ref.length; i < len1; i++) {
+    ent = ref[i];
+    dbg("ENT:", ent);
+    if (ent.isFile()) {
+      path = mkpath(ent.path, ent.name);
+      dbg(`PATH = ${path}`);
+      hFileInfo = parseSource(path);
+      dbg('hFileInfo', hFileInfo);
+      yield hFileInfo;
     }
-  } else if (isFile(src)) {
-    dbg(`FILE: ${src}`);
-    yield parseSource(src);
-  } else {
-    croak("Source not a file or directory");
   }
   dbgReturn('allFilesIn');
 };
 
 // ---------------------------------------------------------------------------
 export var FileProcessor = class FileProcessor {
-  constructor(src1, hOptions = {}) {
-    this.src = src1;
+  constructor(dir1, hOptions = {}) {
+    this.dir = dir1;
     // --- Valid options:
     //        debug
+    //        recursive
 
-    // --- convert src to a full path
-    assert(isString(this.src), "Source not a string");
-    this.src = pathLib.resolve(this.src);
+    // --- convert dir to a full path
+    assert(isString(this.dir), "Source not a string");
+    this.dir = pathLib.resolve(this.dir);
+    assert(isDir(this.dir), `Not a directory: ${this.dir}`);
     this.hOptions = getOptions(hOptions);
     this.debug = !!this.hOptions.debug;
+    this.recursive = !!this.hOptions.recursive;
     this.log("constructed");
   }
 
@@ -476,8 +475,14 @@ export var FileProcessor = class FileProcessor {
 
   // ..........................................................
   // --- called at beginning of @procAll()
-  init() {
-    this.log("init() called");
+  begin() {
+    this.log("begin() called");
+  }
+
+  // ..........................................................
+  // --- called at end of @procAll()
+  end() {
+    this.log("end() called");
   }
 
   // ..........................................................
@@ -488,32 +493,34 @@ export var FileProcessor = class FileProcessor {
   
     // ..........................................................
   procAll() {
-    var hFileInfo, ref;
-    if (this.debug) {
-      this.log("calling init()");
-    }
-    this.init();
-    // --- NOTE: If @src is a file, allFilesIn() will
-    //           only yield a single hFileInfo
-    this.log(`process all files in '${this.src}'`);
-    ref = allFilesIn(this.src);
+    var count, hFileInfo, name, ref;
+    this.begin();
+    this.log(`process all files in '${this.dir}'`);
+    count = 0;
+    ref = allFilesIn(this.dir, this.recursive);
     for (hFileInfo of ref) {
-      this.log(hFileInfo);
+      name = hFileInfo.fileName;
+      count += 1;
       if (this.filter(hFileInfo)) {
-        this.log(`Handle file ${hFileInfo.filepath}`);
+        this.log(`[${count}] ${name} - Handle`);
         this.handleFile(hFileInfo);
       } else {
-        this.log(`Removed by filter: ${hFileInfo.filepath}`);
+        this.log(`[${count}] ${name} - Skip`);
       }
     }
+    this.log(`${count} files processed`);
+    this.end();
   }
 
   // ..........................................................
-  // --- default handleFile() calls handleLine() for each line
-  handleFile(hFileInfo) {
+  beginFile(hFileInfo) {} // by default, does nothing
+
+  
+    // ..........................................................
+  procFile(hFileInfo) {
     var line, lineNum, ref, result;
     lineNum = 1;
-    ref = lineIterator(hFileInfo.filepath);
+    ref = lineIterator(hFileInfo.filePath);
     for (line of ref) {
       result = this.handleLine(line, lineNum, hFileInfo);
       switch (result) {
@@ -522,6 +529,19 @@ export var FileProcessor = class FileProcessor {
       }
       lineNum += 1;
     }
+  }
+
+  
+    // ..........................................................
+  endFile(hFileInfo) {} // by default, does nothing
+
+  
+    // ..........................................................
+  // --- default handleFile() calls handleLine() for each line
+  handleFile(hFileInfo) {
+    this.beginFile(hFileInfo);
+    this.procFile(hFileInfo);
+    this.endFile(hFileInfo);
   }
 
   // ..........................................................

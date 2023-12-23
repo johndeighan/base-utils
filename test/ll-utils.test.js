@@ -15,11 +15,6 @@ import {
   deepCopy
 } from '@jdeighan/base-utils/ll-utils';
 
-import {
-  getStack,
-  getCaller
-} from './templib.js';
-
 // ---------------------------------------------------------------------------
 test("line 13", (t) => {
   return t.is(undef, void 0);

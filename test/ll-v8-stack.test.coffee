@@ -8,7 +8,6 @@ import {
 import {
 	getV8Stack, getMyOutsideCaller, getMyDirectCaller,
 	} from '@jdeighan/base-utils/ll-v8-stack'
-import {getStack, getCaller} from './templib.js'
 
 # ---------------------------------------------------------------------------
 
@@ -68,21 +67,4 @@ import {getStack, getCaller} from './templib.js'
 			functionName: 'main'
 			fileName: 'll-v8-stack.test.js'
 			}
-	)()
-
-# ---------------------------------------------------------------------------
-
-(() ->
-	h = undef
-
-	main = () ->
-		func1()
-
-	func1 = () ->
-		h = getCaller()
-
-	test "line 82", (t) =>
-		main()
-		t.is h.fileName, 'll-v8-stack.test.js'
-		t.is h.line, 89      # --- from *.js file
 	)()

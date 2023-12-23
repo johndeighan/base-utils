@@ -4,7 +4,6 @@ import test from 'ava'
 
 import {undef, defined} from '@jdeighan/base-utils'
 import {getV8Stack, getV8StackStr} from '@jdeighan/base-utils/v8-stack'
-import {getStack, getCaller} from './templib.js'
 
 # ---------------------------------------------------------------------------
 
@@ -18,9 +17,9 @@ import {getStack, getCaller} from './templib.js'
 
 	test "line 19", (t) => t.is(await func1(), """
 		function at v8-stack.js:70:19
-		function at v8-stack-str.test.js:27:23
-		function at v8-stack-str.test.js:23:19
-		script at v8-stack-str.test.js:31:24
+		function at v8-stack-str.test.js:22:23
+		function at v8-stack-str.test.js:18:19
+		script at v8-stack-str.test.js:26:24
 		""")
 	)()
 
@@ -37,7 +36,7 @@ import {getStack, getCaller} from './templib.js'
 
 	test "line 38", (t) => t.is(await func1(), """
 		function at v8-stack.js:70:19
-		function at v8-stack-str.test.js:43:19
-		script at v8-stack-str.test.js:51:24
+		function at v8-stack-str.test.js:38:19
+		script at v8-stack-str.test.js:46:24
 		""")
 	)()

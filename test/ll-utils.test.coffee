@@ -6,7 +6,6 @@ import {
 	undef, pass, assert, defined, notdefined, alldefined,
 	isEmpty, nonEmpty, deepCopy,
 	} from '@jdeighan/base-utils/ll-utils'
-import {getStack, getCaller} from './templib.js'
 
 # ---------------------------------------------------------------------------
 

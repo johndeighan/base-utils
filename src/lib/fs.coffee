@@ -344,7 +344,7 @@ export parseSource = (source) =>
 			filepath: source
 			}
 	else
-		assert isFile(source), "source not a file or directory"
+		assert isFile(source), "source #{source} not a file or directory"
 		hInfo = pathLib.parse(source)
 		dir = hInfo.dir
 		if dir
@@ -376,25 +376,23 @@ export parseSource = (source) =>
 
 # ---------------------------------------------------------------------------
 
-allFilesIn = (src) ->
+export allFilesIn = (dir, recursive=true) ->
 	# --- yields hFileInfo with keys:
 	#        filepath, filename, stub, ext
-	# --- src must be full path to a file or directory
+	# --- dir must be a directory
 
-	dbgEnter 'allFilesIn', src
-	if isDir(src)
-		dbg "DIR: #{src}"
-		for ent in fs.readdirSync(src, {withFileTypes: true})
-			dbg "ENT:", ent
-			if ent.isFile()
-				yield parseSource(mkpath(src, ent.name))
-			else if ent.isDirectory()
-				yield from allFilesIn(ent.name)
-	else if isFile(src)
-		dbg "FILE: #{src}"
-		yield parseSource(src)
-	else
-		croak "Source not a file or directory"
+	dbgEnter 'allFilesIn', dir
+	dbg "DIR: #{dir}"
+	assert isDir(dir), "Not a directory: #{dir}"
+	hOptions = {withFileTypes: true, recursive}
+	for ent in fs.readdirSync(dir, hOptions)
+		dbg "ENT:", ent
+		if ent.isFile()
+			path = mkpath(ent.path, ent.name)
+			dbg "PATH = #{path}"
+			hFileInfo = parseSource(path)
+			dbg 'hFileInfo', hFileInfo
+			yield hFileInfo
 	dbgReturn 'allFilesIn'
 	return
 
@@ -402,16 +400,19 @@ allFilesIn = (src) ->
 
 export class FileProcessor
 
-	constructor: (@src, hOptions={}) ->
+	constructor: (@dir, hOptions={}) ->
 		# --- Valid options:
 		#        debug
+		#        recursive
 
-		# --- convert src to a full path
-		assert isString(@src), "Source not a string"
-		@src = pathLib.resolve(@src)
+		# --- convert dir to a full path
+		assert isString(@dir), "Source not a string"
+		@dir = pathLib.resolve(@dir)
+		assert isDir(@dir), "Not a directory: #{@dir}"
 
 		@hOptions = getOptions(hOptions)
 		@debug = !! @hOptions.debug
+		@recursive = !!@hOptions.recursive
 		@log "constructed"
 
 	# ..........................................................
@@ -428,9 +429,17 @@ export class FileProcessor
 	# ..........................................................
 	# --- called at beginning of @procAll()
 
-	init: () ->
+	begin: () ->
 
-		@log "init() called"
+		@log "begin() called"
+		return
+
+	# ..........................................................
+	# --- called at end of @procAll()
+
+	end: () ->
+
+		@log "end() called"
 		return
 
 	# ..........................................................
@@ -443,34 +452,55 @@ export class FileProcessor
 
 	procAll: () ->
 
-		if @debug
-			@log "calling init()"
-		@init()
+		@begin()
 
-		# --- NOTE: If @src is a file, allFilesIn() will
-		#           only yield a single hFileInfo
-		@log "process all files in '#{@src}'"
-		for hFileInfo from allFilesIn(@src)
-			@log hFileInfo
+		@log "process all files in '#{@dir}'"
+		count = 0
+		for hFileInfo from allFilesIn(@dir, @recursive)
+			name = hFileInfo.fileName
+			count += 1
 			if @filter(hFileInfo)
-				@log "Handle file #{hFileInfo.filepath}"
+				@log "[#{count}] #{name} - Handle"
 				@handleFile hFileInfo
 			else
-				@log "Removed by filter: #{hFileInfo.filepath}"
+				@log "[#{count}] #{name} - Skip"
+		@log "#{count} files processed"
+		@end()
 		return
 
 	# ..........................................................
-	# --- default handleFile() calls handleLine() for each line
 
-	handleFile: (hFileInfo) ->
+	beginFile: (hFileInfo) ->
+	
+		return    # by default, does nothing
 
+	# ..........................................................
+
+	procFile: (hFileInfo) ->
+	
 		lineNum = 1
-		for line from lineIterator(hFileInfo.filepath)
+		for line from lineIterator(hFileInfo.filePath)
 			result = @handleLine(line, lineNum, hFileInfo)
 			switch result
 				when 'abort'
 					return
 			lineNum += 1
+		return
+		
+	# ..........................................................
+
+	endFile: (hFileInfo) ->
+	
+		return   # by default, does nothing
+		
+	# ..........................................................
+	# --- default handleFile() calls handleLine() for each line
+
+	handleFile: (hFileInfo) ->
+
+		@beginFile hFileInfo
+		@procFile hFileInfo
+		@endFile hFileInfo
 		return
 
 	# ..........................................................

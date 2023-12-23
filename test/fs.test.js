@@ -136,22 +136,18 @@ mno`);
       super('./test');
     }
 
-    init() {
+    begin() {
       // --- We need to clear out hWords each time procAll() is called
       this.hWords = {};
     }
 
     filter(hFileInfo) {
       var ext, stub;
-      this.log("FILTER hFileInfo:");
-      this.log(hFileInfo);
       ({stub, ext} = hFileInfo);
-      this.log(`stub='${stub}' ext='${ext}'`);
       return (ext === '.txt') && stub.match(/^readline/);
     }
 
     handleLine(line) {
-      this.log(`HANDLE LINE: ${line}`);
       this.hWords[line.toUpperCase()] = true;
     }
 

@@ -76,20 +76,16 @@ test "line 65", (t) => t.is slurp(dir, 'test', 'readline.txt', {maxLines: 1000})
 		constructor: () ->
 			super './test'
 
-		init: () ->
+		begin: () ->
 			# --- We need to clear out hWords each time procAll() is called
 			@hWords = {}
 			return
 
 		filter: (hFileInfo) ->
-			@log "FILTER hFileInfo:"
-			@log hFileInfo
 			{stub, ext} = hFileInfo
-			@log "stub='#{stub}' ext='#{ext}'"
 			return (ext == '.txt') && stub.match(/^readline/)
 
 		handleLine: (line) ->
-			@log "HANDLE LINE: #{line}"
 			@hWords[line.toUpperCase()] = true
 			return
 

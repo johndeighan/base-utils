@@ -15,11 +15,6 @@ import {
   getMyDirectCaller
 } from '@jdeighan/base-utils/ll-v8-stack';
 
-import {
-  getStack,
-  getCaller
-} from './templib.js';
-
 // ---------------------------------------------------------------------------
 (function() {
   var func1, func2, main, stack1, stack2;
@@ -75,23 +70,6 @@ import {
       functionName: 'main',
       fileName: 'll-v8-stack.test.js'
     });
-  });
-})();
-
-// ---------------------------------------------------------------------------
-(function() {
-  var func1, h, main;
-  h = undef;
-  main = function() {
-    return func1();
-  };
-  func1 = function() {
-    return h = getCaller();
-  };
-  return test("line 82", (t) => {
-    main();
-    t.is(h.fileName, 'll-v8-stack.test.js');
-    return t.is(h.line, 89); // --- from *.js file
   });
 })();
 

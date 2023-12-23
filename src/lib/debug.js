@@ -80,6 +80,13 @@ logString = undef;
 
 logValue = undef;
 
+export var doDbg = true;
+
+// ---------------------------------------------------------------------------
+export var disableDbg = function() {
+  doDbg = false;
+};
+
 // ---------------------------------------------------------------------------
 export var clearDebugLog = () => {
   return clearMyLogs();
@@ -467,6 +474,9 @@ export var dbgResume = (funcName) => {
 
 // ---------------------------------------------------------------------------
 export var dbg = (...lArgs) => {
+  if (!doDbg) {
+    return;
+  }
   if (lArgs.length === 1) {
     return dbgString(lArgs[0]);
   } else {

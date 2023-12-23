@@ -34,6 +34,15 @@ logResume    = undef
 logString    = undef
 logValue     = undef
 
+export doDbg = true
+
+# ---------------------------------------------------------------------------
+
+export disableDbg = () ->
+
+	doDbg = false
+	return
+
 # ---------------------------------------------------------------------------
 
 export clearDebugLog = () =>
@@ -383,6 +392,8 @@ export dbgResume = (funcName) =>
 
 export dbg = (lArgs...) =>
 
+	if ! doDbg
+		return
 	if lArgs.length == 1
 		return dbgString lArgs[0]
 	else
