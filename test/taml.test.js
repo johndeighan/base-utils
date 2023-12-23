@@ -218,19 +218,46 @@ test("line 72", (t) => {
 (() => {
   var str;
   str = `---
-- en: sad
-	index: 5
-	type: adjective
-	zh: []`;
-  return test("line 124", (t) => {
+-
+	label: Help
+	url: /help
+-
+	label: Books
+	url: /books`;
+  return test("line 126", (t) => {
     return t.deepEqual(fromTAML(str), [
       {
-        en: 'sad',
-        index: 5,
-        type: 'adjective',
-        zh: []
+        label: 'Help',
+        url: '/help'
+      },
+      {
+        label: 'Books',
+        url: '/books'
       }
     ]);
+  });
+})();
+
+// ---------------------------------------------------------------------------
+(() => {
+  var str;
+  str = `---
+File:
+	lWalkTrees:
+		- program
+WhileStatement:
+	lWalkTrees:
+		- test
+		- body`;
+  return test("line 146", (t) => {
+    return t.deepEqual(fromTAML(str), {
+      File: {
+        lWalkTrees: ['program']
+      },
+      WhileStatement: {
+        lWalkTrees: ['test', 'body']
+      }
+    });
   });
 })();
 
@@ -241,7 +268,7 @@ test("line 72", (t) => {
 type: function
 funcName: main
 source: C:/Users/johnd/base-utils/test/v8-stack.test.js`;
-  return test("line 139", (t) => {
+  return test("line 166", (t) => {
     return t.deepEqual(fromTAML(str), {
       type: 'function',
       funcName: 'main',

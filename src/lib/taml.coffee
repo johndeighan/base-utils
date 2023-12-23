@@ -94,8 +94,8 @@ export splitTaml = (str) =>
 export tamlFix = (str) =>
 	# --- str has been trimmed
 
-	if (str == '-')
-		return '-'
+	if (str == '-') || str.match(/^[A-Za-z0-9_]+:$/)
+		return str
 	lParts = splitTaml(str)
 	result = lParts.join('')
 	return result
