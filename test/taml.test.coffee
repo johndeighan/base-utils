@@ -95,6 +95,25 @@ test "line 72", (t) => t.is toTAML(h), '---\nh:\n\t- a: 1\n\t- b: 2'
 
 (() =>
 	str = """
+	---
+	-
+		label: Help
+		url: /help
+	-
+		label: Books
+		url: /books
+	"""
+
+	test "line 107", (t) => t.deepEqual fromTAML(str), [
+		{ label: 'Help', url: '/help'}
+		{ label: 'Books', url: '/books'}
+		]
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() =>
+	str = """
 		---
 		- en: sad
 			index: 5
@@ -102,7 +121,7 @@ test "line 72", (t) => t.is toTAML(h), '---\nh:\n\t- a: 1\n\t- b: 2'
 			zh: []
 		"""
 
-	test "line 105", (t) => t.deepEqual fromTAML(str), [
+	test "line 124", (t) => t.deepEqual fromTAML(str), [
 		{ en: 'sad', index: 5, type: 'adjective', zh: []}
 		]
 	)()
@@ -117,7 +136,7 @@ test "line 72", (t) => t.is toTAML(h), '---\nh:\n\t- a: 1\n\t- b: 2'
 		source: C:/Users/johnd/base-utils/test/v8-stack.test.js
 		"""
 
-	test "line 120", (t) => t.deepEqual fromTAML(str), {
+	test "line 139", (t) => t.deepEqual fromTAML(str), {
 		type: 'function'
 		funcName: 'main'
 		source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'

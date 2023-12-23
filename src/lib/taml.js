@@ -38,7 +38,7 @@ export var isTAML = (text) => {
 // ---------------------------------------------------------------------------
 //   fromTAML - convert valid TAML string to a JavaScript value
 export var fromTAML = (text) => {
-  var _, block, err, i, j, lLines, len, line, prefix, ref, result, str;
+  var _, block, err, i, j, lLines, len, line, ref, result, str, ws;
   assert(defined(text), "text is undef");
   assert(isTAML(text), `string ${OL(text)} isn't TAML`);
   // --- TAML uses TAB characters for indentation
@@ -51,11 +51,11 @@ export var fromTAML = (text) => {
       assert(line === '---', "Invalid TAML marker");
       continue;
     }
-    [_, prefix, str] = line.match(/^(\s*)(.*)$/);
-    assert(!hasChar(prefix, ' '), `space char in prefix: ${OL(line)}`);
+    [_, ws, str] = line.match(/^(\s*)(.*)$/);
+    assert(!hasChar(ws, ' '), `space char in prefix: ${OL(line)}`);
     str = str.trim();
     // --- Convert each TAB char to 2 spaces
-    lLines.push('  '.repeat(prefix.length) + tamlFix(str));
+    lLines.push('  '.repeat(ws.length) + tamlFix(str));
   }
   block = arrayToBlock(lLines);
   try {
@@ -109,6 +109,9 @@ export var splitTaml = (str) => {
 export var tamlFix = (str) => {
   var lParts, result;
   // --- str has been trimmed
+  if (str === '-') {
+    return '-';
+  }
   lParts = splitTaml(str);
   result = lParts.join('');
   return result;

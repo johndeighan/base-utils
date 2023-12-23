@@ -194,11 +194,35 @@ test("line 72", (t) => {
 (() => {
   var str;
   str = `---
+-
+	label: Help
+	url: /help
+-
+	label: Books
+	url: /books`;
+  return test("line 107", (t) => {
+    return t.deepEqual(fromTAML(str), [
+      {
+        label: 'Help',
+        url: '/help'
+      },
+      {
+        label: 'Books',
+        url: '/books'
+      }
+    ]);
+  });
+})();
+
+// ---------------------------------------------------------------------------
+(() => {
+  var str;
+  str = `---
 - en: sad
 	index: 5
 	type: adjective
 	zh: []`;
-  return test("line 105", (t) => {
+  return test("line 124", (t) => {
     return t.deepEqual(fromTAML(str), [
       {
         en: 'sad',
@@ -217,7 +241,7 @@ test("line 72", (t) => {
 type: function
 funcName: main
 source: C:/Users/johnd/base-utils/test/v8-stack.test.js`;
-  return test("line 120", (t) => {
+  return test("line 139", (t) => {
     return t.deepEqual(fromTAML(str), {
       type: 'function',
       funcName: 'main',

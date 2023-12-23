@@ -31,12 +31,12 @@ export fromTAML = (text) =>
 		if (i == 0)
 			assert (line == '---'), "Invalid TAML marker"
 			continue
-		[_, prefix, str] = line.match(/^(\s*)(.*)$/)
-		assert ! hasChar(prefix, ' '), "space char in prefix: #{OL(line)}"
+		[_, ws, str] = line.match(/^(\s*)(.*)$/)
+		assert ! hasChar(ws, ' '), "space char in prefix: #{OL(line)}"
 		str = str.trim()
 
 		# --- Convert each TAB char to 2 spaces
-		lLines.push '  '.repeat(prefix.length) + tamlFix(str)
+		lLines.push '  '.repeat(ws.length) + tamlFix(str)
 
 	block = arrayToBlock(lLines)
 	try
@@ -94,6 +94,8 @@ export splitTaml = (str) =>
 export tamlFix = (str) =>
 	# --- str has been trimmed
 
+	if (str == '-')
+		return '-'
 	lParts = splitTaml(str)
 	result = lParts.join('')
 	return result
