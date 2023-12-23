@@ -66,6 +66,8 @@ export var fromTAML = (text) => {
     err = error;
     console.log('---------------------------------------');
     console.log("ERROR in TAML:");
+    console.log(text);
+    console.log("BLOCK:");
     console.log(block);
     console.log('---------------------------------------');
   }

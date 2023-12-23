@@ -44,6 +44,8 @@ export fromTAML = (text) =>
 	catch err
 		console.log '---------------------------------------'
 		console.log "ERROR in TAML:"
+		console.log text
+		console.log "BLOCK:"
 		console.log block
 		console.log '---------------------------------------'
 	return result
