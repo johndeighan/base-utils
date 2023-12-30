@@ -48,97 +48,102 @@ export var extractFileName = (filePath) => {
 
 // ---------------------------------------------------------------------------
 export var getV8Stack = (hOptions = {}) => {
-  var debug, lStackFrames, oldLimit, oldPreparer;
+  var debug, e, lStackFrames, oldLimit, oldPreparer;
   // --- ignores any stack frames from this module
   debug = hOptions.debug || false;
-  oldLimit = Error.stackTraceLimit;
-  oldPreparer = Error.prepareStackTrace;
-  Error.stackTraceLimit = 2e308;
-  Error.prepareStackTrace = (error, lCallSites) => {
-    var column, filePath, fileURL, functionName, hFrame, hParsed, i, lFrames, len, line, methodName, oSite, objType, pos, thisVal, type;
-    lFrames = [];
-    for (i = 0, len = lCallSites.length; i < len; i++) {
-      oSite = lCallSites[i];
-      fileURL = oSite.getFileName();
-      if (defined(fileURL)) {
-        hParsed = parseFileURL(fileURL);
-        filePath = hParsed.source;
-      }
-      if ((typeof filePath === 'string') && (filePath.length > 0)) {
-        // --- Ignore any stack entries from this module
-        pos = filePath.indexOf('ll-v8-stack.js');
-        if (pos >= 0) {
-          if (debug) {
-            console.log(`SKIP: filePath = '${filePath}'`);
-          }
-          continue;
+  try {
+    oldLimit = Error.stackTraceLimit;
+    oldPreparer = Error.prepareStackTrace;
+    Error.stackTraceLimit = 2e308;
+    Error.prepareStackTrace = (error, lCallSites) => {
+      var column, filePath, fileURL, functionName, hFrame, hParsed, i, lFrames, len, line, methodName, oSite, objType, pos, thisVal, type;
+      lFrames = [];
+      for (i = 0, len = lCallSites.length; i < len; i++) {
+        oSite = lCallSites[i];
+        fileURL = oSite.getFileName();
+        if (defined(fileURL)) {
+          hParsed = parseFileURL(fileURL);
+          filePath = hParsed.source;
         }
-      }
-      objType = oSite.getTypeName();
-      thisVal = oSite.getThis();
-      functionName = oSite.getFunctionName();
-      methodName = oSite.getMethodName();
-      line = oSite.getLineNumber();
-      column = oSite.getColumnNumber();
-      // --- Set type
-      if (oSite.isEval()) {
-        type = 'eval';
-      } else if (oSite.isNative()) {
-        type = 'native';
-      } else if (oSite.isConstructor()) {
-        type = 'constructor';
-      } else if (defined(methodName)) {
-        type = 'method';
-      } else {
-        type = 'function';
-      }
-      if (debug) {
-        console.log('-'.repeat(40));
-        console.log(`type = '${type}'`);
-        console.log(`objType = '${objType}'`);
-        console.log(`filePath = '${filePath}'`);
-        console.log(`functionName = '${functionName}'`);
-        console.log(`methodName = '${methodName}'`);
-        console.log(`at ${line}:${column}`);
-      }
-      // --- Ignore this entry and any before it
-      if (objType === 'ModuleJob') {
-        break;
-      }
-      hFrame = {
-        type,
-        filePath,
-        fileName: extractFileName(filePath),
-        functionName,
-        line,
-        column,
-        isAsync: oSite.isAsync()
-      };
-      if (type === 'method') {
-        hFrame.objType = objType;
-        hFrame.methodName = methodName;
-      }
-      // --- If main body of a script, stop here
-      if ((type === 'function') && notdefined(functionName)) {
-        hFrame.type = 'script';
-        delete hFrame.functionName;
+        if ((typeof filePath === 'string') && (filePath.length > 0)) {
+          // --- Ignore any stack entries from this module
+          pos = filePath.indexOf('ll-v8-stack.js');
+          if (pos >= 0) {
+            if (debug) {
+              console.log(`SKIP: filePath = '${filePath}'`);
+            }
+            continue;
+          }
+        }
+        objType = oSite.getTypeName();
+        thisVal = oSite.getThis();
+        functionName = oSite.getFunctionName();
+        methodName = oSite.getMethodName();
+        line = oSite.getLineNumber();
+        column = oSite.getColumnNumber();
+        // --- Set type
+        if (oSite.isEval()) {
+          type = 'eval';
+        } else if (oSite.isNative()) {
+          type = 'native';
+        } else if (oSite.isConstructor()) {
+          type = 'constructor';
+        } else if (defined(methodName)) {
+          type = 'method';
+        } else {
+          type = 'function';
+        }
+        if (debug) {
+          console.log('-'.repeat(40));
+          console.log(`type = '${type}'`);
+          console.log(`objType = '${objType}'`);
+          console.log(`filePath = '${filePath}'`);
+          console.log(`functionName = '${functionName}'`);
+          console.log(`methodName = '${methodName}'`);
+          console.log(`at ${line}:${column}`);
+        }
+        // --- Ignore this entry and any before it
+        if (objType === 'ModuleJob') {
+          break;
+        }
+        hFrame = {
+          type,
+          filePath,
+          fileName: extractFileName(filePath),
+          functionName,
+          line,
+          column,
+          isAsync: oSite.isAsync()
+        };
+        if (type === 'method') {
+          hFrame.objType = objType;
+          hFrame.methodName = methodName;
+        }
+        // --- If main body of a script, stop here
+        if ((type === 'function') && notdefined(functionName)) {
+          hFrame.type = 'script';
+          delete hFrame.functionName;
+          lFrames.push(hFrame);
+          break;
+        }
+        hParsed = pathLib.parse(filePath);
+        hFrame.dir = hParsed.dir;
+        hFrame.stub = hParsed.name;
+        hFrame.ext = hParsed.ext;
+        mapSourcePos(hFrame);
         lFrames.push(hFrame);
-        break;
       }
-      hParsed = pathLib.parse(filePath);
-      hFrame.dir = hParsed.dir;
-      hFrame.stub = hParsed.name;
-      hFrame.ext = hParsed.ext;
-      mapSourcePos(hFrame);
-      lFrames.push(hFrame);
-    }
-    return lFrames;
-  };
-  lStackFrames = new Error().stack;
-  assert(lStackFrames.length > 0, "lStackFrames is empty!");
-  // --- reset to previous values
-  Error.stackTraceLimit = oldLimit;
-  Error.prepareStackTrace = oldPreparer;
+      return lFrames;
+    };
+    lStackFrames = new Error().stack;
+    assert(lStackFrames.length > 0, "lStackFrames is empty!");
+    // --- reset to previous values
+    Error.stackTraceLimit = oldLimit;
+    Error.prepareStackTrace = oldPreparer;
+  } catch (error1) {
+    e = error1;
+    return [];
+  }
   return lStackFrames;
 };
 
