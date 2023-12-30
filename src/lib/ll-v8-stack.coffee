@@ -3,8 +3,9 @@
 import pathLib from 'node:path'
 
 import {
-	undef, defined, notdefined, alldefined, assert,
+	undef, defined, notdefined, alldefined,
 	} from '@jdeighan/base-utils/ll-utils'
+import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {mapSourcePos} from '@jdeighan/base-utils/source-map'
 
 # ---------------------------------------------------------------------------
