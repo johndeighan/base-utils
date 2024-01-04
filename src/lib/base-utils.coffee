@@ -9,6 +9,7 @@ import {
 	} from '@jdeighan/base-utils/ll-utils'
 
 export {pass, undef, defined, notdefined, isEmpty, nonEmpty, deepCopy}
+export LOG = console.log
 
 # ---------------------------------------------------------------------------
 
@@ -963,3 +964,22 @@ export hit = (pct) ->
 export choose = (lItems) ->
 
 	return lItems[Math.floor(Math.random()*lItems.length)]
+
+# ---------------------------------------------------------------------------
+# --- shuffle an array in place
+
+export shuffle = (lItems) ->
+
+	i = lItems.length
+
+	# --- While there remain elements to shuffle.
+	while (i > 0)
+
+		# --- Pick a remaining element.
+		i2 = Math.floor(Math.random() * i)
+		i -= 1
+
+		# --- And swap it with the current element.
+		[lItems[i], lItems[i2]] = [lItems[i2], lItems[i]];
+
+	return

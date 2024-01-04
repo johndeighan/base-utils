@@ -16,7 +16,8 @@ import {
 	oneof, uniq, rtrunc, ltrunc, CWS, className,
 	isArrayOfStrings, isArrayOfHashes, isArrayOfArrays,
 	forEachLine, mapEachLine, getProxy, sleep, schedule,
-	eachCharInString, runCmd, hit, choose,
+	eachCharInString, runCmd, hit, choose, shuffle,
+	deepCopy,
 	} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
@@ -1034,3 +1035,10 @@ lItems = ['apple','orange','pear']
 utest.truthy 1034, lItems.includes(choose(lItems))
 utest.truthy 1035, lItems.includes(choose(lItems))
 utest.truthy 1036, lItems.includes(choose(lItems))
+
+lShuffled = deepCopy(lItems)
+shuffle(lShuffled)
+utest.truthy 1039, lShuffled.includes('apple')
+utest.truthy 1040, lShuffled.includes('orange')
+utest.truthy 1041, lShuffled.includes('pear')
+utest.truthy 1042, lShuffled.length == lItems.length

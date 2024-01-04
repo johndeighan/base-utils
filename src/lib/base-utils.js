@@ -29,6 +29,8 @@ export {
   deepCopy
 };
 
+export var LOG = console.log;
+
 // ---------------------------------------------------------------------------
 export var runCmd = (cmd) => {
   var err, result;
@@ -1123,6 +1125,21 @@ export var hit = function(pct) {
 // ---------------------------------------------------------------------------
 export var choose = function(lItems) {
   return lItems[Math.floor(Math.random() * lItems.length)];
+};
+
+// ---------------------------------------------------------------------------
+// --- shuffle an array in place
+export var shuffle = function(lItems) {
+  var i, i2;
+  i = lItems.length;
+  // --- While there remain elements to shuffle.
+  while (i > 0) {
+    // --- Pick a remaining element.
+    i2 = Math.floor(Math.random() * i);
+    i -= 1;
+    // --- And swap it with the current element.
+    [lItems[i], lItems[i2]] = [lItems[i2], lItems[i]];
+  }
 };
 
 //# sourceMappingURL=base-utils.js.map
