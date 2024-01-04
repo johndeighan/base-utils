@@ -1115,4 +1115,14 @@ export var schedule = (secs, keyVal, func, ...lArgs) => {
   hTimers[keyVal] = setTimeout(func, 1000 * secs, ...lArgs);
 };
 
+// ---------------------------------------------------------------------------
+export var hit = function(pct) {
+  return Math.random() * 100 < pct;
+};
+
+// ---------------------------------------------------------------------------
+export var choose = function(lItems) {
+  return lItems[Math.floor(Math.random() * lItems.length)];
+};
+
 //# sourceMappingURL=base-utils.js.map

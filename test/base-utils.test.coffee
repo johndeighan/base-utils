@@ -16,7 +16,7 @@ import {
 	oneof, uniq, rtrunc, ltrunc, CWS, className,
 	isArrayOfStrings, isArrayOfHashes, isArrayOfArrays,
 	forEachLine, mapEachLine, getProxy, sleep, schedule,
-	eachCharInString, runCmd,
+	eachCharInString, runCmd, hit, choose,
 	} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
@@ -1026,3 +1026,11 @@ utest.falsy  1022, eachCharInString 'AbC', (ch) => ch == ch.toUpperCase()
 
 utest.equal 1027, runCmd("echo abc"), "abc\r\n"
 utest.equal 1028, runCmd("noSuchCmd"), undef
+
+# ---------------------------------------------------------------------------
+# test choose()
+
+lItems = ['apple','orange','pear']
+utest.truthy 1034, lItems.includes(choose(lItems))
+utest.truthy 1035, lItems.includes(choose(lItems))
+utest.truthy 1036, lItems.includes(choose(lItems))

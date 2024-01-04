@@ -1,5 +1,5 @@
 // base-utils.test.coffee
-var gen, hEsc, hProc;
+var gen, hEsc, hProc, lItems;
 
 import test from 'ava';
 
@@ -69,7 +69,9 @@ import {
   sleep,
   schedule,
   eachCharInString,
-  runCmd
+  runCmd,
+  hit,
+  choose
 } from '@jdeighan/base-utils';
 
 // ---------------------------------------------------------------------------
@@ -1717,5 +1719,15 @@ utest.falsy(1022, eachCharInString('AbC', (ch) => {
 utest.equal(1027, runCmd("echo abc"), "abc\r\n");
 
 utest.equal(1028, runCmd("noSuchCmd"), undef);
+
+// ---------------------------------------------------------------------------
+// test choose()
+lItems = ['apple', 'orange', 'pear'];
+
+utest.truthy(1034, lItems.includes(choose(lItems)));
+
+utest.truthy(1035, lItems.includes(choose(lItems)));
+
+utest.truthy(1036, lItems.includes(choose(lItems)));
 
 //# sourceMappingURL=base-utils.test.js.map

@@ -951,3 +951,15 @@ export schedule = (secs, keyVal, func, lArgs...) =>
 		clearTimeout timer
 	hTimers[keyVal] = setTimeout(func, 1000 * secs, lArgs...)
 	return
+
+# ---------------------------------------------------------------------------
+
+export hit = (pct) ->
+
+	return Math.random() * 100 < pct
+
+# ---------------------------------------------------------------------------
+
+export choose = (lItems) ->
+
+	return lItems[Math.floor(Math.random()*lItems.length)]
