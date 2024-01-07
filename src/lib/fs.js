@@ -481,6 +481,7 @@ export var allFilesIn = function*(dir, hOptions = {}) {
       path = mkpath(ent.path, ent.name);
       dbg(`PATH = ${path}`);
       hFileInfo = parseSource(path);
+      assert(defined(hFileInfo), "allFilesIn(): hFileInfo = undef");
       if (eager) {
         hContents = getTextFileContents(hFileInfo.filePath);
         Object.assign(hFileInfo, hContents);
@@ -569,6 +570,7 @@ export var FileProcessor = class FileProcessor {
     // ..........................................................
   procFile(hFileInfo) {
     var line, lineNum, ref, result;
+    assert(defined(hFileInfo), "procFile(): hFileInfo = undef");
     lineNum = 1;
     ref = allLinesIn(hFileInfo.filePath);
     for (line of ref) {
