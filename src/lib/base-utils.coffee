@@ -846,9 +846,35 @@ export getDateStr = (date=undef) =>
 
 # ---------------------------------------------------------------------------
 
-export timestamp = () =>
+export timestamp = (dateStr=undef, locale='en-US') =>
 
-	return new Date().toLocaleTimeString("en-US")
+	if defined(dateStr)
+		date = new Date(dateStr)
+	else
+		date = new Date()
+	str1 = date.toLocaleDateString(locale)
+	str2 = date.toLocaleTimeString(locale)
+	return "#{str1} #{str2}"
+
+# ---------------------------------------------------------------------------
+
+export msSinceEpoch = (dateStr=undef) =>
+
+	if defined(dateStr)
+		date = new Date(dateStr)
+	else
+		date = new Date()
+	return date.getTime()
+
+# ---------------------------------------------------------------------------
+
+export formatDate = (dateStr=undef, dateStyle='medium', locale='en-US') =>
+
+	if defined(dateStr)
+		date = new Date(dateStr)
+	else
+		date = new Date()
+	return new Intl.DateTimeFormat(locale, {dateStyle}).format(date)
 
 # ---------------------------------------------------------------------------
 

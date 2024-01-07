@@ -1003,8 +1003,38 @@ export var getDateStr = (date = undef) => {
 };
 
 // ---------------------------------------------------------------------------
-export var timestamp = () => {
-  return new Date().toLocaleTimeString("en-US");
+export var timestamp = (dateStr = undef, locale = 'en-US') => {
+  var date, str1, str2;
+  if (defined(dateStr)) {
+    date = new Date(dateStr);
+  } else {
+    date = new Date();
+  }
+  str1 = date.toLocaleDateString(locale);
+  str2 = date.toLocaleTimeString(locale);
+  return `${str1} ${str2}`;
+};
+
+// ---------------------------------------------------------------------------
+export var msSinceEpoch = (dateStr = undef) => {
+  var date;
+  if (defined(dateStr)) {
+    date = new Date(dateStr);
+  } else {
+    date = new Date();
+  }
+  return date.getTime();
+};
+
+// ---------------------------------------------------------------------------
+export var formatDate = (dateStr = undef, dateStyle = 'medium', locale = 'en-US') => {
+  var date;
+  if (defined(dateStr)) {
+    date = new Date(dateStr);
+  } else {
+    date = new Date();
+  }
+  return new Intl.DateTimeFormat(locale, {dateStyle}).format(date);
 };
 
 // ---------------------------------------------------------------------------

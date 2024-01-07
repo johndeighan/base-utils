@@ -17,7 +17,7 @@ import {
 	isArrayOfStrings, isArrayOfHashes, isArrayOfArrays,
 	forEachLine, mapEachLine, getProxy, sleep, schedule,
 	eachCharInString, runCmd, hit, choose, shuffle,
-	deepCopy,
+	deepCopy, timestamp, msSinceEpoch, formatDate,
 	} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
@@ -1042,3 +1042,8 @@ utest.truthy 1039, lShuffled.includes('apple')
 utest.truthy 1040, lShuffled.includes('orange')
 utest.truthy 1041, lShuffled.includes('pear')
 utest.truthy 1042, lShuffled.length == lItems.length
+
+dateStr = '2023-01-01 05:00:00'
+utest.equal 1047, timestamp(dateStr), "1/1/2023 5:00:00 AM"
+utest.equal 1048, msSinceEpoch(dateStr), 1672567200000
+utest.equal 1049, formatDate(dateStr), "Jan 1, 2023"
