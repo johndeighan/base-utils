@@ -119,20 +119,17 @@ test "line 65", (t) => t.is slurp(dir, 'test', 'readline.txt', {maxLines: 1000})
 # --- test allFilesIn
 
 (() =>
-	lNames = []
-	for hFileInfo from allFilesIn('./test/test', {})
-		name = hFileInfo.fileName
-		h = {name}
-		Object.assign(h, getTextFileContents(hFileInfo.filePath))
-		lNames.push h
+	lFiles = []
+	for hFileInfo from allFilesIn('./test/test', {eager: true})
+		lFiles.push hFileInfo
 
-	test "line 99", (t) => t.deepEqual(lNames, [
-		{name: 'file1.txt', metadata: undef, lLines: ['DONE']}
-		{name: 'file1.zh',  metadata: undef, lLines: ['DONE']}
-		{name: 'file2.txt', metadata: undef, lLines: ['DONE']}
-		{name: 'file2.zh',  metadata: undef, lLines: ['DONE']}
+	test "line 99", (t) => t.like(lFiles, [
+		{fileName: 'file1.txt', metadata: undef, lLines: ['DONE']}
+		{fileName: 'file1.zh',  metadata: undef, lLines: ['DONE']}
+		{fileName: 'file2.txt', metadata: undef, lLines: ['DONE']}
+		{fileName: 'file2.zh',  metadata: undef, lLines: ['DONE']}
 		{
-			name: 'file3.txt'
+			fileName: 'file3.txt'
 			metadata: {fName: 'John', lName: 'Deighan'}
 			lLines: ['','This is a test']
 			}

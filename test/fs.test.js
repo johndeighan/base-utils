@@ -187,42 +187,39 @@ mno`);
 
 // ---------------------------------------------------------------------------
 // --- test allFilesIn
-
-  // setDebugging 'allFilesIn'
 (() => {
-  var h, hFileInfo, lNames, name, ref;
-  lNames = [];
-  ref = allFilesIn('./test/test', {});
+  var hFileInfo, lFiles, ref;
+  lFiles = [];
+  ref = allFilesIn('./test/test', {
+    eager: true
+  });
   for (hFileInfo of ref) {
-    name = hFileInfo.fileName;
-    h = {name};
-    Object.assign(h, getTextFileContents(hFileInfo.filePath));
-    lNames.push(h);
+    lFiles.push(hFileInfo);
   }
   return test("line 99", (t) => {
-    return t.deepEqual(lNames, [
+    return t.like(lFiles, [
       {
-        name: 'file1.txt',
+        fileName: 'file1.txt',
         metadata: undef,
         lLines: ['DONE']
       },
       {
-        name: 'file1.zh',
+        fileName: 'file1.zh',
         metadata: undef,
         lLines: ['DONE']
       },
       {
-        name: 'file2.txt',
+        fileName: 'file2.txt',
         metadata: undef,
         lLines: ['DONE']
       },
       {
-        name: 'file2.zh',
+        fileName: 'file2.zh',
         metadata: undef,
         lLines: ['DONE']
       },
       {
-        name: 'file3.txt',
+        fileName: 'file3.txt',
         metadata: {
           fName: 'John',
           lName: 'Deighan'
