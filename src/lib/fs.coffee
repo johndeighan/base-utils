@@ -9,7 +9,7 @@ import {
 import NReadLines from 'n-readlines'
 
 import {
-	undef, defined, nonEmpty, toBlock, getOptions,
+	undef, defined, nonEmpty, toBlock, toArray, getOptions,
 	isString, isHash, isArray, isIterable,
 	} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
@@ -297,12 +297,14 @@ export forEachItem = (iter, func, hContext={}) =>
 
 # ---------------------------------------------------------------------------
 
-export lineIterator = (filepath) ->
+export allLinesIn = (filepath) ->
 
 	reader = new NReadLines(filepath)
 	while (buffer = reader.next())
 		yield buffer.toString().replace(/\r/g, '')
 	return
+
+export lineIterator = allLinesIn     # for backward compatibility
 
 # ---------------------------------------------------------------------------
 
@@ -317,7 +319,7 @@ export forEachLineInFile = (filepath, func, hContext={}) =>
 		hContext.lineNum = hContext.index + 1
 		return func(line, hContext)
 
-	return forEachItem(lineIterator(filepath), linefunc, hContext)
+	return forEachItem(allLinesIn(filepath), linefunc, hContext)
 
 # ---------------------------------------------------------------------------
 
@@ -376,13 +378,54 @@ export parseSource = (source) =>
 
 # ---------------------------------------------------------------------------
 
-export allFilesIn = (dir, recursive=true) ->
-	# --- yields hFileInfo with keys:
-	#        filepath, filename, stub, ext
-	# --- dir must be a directory
+export getTextFileContents = (filePath) =>
 
-	dbgEnter 'allFilesIn', dir
-	dbg "DIR: #{dir}"
+	dbgEnter 'getTextFileContents', filePath
+	lMetaLines = undef
+	inMeta = false
+
+	lLines = []
+
+	numLines = 0
+	for line from allLinesIn(filePath)
+		if (numLines == 0) && (line == '---')
+			lMetaLines = ['---']
+			inMeta = true
+		else if inMeta
+			if (line == '---')
+				inMeta = false
+			else
+				lMetaLines.push line
+		else
+			lLines.push line
+		numLines += 1
+
+	if defined(lMetaLines)
+		metadata = fromTAML(toBlock(lMetaLines))
+	else
+		metadata = undef
+	hResult = {
+		metadata
+		lLines
+		}
+	dbgReturn 'getTextFileContents', hResult
+	return hResult
+
+# ---------------------------------------------------------------------------
+
+export allFilesIn = (dir, hOptions={}) ->
+	# --- yields hFileInfo with keys:
+	#        filepath, filename, stub, ext, metadata, contents
+	# --- dir must be a directory
+	# --- Valid options:
+	#        recursive - descend into subdirectories
+	#        eager - read the file and add keys metadata, contents
+
+	dbgEnter 'allFilesIn', dir, hOptions
+	{recursive, eager} = getOptions(hOptions, {
+		recursive: true
+		eager: false
+		})
 	assert isDir(dir), "Not a directory: #{dir}"
 	hOptions = {withFileTypes: true, recursive}
 	for ent in fs.readdirSync(dir, hOptions)
@@ -391,6 +434,9 @@ export allFilesIn = (dir, recursive=true) ->
 			path = mkpath(ent.path, ent.name)
 			dbg "PATH = #{path}"
 			hFileInfo = parseSource(path)
+			if eager
+				hContents = getTextFileContents(hFileInfo.filePath)
+				Object.assign hFileInfo, hContents
 			dbg 'hFileInfo', hFileInfo
 			yield hFileInfo
 	dbgReturn 'allFilesIn'
@@ -456,7 +502,7 @@ export class FileProcessor
 
 		@log "process all files in '#{@dir}'"
 		count = 0
-		for hFileInfo from allFilesIn(@dir, @recursive)
+		for hFileInfo from allFilesIn(@dir, {recursive: @recursive})
 			name = hFileInfo.fileName
 			count += 1
 			if @filter(hFileInfo)
@@ -471,28 +517,28 @@ export class FileProcessor
 	# ..........................................................
 
 	beginFile: (hFileInfo) ->
-	
+
 		return    # by default, does nothing
 
 	# ..........................................................
 
 	procFile: (hFileInfo) ->
-	
+
 		lineNum = 1
-		for line from lineIterator(hFileInfo.filePath)
+		for line from allLinesIn(hFileInfo.filePath)
 			result = @handleLine(line, lineNum, hFileInfo)
 			switch result
 				when 'abort'
 					return
 			lineNum += 1
 		return
-		
+
 	# ..........................................................
 
 	endFile: (hFileInfo) ->
-	
+
 		return   # by default, does nothing
-		
+
 	# ..........................................................
 	# --- default handleFile() calls handleLine() for each line
 

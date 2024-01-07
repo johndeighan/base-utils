@@ -26,7 +26,9 @@ import {
   forEachFileInDir,
   forEachItem,
   forEachLineInFile,
-  FileProcessor
+  FileProcessor,
+  getTextFileContents,
+  allFilesIn
 } from '@jdeighan/base-utils/fs';
 
 dir = process.cwd(); // should be root directory of @jdeighan/base-utils
@@ -163,6 +165,72 @@ mno`);
       'MNO': true,
       'PQR': true
     });
+  });
+})();
+
+// ---------------------------------------------------------------------------
+// --- test getTextFileContents
+(() => {
+  var h, path;
+  path = "./test/test/file3.txt";
+  h = getTextFileContents(path);
+  return test("line 112", (t) => {
+    return t.deepEqual(h, {
+      metadata: {
+        fName: 'John',
+        lName: 'Deighan'
+      },
+      lLines: ['', 'This is a test']
+    });
+  });
+})();
+
+// ---------------------------------------------------------------------------
+// --- test allFilesIn
+
+  // setDebugging 'allFilesIn'
+(() => {
+  var h, hFileInfo, lNames, name, ref;
+  lNames = [];
+  ref = allFilesIn('./test/test', {});
+  for (hFileInfo of ref) {
+    name = hFileInfo.fileName;
+    h = {name};
+    Object.assign(h, getTextFileContents(hFileInfo.filePath));
+    lNames.push(h);
+  }
+  return test("line 99", (t) => {
+    return t.deepEqual(lNames, [
+      {
+        name: 'file1.txt',
+        metadata: undef,
+        lLines: ['DONE']
+      },
+      {
+        name: 'file1.zh',
+        metadata: undef,
+        lLines: ['DONE']
+      },
+      {
+        name: 'file2.txt',
+        metadata: undef,
+        lLines: ['DONE']
+      },
+      {
+        name: 'file2.zh',
+        metadata: undef,
+        lLines: ['DONE']
+      },
+      {
+        name: 'file3.txt',
+        metadata: {
+          fName: 'John',
+          lName: 'Deighan'
+        },
+        lLines: ['',
+      'This is a test']
+      }
+    ]);
   });
 })();
 

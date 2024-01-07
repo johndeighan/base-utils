@@ -19,6 +19,7 @@ import {
   defined,
   nonEmpty,
   toBlock,
+  toArray,
   getOptions,
   isString,
   isHash,
@@ -339,13 +340,16 @@ export var forEachItem = (iter, func, hContext = {}) => {
 };
 
 // ---------------------------------------------------------------------------
-export var lineIterator = function*(filepath) {
+export var allLinesIn = function*(filepath) {
   var buffer, reader;
   reader = new NReadLines(filepath);
   while ((buffer = reader.next())) {
     yield buffer.toString().replace(/\r/g, '');
   }
 };
+
+export var lineIterator = allLinesIn; // for backward compatibility
+
 
 // ---------------------------------------------------------------------------
 export var forEachLineInFile = (filepath, func, hContext = {}) => {
@@ -359,7 +363,7 @@ export var forEachLineInFile = (filepath, func, hContext = {}) => {
     hContext.lineNum = hContext.index + 1;
     return func(line, hContext);
   };
-  return forEachItem(lineIterator(filepath), linefunc, hContext);
+  return forEachItem(allLinesIn(filepath), linefunc, hContext);
 };
 
 // ---------------------------------------------------------------------------
@@ -417,13 +421,53 @@ export var parseSource = (source) => {
 };
 
 // ---------------------------------------------------------------------------
-export var allFilesIn = function*(dir, recursive = true) {
-  var ent, hFileInfo, hOptions, i, len1, path, ref;
+export var getTextFileContents = (filePath) => {
+  var hResult, inMeta, lLines, lMetaLines, line, metadata, numLines, ref;
+  dbgEnter('getTextFileContents', filePath);
+  lMetaLines = undef;
+  inMeta = false;
+  lLines = [];
+  numLines = 0;
+  ref = allLinesIn(filePath);
+  for (line of ref) {
+    if ((numLines === 0) && (line === '---')) {
+      lMetaLines = ['---'];
+      inMeta = true;
+    } else if (inMeta) {
+      if (line === '---') {
+        inMeta = false;
+      } else {
+        lMetaLines.push(line);
+      }
+    } else {
+      lLines.push(line);
+    }
+    numLines += 1;
+  }
+  if (defined(lMetaLines)) {
+    metadata = fromTAML(toBlock(lMetaLines));
+  } else {
+    metadata = undef;
+  }
+  hResult = {metadata, lLines};
+  dbgReturn('getTextFileContents', hResult);
+  return hResult;
+};
+
+// ---------------------------------------------------------------------------
+export var allFilesIn = function*(dir, hOptions = {}) {
+  var eager, ent, hContents, hFileInfo, i, len1, path, recursive, ref;
   // --- yields hFileInfo with keys:
-  //        filepath, filename, stub, ext
+  //        filepath, filename, stub, ext, metadata, contents
   // --- dir must be a directory
-  dbgEnter('allFilesIn', dir);
-  dbg(`DIR: ${dir}`);
+  // --- Valid options:
+  //        recursive - descend into subdirectories
+  //        eager - read the file and add keys metadata, contents
+  dbgEnter('allFilesIn', dir, hOptions);
+  ({recursive, eager} = getOptions(hOptions, {
+    recursive: true,
+    eager: false
+  }));
   assert(isDir(dir), `Not a directory: ${dir}`);
   hOptions = {
     withFileTypes: true,
@@ -437,6 +481,10 @@ export var allFilesIn = function*(dir, recursive = true) {
       path = mkpath(ent.path, ent.name);
       dbg(`PATH = ${path}`);
       hFileInfo = parseSource(path);
+      if (eager) {
+        hContents = getTextFileContents(hFileInfo.filePath);
+        Object.assign(hFileInfo, hContents);
+      }
       dbg('hFileInfo', hFileInfo);
       yield hFileInfo;
     }
@@ -497,7 +545,9 @@ export var FileProcessor = class FileProcessor {
     this.begin();
     this.log(`process all files in '${this.dir}'`);
     count = 0;
-    ref = allFilesIn(this.dir, this.recursive);
+    ref = allFilesIn(this.dir, {
+      recursive: this.recursive
+    });
     for (hFileInfo of ref) {
       name = hFileInfo.fileName;
       count += 1;
@@ -520,7 +570,7 @@ export var FileProcessor = class FileProcessor {
   procFile(hFileInfo) {
     var line, lineNum, ref, result;
     lineNum = 1;
-    ref = lineIterator(hFileInfo.filePath);
+    ref = allLinesIn(hFileInfo.filePath);
     for (line of ref) {
       result = this.handleLine(line, lineNum, hFileInfo);
       switch (result) {
@@ -531,8 +581,7 @@ export var FileProcessor = class FileProcessor {
     }
   }
 
-  
-    // ..........................................................
+  // ..........................................................
   endFile(hFileInfo) {} // by default, does nothing
 
   

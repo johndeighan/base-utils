@@ -7,6 +7,7 @@ import {mkpath} from '@jdeighan/base-utils/ll-fs'
 import {
 	isFile, isDir, mkdirSync, slurp, barf, forEachFileInDir,
 	forEachItem, forEachLineInFile, FileProcessor,
+	getTextFileContents, allFilesIn,
 	} from '@jdeighan/base-utils/fs'
 
 dir = process.cwd()     # should be root directory of @jdeighan/base-utils
@@ -101,3 +102,41 @@ test "line 65", (t) => t.is slurp(dir, 'test', 'readline.txt', {maxLines: 1000})
 		})
 
 	)()
+
+# ---------------------------------------------------------------------------
+# --- test getTextFileContents
+
+(() =>
+	path = "./test/test/file3.txt"
+	h = getTextFileContents(path)
+	test "line 112", (t) => t.deepEqual(h, {
+		metadata: {fName: 'John', lName: 'Deighan'}
+		lLines: ['', 'This is a test']
+		})
+	)()
+
+# ---------------------------------------------------------------------------
+# --- test allFilesIn
+
+(() =>
+	lNames = []
+	for hFileInfo from allFilesIn('./test/test', {})
+		name = hFileInfo.fileName
+		h = {name}
+		Object.assign(h, getTextFileContents(hFileInfo.filePath))
+		lNames.push h
+
+	test "line 99", (t) => t.deepEqual(lNames, [
+		{name: 'file1.txt', metadata: undef, lLines: ['DONE']}
+		{name: 'file1.zh',  metadata: undef, lLines: ['DONE']}
+		{name: 'file2.txt', metadata: undef, lLines: ['DONE']}
+		{name: 'file2.zh',  metadata: undef, lLines: ['DONE']}
+		{
+			name: 'file3.txt'
+			metadata: {fName: 'John', lName: 'Deighan'}
+			lLines: ['','This is a test']
+			}
+		])
+
+	)()
+
