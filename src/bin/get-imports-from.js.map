@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "get-imports-from.js",
+  "sourceRoot": "..\\..\\",
+  "sources": [
+    "src\\bin\\get-imports-from.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAA;;AAIA,OAAA;;EAAQ,GAAR;CAAA,MAAA;;AAEA,GAAA,CAAI,oBAAJ",
+  "sourcesContent": [
+    "`#!/usr/bin/env node\r\n`\r\n# get-imports-from.coffee\r\n\r\nimport {LOG} from '@jdeighan/base-utils'\r\n\r\nLOG \"getting imports...\"\r\n"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "cmd-args.test.js",
+  "sourceRoot": "..\\",
+  "sources": [
+    "test\\cmd-args.test.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAsB;AAEtB,OAAA;EAAQ,OAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,KAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,KAAR;CAAA,MAAA,6BAJsB;;;AAQtB,CAAC,CAAA,CAAA,GAAA;AACD,MAAA,OAAA,EAAA,QAAA,EAAA;EAAC,QAAA,GAAW;IACV,OAAA,EAAS,CAAC,GAAD,EAAK,GAAL,EAAS,GAAT,EAAa,GAAb,CADC;IAEV,MAAA,EAAQ,CAAC,MAAD,CAFE;IAGV,MAAA,EAAQ,CAAC,OAAD,CAHE;IAIV,OAAA,EAAS;MACR,CAAA,EAAG;IADK;EAJC;EASX,OAAA,GAAU;EACV,KAAA,GAAQ,OAAA,CAAQ,QAAR,EAAkB,OAAlB;SACR,KAAK,CAAC,KAAN,CAAY,EAAZ,EAAgB,KAAhB,EAAuB;IACtB,CAAA,EAAG,IADmB;IAEtB,CAAA,EAAG,KAFmB;IAGtB,CAAA,EAAG,IAHmB;IAItB,CAAA,EAAG,KAJmB;IAKtB,IAAA,EAAM,KALgB;IAMtB,KAAA,EAAO,CANe;IAOtB,CAAA,EAAG;MAAC,KAAD;MAAO,KAAP;;EAPmB,CAAvB;AAZA,CAAD,CAAA,CAAA",
+  "sourcesContent": [
+    "# cmd-args.test.coffee\r\n\r\nimport {getArgs} from '@jdeighan/base-utils/cmd-args'\r\nimport {undef} from '@jdeighan/base-utils'\r\nimport {utest} from '@jdeighan/base-utils/utest'\r\n\r\n# ---------------------------------------------------------------------------\r\n\r\n(() =>\r\n\thOptions = {\r\n\t\tboolean: ['a','b','c','h']\r\n\t\tstring: ['name']\r\n\t\tnumber: ['count']\r\n\t\tdefault: {\r\n\t\t\ta: true\r\n\t\t\t}\r\n\t\t}\r\n\r\n\tcmdLine = '-c --name=abc --count=5 def ghi'\r\n\thOpts = getArgs hOptions, cmdLine\r\n\tutest.equal 18, hOpts, {\r\n\t\ta: true,          # default value\r\n\t\tb: false,         # not on cmd line\r\n\t\tc: true,          # explicitly on cmd line\r\n\t\th: false,         # not on command line\r\n\t\tname: 'abc',\r\n\t\tcount: 5          # returned as a number\r\n\t\t_: ['def','ghi']  # non-options\r\n\t\t}\r\n\t)()\r\n"
+  ]
+}

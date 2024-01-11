@@ -89,17 +89,21 @@ export var debugLogging = (flag = true) => {
 
 // ---------------------------------------------------------------------------
 export var echoMyLogs = (flag = true) => {
-  var filePath;
+  var filePath, ref;
   // --- NOTE: hFrame can be undef - NamedLogs handles that OK
-  filePath = getMyOutsideCaller().filePath;
-  logs.setKey(filePath, 'doEcho', flag);
+  filePath = (ref = getMyOutsideCaller()) != null ? ref.filePath : void 0;
+  if (defined(filePath)) {
+    logs.setKey(filePath, 'doEcho', flag);
+  }
 };
 
 // ---------------------------------------------------------------------------
 export var clearMyLogs = () => {
-  var filePath;
-  filePath = getMyOutsideCaller().filePath;
-  logs.clear(filePath);
+  var filePath, ref;
+  filePath = (ref = getMyOutsideCaller()) != null ? ref.filePath : void 0;
+  if (defined(filePath)) {
+    logs.clear(filePath);
+  }
 };
 
 // ---------------------------------------------------------------------------
@@ -109,9 +113,13 @@ export var clearAllLogs = () => {
 
 // ---------------------------------------------------------------------------
 export var getMyLogs = () => {
-  var filePath;
-  filePath = getMyOutsideCaller().filePath;
-  return logs.getLogs(filePath);
+  var filePath, ref;
+  filePath = (ref = getMyOutsideCaller()) != null ? ref.filePath : void 0;
+  if (defined(filePath)) {
+    return logs.getLogs(filePath);
+  } else {
+    return undef;
+  }
 };
 
 // ---------------------------------------------------------------------------
@@ -121,7 +129,7 @@ export var getAllLogs = () => {
 
 // ---------------------------------------------------------------------------
 export var PUTSTR = (str) => {
-  var doEcho, filePath;
+  var doEcho, filePath, ref;
   if (internalDebugging) {
     console.log(`CALL PUTSTR(${OL(str)})`);
     if (defined(putstr) && (putstr !== console.log)) {
@@ -129,8 +137,10 @@ export var PUTSTR = (str) => {
     }
   }
   str = rtrim(str);
-  filePath = getMyOutsideCaller().filePath;
-  doEcho = logs.getKey(filePath, 'doEcho');
+  filePath = (ref = getMyOutsideCaller()) != null ? ref.filePath : void 0;
+  if (defined(filePath)) {
+    doEcho = logs.getKey(filePath, 'doEcho');
+  }
   if (internalDebugging) {
     console.log(`   filePath = ${OL(filePath)}, doEcho = ${OL(doEcho)}`);
   }

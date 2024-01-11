@@ -81,12 +81,12 @@ export var assert = (cond, msg) => {
 // ---------------------------------------------------------------------------
 //   croak - throws an error after possibly printing useful info
 //           err can be a string or an Error object
-export var croak = (err, label = undef, obj = undef) => {
+export var croak = (err = "unknown error", label = undef, obj = undef) => {
   var curmsg, newmsg;
   if ((typeof err === 'string') || (err instanceof String)) {
     curmsg = err;
   } else {
-    curmsg = err.message;
+    curmsg = err.message || "unknown error";
   }
   if (isEmpty(label)) {
     newmsg = `ERROR (croak): ${curmsg}`;

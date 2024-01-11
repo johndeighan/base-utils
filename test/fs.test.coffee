@@ -1,13 +1,21 @@
 # fs.test.coffee
 
 import test from 'ava'
-import {undef, defined, notdefined} from '@jdeighan/base-utils'
+import {
+	undef, defined, notdefined, LOG,
+	} from '@jdeighan/base-utils'
 import {setDebugging} from '@jdeighan/base-utils/debug'
 import {mkpath} from '@jdeighan/base-utils/ll-fs'
 import {
-	isFile, isDir, mkdirSync, slurp, barf, forEachFileInDir,
-	forEachItem, forEachLineInFile, FileProcessor,
-	getTextFileContents, allFilesIn,
+	resolve, getPkgJsonDir, getPkgJsonPath,
+	fileExists, isFile, rmFile,
+	dirExists, isDir, mkdir, rmDir,
+	fromJSON, toJSON,
+	slurp, slurpJSON, slurpTAML, slurpPkgJSON,
+	barf, barfJSON, barfTAML, barfPkgJSON,
+	parseSource, getTextFileContents, allFilesIn, allLinesIn,
+	forEachFileInDir, forEachItem, forEachLineInFile,
+	FileWriter, FileWriterSync, FileProcessor,
 	} from '@jdeighan/base-utils/fs'
 
 dir = process.cwd()     # should be root directory of @jdeighan/base-utils
@@ -21,12 +29,6 @@ test "line 22", (t) => t.falsy (isFile(mkpath(dir, 'doesNotExist.txt')))
 test "line 23", (t) => t.truthy(isDir(mkpath(dir, 'src')))
 test "line 24", (t) => t.truthy(isDir(mkpath(dir, 'test')))
 test "line 25", (t) => t.falsy (isDir(mkpath(dir, 'doesNotExist')))
-
-test "line 27", (t) => t.truthy(isFile(dir, 'package.json'))
-test "line 28", (t) => t.falsy (isFile(dir, 'doesNotExist.txt'))
-test "line 29", (t) => t.truthy(isDir(dir, 'src'))
-test "line 30", (t) => t.truthy(isDir(dir, 'test'))
-test "line 31", (t) => t.falsy (isDir(dir, 'doesNotExist'))
 
 test "line 33", (t) => t.is slurp(testPath, {maxLines: 2}), """
 	abc
@@ -123,7 +125,7 @@ test "line 65", (t) => t.is slurp(dir, 'test', 'readline.txt', {maxLines: 1000})
 	for hFileInfo from allFilesIn('./test/test', {eager: true})
 		lFiles.push hFileInfo
 
-	test "line 99", (t) => t.like(lFiles, [
+	test "line 126", (t) => t.like(lFiles, [
 		{fileName: 'file1.txt', metadata: undef, lLines: ['DONE']}
 		{fileName: 'file1.zh',  metadata: undef, lLines: ['DONE']}
 		{fileName: 'file2.txt', metadata: undef, lLines: ['DONE']}
@@ -137,3 +139,21 @@ test "line 65", (t) => t.is slurp(dir, 'test', 'readline.txt', {maxLines: 1000})
 
 	)()
 
+# ---------------------------------------------------------------------------
+
+(() =>
+	path = './test/testfile.txt'
+
+	# --- put garbage into the file
+	barf "garbage...", path
+
+	writer = new FileWriterSync(path)
+	writer.writeln "line 1"
+	writer.writeln "line 2"
+	writer.end()
+
+	test "line 151", (t) => t.truthy(isFile(path))
+
+	text = slurp path
+	test "line 154", (t) => t.is(text, "line 1\nline 2\n")
+	)()

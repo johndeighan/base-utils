@@ -3,9 +3,6 @@
 import pathLib from 'node:path'
 import urlLib from 'url'
 import fs from 'fs'
-import {
-	readFile, writeFile, rm, rmdir,   #  rmSync, rmdirSync,
-	} from 'node:fs/promises'
 import NReadLines from 'n-readlines'
 
 import {
@@ -21,21 +18,7 @@ import {
 	} from '@jdeighan/base-utils/ll-fs'
 
 export {fixPath, mydir, mkpath, resolve, parsePath}
-
-# ---------------------------------------------------------------------------
-
-export getFullPath = (lPaths...) =>
-
-	return fixPath(pathLib.resolve(lPaths...).replaceAll("\\", "/"))
-
-# ---------------------------------------------------------------------------
-
-export allDirs = (root, lDirs) ->
-
-	len = lDirs.length
-	while (len > 0)
-		yield mkpath(root, lDirs)
-		lDirs
+export getFullPath = resolve   # for backward compatibility
 
 # ---------------------------------------------------------------------------
 
@@ -56,7 +39,7 @@ export getPkgJsonDir = () =>
 			return mkpath(root, lDirs)
 		lDirs.pop()
 
-		dir = pathLib.resolve('..', dir)
+		dir = resolve('..', dir)
 
 # ---------------------------------------------------------------------------
 
@@ -70,77 +53,66 @@ export getPkgJsonPath = () =>
 #    file functions
 # ---------------------------------------------------------------------------
 
-export isFile = (lParts...) =>
+export fileExists = (filePath) =>
 
-	dbgEnter 'isFile', lParts
-	filePath = mkpath(lParts...)
-	dbg "filePath is '#{filePath}'"
+	return fs.existsSync(filePath)
+
+# ---------------------------------------------------------------------------
+
+export isFile = (filePath) =>
+
+	if ! fileExists(filePath)
+		return false
 	try
-		result = fs.lstatSync(filePath).isFile()
-		dbgReturn 'isFile', result
-		return result
+		return fs.lstatSync(filePath).isFile()
 	catch
-		dbgReturn 'isFile', false
 		return false
 
 # ---------------------------------------------------------------------------
 
-export rmFile = (filepath) =>
+export rmFile = (filePath) =>
 
-	await rm filepath
-	return
-
-# ---------------------------------------------------------------------------
-
-export rmFileSync = (filepath) =>
-
-	assert isFile(filepath), "#{filepath} is not a file"
-	fs.rmSync filepath
+	if fileExists(filePath)
+		fs.rmSync filePath
 	return
 
 # ---------------------------------------------------------------------------
 #    directory functions
 # ---------------------------------------------------------------------------
 
-export isDir = (lParts...) =>
+export dirExists = (dirPath) =>
 
-	dbgEnter 'isDir', lParts
-	dirPath = mkpath(lParts...)
-	dbg "dirPath is '#{dirPath}'"
+	return fs.existsSync(dirPath)
+
+# ---------------------------------------------------------------------------
+
+export isDir = (dirPath) =>
+
+	if ! dirExists(dirPath)
+		return false
 	try
-		result = fs.lstatSync(dirPath).isDirectory()
-		dbgReturn 'isDir', result
-		return result
+		return fs.lstatSync(dirPath).isDirectory()
 	catch
-		dbgReturn 'isDir', false
 		return false
 
 # ---------------------------------------------------------------------------
 
-export mkdirSync = (dirpath) =>
+export mkdir = (dirPath) =>
 
 	try
-		fs.mkdirSync dirpath
+		fs.mkdirSync dirPath
+		return true
 	catch err
 		if (err.code == 'EEXIST')
-			console.log 'Directory exists. Please choose another name'
+			return false
 		else
-			console.log err
-		process.exit 1
-	return
+			throw err
 
 # ---------------------------------------------------------------------------
 
-export rmDir = (dirpath) =>
+export rmDir = (dirPath, recursive=true) =>
 
-	await rmdir dirpath, {recursive: true}
-	return
-
-# ---------------------------------------------------------------------------
-
-export rmDirSync = (dirpath) =>
-
-	fs.rmdirSync dirpath, {recursive: true}
+	fs.rmdirSync dirPath, {recursive}
 	return
 
 # ---------------------------------------------------------------------------
@@ -257,77 +229,11 @@ export barfPkgJSON = (hJson, lParts...) =>
 
 # ---------------------------------------------------------------------------
 
-export hasPackageJson = (lParts...) =>
-
-	return isFile(lParts...)
-
-# ---------------------------------------------------------------------------
-
-export forEachFileInDir = (dir, func, hContext={}) =>
-	# --- callback will get parms (filepath, hContext)
-	#     DOES NOT RECURSE INTO SUBDIRECTORIES
-
-	for ent in fs.readdirSync(dir, {withFileTypes: true})
-		if ent.isFile()
-			func(ent.name, dir, hContext)
-	return
-
-# ---------------------------------------------------------------------------
-
-export forEachItem = (iter, func, hContext={}) =>
-	# --- func() gets (item, hContext)
-
-	assert isIterable(iter), "not an iterable"
-	lItems = []
-	index = 0
-	for item from iter
-		hContext.index = index
-		index += 1
-		try
-			result = func(item, hContext)
-			if defined(result)
-				lItems.push result
-		catch err
-			reader.close()
-			if isString(err)
-				return lItems
-			else
-				throw err    # rethrow the error
-	return lItems
-
-# ---------------------------------------------------------------------------
-
-export allLinesIn = (filepath) ->
-
-	reader = new NReadLines(filepath)
-	while (buffer = reader.next())
-		yield buffer.toString().replace(/\r/g, '')
-	return
-
-export lineIterator = allLinesIn     # for backward compatibility
-
-# ---------------------------------------------------------------------------
-
-export forEachLineInFile = (filepath, func, hContext={}) =>
-	# --- func gets (line, hContext) - lineNum starts at 1
-	#     hContext will include keys:
-	#        filepath
-	#        lineNum - first line is line 1
-
-	linefunc = (line, hContext) =>
-		hContext.filepath = filepath
-		hContext.lineNum = hContext.index + 1
-		return func(line, hContext)
-
-	return forEachItem(allLinesIn(filepath), linefunc, hContext)
-
-# ---------------------------------------------------------------------------
-
 export parseSource = (source) =>
 	# --- returns {
 	#        dir
-	#        fileName, filename
-	#        filePath, filepath
+	#        fileName,
+	#        filePath,
 	#        stub
 	#        ext
 	#        purpose
@@ -343,7 +249,6 @@ export parseSource = (source) =>
 		hSourceInfo = {
 			dir: source
 			filePath: source
-			filepath: source
 			}
 	else
 		assert isFile(source), "source #{source} not a file or directory"
@@ -353,16 +258,13 @@ export parseSource = (source) =>
 			hSourceInfo = {
 				dir: dir.replaceAll("\\", "/")
 				filePath: mkpath(dir, hInfo.base)
-				filepath: mkpath(dir, hInfo.base)
 				fileName: hInfo.base
-				filename: hInfo.base
 				stub: hInfo.name
 				ext: hInfo.ext
 				}
 		else
 			hSourceInfo = {
 				fileName: hInfo.base
-				filename: hInfo.base
 				stub: hInfo.name
 				ext: hInfo.ext
 				}
@@ -379,6 +281,7 @@ export parseSource = (source) =>
 # ---------------------------------------------------------------------------
 
 export getTextFileContents = (filePath) =>
+	# --- handles metadata if present
 
 	dbgEnter 'getTextFileContents', filePath
 	lMetaLines = undef
@@ -415,7 +318,7 @@ export getTextFileContents = (filePath) =>
 
 export allFilesIn = (dir, hOptions={}) ->
 	# --- yields hFileInfo with keys:
-	#        filepath, filename, stub, ext, metadata, contents
+	#        filePath, fileName, stub, ext, metadata, contents
 	# --- dir must be a directory
 	# --- Valid options:
 	#        recursive - descend into subdirectories
@@ -445,6 +348,146 @@ export allFilesIn = (dir, hOptions={}) ->
 
 # ---------------------------------------------------------------------------
 
+export allLinesIn = (filePath) ->
+
+	reader = new NReadLines(filePath)
+	while (buffer = reader.next())
+		yield buffer.toString().replace(/\r/g, '')
+	return
+
+export lineIterator = allLinesIn     # for backward compatibility
+
+# ---------------------------------------------------------------------------
+
+export forEachFileInDir = (dir, func, hContext={}) =>
+	# --- callback will get parms (filePath, hContext)
+	#     DOES NOT RECURSE INTO SUBDIRECTORIES
+
+	for ent in fs.readdirSync(dir, {withFileTypes: true})
+		if ent.isFile()
+			func(ent.name, dir, hContext)
+	return
+
+# ---------------------------------------------------------------------------
+
+export forEachItem = (iter, func, hContext={}) =>
+	# --- func() gets (item, hContext)
+
+	assert isIterable(iter), "not an iterable"
+	lItems = []
+	index = 0
+	for item from iter
+		hContext.index = index
+		index += 1
+		try
+			result = func(item, hContext)
+			if defined(result)
+				lItems.push result
+		catch err
+			reader.close()
+			if isString(err)
+				return lItems
+			else
+				throw err    # rethrow the error
+	return lItems
+
+# ---------------------------------------------------------------------------
+
+export forEachLineInFile = (filePath, func, hContext={}) =>
+	# --- func gets (line, hContext) - lineNum starts at 1
+	#     hContext will include keys:
+	#        filePath
+	#        lineNum - first line is line 1
+
+	linefunc = (line, hContext) =>
+		hContext.filePath = filePath
+		hContext.lineNum = hContext.index + 1
+		return func(line, hContext)
+
+	return forEachItem(allLinesIn(filePath), linefunc, hContext)
+
+# ---------------------------------------------------------------------------
+
+export class FileWriter
+
+	constructor: (@filePath) ->
+
+		assert isString(@filePath), "Not a string: #{@filePath}"
+		@fullPath = resolve(@filePath)
+		assert isString(@fullpath), "Invalid path: #{@filePath}"
+		@writer = fs.createWriteStream(@fullPath)
+
+	DESTROY: () ->
+
+		if defined(@writer)
+			@end()
+		return
+
+	write: (lStrings...) ->
+
+		assert defined(@writer), "Write after end()"
+		for str in lStrings
+			assert isString(str), "Not a string: '#{str}'"
+			@writer.write str
+		return
+
+	writeln: (lStrings...) ->
+
+		assert defined(@writer), "Write after end()"
+		for str in lStrings
+			assert isString(str), "Not a string: '#{str}'"
+			@writer.write str
+			@writer.write "\n"
+		return
+
+	end: () ->
+
+		@writer.end()
+		@writer = undef
+		return
+
+# ---------------------------------------------------------------------------
+
+export class FileWriterSync
+
+	constructor: (@filePath) ->
+
+		assert isString(@filePath), "Not a string: #{@filePath}"
+		@fullPath = resolve(@filePath)
+		assert isString(@fullPath), "Bad path: #{@filePath}"
+		@fd = fs.openSync(@fullPath, 'w')
+
+	DESTROY: () ->
+
+		if defined(@fd)
+			@end()
+		return
+
+	write: (lStrings...) ->
+
+		assert defined(@fd), "Write after end()"
+		for str in lStrings
+			assert isString(str), "Not a string: '#{str}'"
+			fs.writeSync @fd, str
+		return
+
+	writeln: (lStrings...) ->
+
+		assert defined(@fd), "writeln after end()"
+		for str in lStrings
+			assert isString(str), "Not a string: '#{str}'"
+			fs.writeSync @fd, str
+			fs.writeSync @fd, "\n"
+		return
+
+	end: () ->
+
+		fs.closeSync(@fd)
+		@fd = undef
+		return
+
+# ---------------------------------------------------------------------------
+
 export class FileProcessor
 
 	constructor: (@dir, hOptions={}) ->
@@ -454,7 +497,7 @@ export class FileProcessor
 
 		# --- convert dir to a full path
 		assert isString(@dir), "Source not a string"
-		@dir = pathLib.resolve(@dir)
+		@dir = resolve(@dir)
 		assert isDir(@dir), "Not a directory: #{@dir}"
 
 		@hOptions = getOptions(hOptions)

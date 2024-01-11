@@ -6,7 +6,8 @@ import test from 'ava';
 import {
   undef,
   defined,
-  notdefined
+  notdefined,
+  LOG
 } from '@jdeighan/base-utils';
 
 import {
@@ -18,17 +19,36 @@ import {
 } from '@jdeighan/base-utils/ll-fs';
 
 import {
+  resolve,
+  getPkgJsonDir,
+  getPkgJsonPath,
+  fileExists,
   isFile,
+  rmFile,
+  dirExists,
   isDir,
-  mkdirSync,
+  mkdir,
+  rmDir,
+  fromJSON,
+  toJSON,
   slurp,
+  slurpJSON,
+  slurpTAML,
+  slurpPkgJSON,
   barf,
+  barfJSON,
+  barfTAML,
+  barfPkgJSON,
+  parseSource,
+  getTextFileContents,
+  allFilesIn,
+  allLinesIn,
   forEachFileInDir,
   forEachItem,
   forEachLineInFile,
-  FileProcessor,
-  getTextFileContents,
-  allFilesIn
+  FileWriter,
+  FileWriterSync,
+  FileProcessor
 } from '@jdeighan/base-utils/fs';
 
 dir = process.cwd(); // should be root directory of @jdeighan/base-utils
@@ -56,26 +76,6 @@ test("line 24", (t) => {
 
 test("line 25", (t) => {
   return t.falsy(isDir(mkpath(dir, 'doesNotExist')));
-});
-
-test("line 27", (t) => {
-  return t.truthy(isFile(dir, 'package.json'));
-});
-
-test("line 28", (t) => {
-  return t.falsy(isFile(dir, 'doesNotExist.txt'));
-});
-
-test("line 29", (t) => {
-  return t.truthy(isDir(dir, 'src'));
-});
-
-test("line 30", (t) => {
-  return t.truthy(isDir(dir, 'test'));
-});
-
-test("line 31", (t) => {
-  return t.falsy(isDir(dir, 'doesNotExist'));
 });
 
 test("line 33", (t) => {
@@ -196,7 +196,7 @@ mno`);
   for (hFileInfo of ref) {
     lFiles.push(hFileInfo);
   }
-  return test("line 99", (t) => {
+  return test("line 126", (t) => {
     return t.like(lFiles, [
       {
         fileName: 'file1.txt',
@@ -228,6 +228,25 @@ mno`);
       'This is a test']
       }
     ]);
+  });
+})();
+
+// ---------------------------------------------------------------------------
+(() => {
+  var path, text, writer;
+  path = './test/testfile.txt';
+  // --- put garbage into the file
+  barf("garbage...", path);
+  writer = new FileWriterSync(path);
+  writer.writeln("line 1");
+  writer.writeln("line 2");
+  writer.end();
+  test("line 151", (t) => {
+    return t.truthy(isFile(path));
+  });
+  text = slurp(path);
+  return test("line 154", (t) => {
+    return t.is(text, "line 1\nline 2\n");
   });
 })();
 

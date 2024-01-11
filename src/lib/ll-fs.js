@@ -11,8 +11,8 @@ import {
 } from '@jdeighan/base-utils';
 
 // ---------------------------------------------------------------------------
-// --- convert "C:..." to "c:..."
 //     convert \ to /
+// --- convert "C:..." to "c:..."
 export var fixPath = (path) => {
   path = path.replaceAll('\\', '/');
   if (path.charAt(1) === ':') {
@@ -51,9 +51,7 @@ export var mkpath = (...lParts) => {
 
 // ---------------------------------------------------------------------------
 export var resolve = (...lParts) => {
-  var path;
-  path = mkpath(...lParts);
-  return pathLib.resolve(path);
+  return fixPath(pathLib.resolve(...lParts));
 };
 
 // ---------------------------------------------------------------------------

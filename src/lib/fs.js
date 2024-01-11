@@ -5,13 +5,6 @@ import urlLib from 'url';
 
 import fs from 'fs';
 
-import {
-  readFile,
-  writeFile,
-  rm,
-  rmdir //  rmSync, rmdirSync,
-} from 'node:fs/promises';
-
 import NReadLines from 'n-readlines';
 
 import {
@@ -64,22 +57,8 @@ export {
   parsePath
 };
 
-// ---------------------------------------------------------------------------
-export var getFullPath = (...lPaths) => {
-  return fixPath(pathLib.resolve(...lPaths).replaceAll("\\", "/"));
-};
+export var getFullPath = resolve; // for backward compatibility
 
-// ---------------------------------------------------------------------------
-export var allDirs = function*(root, lDirs) {
-  var len, results;
-  len = lDirs.length;
-  results = [];
-  while (len > 0) {
-    yield mkpath(root, lDirs);
-    results.push(lDirs);
-  }
-  return results;
-};
 
 // ---------------------------------------------------------------------------
 export var getPkgJsonDir = () => {
@@ -96,7 +75,7 @@ export var getPkgJsonDir = () => {
       return mkpath(root, lDirs);
     }
     lDirs.pop();
-    dir = pathLib.resolve('..', dir);
+    dir = resolve('..', dir);
   }
 };
 
@@ -111,78 +90,67 @@ export var getPkgJsonPath = () => {
 // ---------------------------------------------------------------------------
 //    file functions
 // ---------------------------------------------------------------------------
-export var isFile = (...lParts) => {
-  var filePath, result;
-  dbgEnter('isFile', lParts);
-  filePath = mkpath(...lParts);
-  dbg(`filePath is '${filePath}'`);
+export var fileExists = (filePath) => {
+  return fs.existsSync(filePath);
+};
+
+// ---------------------------------------------------------------------------
+export var isFile = (filePath) => {
+  if (!fileExists(filePath)) {
+    return false;
+  }
   try {
-    result = fs.lstatSync(filePath).isFile();
-    dbgReturn('isFile', result);
-    return result;
+    return fs.lstatSync(filePath).isFile();
   } catch (error) {
-    dbgReturn('isFile', false);
     return false;
   }
 };
 
 // ---------------------------------------------------------------------------
-export var rmFile = async(filepath) => {
-  await rm(filepath);
-};
-
-// ---------------------------------------------------------------------------
-export var rmFileSync = (filepath) => {
-  assert(isFile(filepath), `${filepath} is not a file`);
-  fs.rmSync(filepath);
+export var rmFile = (filePath) => {
+  if (fileExists(filePath)) {
+    fs.rmSync(filePath);
+  }
 };
 
 // ---------------------------------------------------------------------------
 //    directory functions
 // ---------------------------------------------------------------------------
-export var isDir = (...lParts) => {
-  var dirPath, result;
-  dbgEnter('isDir', lParts);
-  dirPath = mkpath(...lParts);
-  dbg(`dirPath is '${dirPath}'`);
+export var dirExists = (dirPath) => {
+  return fs.existsSync(dirPath);
+};
+
+// ---------------------------------------------------------------------------
+export var isDir = (dirPath) => {
+  if (!dirExists(dirPath)) {
+    return false;
+  }
   try {
-    result = fs.lstatSync(dirPath).isDirectory();
-    dbgReturn('isDir', result);
-    return result;
+    return fs.lstatSync(dirPath).isDirectory();
   } catch (error) {
-    dbgReturn('isDir', false);
     return false;
   }
 };
 
 // ---------------------------------------------------------------------------
-export var mkdirSync = (dirpath) => {
+export var mkdir = (dirPath) => {
   var err;
   try {
-    fs.mkdirSync(dirpath);
+    fs.mkdirSync(dirPath);
+    return true;
   } catch (error) {
     err = error;
     if (err.code === 'EEXIST') {
-      console.log('Directory exists. Please choose another name');
+      return false;
     } else {
-      console.log(err);
+      throw err;
     }
-    process.exit(1);
   }
 };
 
 // ---------------------------------------------------------------------------
-export var rmDir = async(dirpath) => {
-  await rmdir(dirpath, {
-    recursive: true
-  });
-};
-
-// ---------------------------------------------------------------------------
-export var rmDirSync = (dirpath) => {
-  fs.rmdirSync(dirpath, {
-    recursive: true
-  });
+export var rmDir = (dirPath, recursive = true) => {
+  fs.rmdirSync(dirPath, {recursive});
 };
 
 // ---------------------------------------------------------------------------
@@ -291,19 +259,150 @@ export var barfPkgJSON = (hJson, ...lParts) => {
 };
 
 // ---------------------------------------------------------------------------
-export var hasPackageJson = (...lParts) => {
-  return isFile(...lParts);
+export var parseSource = (source) => {
+  var dir, hInfo, hSourceInfo, lMatches;
+  // --- returns {
+  //        dir
+  //        fileName,
+  //        filePath,
+  //        stub
+  //        ext
+  //        purpose
+  //        }
+  // --- NOTE: source may be a file URL, e.g. import.meta.url
+  dbgEnter('parseSource', source);
+  assert(isString(source), "parseSource(): source not a string");
+  if (source.match(/^file\:\/\//)) {
+    source = urlLib.fileURLToPath(source);
+  }
+  if (isDir(source)) {
+    hSourceInfo = {
+      dir: source,
+      filePath: source
+    };
+  } else {
+    assert(isFile(source), `source ${source} not a file or directory`);
+    hInfo = pathLib.parse(source);
+    dir = hInfo.dir;
+    if (dir) {
+      hSourceInfo = {
+        dir: dir.replaceAll("\\", "/"),
+        filePath: mkpath(dir, hInfo.base),
+        fileName: hInfo.base,
+        stub: hInfo.name,
+        ext: hInfo.ext
+      };
+    } else {
+      hSourceInfo = {
+        fileName: hInfo.base,
+        stub: hInfo.name,
+        ext: hInfo.ext
+      };
+    }
+    // --- check for a 'purpose'
+    if (lMatches = hSourceInfo.stub.match(/\.([A-Za-z_]+)$/)) {
+      hSourceInfo.purpose = lMatches[1];
+    }
+  }
+  dbgReturn('parseSource', hSourceInfo);
+  return hSourceInfo;
 };
 
 // ---------------------------------------------------------------------------
+export var getTextFileContents = (filePath) => {
+  var hResult, inMeta, lLines, lMetaLines, line, metadata, numLines, ref;
+  // --- handles metadata if present
+  dbgEnter('getTextFileContents', filePath);
+  lMetaLines = undef;
+  inMeta = false;
+  lLines = [];
+  numLines = 0;
+  ref = allLinesIn(filePath);
+  for (line of ref) {
+    if ((numLines === 0) && (line === '---')) {
+      lMetaLines = ['---'];
+      inMeta = true;
+    } else if (inMeta) {
+      if (line === '---') {
+        inMeta = false;
+      } else {
+        lMetaLines.push(line);
+      }
+    } else {
+      lLines.push(line);
+    }
+    numLines += 1;
+  }
+  if (defined(lMetaLines)) {
+    metadata = fromTAML(toBlock(lMetaLines));
+  } else {
+    metadata = undef;
+  }
+  hResult = {metadata, lLines};
+  dbgReturn('getTextFileContents', hResult);
+  return hResult;
+};
+
+// ---------------------------------------------------------------------------
+export var allFilesIn = function*(dir, hOptions = {}) {
+  var eager, ent, hContents, hFileInfo, i, len, path, recursive, ref;
+  // --- yields hFileInfo with keys:
+  //        filePath, fileName, stub, ext, metadata, contents
+  // --- dir must be a directory
+  // --- Valid options:
+  //        recursive - descend into subdirectories
+  //        eager - read the file and add keys metadata, contents
+  dbgEnter('allFilesIn', dir, hOptions);
+  ({recursive, eager} = getOptions(hOptions, {
+    recursive: true,
+    eager: false
+  }));
+  assert(isDir(dir), `Not a directory: ${dir}`);
+  hOptions = {
+    withFileTypes: true,
+    recursive
+  };
+  ref = fs.readdirSync(dir, hOptions);
+  for (i = 0, len = ref.length; i < len; i++) {
+    ent = ref[i];
+    dbg("ENT:", ent);
+    if (ent.isFile()) {
+      path = mkpath(ent.path, ent.name);
+      dbg(`PATH = ${path}`);
+      hFileInfo = parseSource(path);
+      assert(defined(hFileInfo), "allFilesIn(): hFileInfo = undef");
+      if (eager) {
+        hContents = getTextFileContents(hFileInfo.filePath);
+        Object.assign(hFileInfo, hContents);
+      }
+      dbg('hFileInfo', hFileInfo);
+      yield hFileInfo;
+    }
+  }
+  dbgReturn('allFilesIn');
+};
+
+// ---------------------------------------------------------------------------
+export var allLinesIn = function*(filePath) {
+  var buffer, reader;
+  reader = new NReadLines(filePath);
+  while ((buffer = reader.next())) {
+    yield buffer.toString().replace(/\r/g, '');
+  }
+};
+
+export var lineIterator = allLinesIn; // for backward compatibility
+
+
+// ---------------------------------------------------------------------------
 export var forEachFileInDir = (dir, func, hContext = {}) => {
-  var ent, i, len1, ref;
+  var ent, i, len, ref;
   ref = fs.readdirSync(dir, {
     withFileTypes: true
   });
-  // --- callback will get parms (filepath, hContext)
+  // --- callback will get parms (filePath, hContext)
   //     DOES NOT RECURSE INTO SUBDIRECTORIES
-  for (i = 0, len1 = ref.length; i < len1; i++) {
+  for (i = 0, len = ref.length; i < len; i++) {
     ent = ref[i];
     if (ent.isFile()) {
       func(ent.name, dir, hContext);
@@ -340,157 +439,106 @@ export var forEachItem = (iter, func, hContext = {}) => {
 };
 
 // ---------------------------------------------------------------------------
-export var allLinesIn = function*(filepath) {
-  var buffer, reader;
-  reader = new NReadLines(filepath);
-  while ((buffer = reader.next())) {
-    yield buffer.toString().replace(/\r/g, '');
-  }
-};
-
-export var lineIterator = allLinesIn; // for backward compatibility
-
-
-// ---------------------------------------------------------------------------
-export var forEachLineInFile = (filepath, func, hContext = {}) => {
+export var forEachLineInFile = (filePath, func, hContext = {}) => {
   var linefunc;
   // --- func gets (line, hContext) - lineNum starts at 1
   //     hContext will include keys:
-  //        filepath
+  //        filePath
   //        lineNum - first line is line 1
   linefunc = (line, hContext) => {
-    hContext.filepath = filepath;
+    hContext.filePath = filePath;
     hContext.lineNum = hContext.index + 1;
     return func(line, hContext);
   };
-  return forEachItem(allLinesIn(filepath), linefunc, hContext);
+  return forEachItem(allLinesIn(filePath), linefunc, hContext);
 };
 
 // ---------------------------------------------------------------------------
-export var parseSource = (source) => {
-  var dir, hInfo, hSourceInfo, lMatches;
-  // --- returns {
-  //        dir
-  //        fileName, filename
-  //        filePath, filepath
-  //        stub
-  //        ext
-  //        purpose
-  //        }
-  // --- NOTE: source may be a file URL, e.g. import.meta.url
-  dbgEnter('parseSource', source);
-  assert(isString(source), "parseSource(): source not a string");
-  if (source.match(/^file\:\/\//)) {
-    source = urlLib.fileURLToPath(source);
+export var FileWriter = class FileWriter {
+  constructor(filePath1) {
+    this.filePath = filePath1;
+    assert(isString(this.filePath), `Not a string: ${this.filePath}`);
+    this.fullPath = resolve(this.filePath);
+    assert(isString(this.fullpath), `Invalid path: ${this.filePath}`);
+    this.writer = fs.createWriteStream(this.fullPath);
   }
-  if (isDir(source)) {
-    hSourceInfo = {
-      dir: source,
-      filePath: source,
-      filepath: source
-    };
-  } else {
-    assert(isFile(source), `source ${source} not a file or directory`);
-    hInfo = pathLib.parse(source);
-    dir = hInfo.dir;
-    if (dir) {
-      hSourceInfo = {
-        dir: dir.replaceAll("\\", "/"),
-        filePath: mkpath(dir, hInfo.base),
-        filepath: mkpath(dir, hInfo.base),
-        fileName: hInfo.base,
-        filename: hInfo.base,
-        stub: hInfo.name,
-        ext: hInfo.ext
-      };
-    } else {
-      hSourceInfo = {
-        fileName: hInfo.base,
-        filename: hInfo.base,
-        stub: hInfo.name,
-        ext: hInfo.ext
-      };
-    }
-    // --- check for a 'purpose'
-    if (lMatches = hSourceInfo.stub.match(/\.([A-Za-z_]+)$/)) {
-      hSourceInfo.purpose = lMatches[1];
+
+  DESTROY() {
+    if (defined(this.writer)) {
+      this.end();
     }
   }
-  dbgReturn('parseSource', hSourceInfo);
-  return hSourceInfo;
+
+  write(...lStrings) {
+    var i, len, str;
+    assert(defined(this.writer), "Write after end()");
+    for (i = 0, len = lStrings.length; i < len; i++) {
+      str = lStrings[i];
+      assert(isString(str), `Not a string: '${str}'`);
+      this.writer.write(str);
+    }
+  }
+
+  writeln(...lStrings) {
+    var i, len, str;
+    assert(defined(this.writer), "Write after end()");
+    for (i = 0, len = lStrings.length; i < len; i++) {
+      str = lStrings[i];
+      assert(isString(str), `Not a string: '${str}'`);
+      this.writer.write(str);
+      this.writer.write("\n");
+    }
+  }
+
+  end() {
+    this.writer.end();
+    this.writer = undef;
+  }
+
 };
 
 // ---------------------------------------------------------------------------
-export var getTextFileContents = (filePath) => {
-  var hResult, inMeta, lLines, lMetaLines, line, metadata, numLines, ref;
-  dbgEnter('getTextFileContents', filePath);
-  lMetaLines = undef;
-  inMeta = false;
-  lLines = [];
-  numLines = 0;
-  ref = allLinesIn(filePath);
-  for (line of ref) {
-    if ((numLines === 0) && (line === '---')) {
-      lMetaLines = ['---'];
-      inMeta = true;
-    } else if (inMeta) {
-      if (line === '---') {
-        inMeta = false;
-      } else {
-        lMetaLines.push(line);
-      }
-    } else {
-      lLines.push(line);
-    }
-    numLines += 1;
+export var FileWriterSync = class FileWriterSync {
+  constructor(filePath1) {
+    this.filePath = filePath1;
+    assert(isString(this.filePath), `Not a string: ${this.filePath}`);
+    this.fullPath = resolve(this.filePath);
+    assert(isString(this.fullPath), `Bad path: ${this.filePath}`);
+    this.fd = fs.openSync(this.fullPath, 'w');
   }
-  if (defined(lMetaLines)) {
-    metadata = fromTAML(toBlock(lMetaLines));
-  } else {
-    metadata = undef;
-  }
-  hResult = {metadata, lLines};
-  dbgReturn('getTextFileContents', hResult);
-  return hResult;
-};
 
-// ---------------------------------------------------------------------------
-export var allFilesIn = function*(dir, hOptions = {}) {
-  var eager, ent, hContents, hFileInfo, i, len1, path, recursive, ref;
-  // --- yields hFileInfo with keys:
-  //        filepath, filename, stub, ext, metadata, contents
-  // --- dir must be a directory
-  // --- Valid options:
-  //        recursive - descend into subdirectories
-  //        eager - read the file and add keys metadata, contents
-  dbgEnter('allFilesIn', dir, hOptions);
-  ({recursive, eager} = getOptions(hOptions, {
-    recursive: true,
-    eager: false
-  }));
-  assert(isDir(dir), `Not a directory: ${dir}`);
-  hOptions = {
-    withFileTypes: true,
-    recursive
-  };
-  ref = fs.readdirSync(dir, hOptions);
-  for (i = 0, len1 = ref.length; i < len1; i++) {
-    ent = ref[i];
-    dbg("ENT:", ent);
-    if (ent.isFile()) {
-      path = mkpath(ent.path, ent.name);
-      dbg(`PATH = ${path}`);
-      hFileInfo = parseSource(path);
-      assert(defined(hFileInfo), "allFilesIn(): hFileInfo = undef");
-      if (eager) {
-        hContents = getTextFileContents(hFileInfo.filePath);
-        Object.assign(hFileInfo, hContents);
-      }
-      dbg('hFileInfo', hFileInfo);
-      yield hFileInfo;
+  DESTROY() {
+    if (defined(this.fd)) {
+      this.end();
     }
   }
-  dbgReturn('allFilesIn');
+
+  write(...lStrings) {
+    var i, len, str;
+    assert(defined(this.fd), "Write after end()");
+    for (i = 0, len = lStrings.length; i < len; i++) {
+      str = lStrings[i];
+      assert(isString(str), `Not a string: '${str}'`);
+      fs.writeSync(this.fd, str);
+    }
+  }
+
+  writeln(...lStrings) {
+    var i, len, str;
+    assert(defined(this.fd), "writeln after end()");
+    for (i = 0, len = lStrings.length; i < len; i++) {
+      str = lStrings[i];
+      assert(isString(str), `Not a string: '${str}'`);
+      fs.writeSync(this.fd, str);
+      fs.writeSync(this.fd, "\n");
+    }
+  }
+
+  end() {
+    fs.closeSync(this.fd);
+    this.fd = undef;
+  }
+
 };
 
 // ---------------------------------------------------------------------------
@@ -503,7 +551,7 @@ export var FileProcessor = class FileProcessor {
 
     // --- convert dir to a full path
     assert(isString(this.dir), "Source not a string");
-    this.dir = pathLib.resolve(this.dir);
+    this.dir = resolve(this.dir);
     assert(isDir(this.dir), `Not a directory: ${this.dir}`);
     this.hOptions = getOptions(hOptions);
     this.debug = !!this.hOptions.debug;

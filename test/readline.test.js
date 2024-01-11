@@ -18,7 +18,6 @@ import {
 import {
   isFile,
   isDir,
-  mkdirSync,
   slurp,
   barf,
   forEachFileInDir,

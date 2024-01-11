@@ -48,16 +48,18 @@ export debugLogging = (flag=true) =>
 export echoMyLogs = (flag=true) =>
 
 	# --- NOTE: hFrame can be undef - NamedLogs handles that OK
-	filePath = getMyOutsideCaller().filePath
-	logs.setKey filePath, 'doEcho', flag
+	filePath = getMyOutsideCaller()?.filePath
+	if defined(filePath)
+		logs.setKey filePath, 'doEcho', flag
 	return
 
 # ---------------------------------------------------------------------------
 
 export clearMyLogs = () =>
 
-	filePath = getMyOutsideCaller().filePath
-	logs.clear filePath
+	filePath = getMyOutsideCaller()?.filePath
+	if defined(filePath)
+		logs.clear filePath
 	return
 
 # ---------------------------------------------------------------------------
@@ -71,8 +73,11 @@ export clearAllLogs = () =>
 
 export getMyLogs = () =>
 
-	filePath = getMyOutsideCaller().filePath
-	return logs.getLogs(filePath)
+	filePath = getMyOutsideCaller()?.filePath
+	if defined(filePath)
+		return logs.getLogs(filePath)
+	else
+		return undef
 
 # ---------------------------------------------------------------------------
 
@@ -91,8 +96,9 @@ export PUTSTR = (str) =>
 
 	str = rtrim(str)
 
-	filePath = getMyOutsideCaller().filePath
-	doEcho = logs.getKey(filePath, 'doEcho')
+	filePath = getMyOutsideCaller()?.filePath
+	if defined(filePath)
+		doEcho = logs.getKey(filePath, 'doEcho')
 	if internalDebugging
 		console.log "   filePath = #{OL(filePath)}, doEcho = #{OL(doEcho)}"
 	logs.log filePath, str

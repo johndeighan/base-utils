@@ -7,8 +7,8 @@ import fs from 'fs'
 import {undef, nonEmpty} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
-# --- convert "C:..." to "c:..."
 #     convert \ to /
+# --- convert "C:..." to "c:..."
 
 export fixPath = (path) =>
 
@@ -45,8 +45,7 @@ export mkpath = (lParts...) =>
 
 export resolve = (lParts...) =>
 
-	path = mkpath(lParts...)
-	return pathLib.resolve(path)
+	return fixPath(pathLib.resolve(lParts...))
 
 # ---------------------------------------------------------------------------
 # --- Returned object has keys:
