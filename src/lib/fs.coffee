@@ -413,9 +413,7 @@ export class FileWriter
 	constructor: (@filePath) ->
 
 		assert isString(@filePath), "Not a string: #{@filePath}"
-		@fullPath = resolve(@filePath)
-		assert isString(@fullpath), "Invalid path: #{@filePath}"
-		@writer = fs.createWriteStream(@fullPath)
+		@writer = fs.createWriteStream(@filePath)
 
 	DESTROY: () ->
 

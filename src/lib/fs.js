@@ -458,9 +458,7 @@ export var FileWriter = class FileWriter {
   constructor(filePath1) {
     this.filePath = filePath1;
     assert(isString(this.filePath), `Not a string: ${this.filePath}`);
-    this.fullPath = resolve(this.filePath);
-    assert(isString(this.fullpath), `Invalid path: ${this.filePath}`);
-    this.writer = fs.createWriteStream(this.fullPath);
+    this.writer = fs.createWriteStream(this.filePath);
   }
 
   DESTROY() {
