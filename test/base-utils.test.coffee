@@ -323,7 +323,7 @@ test "line 184", (t) => t.falsy( oneof('a', 'b', 'c'))
 	test "line 322", (t) => t.truthy(isObject(o, "name &doIt &meth"))
 	test "line 323", (t) => t.falsy(isObject(o, "&name"))
 
-	test "line 325", (t) => t.deepEqual(jsType(undef), [undef, 'undef'])
+	test "line 325", (t) => t.deepEqual(jsType(undef), [undef, undef])
 	test "line 326", (t) => t.deepEqual(jsType(null),  [undef, 'null'])
 	test "line 327", (t) => t.deepEqual(jsType(s), ['string', undef])
 	test "line 328", (t) => t.deepEqual(jsType(''), ['string', 'empty'])

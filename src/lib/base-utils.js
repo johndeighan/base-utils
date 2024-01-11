@@ -282,6 +282,19 @@ export var OLS = (lObjects, sep = ',') => {
 };
 
 // ---------------------------------------------------------------------------
+export var qStr = (x) => {
+  // --- x must be string or undef
+  //     puts quotes around a string
+  if (notdefined(x)) {
+    return 'undef';
+  } else if (isString(x)) {
+    return `'${x}'`;
+  } else {
+    throw new Error("quoteStr(): Not a string or undef");
+  }
+};
+
+// ---------------------------------------------------------------------------
 export var quoted = (str, escape = undef) => {
   assert(isString(str), `not a string: ${str}`);
   switch (escape) {
@@ -389,7 +402,7 @@ export var jsType = (x) => {
   if (x === null) {
     return [undef, 'null'];
   } else if (x === undef) {
-    return [undef, 'undef'];
+    return [undef, undef];
   }
   switch (typeof x) {
     case 'number':

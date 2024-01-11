@@ -697,7 +697,7 @@ test("line 184", (t) => {
     return t.falsy(isObject(o, "&name"));
   });
   test("line 325", (t) => {
-    return t.deepEqual(jsType(undef), [undef, 'undef']);
+    return t.deepEqual(jsType(undef), [undef, undef]);
   });
   test("line 326", (t) => {
     return t.deepEqual(jsType(null), [undef, 'null']);

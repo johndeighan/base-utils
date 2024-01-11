@@ -8,7 +8,10 @@ import {
 	isEmpty, nonEmpty, deepCopy
 	} from '@jdeighan/base-utils/ll-utils'
 
-export {pass, undef, defined, notdefined, isEmpty, nonEmpty, deepCopy}
+export {
+	pass, undef, defined, notdefined, isEmpty, nonEmpty,
+	deepCopy,
+	}
 export LOG = console.log
 
 # ---------------------------------------------------------------------------
@@ -243,6 +246,19 @@ export OLS = (lObjects, sep=',') =>
 
 # ---------------------------------------------------------------------------
 
+export qStr = (x) =>
+	# --- x must be string or undef
+	#     puts quotes around a string
+
+	if notdefined(x)
+		return 'undef'
+	else if isString(x)
+		return "'#{x}'"
+	else
+		throw new Error("quoteStr(): Not a string or undef")
+
+# ---------------------------------------------------------------------------
+
 export quoted = (str, escape=undef) =>
 
 	assert isString(str), "not a string: #{str}"
@@ -328,7 +344,7 @@ export jsType = (x) =>
 	if (x == null)
 		return [undef, 'null']
 	else if (x == undef)
-		return [undef, 'undef']
+		return [undef, undef]
 
 	switch (typeof x)
 		when 'number'
