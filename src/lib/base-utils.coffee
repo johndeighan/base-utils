@@ -1008,7 +1008,7 @@ export choose = (lItems) ->
 	return lItems[Math.floor(Math.random()*lItems.length)]
 
 # ---------------------------------------------------------------------------
-# --- shuffle an array in place
+# --- shuffle an array in place, return ref to shuffled array
 
 export shuffle = (lItems) ->
 
@@ -1024,4 +1024,4 @@ export shuffle = (lItems) ->
 		# --- And swap it with the current element.
 		[lItems[i], lItems[i2]] = [lItems[i2], lItems[i]];
 
-	return
+	return lItems

@@ -20,6 +20,7 @@ import {
 
 import {
   resolve,
+  pathType,
   getPkgJsonDir,
   getPkgJsonPath,
   fileExists,
@@ -58,34 +59,72 @@ testDir = mkpath(dir, 'test');
 testPath = mkpath(dir, 'test', 'readline.txt');
 
 // ---------------------------------------------------------------------------
-test("line 21", (t) => {
+// --- test pathType
+test("line 29", (t) => {
+  return t.throws(() => {
+    return pathType(42);
+  });
+});
+
+test("line 30", (t) => {
+  return t.is(pathType('.'), 'dir');
+});
+
+test("line 31", (t) => {
+  return t.is(pathType('./package.json'), 'file');
+});
+
+test("line 32", (t) => {
+  return t.is(pathType('./package2.json'), 'missing');
+});
+
+test("line 34", (t) => {
+  return t.throws(() => {
+    return pathType(['a']);
+  });
+});
+
+test("line 35", (t) => {
+  return t.is(pathType('.', 'test'), 'dir');
+});
+
+test("line 36", (t) => {
+  return t.is(pathType('.', 'package.json'), 'file');
+});
+
+test("line 37", (t) => {
+  return t.is(pathType('.', 'package2.json'), 'missing');
+});
+
+// ---------------------------------------------------------------------------
+test("line 41", (t) => {
   return t.truthy(isFile(mkpath(dir, 'package.json')));
 });
 
-test("line 22", (t) => {
+test("line 42", (t) => {
   return t.falsy(isFile(mkpath(dir, 'doesNotExist.txt')));
 });
 
-test("line 23", (t) => {
+test("line 43", (t) => {
   return t.truthy(isDir(mkpath(dir, 'src')));
 });
 
-test("line 24", (t) => {
+test("line 44", (t) => {
   return t.truthy(isDir(mkpath(dir, 'test')));
 });
 
-test("line 25", (t) => {
+test("line 45", (t) => {
   return t.falsy(isDir(mkpath(dir, 'doesNotExist')));
 });
 
-test("line 33", (t) => {
+test("line 47", (t) => {
   return t.is(slurp(testPath, {
     maxLines: 2
   }), `abc
 def`);
 });
 
-test("line 38", (t) => {
+test("line 52", (t) => {
   return t.is(slurp(testPath, {
     maxLines: 3
   }), `abc
@@ -93,7 +132,7 @@ def
 ghi`);
 });
 
-test("line 44", (t) => {
+test("line 58", (t) => {
   return t.is(slurp(testPath, {
     maxLines: 1000
   }), `abc
@@ -104,14 +143,14 @@ mno`);
 });
 
 // --- Test without building path first
-test("line 54", (t) => {
+test("line 68", (t) => {
   return t.is(slurp(dir, 'test', 'readline.txt', {
     maxLines: 2
   }), `abc
 def`);
 });
 
-test("line 59", (t) => {
+test("line 73", (t) => {
   return t.is(slurp(dir, 'test', 'readline.txt', {
     maxLines: 3
   }), `abc
@@ -119,7 +158,7 @@ def
 ghi`);
 });
 
-test("line 65", (t) => {
+test("line 79", (t) => {
   return t.is(slurp(dir, 'test', 'readline.txt', {
     maxLines: 1000
   }), `abc
@@ -156,7 +195,7 @@ mno`);
   };
   fp = new TestProcessor();
   fp.procAll();
-  return test("line 101", (t) => {
+  return test("line 111", (t) => {
     return t.deepEqual(fp.hWords, {
       'ABC': true,
       'DEF': true,
@@ -174,7 +213,7 @@ mno`);
   var h, path;
   path = "./test/test/file3.txt";
   h = getTextFileContents(path);
-  return test("line 112", (t) => {
+  return test("line 128", (t) => {
     return t.deepEqual(h, {
       metadata: {
         fName: 'John',
@@ -196,7 +235,7 @@ mno`);
   for (hFileInfo of ref) {
     lFiles.push(hFileInfo);
   }
-  return test("line 126", (t) => {
+  return test("line 142", (t) => {
     return t.like(lFiles, [
       {
         fileName: 'file1.txt',
@@ -241,11 +280,11 @@ mno`);
   writer.writeln("line 1");
   writer.writeln("line 2");
   writer.end();
-  test("line 151", (t) => {
+  test("line 169", (t) => {
     return t.truthy(isFile(path));
   });
   text = slurp(path);
-  return test("line 154", (t) => {
+  return test("line 172", (t) => {
     return t.is(text, "line 1\nline 2\n");
   });
 })();

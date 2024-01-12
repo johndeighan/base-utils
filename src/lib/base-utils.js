@@ -1171,7 +1171,7 @@ export var choose = function(lItems) {
 };
 
 // ---------------------------------------------------------------------------
-// --- shuffle an array in place
+// --- shuffle an array in place, return ref to shuffled array
 export var shuffle = function(lItems) {
   var i, i2;
   i = lItems.length;
@@ -1183,6 +1183,7 @@ export var shuffle = function(lItems) {
     // --- And swap it with the current element.
     [lItems[i], lItems[i2]] = [lItems[i2], lItems[i]];
   }
+  return lItems;
 };
 
 //# sourceMappingURL=base-utils.js.map

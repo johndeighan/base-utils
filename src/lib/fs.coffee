@@ -50,6 +50,27 @@ export getPkgJsonPath = () =>
 	return filePath
 
 # ---------------------------------------------------------------------------
+# --- returns one of:
+#        (throws error if invalid path supplied)
+#        'missing'  - does not exist
+#        'dir'      - is a directory
+#        'file'     - is a file
+#        'unknown'  - exists, but not a file or directory
+
+export pathType = (lParts...) =>
+
+	fullPath = resolve lParts...
+	if fs.existsSync fullPath
+		if isFile fullPath
+			return 'file'
+		else if isDir fullPath
+			return 'dir'
+		else
+			return 'unknown'
+	else
+		return 'missing'
+
+# ---------------------------------------------------------------------------
 #    file functions
 # ---------------------------------------------------------------------------
 

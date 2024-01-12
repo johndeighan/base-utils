@@ -45,7 +45,8 @@ export mkpath = (lParts...) =>
 
 export resolve = (lParts...) =>
 
-	return fixPath(pathLib.resolve(lParts...))
+	fullPath = pathLib.resolve lParts...
+	return fixPath fullPath
 
 # ---------------------------------------------------------------------------
 # --- Returned object has keys:

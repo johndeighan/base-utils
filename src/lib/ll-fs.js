@@ -51,7 +51,9 @@ export var mkpath = (...lParts) => {
 
 // ---------------------------------------------------------------------------
 export var resolve = (...lParts) => {
-  return fixPath(pathLib.resolve(...lParts));
+  var fullPath;
+  fullPath = pathLib.resolve(...lParts);
+  return fixPath(fullPath);
 };
 
 // ---------------------------------------------------------------------------
