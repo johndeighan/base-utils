@@ -178,7 +178,7 @@ mno`);
     }
 
     begin() {
-      // --- We need to clear out hWords each time procAll() is called
+      // --- We need to clear out hWords each time go() is called
       this.hWords = {};
     }
 
@@ -194,7 +194,7 @@ mno`);
 
   };
   fp = new TestProcessor();
-  fp.procAll();
+  fp.go();
   return test("line 111", (t) => {
     return t.deepEqual(fp.hWords, {
       'ABC': true,

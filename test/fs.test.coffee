@@ -94,7 +94,7 @@ test "line 79", (t) => t.is slurp(dir, 'test', 'readline.txt', {maxLines: 1000})
 			super './test'
 
 		begin: () ->
-			# --- We need to clear out hWords each time procAll() is called
+			# --- We need to clear out hWords each time go() is called
 			@hWords = {}
 			return
 
@@ -107,7 +107,7 @@ test "line 79", (t) => t.is slurp(dir, 'test', 'readline.txt', {maxLines: 1000})
 			return
 
 	fp = new TestProcessor()
-	fp.procAll()
+	fp.go()
 	test "line 111", (t) => t.deepEqual(fp.hWords, {
 		'ABC': true
 		'DEF': true

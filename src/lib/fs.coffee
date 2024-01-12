@@ -509,15 +509,21 @@ export class FileWriterSync
 
 export class FileProcessor
 
-	constructor: (@dir, hOptions={}) ->
+	constructor: (@path, hOptions={}) ->
+		# --- path can be a file or directory
 		# --- Valid options:
 		#        debug
 		#        recursive
 
-		# --- convert dir to a full path
-		assert isString(@dir), "Source not a string"
-		@dir = resolve(@dir)
-		assert isDir(@dir), "Not a directory: #{@dir}"
+		assert isString(@path), "path not a string"
+
+		# --- determine type of path
+		@pathType = pathType @path
+		assert (@pathType == 'dir') || (@pathType == 'file'),
+			"path type #{@pathType} must be dir or file"
+
+		# --- convert path to a full path
+		@path = resolve @path
 
 		@hOptions = getOptions(hOptions)
 		@debug = !! @hOptions.debug
@@ -536,7 +542,7 @@ export class FileProcessor
 		return
 
 	# ..........................................................
-	# --- called at beginning of @procAll()
+	# --- called at beginning of @go()
 
 	begin: () ->
 
@@ -544,7 +550,7 @@ export class FileProcessor
 		return
 
 	# ..........................................................
-	# --- called at end of @procAll()
+	# --- called at end of @go()
 
 	end: () ->
 
@@ -559,20 +565,34 @@ export class FileProcessor
 
 	# ..........................................................
 
-	procAll: () ->
+	procAll: () ->   # for backwards compatibility
+
+		@go()
+
+	# ..........................................................
+
+	go: () ->
 
 		@begin()
-
-		@log "process all files in '#{@dir}'"
 		count = 0
-		for hFileInfo from allFilesIn(@dir, {recursive: @recursive})
+
+		if (@pathType == 'file')
+			hFileInfo = parseSource(@path)
 			name = hFileInfo.fileName
-			count += 1
-			if @filter(hFileInfo)
-				@log "[#{count}] #{name} - Handle"
-				@handleFile hFileInfo
-			else
-				@log "[#{count}] #{name} - Skip"
+			count = 1
+			@log "[#{count}] #{name} - Handle"
+			@handleFile hFileInfo
+		else
+			@log "process all files in '#{@path}'"
+			hOpt = {recursive: @recursive}
+			for hFileInfo from allFilesIn(@path, hOpt)
+				name = hFileInfo.fileName
+				count += 1
+				if @filter(hFileInfo)
+					@log "[#{count}] #{name} - Handle"
+					@handleFile hFileInfo
+				else
+					@log "[#{count}] #{name} - Skip"
 		@log "#{count} files processed"
 		@end()
 		return
@@ -617,4 +637,4 @@ export class FileProcessor
 
 	handleLine: (line, lineNum, hFileInfo) ->
 
-		return
+		return   # by default, does nothing

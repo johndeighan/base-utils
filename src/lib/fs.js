@@ -564,16 +564,18 @@ export var FileWriterSync = class FileWriterSync {
 
 // ---------------------------------------------------------------------------
 export var FileProcessor = class FileProcessor {
-  constructor(dir1, hOptions = {}) {
-    this.dir = dir1;
+  constructor(path1, hOptions = {}) {
+    this.path = path1;
+    // --- path can be a file or directory
     // --- Valid options:
     //        debug
     //        recursive
-
-    // --- convert dir to a full path
-    assert(isString(this.dir), "Source not a string");
-    this.dir = resolve(this.dir);
-    assert(isDir(this.dir), `Not a directory: ${this.dir}`);
+    assert(isString(this.path), "path not a string");
+    // --- determine type of path
+    this.pathType = pathType(this.path);
+    assert((this.pathType === 'dir') || (this.pathType === 'file'), `path type ${this.pathType} must be dir or file`);
+    // --- convert path to a full path
+    this.path = resolve(this.path);
     this.hOptions = getOptions(hOptions);
     this.debug = !!this.hOptions.debug;
     this.recursive = !!this.hOptions.recursive;
@@ -592,13 +594,13 @@ export var FileProcessor = class FileProcessor {
   }
 
   // ..........................................................
-  // --- called at beginning of @procAll()
+  // --- called at beginning of @go()
   begin() {
     this.log("begin() called");
   }
 
   // ..........................................................
-  // --- called at end of @procAll()
+  // --- called at end of @go()
   end() {
     this.log("end() called");
   }
@@ -610,22 +612,36 @@ export var FileProcessor = class FileProcessor {
 
   
     // ..........................................................
-  procAll() {
-    var count, hFileInfo, name, ref;
+  procAll() { // for backwards compatibility
+    return this.go();
+  }
+
+  // ..........................................................
+  go() {
+    var count, hFileInfo, hOpt, name, ref;
     this.begin();
-    this.log(`process all files in '${this.dir}'`);
     count = 0;
-    ref = allFilesIn(this.dir, {
-      recursive: this.recursive
-    });
-    for (hFileInfo of ref) {
+    if (this.pathType === 'file') {
+      hFileInfo = parseSource(this.path);
       name = hFileInfo.fileName;
-      count += 1;
-      if (this.filter(hFileInfo)) {
-        this.log(`[${count}] ${name} - Handle`);
-        this.handleFile(hFileInfo);
-      } else {
-        this.log(`[${count}] ${name} - Skip`);
+      count = 1;
+      this.log(`[${count}] ${name} - Handle`);
+      this.handleFile(hFileInfo);
+    } else {
+      this.log(`process all files in '${this.path}'`);
+      hOpt = {
+        recursive: this.recursive
+      };
+      ref = allFilesIn(this.path, hOpt);
+      for (hFileInfo of ref) {
+        name = hFileInfo.fileName;
+        count += 1;
+        if (this.filter(hFileInfo)) {
+          this.log(`[${count}] ${name} - Handle`);
+          this.handleFile(hFileInfo);
+        } else {
+          this.log(`[${count}] ${name} - Skip`);
+        }
       }
     }
     this.log(`${count} files processed`);
@@ -665,7 +681,7 @@ export var FileProcessor = class FileProcessor {
   }
 
   // ..........................................................
-  handleLine(line, lineNum, hFileInfo) {}
+  handleLine(line, lineNum, hFileInfo) {} // by default, does nothing
 
 };
 
