@@ -565,13 +565,7 @@ export class FileProcessor
 
 	# ..........................................................
 
-	procAll: () ->   # for backwards compatibility
-
-		@go()
-
-	# ..........................................................
-
-	go: () ->
+	procAll: () ->
 
 		@begin()
 		count = 0
@@ -595,6 +589,14 @@ export class FileProcessor
 					@log "[#{count}] #{name} - Skip"
 		@log "#{count} files processed"
 		@end()
+		return
+
+	# ..........................................................
+	# --- synonum for @procAll()
+
+	go: () ->
+
+		@procAll()
 		return
 
 	# ..........................................................

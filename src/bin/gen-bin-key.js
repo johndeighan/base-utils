@@ -20,7 +20,6 @@ import {
   isDir,
   mkpath,
   rmFileSync,
-  mkdirSync,
   slurp,
   forEachFileInDir,
   slurpJSON,

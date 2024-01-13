@@ -612,12 +612,7 @@ export var FileProcessor = class FileProcessor {
 
   
     // ..........................................................
-  procAll() { // for backwards compatibility
-    return this.go();
-  }
-
-  // ..........................................................
-  go() {
+  procAll() {
     var count, hFileInfo, hOpt, name, ref;
     this.begin();
     count = 0;
@@ -646,6 +641,12 @@ export var FileProcessor = class FileProcessor {
     }
     this.log(`${count} files processed`);
     this.end();
+  }
+
+  // ..........................................................
+  // --- synonum for @procAll()
+  go() {
+    this.procAll();
   }
 
   // ..........................................................

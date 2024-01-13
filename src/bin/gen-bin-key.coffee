@@ -6,7 +6,7 @@ import {undef, isEmpty, nonEmpty} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 # import {LOG} from '@jdeighan/base-utils/log'
 import {
-	isFile, isDir, mkpath, rmFileSync, mkdirSync,
+	isFile, isDir, mkpath, rmFileSync,
 	slurp, forEachFileInDir, slurpJSON, barfJSON,
 	} from '@jdeighan/base-utils/fs'
 
