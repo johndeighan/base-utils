@@ -92,6 +92,13 @@ export isDir = (dirPath) =>
 		return false
 
 # ---------------------------------------------------------------------------
+
+export rename = (oldPath, newPath) =>
+
+	fs.renameSync oldPath, newPath
+	return
+
+# ---------------------------------------------------------------------------
 # --- returns one of:
 #        'missing'  - does not exist
 #        'dir'      - is a directory
