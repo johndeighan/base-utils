@@ -15,9 +15,12 @@ import {
   toArray,
   getOptions,
   isString,
+  isNumber,
   isHash,
   isArray,
-  isIterable
+  isIterable,
+  fromJSON,
+  toJSON
 } from '@jdeighan/base-utils';
 
 import {
@@ -42,23 +45,34 @@ import {
 } from '@jdeighan/base-utils/taml';
 
 import {
-  fixPath,
+  myself,
   mydir,
   mkpath,
-  resolve,
-  parsePath
+  mkDir,
+  touch,
+  isFile,
+  isDir,
+  pathType,
+  rmFile,
+  rmDir,
+  parsePath,
+  parseSource
 } from '@jdeighan/base-utils/ll-fs';
 
 export {
-  fixPath,
+  myself,
   mydir,
   mkpath,
-  resolve,
-  parsePath
+  mkDir,
+  touch,
+  isFile,
+  isDir,
+  pathType,
+  rmFile,
+  rmDir,
+  parsePath,
+  parseSource
 };
-
-export var getFullPath = resolve; // for backward compatibility
-
 
 // ---------------------------------------------------------------------------
 export var getPkgJsonDir = () => {
@@ -75,7 +89,7 @@ export var getPkgJsonDir = () => {
       return mkpath(root, lDirs);
     }
     lDirs.pop();
-    dir = resolve('..', dir);
+    dir = mkpath('..', dir);
   }
 };
 
@@ -85,108 +99,6 @@ export var getPkgJsonPath = () => {
   filePath = mkpath(process.cwd(), 'package.json');
   assert(isFile(filePath), "Missing pacakge.json at cur dir");
   return filePath;
-};
-
-// ---------------------------------------------------------------------------
-// --- returns one of:
-//        (throws error if invalid path supplied)
-//        'missing'  - does not exist
-//        'dir'      - is a directory
-//        'file'     - is a file
-//        'unknown'  - exists, but not a file or directory
-export var pathType = (...lParts) => {
-  var fullPath;
-  fullPath = resolve(...lParts);
-  if (fs.existsSync(fullPath)) {
-    if (isFile(fullPath)) {
-      return 'file';
-    } else if (isDir(fullPath)) {
-      return 'dir';
-    } else {
-      return 'unknown';
-    }
-  } else {
-    return 'missing';
-  }
-};
-
-// ---------------------------------------------------------------------------
-//    file functions
-// ---------------------------------------------------------------------------
-export var fileExists = (filePath) => {
-  return fs.existsSync(filePath);
-};
-
-// ---------------------------------------------------------------------------
-export var isFile = (filePath) => {
-  if (!fileExists(filePath)) {
-    return false;
-  }
-  try {
-    return fs.lstatSync(filePath).isFile();
-  } catch (error) {
-    return false;
-  }
-};
-
-// ---------------------------------------------------------------------------
-export var rmFile = (filePath) => {
-  if (fileExists(filePath)) {
-    fs.rmSync(filePath);
-  }
-};
-
-// ---------------------------------------------------------------------------
-//    directory functions
-// ---------------------------------------------------------------------------
-export var dirExists = (dirPath) => {
-  return fs.existsSync(dirPath);
-};
-
-// ---------------------------------------------------------------------------
-export var isDir = (dirPath) => {
-  if (!dirExists(dirPath)) {
-    return false;
-  }
-  try {
-    return fs.lstatSync(dirPath).isDirectory();
-  } catch (error) {
-    return false;
-  }
-};
-
-// ---------------------------------------------------------------------------
-export var mkdir = (dirPath) => {
-  var err;
-  try {
-    fs.mkdirSync(dirPath);
-    return true;
-  } catch (error) {
-    err = error;
-    if (err.code === 'EEXIST') {
-      return false;
-    } else {
-      throw err;
-    }
-  }
-};
-
-// ---------------------------------------------------------------------------
-export var rmDir = (dirPath, recursive = true) => {
-  fs.rmdirSync(dirPath, {recursive});
-};
-
-// ---------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
-export var fromJSON = (strJson) => {
-  // --- string to data structure
-  return JSON.parse(strJson);
-};
-
-// ---------------------------------------------------------------------------
-export var toJSON = (hJson) => {
-  // --- data structure to string
-  return JSON.stringify(hJson, null, "\t");
 };
 
 // ---------------------------------------------------------------------------
@@ -279,56 +191,6 @@ export var barfPkgJSON = (hJson, ...lParts) => {
     assert(isFile(pkgJsonPath), "Missing package.json at cur dir");
   }
   barfJSON(hJson, pkgJsonPath);
-};
-
-// ---------------------------------------------------------------------------
-export var parseSource = (source) => {
-  var dir, hInfo, hSourceInfo, lMatches;
-  // --- returns {
-  //        dir
-  //        fileName,
-  //        filePath,
-  //        stub
-  //        ext
-  //        purpose
-  //        }
-  // --- NOTE: source may be a file URL, e.g. import.meta.url
-  dbgEnter('parseSource', source);
-  assert(isString(source), "parseSource(): source not a string");
-  if (source.match(/^file\:\/\//)) {
-    source = urlLib.fileURLToPath(source);
-  }
-  if (isDir(source)) {
-    hSourceInfo = {
-      dir: source,
-      filePath: source
-    };
-  } else {
-    assert(isFile(source), `source ${source} not a file or directory`);
-    hInfo = pathLib.parse(source);
-    dir = hInfo.dir;
-    if (dir) {
-      hSourceInfo = {
-        dir: dir.replaceAll("\\", "/"),
-        filePath: mkpath(dir, hInfo.base),
-        fileName: hInfo.base,
-        stub: hInfo.name,
-        ext: hInfo.ext
-      };
-    } else {
-      hSourceInfo = {
-        fileName: hInfo.base,
-        stub: hInfo.name,
-        ext: hInfo.ext
-      };
-    }
-    // --- check for a 'purpose'
-    if (lMatches = hSourceInfo.stub.match(/\.([A-Za-z_]+)$/)) {
-      hSourceInfo.purpose = lMatches[1];
-    }
-  }
-  dbgReturn('parseSource', hSourceInfo);
-  return hSourceInfo;
 };
 
 // ---------------------------------------------------------------------------
@@ -523,7 +385,7 @@ export var FileWriterSync = class FileWriterSync {
   constructor(filePath1) {
     this.filePath = filePath1;
     assert(isString(this.filePath), `Not a string: ${this.filePath}`);
-    this.fullPath = resolve(this.filePath);
+    this.fullPath = mkpath(this.filePath);
     assert(isString(this.fullPath), `Bad path: ${this.filePath}`);
     this.fd = fs.openSync(this.fullPath, 'w');
   }
@@ -539,20 +401,18 @@ export var FileWriterSync = class FileWriterSync {
     assert(defined(this.fd), "Write after end()");
     for (i = 0, len = lStrings.length; i < len; i++) {
       str = lStrings[i];
-      assert(isString(str), `Not a string: '${str}'`);
-      fs.writeSync(this.fd, str);
+      if (isNumber(str)) {
+        fs.writeSync(this.fd, str.toString());
+      } else {
+        assert(isString(str), `Not a string: '${str}'`);
+        fs.writeSync(this.fd, str);
+      }
     }
   }
 
   writeln(...lStrings) {
-    var i, len, str;
-    assert(defined(this.fd), "writeln after end()");
-    for (i = 0, len = lStrings.length; i < len; i++) {
-      str = lStrings[i];
-      assert(isString(str), `Not a string: '${str}'`);
-      fs.writeSync(this.fd, str);
-      fs.writeSync(this.fd, "\n");
-    }
+    this.write(...lStrings);
+    this.write("\n");
   }
 
   end() {
@@ -575,7 +435,7 @@ export var FileProcessor = class FileProcessor {
     this.pathType = pathType(this.path);
     assert((this.pathType === 'dir') || (this.pathType === 'file'), `path type ${this.pathType} must be dir or file`);
     // --- convert path to a full path
-    this.path = resolve(this.path);
+    this.path = mkpath(this.path);
     this.hOptions = getOptions(hOptions);
     this.debug = !!this.hOptions.debug;
     this.recursive = !!this.hOptions.recursive;

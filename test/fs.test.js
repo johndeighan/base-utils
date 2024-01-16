@@ -1,37 +1,21 @@
 // fs.test.coffee
 var dir, testDir, testPath;
 
-import test from 'ava';
+import {
+  utest
+} from '@jdeighan/base-utils/utest';
 
 import {
   undef,
-  defined,
-  notdefined,
-  LOG
+  fromJSON,
+  toJSON
 } from '@jdeighan/base-utils';
 
 import {
-  setDebugging
-} from '@jdeighan/base-utils/debug';
-
-import {
-  mkpath
-} from '@jdeighan/base-utils/ll-fs';
-
-import {
-  resolve,
-  pathType,
+  mkpath,
+  isFile,
   getPkgJsonDir,
   getPkgJsonPath,
-  fileExists,
-  isFile,
-  rmFile,
-  dirExists,
-  isDir,
-  mkdir,
-  rmDir,
-  fromJSON,
-  toJSON,
   slurp,
   slurpJSON,
   slurpTAML,
@@ -59,114 +43,44 @@ testDir = mkpath(dir, 'test');
 testPath = mkpath(dir, 'test', 'readline.txt');
 
 // ---------------------------------------------------------------------------
-// --- test pathType
-test("line 29", (t) => {
-  return t.throws(() => {
-    return pathType(42);
-  });
-});
-
-test("line 30", (t) => {
-  return t.is(pathType('.'), 'dir');
-});
-
-test("line 31", (t) => {
-  return t.is(pathType('./package.json'), 'file');
-});
-
-test("line 32", (t) => {
-  return t.is(pathType('./package2.json'), 'missing');
-});
-
-test("line 34", (t) => {
-  return t.throws(() => {
-    return pathType(['a']);
-  });
-});
-
-test("line 35", (t) => {
-  return t.is(pathType('.', 'test'), 'dir');
-});
-
-test("line 36", (t) => {
-  return t.is(pathType('.', 'package.json'), 'file');
-});
-
-test("line 37", (t) => {
-  return t.is(pathType('.', 'package2.json'), 'missing');
-});
-
-// ---------------------------------------------------------------------------
-test("line 41", (t) => {
-  return t.truthy(isFile(mkpath(dir, 'package.json')));
-});
-
-test("line 42", (t) => {
-  return t.falsy(isFile(mkpath(dir, 'doesNotExist.txt')));
-});
-
-test("line 43", (t) => {
-  return t.truthy(isDir(mkpath(dir, 'src')));
-});
-
-test("line 44", (t) => {
-  return t.truthy(isDir(mkpath(dir, 'test')));
-});
-
-test("line 45", (t) => {
-  return t.falsy(isDir(mkpath(dir, 'doesNotExist')));
-});
-
-test("line 47", (t) => {
-  return t.is(slurp(testPath, {
-    maxLines: 2
-  }), `abc
+utest.equal(43, slurp(testPath, {
+  maxLines: 2
+}), `abc
 def`);
-});
 
-test("line 52", (t) => {
-  return t.is(slurp(testPath, {
-    maxLines: 3
-  }), `abc
+utest.equal(48, slurp(testPath, {
+  maxLines: 3
+}), `abc
 def
 ghi`);
-});
 
-test("line 58", (t) => {
-  return t.is(slurp(testPath, {
-    maxLines: 1000
-  }), `abc
+utest.equal(54, slurp(testPath, {
+  maxLines: 1000
+}), `abc
 def
 ghi
 jkl
 mno`);
-});
 
 // --- Test without building path first
-test("line 68", (t) => {
-  return t.is(slurp(dir, 'test', 'readline.txt', {
-    maxLines: 2
-  }), `abc
+utest.equal(64, slurp(dir, 'test', 'readline.txt', {
+  maxLines: 2
+}), `abc
 def`);
-});
 
-test("line 73", (t) => {
-  return t.is(slurp(dir, 'test', 'readline.txt', {
-    maxLines: 3
-  }), `abc
+utest.equal(69, slurp(dir, 'test', 'readline.txt', {
+  maxLines: 3
+}), `abc
 def
 ghi`);
-});
 
-test("line 79", (t) => {
-  return t.is(slurp(dir, 'test', 'readline.txt', {
-    maxLines: 1000
-  }), `abc
+utest.equal(75, slurp(dir, 'test', 'readline.txt', {
+  maxLines: 1000
+}), `abc
 def
 ghi
 jkl
 mno`);
-});
 
 // ---------------------------------------------------------------------------
 // --- test FileProcessor
@@ -194,16 +108,14 @@ mno`);
 
   };
   fp = new TestProcessor();
-  fp.go();
-  return test("line 111", (t) => {
-    return t.deepEqual(fp.hWords, {
-      'ABC': true,
-      'DEF': true,
-      'GHI': true,
-      'JKL': true,
-      'MNO': true,
-      'PQR': true
-    });
+  fp.procAll();
+  return utest.equal(107, fp.hWords, {
+    'ABC': true,
+    'DEF': true,
+    'GHI': true,
+    'JKL': true,
+    'MNO': true,
+    'PQR': true
   });
 })();
 
@@ -213,14 +125,12 @@ mno`);
   var h, path;
   path = "./test/test/file3.txt";
   h = getTextFileContents(path);
-  return test("line 128", (t) => {
-    return t.deepEqual(h, {
-      metadata: {
-        fName: 'John',
-        lName: 'Deighan'
-      },
-      lLines: ['', 'This is a test']
-    });
+  return utest.equal(124, h, {
+    metadata: {
+      fName: 'John',
+      lName: 'Deighan'
+    },
+    lLines: ['', 'This is a test']
   });
 })();
 
@@ -235,39 +145,37 @@ mno`);
   for (hFileInfo of ref) {
     lFiles.push(hFileInfo);
   }
-  return test("line 142", (t) => {
-    return t.like(lFiles, [
-      {
-        fileName: 'file1.txt',
-        metadata: undef,
-        lLines: ['DONE']
+  return utest.like(138, lFiles, [
+    {
+      fileName: 'file1.txt',
+      metadata: undef,
+      lLines: ['DONE']
+    },
+    {
+      fileName: 'file1.zh',
+      metadata: undef,
+      lLines: ['DONE']
+    },
+    {
+      fileName: 'file2.txt',
+      metadata: undef,
+      lLines: ['DONE']
+    },
+    {
+      fileName: 'file2.zh',
+      metadata: undef,
+      lLines: ['DONE']
+    },
+    {
+      fileName: 'file3.txt',
+      metadata: {
+        fName: 'John',
+        lName: 'Deighan'
       },
-      {
-        fileName: 'file1.zh',
-        metadata: undef,
-        lLines: ['DONE']
-      },
-      {
-        fileName: 'file2.txt',
-        metadata: undef,
-        lLines: ['DONE']
-      },
-      {
-        fileName: 'file2.zh',
-        metadata: undef,
-        lLines: ['DONE']
-      },
-      {
-        fileName: 'file3.txt',
-        metadata: {
-          fName: 'John',
-          lName: 'Deighan'
-        },
-        lLines: ['',
-      'This is a test']
-      }
-    ]);
-  });
+      lLines: ['',
+    'This is a test']
+    }
+  ]);
 })();
 
 // ---------------------------------------------------------------------------
@@ -280,13 +188,9 @@ mno`);
   writer.writeln("line 1");
   writer.writeln("line 2");
   writer.end();
-  test("line 169", (t) => {
-    return t.truthy(isFile(path));
-  });
+  utest.truthy(165, isFile(path));
   text = slurp(path);
-  return test("line 172", (t) => {
-    return t.is(text, "line 1\nline 2\n");
-  });
+  return utest.equal(168, text, "line 1\nline 2\n");
 })();
 
 //# sourceMappingURL=fs.test.js.map

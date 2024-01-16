@@ -7,18 +7,24 @@ import NReadLines from 'n-readlines'
 
 import {
 	undef, defined, nonEmpty, toBlock, toArray, getOptions,
-	isString, isHash, isArray, isIterable,
+	isString, isNumber, isHash, isArray, isIterable,
+	fromJSON, toJSON,
 	} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 import {toTAML, fromTAML} from '@jdeighan/base-utils/taml'
 import {
-	fixPath, mydir, mkpath, resolve, parsePath,
+	myself, mydir, mkpath,
+	mkDir, touch, isFile, isDir,
+	pathType, rmFile, rmDir, parsePath, parseSource,
 	} from '@jdeighan/base-utils/ll-fs'
 
-export {fixPath, mydir, mkpath, resolve, parsePath}
-export getFullPath = resolve   # for backward compatibility
+export {
+	myself, mydir, mkpath,
+	mkDir, touch, isFile, isDir,
+	pathType, rmFile, rmDir, parsePath, parseSource,
+	}
 
 # ---------------------------------------------------------------------------
 
@@ -39,7 +45,7 @@ export getPkgJsonDir = () =>
 			return mkpath(root, lDirs)
 		lDirs.pop()
 
-		dir = resolve('..', dir)
+		dir = mkpath('..', dir)
 
 # ---------------------------------------------------------------------------
 
@@ -48,108 +54,6 @@ export getPkgJsonPath = () =>
 	filePath = mkpath(process.cwd(), 'package.json')
 	assert isFile(filePath), "Missing pacakge.json at cur dir"
 	return filePath
-
-# ---------------------------------------------------------------------------
-# --- returns one of:
-#        (throws error if invalid path supplied)
-#        'missing'  - does not exist
-#        'dir'      - is a directory
-#        'file'     - is a file
-#        'unknown'  - exists, but not a file or directory
-
-export pathType = (lParts...) =>
-
-	fullPath = resolve lParts...
-	if fs.existsSync fullPath
-		if isFile fullPath
-			return 'file'
-		else if isDir fullPath
-			return 'dir'
-		else
-			return 'unknown'
-	else
-		return 'missing'
-
-# ---------------------------------------------------------------------------
-#    file functions
-# ---------------------------------------------------------------------------
-
-export fileExists = (filePath) =>
-
-	return fs.existsSync(filePath)
-
-# ---------------------------------------------------------------------------
-
-export isFile = (filePath) =>
-
-	if ! fileExists(filePath)
-		return false
-	try
-		return fs.lstatSync(filePath).isFile()
-	catch
-		return false
-
-# ---------------------------------------------------------------------------
-
-export rmFile = (filePath) =>
-
-	if fileExists(filePath)
-		fs.rmSync filePath
-	return
-
-# ---------------------------------------------------------------------------
-#    directory functions
-# ---------------------------------------------------------------------------
-
-export dirExists = (dirPath) =>
-
-	return fs.existsSync(dirPath)
-
-# ---------------------------------------------------------------------------
-
-export isDir = (dirPath) =>
-
-	if ! dirExists(dirPath)
-		return false
-	try
-		return fs.lstatSync(dirPath).isDirectory()
-	catch
-		return false
-
-# ---------------------------------------------------------------------------
-
-export mkdir = (dirPath) =>
-
-	try
-		fs.mkdirSync dirPath
-		return true
-	catch err
-		if (err.code == 'EEXIST')
-			return false
-		else
-			throw err
-
-# ---------------------------------------------------------------------------
-
-export rmDir = (dirPath, recursive=true) =>
-
-	fs.rmdirSync dirPath, {recursive}
-	return
-
-# ---------------------------------------------------------------------------
-# ---------------------------------------------------------------------------
-
-export fromJSON = (strJson) =>
-	# --- string to data structure
-
-	return JSON.parse(strJson)
-
-# ---------------------------------------------------------------------------
-
-export toJSON = (hJson) =>
-	# --- data structure to string
-
-	return JSON.stringify(hJson, null, "\t")
 
 # ---------------------------------------------------------------------------
 #   slurp - read a file into a string
@@ -247,57 +151,6 @@ export barfPkgJSON = (hJson, lParts...) =>
 		assert isFile(pkgJsonPath), "Missing package.json at cur dir"
 	barfJSON(hJson, pkgJsonPath)
 	return
-
-# ---------------------------------------------------------------------------
-
-export parseSource = (source) =>
-	# --- returns {
-	#        dir
-	#        fileName,
-	#        filePath,
-	#        stub
-	#        ext
-	#        purpose
-	#        }
-	# --- NOTE: source may be a file URL, e.g. import.meta.url
-
-	dbgEnter 'parseSource', source
-	assert isString(source), "parseSource(): source not a string"
-	if source.match(/^file\:\/\//)
-		source = urlLib.fileURLToPath(source)
-
-	if isDir(source)
-		hSourceInfo = {
-			dir: source
-			filePath: source
-			}
-	else
-		assert isFile(source), "source #{source} not a file or directory"
-		hInfo = pathLib.parse(source)
-		dir = hInfo.dir
-		if dir
-			hSourceInfo = {
-				dir: dir.replaceAll("\\", "/")
-				filePath: mkpath(dir, hInfo.base)
-				fileName: hInfo.base
-				stub: hInfo.name
-				ext: hInfo.ext
-				}
-		else
-			hSourceInfo = {
-				fileName: hInfo.base
-				stub: hInfo.name
-				ext: hInfo.ext
-				}
-
-		# --- check for a 'purpose'
-		if lMatches = hSourceInfo.stub.match(///
-				\.
-				([A-Za-z_]+)
-				$///)
-			hSourceInfo.purpose = lMatches[1]
-	dbgReturn 'parseSource', hSourceInfo
-	return hSourceInfo
 
 # ---------------------------------------------------------------------------
 
@@ -472,7 +325,7 @@ export class FileWriterSync
 	constructor: (@filePath) ->
 
 		assert isString(@filePath), "Not a string: #{@filePath}"
-		@fullPath = resolve(@filePath)
+		@fullPath = mkpath(@filePath)
 		assert isString(@fullPath), "Bad path: #{@filePath}"
 		@fd = fs.openSync(@fullPath, 'w')
 
@@ -486,17 +339,17 @@ export class FileWriterSync
 
 		assert defined(@fd), "Write after end()"
 		for str in lStrings
-			assert isString(str), "Not a string: '#{str}'"
-			fs.writeSync @fd, str
+			if isNumber(str)
+				fs.writeSync @fd, str.toString()
+			else
+				assert isString(str), "Not a string: '#{str}'"
+				fs.writeSync @fd, str
 		return
 
 	writeln: (lStrings...) ->
 
-		assert defined(@fd), "writeln after end()"
-		for str in lStrings
-			assert isString(str), "Not a string: '#{str}'"
-			fs.writeSync @fd, str
-			fs.writeSync @fd, "\n"
+		@write lStrings...
+		@write "\n"
 		return
 
 	end: () ->
@@ -523,7 +376,7 @@ export class FileProcessor
 			"path type #{@pathType} must be dir or file"
 
 		# --- convert path to a full path
-		@path = resolve @path
+		@path = mkpath @path
 
 		@hOptions = getOptions(hOptions)
 		@debug = !! @hOptions.debug

@@ -1,17 +1,10 @@
 # fs.test.coffee
 
-import test from 'ava'
+import {utest} from '@jdeighan/base-utils/utest'
+import {undef, fromJSON, toJSON} from '@jdeighan/base-utils'
 import {
-	undef, defined, notdefined, LOG,
-	} from '@jdeighan/base-utils'
-import {setDebugging} from '@jdeighan/base-utils/debug'
-import {mkpath} from '@jdeighan/base-utils/ll-fs'
-import {
-	resolve, pathType,
+	mkpath, isFile,
 	getPkgJsonDir, getPkgJsonPath,
-	fileExists, isFile, rmFile,
-	dirExists, isDir, mkdir, rmDir,
-	fromJSON, toJSON,
 	slurp, slurpJSON, slurpTAML, slurpPkgJSON,
 	barf, barfJSON, barfTAML, barfPkgJSON,
 	parseSource, getTextFileContents, allFilesIn, allLinesIn,
@@ -24,38 +17,19 @@ testDir = mkpath(dir, 'test')
 testPath = mkpath(dir, 'test', 'readline.txt')
 
 # ---------------------------------------------------------------------------
-# --- test pathType
 
-test "line 29", (t) => t.throws () => pathType(42)
-test "line 30", (t) => t.is pathType('.'), 'dir'
-test "line 31", (t) => t.is pathType('./package.json'), 'file'
-test "line 32", (t) => t.is pathType('./package2.json'), 'missing'
-
-test "line 34", (t) => t.throws () => pathType(['a'])
-test "line 35", (t) => t.is pathType('.', 'test'), 'dir'
-test "line 36", (t) => t.is pathType('.','package.json'), 'file'
-test "line 37", (t) => t.is pathType('.','package2.json'), 'missing'
-
-# ---------------------------------------------------------------------------
-
-test "line 41", (t) => t.truthy(isFile(mkpath(dir, 'package.json')))
-test "line 42", (t) => t.falsy (isFile(mkpath(dir, 'doesNotExist.txt')))
-test "line 43", (t) => t.truthy(isDir(mkpath(dir, 'src')))
-test "line 44", (t) => t.truthy(isDir(mkpath(dir, 'test')))
-test "line 45", (t) => t.falsy (isDir(mkpath(dir, 'doesNotExist')))
-
-test "line 47", (t) => t.is slurp(testPath, {maxLines: 2}), """
+utest.equal 43, slurp(testPath, {maxLines: 2}), """
 	abc
 	def
 	"""
 
-test "line 52", (t) => t.is slurp(testPath, {maxLines: 3}), """
+utest.equal 48, slurp(testPath, {maxLines: 3}), """
 	abc
 	def
 	ghi
 	"""
 
-test "line 58", (t) => t.is slurp(testPath, {maxLines: 1000}), """
+utest.equal 54, slurp(testPath, {maxLines: 1000}), """
 	abc
 	def
 	ghi
@@ -65,18 +39,18 @@ test "line 58", (t) => t.is slurp(testPath, {maxLines: 1000}), """
 
 # --- Test without building path first
 
-test "line 68", (t) => t.is slurp(dir, 'test', 'readline.txt', {maxLines: 2}), """
+utest.equal 64, slurp(dir, 'test', 'readline.txt', {maxLines: 2}), """
 	abc
 	def
 	"""
 
-test "line 73", (t) => t.is slurp(dir, 'test', 'readline.txt', {maxLines: 3}), """
+utest.equal 69, slurp(dir, 'test', 'readline.txt', {maxLines: 3}), """
 	abc
 	def
 	ghi
 	"""
 
-test "line 79", (t) => t.is slurp(dir, 'test', 'readline.txt', {maxLines: 1000}), """
+utest.equal 75, slurp(dir, 'test', 'readline.txt', {maxLines: 1000}), """
 	abc
 	def
 	ghi
@@ -107,15 +81,15 @@ test "line 79", (t) => t.is slurp(dir, 'test', 'readline.txt', {maxLines: 1000})
 			return
 
 	fp = new TestProcessor()
-	fp.go()
-	test "line 111", (t) => t.deepEqual(fp.hWords, {
+	fp.procAll()
+	utest.equal 107, fp.hWords, {
 		'ABC': true
 		'DEF': true
 		'GHI': true
 		'JKL': true
 		'MNO': true
 		'PQR': true
-		})
+		}
 
 	)()
 
@@ -125,10 +99,10 @@ test "line 79", (t) => t.is slurp(dir, 'test', 'readline.txt', {maxLines: 1000})
 (() =>
 	path = "./test/test/file3.txt"
 	h = getTextFileContents(path)
-	test "line 128", (t) => t.deepEqual(h, {
+	utest.equal 124, h, {
 		metadata: {fName: 'John', lName: 'Deighan'}
 		lLines: ['', 'This is a test']
-		})
+		}
 	)()
 
 # ---------------------------------------------------------------------------
@@ -139,7 +113,7 @@ test "line 79", (t) => t.is slurp(dir, 'test', 'readline.txt', {maxLines: 1000})
 	for hFileInfo from allFilesIn('./test/test', {eager: true})
 		lFiles.push hFileInfo
 
-	test "line 142", (t) => t.like(lFiles, [
+	utest.like 138, lFiles, [
 		{fileName: 'file1.txt', metadata: undef, lLines: ['DONE']}
 		{fileName: 'file1.zh',  metadata: undef, lLines: ['DONE']}
 		{fileName: 'file2.txt', metadata: undef, lLines: ['DONE']}
@@ -149,7 +123,7 @@ test "line 79", (t) => t.is slurp(dir, 'test', 'readline.txt', {maxLines: 1000})
 			metadata: {fName: 'John', lName: 'Deighan'}
 			lLines: ['','This is a test']
 			}
-		])
+		]
 
 	)()
 
@@ -166,8 +140,8 @@ test "line 79", (t) => t.is slurp(dir, 'test', 'readline.txt', {maxLines: 1000})
 	writer.writeln "line 2"
 	writer.end()
 
-	test "line 169", (t) => t.truthy(isFile(path))
+	utest.truthy 165, isFile(path)
 
 	text = slurp path
-	test "line 172", (t) => t.is(text, "line 1\nline 2\n")
+	utest.equal 168, text, "line 1\nline 2\n"
 	)()

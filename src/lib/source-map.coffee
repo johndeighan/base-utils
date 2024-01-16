@@ -8,7 +8,7 @@ import {
 	isEmpty, nonEmpty, deepCopy,
 	} from '@jdeighan/base-utils/ll-utils'
 import {isInteger} from '@jdeighan/base-utils'
-import {mkpath, resolve} from '@jdeighan/base-utils/ll-fs'
+import {mkpath} from '@jdeighan/base-utils/ll-fs'
 
 # --- cache to hold previously fetched file contents
 hSourceMaps = {}    # { filepath => rawMap, ... }
@@ -39,7 +39,7 @@ export mapPos = (rawMap, hPos, debug=false) ->
 	smc = new SourceMapConsumer(rawMap)
 	hResult = smc.originalPositionFor(hPos)
 	try
-		resolved = resolve(hResult.source)
+		resolved = mkpath(hResult.source)
 		source = mkpath(resolved)
 		hResult.source = source
 	return hResult

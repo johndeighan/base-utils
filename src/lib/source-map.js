@@ -26,8 +26,7 @@ import {
 } from '@jdeighan/base-utils';
 
 import {
-  mkpath,
-  resolve
+  mkpath
 } from '@jdeighan/base-utils/ll-fs';
 
 // --- cache to hold previously fetched file contents
@@ -60,7 +59,7 @@ export var mapPos = function(rawMap, hPos, debug = false) {
   smc = new SourceMapConsumer(rawMap);
   hResult = smc.originalPositionFor(hPos);
   try {
-    resolved = resolve(hResult.source);
+    resolved = mkpath(hResult.source);
     source = mkpath(resolved);
     hResult.source = source;
   } catch (error) {}

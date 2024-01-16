@@ -32,6 +32,18 @@ export {
 export var LOG = console.log;
 
 // ---------------------------------------------------------------------------
+export var fromJSON = (strJson) => {
+  // --- string to data structure
+  return JSON.parse(strJson);
+};
+
+// ---------------------------------------------------------------------------
+export var toJSON = (hJson) => {
+  // --- data structure to string
+  return JSON.stringify(hJson, null, "\t");
+};
+
+// ---------------------------------------------------------------------------
 export var runCmd = (cmd) => {
   var err, result;
   try {
@@ -1184,6 +1196,84 @@ export var shuffle = function(lItems) {
     [lItems[i], lItems[i2]] = [lItems[i2], lItems[i]];
   }
   return lItems;
+};
+
+// ---------------------------------------------------------------------------
+export var pad = (x, width, hOptions = {}) => {
+  var decPlaces, justify, lPad, rPad, str, subtype, toAdd, truncate, type;
+  // --- hOptions.justify can be 'left','center','right'
+  ({decPlaces, justify, truncate} = getOptions(hOptions, {
+    decPlaces: undef,
+    justify: undef,
+    truncate: false
+  }));
+  [type, subtype] = jsType(x);
+  switch (type) {
+    case undef:
+      str = 'undef';
+      if (notdefined(justify)) {
+        justify = 'left';
+      }
+      break;
+    case 'string':
+      str = x;
+      if (notdefined(justify)) {
+        justify = 'left';
+      }
+      break;
+    case 'boolean':
+      if (x) {
+        str = 'true';
+      } else {
+        str = 'false';
+      }
+      if (notdefined(justify)) {
+        justify = 'center';
+      }
+      break;
+    case 'number':
+      if (defined(decPlaces)) {
+        str = x.toFixed(decPlaces);
+      } else if (subtype === 'integer') {
+        str = x.toString();
+      } else {
+        str = x.toFixed(2);
+      }
+      if (notdefined(justify)) {
+        justify = 'right';
+      }
+      break;
+    case 'object':
+      str = '[Object]';
+      if (notdefined(justify)) {
+        justify = 'left';
+      }
+      break;
+    default:
+      croak(`Invalid value: ${OL(x)}`);
+  }
+  toAdd = width - str.length;
+  if (toAdd === 0) {
+    return str;
+  } else if (toAdd < 0) {
+    if (truncate) {
+      return str.substring(0, width);
+    } else {
+      return str;
+    }
+  }
+  switch (justify) {
+    case 'left':
+      return str + ' '.repeat(toAdd);
+    case 'center':
+      lPad = Math.floor(toAdd / 2);
+      rPad = toAdd - lPad;
+      return `${' '.repeat(lPad)}${str}${' '.repeat(rPad)}`;
+    case 'right':
+      return ' '.repeat(toAdd) + str;
+    default:
+      return croak(`Invalid value for justify: ${justify}`);
+  }
 };
 
 //# sourceMappingURL=base-utils.js.map

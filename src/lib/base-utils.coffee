@@ -16,6 +16,20 @@ export LOG = console.log
 
 # ---------------------------------------------------------------------------
 
+export fromJSON = (strJson) =>
+	# --- string to data structure
+
+	return JSON.parse(strJson)
+
+# ---------------------------------------------------------------------------
+
+export toJSON = (hJson) =>
+	# --- data structure to string
+
+	return JSON.stringify(hJson, null, "\t")
+
+# ---------------------------------------------------------------------------
+
 export runCmd = (cmd) =>
 
 	try
@@ -1025,3 +1039,67 @@ export shuffle = (lItems) ->
 		[lItems[i], lItems[i2]] = [lItems[i2], lItems[i]];
 
 	return lItems
+
+# ---------------------------------------------------------------------------
+
+export pad = (x, width, hOptions={}) =>
+	# --- hOptions.justify can be 'left','center','right'
+
+	{decPlaces, justify, truncate} = getOptions hOptions, {
+		decPlaces: undef
+		justify: undef
+		truncate: false
+		}
+	[type, subtype] = jsType(x)
+	switch type
+		when undef
+			str = 'undef'
+			if notdefined(justify)
+				justify = 'left'
+		when 'string'
+			str = x
+			if notdefined(justify)
+				justify = 'left'
+		when 'boolean'
+			if x
+				str = 'true'
+			else
+				str = 'false'
+			if notdefined(justify)
+				justify = 'center'
+		when 'number'
+			if defined(decPlaces)
+				str = x.toFixed(decPlaces)
+			else if (subtype == 'integer')
+				str = x.toString()
+			else
+				str = x.toFixed(2)
+			if notdefined(justify)
+				justify = 'right'
+		when 'object'
+			str = '[Object]'
+			if notdefined(justify)
+				justify = 'left'
+		else
+			croak "Invalid value: #{OL(x)}"
+
+	toAdd = width - str.length
+	if (toAdd == 0)
+		return str
+	else if (toAdd < 0)
+		if truncate
+			return str.substring(0, width)
+		else
+			return str
+
+	switch justify
+		when 'left'
+			return str + ' '.repeat(toAdd)
+		when 'center'
+			lPad = Math.floor(toAdd / 2)
+			rPad = toAdd - lPad
+			return "#{' '.repeat(lPad)}#{str}#{' '.repeat(rPad)}"
+		when 'right'
+			return ' '.repeat(toAdd) + str
+		else
+			croak "Invalid value for justify: #{justify}"

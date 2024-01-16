@@ -54,7 +54,15 @@ SimpleUnitTester = class SimpleUnitTester {
   }
 
   // ..........................................................
-  fails(lineNum, func) {
+  like(lineNum, val1, val2) {
+    lineNum = this.getLineNum(lineNum);
+    return test(`line ${lineNum}`, (t) => {
+      return t.like(val1, val2);
+    });
+  }
+
+  // ..........................................................
+  throws(lineNum, func) {
     var err, ok;
     lineNum = this.getLineNum(lineNum);
     if (typeof func !== 'function') {
@@ -70,6 +78,10 @@ SimpleUnitTester = class SimpleUnitTester {
     return test(`line ${lineNum}`, (t) => {
       return t.falsy(ok);
     });
+  }
+
+  fails(lineNum, func) {
+    return this.throws(lineNum, func);
   }
 
   // ..........................................................

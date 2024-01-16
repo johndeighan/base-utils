@@ -46,7 +46,14 @@ class SimpleUnitTester
 
 	# ..........................................................
 
-	fails: (lineNum, func) ->
+	like: (lineNum, val1, val2) ->
+
+		lineNum = @getLineNum(lineNum)
+		test "line #{lineNum}", (t) => t.like(val1, val2)
+
+	# ..........................................................
+
+	throws: (lineNum, func) ->
 
 		lineNum = @getLineNum(lineNum)
 		if (typeof func != 'function')
@@ -58,6 +65,10 @@ class SimpleUnitTester
 			ok = false
 
 		test "line #{lineNum}", (t) => t.falsy(ok)
+
+	fails: (lineNum, func) ->
+
+		return @throws(lineNum, func)
 
 	# ..........................................................
 
