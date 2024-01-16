@@ -105,6 +105,11 @@ export var isDir = (dirPath) => {
 };
 
 // ---------------------------------------------------------------------------
+export var rename = (oldPath, newPath) => {
+  fs.renameSync(oldPath, newPath);
+};
+
+// ---------------------------------------------------------------------------
 // --- returns one of:
 //        'missing'  - does not exist
 //        'dir'      - is a directory
