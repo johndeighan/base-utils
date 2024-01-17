@@ -32,6 +32,16 @@ export {
 export var LOG = console.log;
 
 // ---------------------------------------------------------------------------
+export var keys = (obj) => {
+  return Object.keys(obj);
+};
+
+// ---------------------------------------------------------------------------
+export var hasKey = (obj, key) => {
+  return obj.hasOwnProperty(key);
+};
+
+// ---------------------------------------------------------------------------
 export var fromJSON = (strJson) => {
   // --- string to data structure
   return JSON.parse(strJson);
@@ -478,7 +488,7 @@ export var jsType = (x) => {
         }
       }
       if (defined(x.constructor.name) && (typeof x.constructor.name === 'string') && (x.constructor.name === 'Object')) {
-        lKeys = Object.keys(x);
+        lKeys = keys(x);
         if (lKeys.length === 0) {
           return ['hash', 'empty'];
         } else {
@@ -510,7 +520,7 @@ export var isNonEmptyArray = (x) => {
 
 // ---------------------------------------------------------------------------
 export var isNonEmptyHash = (x) => {
-  return isHash(x) && (Object.keys(x).length > 0);
+  return isHash(x) && (keys(x).length > 0);
 };
 
 // ---------------------------------------------------------------------------
