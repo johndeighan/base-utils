@@ -1,5 +1,5 @@
 // base-utils.test.coffee
-var dateStr, gen, hEsc, hProc, lItems, lShuffled;
+var dateStr, gen, h, hEsc, hProc, lItems, lShuffled;
 
 import test from 'ava';
 
@@ -12,6 +12,9 @@ import {
   pass,
   defined,
   notdefined,
+  keys,
+  hasKey,
+  subkeys,
   tabify,
   untabify,
   prefixBlock,
@@ -1773,5 +1776,34 @@ utest.equal(1064, pad('abc', 6, 'justify=center'), ' abc  ');
 utest.equal(1065, pad(true, 3), 'true');
 
 utest.equal(1066, pad(false, 3, 'truncate'), 'fal');
+
+// ---------------------------------------------------------------------------
+// test keys(), hasKey(), subkeys()
+h = {
+  '2023-Nov': {
+    Dining: {
+      amt: 200
+    },
+    Hardware: {
+      amt: 50
+    }
+  },
+  '2023-Dec': {
+    Dining: {
+      amt: 300
+    },
+    Insurance: {
+      amt: 150
+    }
+  }
+};
+
+utest.equal(1092, keys(h), ['2023-Nov', '2023-Dec']);
+
+utest.truthy(1093, hasKey(h, '2023-Nov'));
+
+utest.falsy(1094, hasKey(h, '2023-Oct'));
+
+utest.equal(1095, subkeys(h), ['Dining', 'Hardware', 'Insurance']);
 
 //# sourceMappingURL=base-utils.test.js.map

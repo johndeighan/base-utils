@@ -28,6 +28,18 @@ export hasKey = (obj, key) =>
 
 # ---------------------------------------------------------------------------
 
+export subkeys = (obj) =>
+
+	lSubKeys = []
+	for key in keys(obj)
+		h = obj[key]
+		for subkey in keys(h)
+			if !lSubKeys.includes(subkey)
+				lSubKeys.push subkey
+	return lSubKeys
+
+# ---------------------------------------------------------------------------
+
 export fromJSON = (strJson) =>
 	# --- string to data structure
 

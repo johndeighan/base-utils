@@ -42,6 +42,25 @@ export var hasKey = (obj, key) => {
 };
 
 // ---------------------------------------------------------------------------
+export var subkeys = (obj) => {
+  var h, j, k, key, lSubKeys, len, len1, ref, ref1, subkey;
+  lSubKeys = [];
+  ref = keys(obj);
+  for (j = 0, len = ref.length; j < len; j++) {
+    key = ref[j];
+    h = obj[key];
+    ref1 = keys(h);
+    for (k = 0, len1 = ref1.length; k < len1; k++) {
+      subkey = ref1[k];
+      if (!lSubKeys.includes(subkey)) {
+        lSubKeys.push(subkey);
+      }
+    }
+  }
+  return lSubKeys;
+};
+
+// ---------------------------------------------------------------------------
 export var fromJSON = (strJson) => {
   // --- string to data structure
   return JSON.parse(strJson);
