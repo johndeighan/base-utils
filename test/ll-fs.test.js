@@ -3,7 +3,8 @@ var dir, dir2, file2, subdir;
 
 import {
   undef,
-  LOG
+  LOG,
+  samelist
 } from '@jdeighan/base-utils';
 
 import {
@@ -21,7 +22,10 @@ import {
   pathType,
   rmFile,
   rmDir,
-  parsePath
+  parsePath,
+  rename,
+  clearDir,
+  dirContents
 } from '@jdeighan/base-utils/ll-fs';
 
 dir = mydir(import.meta.url);
@@ -127,5 +131,35 @@ if (dir === 'c:/User/johnd/base-utils/test') {
 rmFile(file2);
 
 utest.falsy(79, isFile(file2));
+
+// ---------------------------------------------------------------------------
+(() => {
+  var dirPath, file1, file3;
+  dirPath = "./test/tempdir";
+  file1 = mkpath(dirPath, 'file1.txt');
+  file2 = mkpath(dirPath, 'file2.txt');
+  file3 = mkpath(dirPath, 'file3.txt');
+  utest.falsy(89, isDir(dirPath));
+  mkDir(dirPath);
+  utest.truthy(91, isDir(dirPath));
+  touch(file1);
+  touch(file2);
+  utest.truthy(96, isFile(file1));
+  utest.truthy(97, isFile(file2));
+  utest.falsy(98, isFile(file3));
+  utest.equal(100, pathType(dirPath), 'dir');
+  utest.equal(101, pathType(file2), 'file');
+  utest.equal(102, pathType(file3), 'missing');
+  utest.truthy(104, samelist(dirContents(dirPath), ['file1.txt', 'file2.txt']));
+  rename(file2, file3);
+  utest.truthy(106, samelist(dirContents(dirPath), ['file1.txt', 'file3.txt']));
+  rmFile(file1);
+  utest.truthy(108, samelist(dirContents(dirPath), ['file3.txt']));
+  clearDir(dirPath);
+  utest.truthy(110, samelist(dirContents(dirPath), []));
+  utest.truthy(112, isDir(dirPath));
+  rmDir(dirPath);
+  return utest.falsy(114, isDir(dirPath));
+})();
 
 //# sourceMappingURL=ll-fs.test.js.map

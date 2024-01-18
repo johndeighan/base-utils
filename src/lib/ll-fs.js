@@ -60,6 +60,16 @@ export var mkpath = (...lParts) => {
 // ---------------------------------------------------------------------------
 // --- Since a disk's directory is kept in memory,
 //     directory operations can be done synchronously
+export var isDir = (dirPath) => {
+  if (!fs.existsSync(dirPath)) {
+    return false;
+  }
+  try {
+    return fs.lstatSync(dirPath).isDirectory();
+  } catch (error) {
+    return false;
+  }
+};
 
 // ---------------------------------------------------------------------------
 export var mkDir = (dirPath, hOptions = {}) => {
@@ -128,8 +138,16 @@ export var clearDir = (dirPath) => {
 };
 
 // ---------------------------------------------------------------------------
+export var rmDir = (dirPath, recursive = true) => {
+  assert(isDir(dirPath), `${dirPath} is not a directory`);
+  fs.rmSync(dirPath, {recursive});
+};
+
+// ---------------------------------------------------------------------------
 export var touch = (filePath) => {
-  fs.closeSync(fs.openSync(filePath, 'a'));
+  var fd;
+  fd = fs.openSync(filePath, 'a');
+  fs.closeSync(fd);
 };
 
 // ---------------------------------------------------------------------------
@@ -139,18 +157,6 @@ export var isFile = (filePath) => {
   }
   try {
     return fs.lstatSync(filePath).isFile();
-  } catch (error) {
-    return false;
-  }
-};
-
-// ---------------------------------------------------------------------------
-export var isDir = (dirPath) => {
-  if (!fs.existsSync(dirPath)) {
-    return false;
-  }
-  try {
-    return fs.lstatSync(dirPath).isDirectory();
   } catch (error) {
     return false;
   }
@@ -186,12 +192,6 @@ export var pathType = (fullPath) => {
 export var rmFile = (filePath) => {
   assert(isFile(filePath), `${filePath} is not a file`);
   fs.rmSync(filePath);
-};
-
-// ---------------------------------------------------------------------------
-export var rmDir = (dirPath, recursive = true) => {
-  assert(isDir(dirPath), `${dirPath} is not a directory`);
-  fs.rmSync(dirPath, {recursive});
 };
 
 // ---------------------------------------------------------------------------

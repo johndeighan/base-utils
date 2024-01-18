@@ -51,6 +51,15 @@ export mkpath = (lParts...) =>
 # --- Since a disk's directory is kept in memory,
 #     directory operations can be done synchronously
 
+export isDir = (dirPath) =>
+
+	if ! fs.existsSync(dirPath)
+		return false
+	try
+		return fs.lstatSync(dirPath).isDirectory()
+	catch
+		return false
+
 # ---------------------------------------------------------------------------
 
 export mkDir = (dirPath, hOptions={}) =>
@@ -99,9 +108,18 @@ export clearDir = (dirPath) =>
 
 # ---------------------------------------------------------------------------
 
+export rmDir = (dirPath, recursive=true) =>
+
+	assert isDir(dirPath), "#{dirPath} is not a directory"
+	fs.rmSync dirPath, {recursive}
+	return
+
+# ---------------------------------------------------------------------------
+
 export touch = (filePath) =>
 
-	fs.closeSync(fs.openSync(filePath, 'a'))
+	fd = fs.openSync(filePath, 'a')
+	fs.closeSync(fd)
 	return
 
 # ---------------------------------------------------------------------------
@@ -112,17 +130,6 @@ export isFile = (filePath) =>
 		return false
 	try
 		return fs.lstatSync(filePath).isFile()
-	catch
-		return false
-
-# ---------------------------------------------------------------------------
-
-export isDir = (dirPath) =>
-
-	if ! fs.existsSync(dirPath)
-		return false
-	try
-		return fs.lstatSync(dirPath).isDirectory()
 	catch
 		return false
 
@@ -159,14 +166,6 @@ export rmFile = (filePath) =>
 
 	assert isFile(filePath), "#{filePath} is not a file"
 	fs.rmSync filePath
-	return
-
-# ---------------------------------------------------------------------------
-
-export rmDir = (dirPath, recursive=true) =>
-
-	assert isDir(dirPath), "#{dirPath} is not a directory"
-	fs.rmSync dirPath, {recursive}
 	return
 
 # ---------------------------------------------------------------------------
