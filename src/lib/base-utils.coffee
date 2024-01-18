@@ -40,6 +40,23 @@ export subkeys = (obj) =>
 
 # ---------------------------------------------------------------------------
 
+export samelist = (lItems1, lItems2) =>
+
+	assert isArray(lItems1), "arg 1 not an array"
+	assert isArray(lItems2), "arg 2 not an array"
+	if (lItems1.length != lItems2.length)
+		return false
+	for item in lItems1
+		if ! lItems2.includes item
+			return false
+	for item in lItems2
+		if ! lItems1.includes item
+			return false
+	return true
+
+
+# ---------------------------------------------------------------------------
+
 export fromJSON = (strJson) =>
 	# --- string to data structure
 

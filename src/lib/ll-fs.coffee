@@ -5,7 +5,7 @@ import urlLib from 'url'
 import fs from 'fs'
 
 import {
-	undef, LOG, isString, getOptions,
+	pass, undef, LOG, isString, getOptions,
 	} from '@jdeighan/base-utils'
 import {assert} from '@jdeighan/base-utils/exceptions'
 
@@ -71,10 +71,25 @@ export mkDir = (dirPath, hOptions={}) =>
 
 # ---------------------------------------------------------------------------
 
+export dirContents = (dirPath) =>
+
+	try
+		lContents = []
+		hOptions = {withFileTypes: true, recursive: false}
+		for ent in fs.readdirSync(dirPath, hOptions)
+			if ent.isFile() || ent.isDir()
+				lContents.push ent.name
+		return lContents
+	catch err
+		return undef
+
+
+# ---------------------------------------------------------------------------
+
 export clearDir = (dirPath) =>
 
 	try
-		hOptions = {withFileTypes: true, recursive}
+		hOptions = {withFileTypes: true, recursive: true}
 		for ent in fs.readdirSync(dirPath, hOptions)
 			if ent.isFile()
 				fs.rmSync mkpath(ent.path, ent.name)
