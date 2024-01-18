@@ -61,6 +61,29 @@ export var subkeys = (obj) => {
 };
 
 // ---------------------------------------------------------------------------
+export var samelist = (lItems1, lItems2) => {
+  var item, j, k, len, len1;
+  assert(isArray(lItems1), "arg 1 not an array");
+  assert(isArray(lItems2), "arg 2 not an array");
+  if (lItems1.length !== lItems2.length) {
+    return false;
+  }
+  for (j = 0, len = lItems1.length; j < len; j++) {
+    item = lItems1[j];
+    if (!lItems2.includes(item)) {
+      return false;
+    }
+  }
+  for (k = 0, len1 = lItems2.length; k < len1; k++) {
+    item = lItems2[k];
+    if (!lItems1.includes(item)) {
+      return false;
+    }
+  }
+  return true;
+};
+
+// ---------------------------------------------------------------------------
 export var fromJSON = (strJson) => {
   // --- string to data structure
   return JSON.parse(strJson);

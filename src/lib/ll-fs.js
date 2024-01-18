@@ -8,6 +8,7 @@ import urlLib from 'url';
 import fs from 'fs';
 
 import {
+  pass,
   undef,
   LOG,
   isString,
@@ -83,12 +84,35 @@ export var mkDir = (dirPath, hOptions = {}) => {
 };
 
 // ---------------------------------------------------------------------------
+export var dirContents = (dirPath) => {
+  var ent, err, hOptions, i, lContents, len, ref;
+  try {
+    lContents = [];
+    hOptions = {
+      withFileTypes: true,
+      recursive: false
+    };
+    ref = fs.readdirSync(dirPath, hOptions);
+    for (i = 0, len = ref.length; i < len; i++) {
+      ent = ref[i];
+      if (ent.isFile() || ent.isDir()) {
+        lContents.push(ent.name);
+      }
+    }
+    return lContents;
+  } catch (error) {
+    err = error;
+    return undef;
+  }
+};
+
+// ---------------------------------------------------------------------------
 export var clearDir = (dirPath) => {
   var ent, err, hOptions, i, len, ref;
   try {
     hOptions = {
       withFileTypes: true,
-      recursive
+      recursive: true
     };
     ref = fs.readdirSync(dirPath, hOptions);
     for (i = 0, len = ref.length; i < len; i++) {
