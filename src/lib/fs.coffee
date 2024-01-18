@@ -16,13 +16,13 @@ import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 import {toTAML, fromTAML} from '@jdeighan/base-utils/taml'
 import {
 	myself, mydir, mkpath,
-	mkDir, touch, isFile, isDir, rename,
+	mkDir, clearDir, touch, isFile, isDir, rename,
 	pathType, rmFile, rmDir, parsePath, parseSource,
 	} from '@jdeighan/base-utils/ll-fs'
 
 export {
 	myself, mydir, mkpath,
-	mkDir, touch, isFile, isDir, rename,
+	mkDir, clearDir, touch, isFile, isDir, rename,
 	pathType, rmFile, rmDir, parsePath, parseSource,
 	}
 
