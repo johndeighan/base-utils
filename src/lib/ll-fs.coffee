@@ -4,7 +4,9 @@ import pathLib from 'node:path'
 import urlLib from 'url'
 import fs from 'fs'
 
-import {undef, LOG, isString} from '@jdeighan/base-utils'
+import {
+	undef, LOG, isString, getOptions,
+	} from '@jdeighan/base-utils'
 import {assert} from '@jdeighan/base-utils/exceptions'
 
 # ---------------------------------------------------------------------------
@@ -51,16 +53,34 @@ export mkpath = (lParts...) =>
 
 # ---------------------------------------------------------------------------
 
-export mkDir = (dirPath) =>
+export mkDir = (dirPath, hOptions={}) =>
 
+	hOptions = getOptions hOptions, {
+		clear: false
+		}
 	try
 		fs.mkdirSync dirPath
 		return true
 	catch err
 		if (err.code == 'EEXIST')
+			if hOptions.clear
+				clearDir dirPath
 			return false
 		else
 			throw err
+
+# ---------------------------------------------------------------------------
+
+export clearDir = (dirPath) =>
+
+	try
+		hOptions = {withFileTypes: true, recursive}
+		for ent in fs.readdirSync(dirPath, hOptions)
+			if ent.isFile()
+				fs.rmSync mkpath(ent.path, ent.name)
+	catch err
+		pass()
+	return
 
 # ---------------------------------------------------------------------------
 

@@ -10,7 +10,8 @@ import fs from 'fs';
 import {
   undef,
   LOG,
-  isString
+  isString,
+  getOptions
 } from '@jdeighan/base-utils';
 
 import {
@@ -60,18 +61,45 @@ export var mkpath = (...lParts) => {
 //     directory operations can be done synchronously
 
 // ---------------------------------------------------------------------------
-export var mkDir = (dirPath) => {
+export var mkDir = (dirPath, hOptions = {}) => {
   var err;
+  hOptions = getOptions(hOptions, {
+    clear: false
+  });
   try {
     fs.mkdirSync(dirPath);
     return true;
   } catch (error) {
     err = error;
     if (err.code === 'EEXIST') {
+      if (hOptions.clear) {
+        clearDir(dirPath);
+      }
       return false;
     } else {
       throw err;
     }
+  }
+};
+
+// ---------------------------------------------------------------------------
+export var clearDir = (dirPath) => {
+  var ent, err, hOptions, i, len, ref;
+  try {
+    hOptions = {
+      withFileTypes: true,
+      recursive
+    };
+    ref = fs.readdirSync(dirPath, hOptions);
+    for (i = 0, len = ref.length; i < len; i++) {
+      ent = ref[i];
+      if (ent.isFile()) {
+        fs.rmSync(mkpath(ent.path, ent.name));
+      }
+    }
+  } catch (error) {
+    err = error;
+    pass();
   }
 };
 
