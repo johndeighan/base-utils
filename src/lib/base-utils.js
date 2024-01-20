@@ -32,6 +32,15 @@ export {
 export var LOG = console.log;
 
 // ---------------------------------------------------------------------------
+export var add_s = (n) => {
+  if (n === 1) {
+    return '';
+  } else {
+    return 's';
+  }
+};
+
+// ---------------------------------------------------------------------------
 export var keys = (obj) => {
   return Object.keys(obj);
 };
@@ -39,6 +48,30 @@ export var keys = (obj) => {
 // ---------------------------------------------------------------------------
 export var hasKey = (obj, key) => {
   return obj.hasOwnProperty(key);
+};
+
+// ---------------------------------------------------------------------------
+export var hasAllKeys = (obj, ...lKeys) => {
+  var j, key, len;
+  for (j = 0, len = lKeys.length; j < len; j++) {
+    key = lKeys[j];
+    if (!hasKey(obj, key)) {
+      return false;
+    }
+  }
+  return true;
+};
+
+// ---------------------------------------------------------------------------
+export var hasAnyKey = (obj, ...lKeys) => {
+  var j, key, len;
+  for (j = 0, len = lKeys.length; j < len; j++) {
+    key = lKeys[j];
+    if (hasKey(obj, key)) {
+      return true;
+    }
+  }
+  return false;
 };
 
 // ---------------------------------------------------------------------------

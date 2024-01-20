@@ -136,7 +136,12 @@ myReplacer = (name, value) =>
 
 export toTAML = (obj, hOptions={}) =>
 
-	{useTabs, sortKeys, escape, replacer} = getOptions(hOptions, {useTabs: true, sortKeys: true})
+	hDefaults = {
+		useTabs: true
+		sortKeys: true
+		}
+	{useTabs, sortKeys, escape, replacer
+		} = getOptions(hOptions, hDefaults)
 
 	if (obj == undef)
 		return "---\nundef"

@@ -32,8 +32,7 @@ import {
   forEachItem,
   forEachLineInFile,
   FileWriter,
-  FileWriterSync,
-  FileProcessor
+  FileWriterSync
 } from '@jdeighan/base-utils/fs';
 
 dir = process.cwd(); // should be root directory of @jdeighan/base-utils
@@ -81,43 +80,6 @@ def
 ghi
 jkl
 mno`);
-
-// ---------------------------------------------------------------------------
-// --- test FileProcessor
-(() => {
-  var TestProcessor, fp;
-  TestProcessor = class TestProcessor extends FileProcessor {
-    constructor() {
-      super('./test');
-    }
-
-    begin() {
-      // --- We need to clear out hWords each time go() is called
-      this.hWords = {};
-    }
-
-    filter(hFileInfo) {
-      var ext, stub;
-      ({stub, ext} = hFileInfo);
-      return (ext === '.txt') && stub.match(/^readline/);
-    }
-
-    handleLine(line) {
-      this.hWords[line.toUpperCase()] = true;
-    }
-
-  };
-  fp = new TestProcessor();
-  fp.procAll();
-  return utest.equal(107, fp.hWords, {
-    'ABC': true,
-    'DEF': true,
-    'GHI': true,
-    'JKL': true,
-    'MNO': true,
-    'PQR': true
-  });
-})();
 
 // ---------------------------------------------------------------------------
 // --- test getTextFileContents

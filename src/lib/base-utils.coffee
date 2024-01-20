@@ -16,6 +16,15 @@ export LOG = console.log
 
 # ---------------------------------------------------------------------------
 
+export add_s = (n) =>
+
+	if (n == 1)
+		return ''
+	else
+		return 's'
+
+# ---------------------------------------------------------------------------
+
 export keys = (obj) =>
 
 	return Object.keys(obj)
@@ -25,6 +34,24 @@ export keys = (obj) =>
 export hasKey = (obj, key) =>
 
 	return obj.hasOwnProperty(key)
+
+# ---------------------------------------------------------------------------
+
+export hasAllKeys = (obj, lKeys...) =>
+
+	for key in lKeys
+		if ! hasKey(obj, key)
+			return false
+	return true
+
+# ---------------------------------------------------------------------------
+
+export hasAnyKey = (obj, lKeys...) =>
+
+	for key in lKeys
+		if hasKey(obj, key)
+			return true
+	return false
 
 # ---------------------------------------------------------------------------
 

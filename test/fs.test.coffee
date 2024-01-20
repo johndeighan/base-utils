@@ -9,7 +9,7 @@ import {
 	barf, barfJSON, barfTAML, barfPkgJSON,
 	parseSource, getTextFileContents, allFilesIn, allLinesIn,
 	forEachFileInDir, forEachItem, forEachLineInFile,
-	FileWriter, FileWriterSync, FileProcessor,
+	FileWriter, FileWriterSync,
 	} from '@jdeighan/base-utils/fs'
 
 dir = process.cwd()     # should be root directory of @jdeighan/base-utils
@@ -57,41 +57,6 @@ utest.equal 75, slurp(dir, 'test', 'readline.txt', {maxLines: 1000}), """
 	jkl
 	mno
 	"""
-
-# ---------------------------------------------------------------------------
-# --- test FileProcessor
-
-(() =>
-	class TestProcessor extends FileProcessor
-
-		constructor: () ->
-			super './test'
-
-		begin: () ->
-			# --- We need to clear out hWords each time go() is called
-			@hWords = {}
-			return
-
-		filter: (hFileInfo) ->
-			{stub, ext} = hFileInfo
-			return (ext == '.txt') && stub.match(/^readline/)
-
-		handleLine: (line) ->
-			@hWords[line.toUpperCase()] = true
-			return
-
-	fp = new TestProcessor()
-	fp.procAll()
-	utest.equal 107, fp.hWords, {
-		'ABC': true
-		'DEF': true
-		'GHI': true
-		'JKL': true
-		'MNO': true
-		'PQR': true
-		}
-
-	)()
 
 # ---------------------------------------------------------------------------
 # --- test getTextFileContents

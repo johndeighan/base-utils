@@ -147,11 +147,12 @@ myReplacer = (name, value) => {
 
 // ---------------------------------------------------------------------------
 export var toTAML = (obj, hOptions = {}) => {
-  var escape, h, hStrOptions, i, j, key, len, replacer, sortKeys, str, useTabs;
-  ({useTabs, sortKeys, escape, replacer} = getOptions(hOptions, {
+  var escape, h, hDefaults, hStrOptions, i, j, key, len, replacer, sortKeys, str, useTabs;
+  hDefaults = {
     useTabs: true,
     sortKeys: true
-  }));
+  };
+  ({useTabs, sortKeys, escape, replacer} = getOptions(hOptions, hDefaults));
   if (obj === undef) {
     return "---\nundef";
   }
