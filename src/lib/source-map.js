@@ -26,7 +26,8 @@ import {
 } from '@jdeighan/base-utils';
 
 import {
-  mkpath
+  mkpath,
+  parsePath
 } from '@jdeighan/base-utils/ll-fs';
 
 // --- cache to hold previously fetched file contents
@@ -97,7 +98,7 @@ export var mapSourcePos = (hFileInfo, line, column, debug = false) => {
       }
       return;
     }
-    ({dir, stub, ext} = parseSource(filePath));
+    ({dir, stub, ext} = parsePath(filePath));
   }
   if (ext !== '.js') {
     if (debug) {

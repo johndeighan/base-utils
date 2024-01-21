@@ -8,7 +8,7 @@ import {
 	isEmpty, nonEmpty, deepCopy,
 	} from '@jdeighan/base-utils/ll-utils'
 import {isInteger} from '@jdeighan/base-utils'
-import {mkpath} from '@jdeighan/base-utils/ll-fs'
+import {mkpath, parsePath} from '@jdeighan/base-utils/ll-fs'
 
 # --- cache to hold previously fetched file contents
 hSourceMaps = {}    # { filepath => rawMap, ... }
@@ -83,7 +83,7 @@ export mapSourcePos = (hFileInfo, line, column, debug=false) =>
 				console.log "CANNOT MAP: Not all needed fields defined"
 			return
 
-		{dir, stub, ext} = parseSource(filePath)
+		{dir, stub, ext} = parsePath(filePath)
 
 	if (ext != '.js')
 		if debug
