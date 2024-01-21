@@ -21,6 +21,7 @@
 		"./exceptions": "./src/lib/exceptions.js",
 		"./v8-stack": "./src/lib/v8-stack.js",
 		"./fs": "./src/lib/fs.js",
+		"./indent": "./src/lib/indent.js",
 		"./cmd-args": "./src/lib/cmd-args.js",
 		"./package.json": "./package.json"
 	},
