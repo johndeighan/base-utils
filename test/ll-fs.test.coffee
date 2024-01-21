@@ -65,15 +65,16 @@ utest.equal 64, pathType(file2), 'missing'
 touch file2
 utest.truthy 66, isFile(file2)
 utest.equal 67, pathType(file2), 'file'
-if (dir == 'c:/User/johnd/base-utils/test')
+if (dir == 'c:/Users/johnd/base-utils/test')
 	utest.equal 69, parsePath(file2), {
-		root: 'c:/'
 		dir: 'c:/Users/johnd/base-utils/test/test'
+		ext: '.txt'
 		fileName: 'file99.test.txt'
 		filePath: 'c:/Users/johnd/base-utils/test/test/file99.test.txt'
-		stub: 'file99.test'
-		ext: '.txt'
+		lDirs: ['c:','Users','johnd','base-utils','test','test']
 		purpose: 'test'
+		root: 'c:/'
+		stub: 'file99.test'
 		}
 rmFile file2
 utest.falsy 79, isFile(file2)

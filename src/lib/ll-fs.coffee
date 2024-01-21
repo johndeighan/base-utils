@@ -206,14 +206,15 @@ export parsePath = (path) =>
 				([A-Za-z_]+)
 				$///)
 			purpose = lMatches[1]
+		root = normalize(root)
+		dir = normalize(dir)
 		return {
-			root: normalize(root)
-			dir: normalize(dir)
+			root
+			dir
+			lDirs: dir.split(/\//)
 			fileName: base
 			filePath: "#{normalize(dir)}/#{base}"
 			stub: name
 			ext
 			purpose
 			}
-
-export parseSource = parsePath    # synonym

@@ -7,7 +7,7 @@ import {
 	getPkgJsonDir, getPkgJsonPath,
 	slurp, slurpJSON, slurpTAML, slurpPkgJSON,
 	barf, barfJSON, barfTAML, barfPkgJSON,
-	parseSource, getTextFileContents, allFilesIn, allLinesIn,
+	parsePath, getTextFileContents, allFilesIn, allLinesIn,
 	forEachFileInDir, forEachItem, forEachLineInFile,
 	FileWriter, FileWriterSync,
 	} from '@jdeighan/base-utils/fs'

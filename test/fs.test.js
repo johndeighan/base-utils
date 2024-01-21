@@ -24,7 +24,7 @@ import {
   barfJSON,
   barfTAML,
   barfPkgJSON,
-  parseSource,
+  parsePath,
   getTextFileContents,
   allFilesIn,
   allLinesIn,

@@ -17,13 +17,13 @@ import {toTAML, fromTAML} from '@jdeighan/base-utils/taml'
 import {
 	myself, mydir, mkpath,
 	mkDir, clearDir, touch, isFile, isDir, rename,
-	pathType, rmFile, rmDir, parsePath, parseSource,
+	pathType, rmFile, rmDir, parsePath,
 	} from '@jdeighan/base-utils/ll-fs'
 
 export {
 	myself, mydir, mkpath,
 	mkDir, clearDir, touch, isFile, isDir, rename,
-	pathType, rmFile, rmDir, parsePath, parseSource,
+	pathType, rmFile, rmDir, parsePath,
 	}
 
 # ---------------------------------------------------------------------------
@@ -210,7 +210,7 @@ export allFilesIn = (dir, hOptions={}) ->
 		if ent.isFile()
 			path = mkpath(ent.path, ent.name)
 			dbg "PATH = #{path}"
-			hFileInfo = parseSource(path)
+			hFileInfo = parsePath(path)
 			assert defined(hFileInfo), "allFilesIn(): hFileInfo = undef"
 			if eager
 				hContents = getTextFileContents(hFileInfo.filePath)

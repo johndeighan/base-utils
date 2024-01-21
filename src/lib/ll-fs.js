@@ -228,9 +228,12 @@ export var parsePath = (path) => {
     if (lMatches = name.match(/\.([A-Za-z_]+)$/)) {
       purpose = lMatches[1];
     }
+    root = normalize(root);
+    dir = normalize(dir);
     return {
-      root: normalize(root),
-      dir: normalize(dir),
+      root,
+      dir,
+      lDirs: dir.split(/\//),
       fileName: base,
       filePath: `${normalize(dir)}/${base}`,
       stub: name,
@@ -239,7 +242,5 @@ export var parsePath = (path) => {
     };
   }
 };
-
-export var parseSource = parsePath; // synonym
 
 //# sourceMappingURL=ll-fs.js.map
