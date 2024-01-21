@@ -66,7 +66,12 @@ touch file2
 utest.truthy 66, isFile(file2)
 utest.equal 67, pathType(file2), 'file'
 if (dir == 'c:/Users/johnd/base-utils/test')
-	utest.equal 69, parsePath(file2), {
+	utest.equal 69, parsePath(dir), {
+		root: 'c:/'
+		dir: 'c:/Users/johnd/base-utils/test'     # parent directory
+		lDirs: ['c:','Users','johnd','base-utils','test']
+		}
+	utest.equal 74, parsePath(file2), {
 		dir: 'c:/Users/johnd/base-utils/test/test'
 		ext: '.txt'
 		fileName: 'file99.test.txt'
@@ -77,7 +82,7 @@ if (dir == 'c:/Users/johnd/base-utils/test')
 		stub: 'file99.test'
 		}
 rmFile file2
-utest.falsy 79, isFile(file2)
+utest.falsy 85, isFile(file2)
 
 # ---------------------------------------------------------------------------
 
@@ -87,30 +92,30 @@ utest.falsy 79, isFile(file2)
 	file2 = mkpath(dirPath, 'file2.txt')
 	file3 = mkpath(dirPath, 'file3.txt')
 
-	utest.falsy  89, isDir(dirPath)
+	utest.falsy  95, isDir(dirPath)
 	mkDir dirPath
-	utest.truthy 91, isDir(dirPath)
+	utest.truthy 97, isDir(dirPath)
 
 	touch file1
 	touch file2
 
-	utest.truthy 96, isFile(file1)
-	utest.truthy 97, isFile(file2)
-	utest.falsy  98, isFile(file3)
+	utest.truthy 102, isFile(file1)
+	utest.truthy 103, isFile(file2)
+	utest.falsy  104, isFile(file3)
 
-	utest.equal 100, pathType(dirPath), 'dir'
-	utest.equal 101, pathType(file2), 'file'
-	utest.equal 102, pathType(file3), 'missing'
+	utest.equal 106, pathType(dirPath), 'dir'
+	utest.equal 107, pathType(file2), 'file'
+	utest.equal 108, pathType(file3), 'missing'
 
-	utest.truthy 104, samelist(dirContents(dirPath), ['file1.txt','file2.txt'])
+	utest.truthy 110, samelist(dirContents(dirPath), ['file1.txt','file2.txt'])
 	rename file2, file3
-	utest.truthy 106, samelist(dirContents(dirPath), ['file1.txt','file3.txt'])
+	utest.truthy 112, samelist(dirContents(dirPath), ['file1.txt','file3.txt'])
 	rmFile file1
-	utest.truthy 108, samelist(dirContents(dirPath), ['file3.txt'])
+	utest.truthy 114, samelist(dirContents(dirPath), ['file3.txt'])
 	clearDir dirPath
-	utest.truthy 110, samelist(dirContents(dirPath), [])
+	utest.truthy 116, samelist(dirContents(dirPath), [])
 
-	utest.truthy 112, isDir(dirPath)
+	utest.truthy 118, isDir(dirPath)
 	rmDir dirPath
-	utest.falsy  114, isDir(dirPath)
+	utest.falsy  120, isDir(dirPath)
 	)()

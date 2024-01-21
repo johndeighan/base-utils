@@ -197,7 +197,7 @@ export var rmFile = (filePath) => {
 // ---------------------------------------------------------------------------
 // --- path must exist
 export var parsePath = (path) => {
-  var base, dir, ext, lMatches, name, purpose, root;
+  var base, dir, ext, lDirs, lMatches, name, purpose, root;
   // --- NOTE: path may be a file URL, e.g. import.meta.url
   // --- returns {
   //        root
@@ -218,10 +218,10 @@ export var parsePath = (path) => {
   }
   ({dir, root, base, name, ext} = pathLib.parse(path));
   if (isDir(path)) {
-    return {
-      root: normalize(root),
-      dir: normalize(dir)
-    };
+    root = normalize(root);
+    dir = normalize(dir) + '/' + name;
+    lDirs = dir.split(/\//);
+    return {root, dir, lDirs};
   } else {
     assert(isFile(path), `path ${path} not a file or directory`);
     // --- check for a purpose
