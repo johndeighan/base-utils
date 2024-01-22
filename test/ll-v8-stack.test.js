@@ -2,12 +2,10 @@
 import test from 'ava';
 
 import {
-  pass,
   undef,
   defined,
-  notdefined,
-  assert
-} from '@jdeighan/base-utils/ll-utils';
+  notdefined
+} from '@jdeighan/base-utils';
 
 import {
   getV8Stack,

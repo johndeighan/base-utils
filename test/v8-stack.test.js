@@ -7,7 +7,8 @@ import {
 } from '@jdeighan/base-utils/exceptions';
 
 import {
-  undef
+  undef,
+  defined
 } from '@jdeighan/base-utils';
 
 import {
@@ -23,7 +24,8 @@ import {
   getMyDirectCaller,
   getMyOutsideCaller,
   getV8Stack,
-  debugV8Stack
+  debugV8Stack,
+  getV8StackStr
 } from '@jdeighan/base-utils/v8-stack';
 
 import {
@@ -43,7 +45,7 @@ import {
     hCaller = getMyDirectCaller();
   };
   // ------------------------------------------------------------------------
-  return test("line 48", (t) => {
+  return test("line 33", (t) => {
     main();
     return t.like(hCaller, {
       type: 'function',
@@ -68,7 +70,7 @@ import {
   func2 = function() {
     lCallers2 = getBoth();
   };
-  return test("line 70", (t) => {
+  return test("line 60", (t) => {
     main();
     t.like(lCallers1[0], {
       type: 'function',
@@ -90,6 +92,44 @@ import {
       functionName: 'func2',
       fileName: 'v8-stack.test.js'
     });
+  });
+})();
+
+// ---------------------------------------------------------------------------
+(() => {
+  var func1, func2;
+  func1 = async() => {
+    return (await func2());
+  };
+  func2 = async() => {
+    var stackStr;
+    stackStr = (await getV8StackStr());
+    return stackStr;
+  };
+  return test("line 94", async(t) => {
+    return t.is((await func1()), `function at v8-stack.js:62:19
+function at v8-stack.test.js:106:23
+function at v8-stack.test.js:102:19
+script at v8-stack.test.js:110:24`);
+  });
+})();
+
+// ---------------------------------------------------------------------------
+(() => {
+  var func1, func2;
+  func1 = async() => {
+    func2();
+    return (await getV8StackStr('debug'));
+  };
+  func2 = () => {
+    var x;
+    x = 2 * 2;
+    return x;
+  };
+  return test("line 113", async(t) => {
+    return t.is((await func1()), `function at v8-stack.js:62:19
+function at v8-stack.test.js:122:19
+script at v8-stack.test.js:130:24`);
   });
 })();
 

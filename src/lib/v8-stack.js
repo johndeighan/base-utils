@@ -9,16 +9,8 @@ import {
   undef,
   defined,
   notdefined,
-  assert,
   isEmpty,
-  nonEmpty
-} from '@jdeighan/base-utils/ll-utils';
-
-import {
-  mydir
-} from '@jdeighan/base-utils/ll-fs';
-
-import {
+  nonEmpty,
   OL,
   isIdentifier,
   isFunctionName,
@@ -26,8 +18,8 @@ import {
 } from '@jdeighan/base-utils';
 
 import {
-  mapSourcePos
-} from '@jdeighan/base-utils/source-map';
+  mydir
+} from '@jdeighan/base-utils/ll-fs';
 
 import {
   nodeStr,

@@ -16,117 +16,127 @@ import {
   defined,
   notdefined,
   alldefined,
+  ll_assert,
   isEmpty,
   nonEmpty,
-  deepCopy
-} from '@jdeighan/base-utils/ll-utils';
-
-import {
-  isInteger
+  deepCopy,
+  getOptions,
+  isInteger,
+  isString
 } from '@jdeighan/base-utils';
 
 import {
+  isFile,
+  fileExt,
   mkpath,
   parsePath
 } from '@jdeighan/base-utils/ll-fs';
 
 // --- cache to hold previously fetched file contents
-hSourceMaps = {}; // { filepath => rawMap, ... }
+hSourceMaps = {}; // { filepath => hMap, ... }
 
 
 // ---------------------------------------------------------------------------
 // This lib uses the library source-map-js
 // ---------------------------------------------------------------------------
-export var getRawMap = (mapFilePath) => {
-  var rawMap;
+export var getMap = (mapFilePath) => {
+  var hMap, rawMap;
+  // --- get from cache if available
   if (hSourceMaps.hasOwnProperty(mapFilePath)) {
     return hSourceMaps[mapFilePath];
   } else {
     rawMap = readFileSync(mapFilePath, 'utf8');
-    hSourceMaps[mapFilePath] = rawMap;
-    return rawMap;
+    hMap = hSourceMaps[mapFilePath] = JSON.parse(rawMap);
+    return hMap;
   }
 };
 
 // ---------------------------------------------------------------------------
-// --- returns {source, line, column, name}
-export var mapPos = function(rawMap, hPos, debug = false) {
-  var hResult, resolved, smc, source;
-  // --- hPos should be {line, column}
-  if (notdefined(rawMap)) {
-    console.log("empty map!");
-    process.exit();
-  }
-  smc = new SourceMapConsumer(rawMap);
-  hResult = smc.originalPositionFor(hPos);
-  try {
-    resolved = mkpath(hResult.source);
-    source = mkpath(resolved);
-    hResult.source = source;
-  } catch (error) {}
-  return hResult;
+// --- Valid keys:
+
+//   - version: Which version of the source map spec this map is following.
+//   - sources: An array of URLs to the original source files.
+//   - names: An array of identifiers which can be referrenced by individual mappings.
+//   - sourceRoot: Optional. The URL root from which all sources are relative.
+//   - sourcesContent: Optional. An array of contents of the original source files.
+//   - mappings: A string of base64 VLQs which contain the actual mappings.
+//   - file: Optional. The generated file this source map is associated with.
+export var dumpMap = (hMap) => {
+  var hJson;
+  hJson = {
+    version: hMap.version,
+    sources: hMap.sources,
+    names: hMap.names,
+    sourceRoot: hMap.sourceRoot,
+    sourcesContent: defined(hMap.sourcesContent),
+    mappings: defined(hMap.mappings),
+    file: hMap.file
+  };
+  console.log(JSON.stringify(hJson, null, 3));
 };
 
 // ---------------------------------------------------------------------------
-export var mapSourcePos = (hFileInfo, line, column, debug = false) => {
-  var dir, ext, fileName, filePath, hMapped, mapFilePath, rawMap, stub;
-  if (!isInteger(line, {
-    min: 0
-  })) {
+export var mapLineNum = (jsPath, line) => {
+  // --- Temporarily, since it's broken,
+  //     we simply return the original line number
+  return line;
+};
+
+//	hMapped = mapSourcePos(jsPath, line, 0)
+//	return hMapped.line
+
+// ---------------------------------------------------------------------------
+export var mapSourcePos = (jsPath, line, column, hOptions = {}) => {
+  var debug, hMap, hMapped, mapFilePath, smc;
+  // --- Can map only if:
+  //        1. ext is .js
+  //        2. <jsPath>.map exists
+
+  //     returns {source, line, column, name}
+  ({debug} = getOptions(hOptions, {
+    debug: false
+  }));
+  jsPath = mkpath(jsPath);
+  ll_assert(isFile(jsPath), `no such file ${jsPath}`);
+  if (fileExt(jsPath) !== '.js') {
     if (debug) {
-      console.log(`mapSourcePos: invalid line ${line}`);
+      console.log(`${jsPath} is not a JS file`);
     }
     return undef;
   }
-  if (!isInteger(column, {
+  ll_assert(isInteger(line, {
     min: 0
-  })) {
+  }), `line ${line} not an integer`);
+  ll_assert(isInteger(column, {
+    min: 0
+  }), `column ${column} not an integer`);
+  mapFilePath = jsPath + '.map';
+  if (isFile(mapFilePath)) {
     if (debug) {
-      console.log(`mapSourcePos: invalid column ${column}`);
+      console.log(`map file ${mapFilePath} found`);
+    }
+  } else {
+    if (debug) {
+      console.log(`map file ${mapFilePath} not found`);
     }
     return undef;
   }
-  ({dir, stub, ext, fileName, filePath} = hFileInfo);
-  if (!alldefined(dir, stub, ext)) {
-    // --- Make sure filePath is defined
-    if (notdefined(filePath) && alldefined(dir, fileName)) {
-      filePath = `${dir}/${fileName}`;
-    }
-    if (notdefined(filePath)) {
-      if (debug) {
-        console.log("CANNOT MAP: Not all needed fields defined");
-      }
-      return;
-    }
-    ({dir, stub, ext} = parsePath(filePath));
-  }
-  if (ext !== '.js') {
-    if (debug) {
-      console.log(`CANNOT MAP: ext = '${ext}'`);
-    }
-    return;
-  }
-  mapFilePath = `${dir}/${stub}.js.map`;
-  if (!existsSync(mapFilePath)) {
-    if (debug) {
-      console.log(`CANNOT MAP - MISSING MAP FILE ${mapFilePath}`);
-    }
-    return;
-  }
-  if (isEmpty(dir) || isEmpty(stub)) {
-    if (debug) {
-      console.log(`CANNOT MAP - dir='${dir}', stub='${stub}'`);
-    }
-    return;
-  }
-  rawMap = getRawMap(mapFilePath); // get from cache if available
+  // --- get from cache if available
+  hMap = getMap(mapFilePath);
+  ll_assert(defined(hMap), `Unable to get map from ${mapFilePath}`);
   if (debug) {
-    console.log(`MAP FILE FOUND: '${mapFilePath}'`);
+    dumpMap(hMap);
+  }
+  smc = new SourceMapConsumer(hMap);
+  if (debug) {
+    console.log(smc.sources);
   }
   // --- hMapped is {source, line, column, name}
-  hMapped = mapPos(rawMap, {line, column}, debug);
+  hMapped = smc.originalPositionFor({line, column});
+  if (debug) {
+    console.log(hMapped);
+  }
   return hMapped;
-  return hMapped = undef;
 };
 
 //# sourceMappingURL=source-map.js.map

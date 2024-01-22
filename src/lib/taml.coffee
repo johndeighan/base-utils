@@ -2,12 +2,12 @@
 
 import {parse, stringify} from 'yaml'
 
-import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	undef, defined, notdefined, OL, hasChar, getOptions,
 	isEmpty, isString, isFunction, isBoolean, isArray,
 	blockToArray, arrayToBlock, escapeStr, rtrim,
 	} from '@jdeighan/base-utils'
+import {assert, croak} from '@jdeighan/base-utils/exceptions'
 
 # ---------------------------------------------------------------------------
 #   isTAML - is the string valid TAML?

@@ -1,9 +1,10 @@
 # fs.test.coffee
 
 import {utest} from '@jdeighan/base-utils/utest'
-import {undef, fromJSON, toJSON} from '@jdeighan/base-utils'
+import {undef, fromJSON, toJSON, LOG} from '@jdeighan/base-utils'
+import {setDebugging} from '@jdeighan/base-utils/debug'
 import {
-	mkpath, isFile,
+	workingDir, parentDir, myself, mydir, mkpath, isFile,
 	getPkgJsonDir, getPkgJsonPath,
 	slurp, slurpJSON, slurpTAML, slurpPkgJSON,
 	barf, barfJSON, barfTAML, barfPkgJSON,
@@ -12,9 +13,90 @@ import {
 	FileWriter, FileWriterSync,
 	} from '@jdeighan/base-utils/fs'
 
-dir = process.cwd()     # should be root directory of @jdeighan/base-utils
-testDir = mkpath(dir, 'test')
-testPath = mkpath(dir, 'test', 'readline.txt')
+# --- should be root directory of @jdeighan/base-utils
+projDir = workingDir()
+dir = mydir(import.meta.url)    # project test folder
+subdir = mkpath(dir, 'test')    # subdir test inside test
+file = myself(import.meta.url)
+testPath = mkpath(projDir, 'test', 'readline.txt')
+
+# ---------------------------------------------------------------------------
+
+utest.like 24, parsePath(import.meta.url), {
+	type: 'file'
+	root: 'c:/'
+	base: 'fs.test.js'
+	fileName: 'fs.test.js'
+	name: 'fs.test'
+	stub: 'fs.test'
+	ext: '.js'
+	purpose: 'test'
+	}
+
+utest.like 36, parsePath(projDir), {
+	path: projDir
+	type: 'dir'
+	root: 'c:/'
+	dir: parentDir(projDir)
+	base: 'base-utils'
+	fileName: 'base-utils'
+	name: 'base-utils'
+	stub: 'base-utils'
+	ext: ''
+	purpose: undef
+	}
+
+utest.like 49, parsePath(dir), {
+	path: dir
+	type: 'dir'
+	root: 'c:/'
+	dir: parentDir(dir)
+	base: 'test'
+	fileName: 'test'
+	name: 'test'
+	stub: 'test'
+	ext: ''
+	purpose: undef
+	}
+
+utest.like 62, parsePath(subdir), {
+	path: subdir
+	type: 'dir'
+	root: 'c:/'
+	dir: parentDir(subdir)
+	base: 'test'
+	fileName: 'test'
+	name: 'test'
+	stub: 'test'
+	ext: ''
+	purpose: undef
+	}
+
+utest.like 75, parsePath(file), {
+	path: file
+	type: 'file'
+	root: 'c:/'
+	dir: parentDir(file)
+	base: 'fs.test.js'
+	fileName: 'fs.test.js'
+	name: 'fs.test'
+	stub: 'fs.test'
+	ext: '.js'
+	purpose: 'test'
+	}
+
+utest.like 88, parsePath(testPath), {
+	path: testPath
+	type: 'file'
+	root: 'c:/'
+	dir: parentDir(testPath)
+	base: 'readline.txt'
+	fileName: 'readline.txt'
+	name: 'readline'
+	stub: 'readline'
+	ext: '.txt'
+	purpose: undef
+	}
 
 # ---------------------------------------------------------------------------
 
@@ -39,18 +121,18 @@ utest.equal 54, slurp(testPath, {maxLines: 1000}), """
 
 # --- Test without building path first
 
-utest.equal 64, slurp(dir, 'test', 'readline.txt', {maxLines: 2}), """
+utest.equal 64, slurp(projDir, 'test', 'readline.txt', {maxLines: 2}), """
 	abc
 	def
 	"""
 
-utest.equal 69, slurp(dir, 'test', 'readline.txt', {maxLines: 3}), """
+utest.equal 69, slurp(projDir, 'test', 'readline.txt', {maxLines: 3}), """
 	abc
 	def
 	ghi
 	"""
 
-utest.equal 75, slurp(dir, 'test', 'readline.txt', {maxLines: 1000}), """
+utest.equal 75, slurp(projDir, 'test', 'readline.txt', {maxLines: 1000}), """
 	abc
 	def
 	ghi
@@ -75,7 +157,7 @@ utest.equal 75, slurp(dir, 'test', 'readline.txt', {maxLines: 1000}), """
 
 (() =>
 	lFiles = []
-	for hFileInfo from allFilesIn('./test/test', {eager: true})
+	for hFileInfo from allFilesIn('./test/test', 'eager')
 		lFiles.push hFileInfo
 
 	utest.like 138, lFiles, [
@@ -85,8 +167,11 @@ utest.equal 75, slurp(dir, 'test', 'readline.txt', {maxLines: 1000}), """
 		{fileName: 'file2.zh',  metadata: undef, lLines: ['DONE']}
 		{
 			fileName: 'file3.txt'
-			metadata: {fName: 'John', lName: 'Deighan'}
-			lLines: ['','This is a test']
+			metadata: {
+				fName: 'John'
+				lName: 'Deighan'
+				}
+			lLines: ['', 'This is a test']
 			}
 		]
 

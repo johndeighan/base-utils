@@ -5,9 +5,33 @@ import urlLib from 'url'
 import fs from 'fs'
 
 import {
-	pass, undef, LOG, isString, getOptions,
+	pass, undef,defined, notdefined, LOG, isString, getOptions,
+	ll_assert, ll_croak,
 	} from '@jdeighan/base-utils'
-import {assert} from '@jdeighan/base-utils/exceptions'
+
+# ---------------------------------------------------------------------------
+
+export fileExt = (path) =>
+
+	ll_assert isString(path), "fileExt(): path not a string"
+	if lMatches = path.match(/\.[A-Za-z0-9_]+$/)
+		return lMatches[0]
+	else
+		return ''
+
+# ---------------------------------------------------------------------------
+#   withExt - change file extention in a file name
+
+export withExt = (path, newExt) =>
+
+	ll_assert newExt, "withExt(): No newExt provided"
+	if newExt.indexOf('.') != 0
+		newExt = '.' + newExt
+
+	if lMatches = path.match(/^(.*)\.[^\.]+$/)
+		[_, pre] = lMatches
+		return pre + newExt
+	ll_croak "Bad path: '#{path}'"
 
 # ---------------------------------------------------------------------------
 #     convert \ to /
@@ -20,6 +44,12 @@ normalize = (path) =>
 		return path.charAt(0).toLowerCase() + path.substring(1)
 	else
 		return path
+
+# ---------------------------------------------------------------------------
+
+export workingDir = () ->
+
+	return normalize process.cwd()
 
 # ---------------------------------------------------------------------------
 # --- Should be called like: myself(import.meta.url)
@@ -110,7 +140,7 @@ export clearDir = (dirPath) =>
 
 export rmDir = (dirPath, recursive=true) =>
 
-	assert isDir(dirPath), "#{dirPath} is not a directory"
+	ll_assert isDir(dirPath), "#{dirPath} is not a directory"
 	fs.rmSync dirPath, {recursive}
 	return
 
@@ -141,6 +171,14 @@ export rename = (oldPath, newPath) =>
 	return
 
 # ---------------------------------------------------------------------------
+
+export rmFile = (filePath) =>
+
+	ll_assert isFile(filePath), "#{filePath} is not a file"
+	fs.rmSync filePath
+	return
+
+# ---------------------------------------------------------------------------
 # --- returns one of:
 #        'missing'  - does not exist
 #        'dir'      - is a directory
@@ -149,7 +187,7 @@ export rename = (oldPath, newPath) =>
 
 export pathType = (fullPath) =>
 
-	assert isString(fullPath), "not a string"
+	ll_assert isString(fullPath), "not a string"
 	if fs.existsSync fullPath
 		if isFile fullPath
 			return 'file'
@@ -162,59 +200,43 @@ export pathType = (fullPath) =>
 
 # ---------------------------------------------------------------------------
 
-export rmFile = (filePath) =>
-
-	assert isFile(filePath), "#{filePath} is not a file"
-	fs.rmSync filePath
-	return
-
-# ---------------------------------------------------------------------------
-# --- path must exist
-
-export parsePath = (path) =>
+export parsePath = (path, shouldNotExist) =>
 	# --- NOTE: path may be a file URL, e.g. import.meta.url
-	# --- returns {
-	#        root
-	#        dir
-	#     if a file:
-	#        fileName,
-	#        filePath,
-	#        stub
-	#        ext
-	#        purpose
-	#        }
+	#           path may be a relative path
 
-	assert isString(path), "path not a string"
+	ll_assert isString(path), "path is type #{typeof path}"
+	ll_assert notdefined(shouldNotExist), "multiple arguments!"
 	if path.match(/^file\:\/\//)
-		path = urlLib.fileURLToPath(path)
+		path = normalize urlLib.fileURLToPath(path)
 	else
 		# --- handles relative paths
-		path = pathLib.resolve path
+		path = normalize pathLib.resolve(path)
+	type = pathType path
 
-	{dir, root, base, name, ext} = pathLib.parse(path)
-	if isDir path
-		root = normalize(root)
-		dir = normalize(dir) + '/' + name
-		lDirs = dir.split(/\//)
-		return {root, dir, lDirs}
+	{root, dir, base, name, ext} = pathLib.parse(path)
+	if lMatches = name.match(///
+			\.
+			([A-Za-z_]+)
+			$///)
+		purpose = lMatches[1]
 	else
-		assert isFile(path), "path #{path} not a file or directory"
+		purpose = undef
+	return {
+		path
+		type
+		root
+		dir
+		base
+		fileName: base   # my preferred name
+		name             # use this for directory name
+		stub: name       # my preferred name
+		ext
+		purpose
+		}
 
-		# --- check for a purpose
-		if lMatches = name.match(///
-				\.
-				([A-Za-z_]+)
-				$///)
-			purpose = lMatches[1]
-		root = normalize(root)
-		dir = normalize(dir)
-		return {
-			root
-			dir
-			lDirs: dir.split(/\//)
-			fileName: base
-			filePath: "#{normalize(dir)}/#{base}"
-			stub: name
-			ext
-			purpose
-			}
+# ---------------------------------------------------------------------------
+
+export parentDir = (path) =>
+
+	hParsed = parsePath(path)
+	return hParsed.dir

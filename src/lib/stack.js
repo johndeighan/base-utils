@@ -2,11 +2,6 @@
 var mainName;
 
 import {
-  assert,
-  croak
-} from '@jdeighan/base-utils/exceptions';
-
-import {
   undef,
   defined,
   notdefined,
@@ -27,6 +22,11 @@ import {
   tabs,
   getOptions
 } from '@jdeighan/base-utils';
+
+import {
+  assert,
+  croak
+} from '@jdeighan/base-utils/exceptions';
 
 import {
   LOG,

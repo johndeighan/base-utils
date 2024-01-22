@@ -10,14 +10,40 @@ import fs from 'fs';
 import {
   pass,
   undef,
+  defined,
+  notdefined,
   LOG,
   isString,
-  getOptions
+  getOptions,
+  ll_assert,
+  ll_croak
 } from '@jdeighan/base-utils';
 
-import {
-  assert
-} from '@jdeighan/base-utils/exceptions';
+// ---------------------------------------------------------------------------
+export var fileExt = (path) => {
+  var lMatches;
+  ll_assert(isString(path), "fileExt(): path not a string");
+  if (lMatches = path.match(/\.[A-Za-z0-9_]+$/)) {
+    return lMatches[0];
+  } else {
+    return '';
+  }
+};
+
+// ---------------------------------------------------------------------------
+//   withExt - change file extention in a file name
+export var withExt = (path, newExt) => {
+  var _, lMatches, pre;
+  ll_assert(newExt, "withExt(): No newExt provided");
+  if (newExt.indexOf('.') !== 0) {
+    newExt = '.' + newExt;
+  }
+  if (lMatches = path.match(/^(.*)\.[^\.]+$/)) {
+    [_, pre] = lMatches;
+    return pre + newExt;
+  }
+  return ll_croak(`Bad path: '${path}'`);
+};
 
 // ---------------------------------------------------------------------------
 //     convert \ to /
@@ -29,6 +55,11 @@ normalize = (path) => {
   } else {
     return path;
   }
+};
+
+// ---------------------------------------------------------------------------
+export var workingDir = function() {
+  return normalize(process.cwd());
 };
 
 // ---------------------------------------------------------------------------
@@ -139,7 +170,7 @@ export var clearDir = (dirPath) => {
 
 // ---------------------------------------------------------------------------
 export var rmDir = (dirPath, recursive = true) => {
-  assert(isDir(dirPath), `${dirPath} is not a directory`);
+  ll_assert(isDir(dirPath), `${dirPath} is not a directory`);
   fs.rmSync(dirPath, {recursive});
 };
 
@@ -168,13 +199,19 @@ export var rename = (oldPath, newPath) => {
 };
 
 // ---------------------------------------------------------------------------
+export var rmFile = (filePath) => {
+  ll_assert(isFile(filePath), `${filePath} is not a file`);
+  fs.rmSync(filePath);
+};
+
+// ---------------------------------------------------------------------------
 // --- returns one of:
 //        'missing'  - does not exist
 //        'dir'      - is a directory
 //        'file'     - is a file
 //        'unknown'  - exists, but not a file or directory
 export var pathType = (fullPath) => {
-  assert(isString(fullPath), "not a string");
+  ll_assert(isString(fullPath), "not a string");
   if (fs.existsSync(fullPath)) {
     if (isFile(fullPath)) {
       return 'file';
@@ -189,58 +226,44 @@ export var pathType = (fullPath) => {
 };
 
 // ---------------------------------------------------------------------------
-export var rmFile = (filePath) => {
-  assert(isFile(filePath), `${filePath} is not a file`);
-  fs.rmSync(filePath);
+export var parsePath = (path, shouldNotExist) => {
+  var base, dir, ext, lMatches, name, purpose, root, type;
+  // --- NOTE: path may be a file URL, e.g. import.meta.url
+  //           path may be a relative path
+  ll_assert(isString(path), `path is type ${typeof path}`);
+  ll_assert(notdefined(shouldNotExist), "multiple arguments!");
+  if (path.match(/^file\:\/\//)) {
+    path = normalize(urlLib.fileURLToPath(path));
+  } else {
+    // --- handles relative paths
+    path = normalize(pathLib.resolve(path));
+  }
+  type = pathType(path);
+  ({root, dir, base, name, ext} = pathLib.parse(path));
+  if (lMatches = name.match(/\.([A-Za-z_]+)$/)) {
+    purpose = lMatches[1];
+  } else {
+    purpose = undef;
+  }
+  return {
+    path,
+    type,
+    root,
+    dir,
+    base,
+    fileName: base, // my preferred name
+    name, // use this for directory name
+    stub: name, // my preferred name
+    ext,
+    purpose
+  };
 };
 
 // ---------------------------------------------------------------------------
-// --- path must exist
-export var parsePath = (path) => {
-  var base, dir, ext, lDirs, lMatches, name, purpose, root;
-  // --- NOTE: path may be a file URL, e.g. import.meta.url
-  // --- returns {
-  //        root
-  //        dir
-  //     if a file:
-  //        fileName,
-  //        filePath,
-  //        stub
-  //        ext
-  //        purpose
-  //        }
-  assert(isString(path), "path not a string");
-  if (path.match(/^file\:\/\//)) {
-    path = urlLib.fileURLToPath(path);
-  } else {
-    // --- handles relative paths
-    path = pathLib.resolve(path);
-  }
-  ({dir, root, base, name, ext} = pathLib.parse(path));
-  if (isDir(path)) {
-    root = normalize(root);
-    dir = normalize(dir) + '/' + name;
-    lDirs = dir.split(/\//);
-    return {root, dir, lDirs};
-  } else {
-    assert(isFile(path), `path ${path} not a file or directory`);
-    // --- check for a purpose
-    if (lMatches = name.match(/\.([A-Za-z_]+)$/)) {
-      purpose = lMatches[1];
-    }
-    root = normalize(root);
-    dir = normalize(dir);
-    return {
-      root,
-      dir,
-      lDirs: dir.split(/\//),
-      fileName: base,
-      filePath: `${normalize(dir)}/${base}`,
-      stub: name,
-      ext,
-      purpose
-    };
-  }
+export var parentDir = (path) => {
+  var hParsed;
+  hParsed = parsePath(path);
+  return hParsed.dir;
 };
 
 //# sourceMappingURL=ll-fs.js.map

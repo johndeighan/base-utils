@@ -1,4 +1,4 @@
-# NamedLogs.coffee
+# named-logs.coffee
 
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {

@@ -2,11 +2,6 @@
 var handleSimpleCase, internalDebugging, logs, putstr, threeSpaces;
 
 import {
-  assert,
-  croak
-} from '@jdeighan/base-utils/exceptions';
-
-import {
   pass,
   undef,
   defined,
@@ -37,6 +32,11 @@ import {
   hasChar,
   quoted
 } from '@jdeighan/base-utils';
+
+import {
+  assert,
+  croak
+} from '@jdeighan/base-utils/exceptions';
 
 import {
   toTAML

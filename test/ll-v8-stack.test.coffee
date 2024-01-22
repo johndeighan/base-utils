@@ -3,8 +3,8 @@
 import test from 'ava'
 
 import {
-	pass, undef, defined, notdefined, assert,
-	} from '@jdeighan/base-utils/ll-utils'
+	undef, defined, notdefined,
+	} from '@jdeighan/base-utils'
 import {
 	getV8Stack, getMyOutsideCaller, getMyDirectCaller,
 	} from '@jdeighan/base-utils/ll-v8-stack'

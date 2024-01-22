@@ -1,10 +1,10 @@
 # cmd-args.coffee
 
 import parseArgs from 'minimist'
+
 import {
-	undef, defined, notdefined, isString, isHash, isArray,
+	undef, defined, notdefined, isString, isHash, isArray, LOG,
 	} from '@jdeighan/base-utils'
-import {LOG} from '@jdeighan/base-utils/log'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 
 # ---------------------------------------------------------------------------

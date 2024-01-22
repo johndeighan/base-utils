@@ -9,12 +9,9 @@ import {
   notdefined,
   isString,
   isHash,
-  isArray
-} from '@jdeighan/base-utils';
-
-import {
+  isArray,
   LOG
-} from '@jdeighan/base-utils/log';
+} from '@jdeighan/base-utils';
 
 import {
   assert,

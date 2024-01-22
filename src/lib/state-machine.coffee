@@ -1,10 +1,10 @@
 # state-machine.coffee
 
-import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	undef, defined, notdefined, OL,
 	isString, isHash, isNonEmptyString,
 	} from '@jdeighan/base-utils'
+import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 
 # ---------------------------------------------------------------------------

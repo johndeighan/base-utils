@@ -1,4 +1,4 @@
-// NamedLogs.coffee
+// named-logs.coffee
 var hasProp = {}.hasOwnProperty;
 
 import {
@@ -130,4 +130,4 @@ export var NamedLogs = class NamedLogs {
 
 };
 
-//# sourceMappingURL=NamedLogs.js.map
+//# sourceMappingURL=named-logs.js.map

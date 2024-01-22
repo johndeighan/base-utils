@@ -3,10 +3,9 @@
 import pathLib from 'node:path'
 
 import {
-	undef, defined, notdefined, alldefined,
-	} from '@jdeighan/base-utils/ll-utils'
-import {assert, croak} from '@jdeighan/base-utils/exceptions'
-import {mapSourcePos} from '@jdeighan/base-utils/source-map'
+	undef, defined, notdefined, alldefined, ll_assert, ll_croak,
+	} from '@jdeighan/base-utils'
+import {mapLineNum} from '@jdeighan/base-utils/source-map'
 
 # ---------------------------------------------------------------------------
 # Stack Frames have the keys:
@@ -121,13 +120,14 @@ export getV8Stack = (hOptions={}) =>
 				hFrame.dir = hParsed.dir
 				hFrame.stub = hParsed.name
 				hFrame.ext = hParsed.ext
-				mapSourcePos hFrame
+				if (hParsed.ext == '.js')
+					hFrame.line = mapLineNum filePath, hFrame.line
 				lFrames.push hFrame
 
 			return lFrames
 
 		lStackFrames = new Error().stack
-		assert (lStackFrames.length > 0), "lStackFrames is empty!"
+		ll_assert (lStackFrames.length > 0), "lStackFrames is empty!"
 
 		# --- reset to previous values
 		Error.stackTraceLimit = oldLimit
@@ -140,7 +140,7 @@ export getV8Stack = (hOptions={}) =>
 
 export parseFileURL = (url) =>
 
-	assert defined(url), "url is undef in parseFileURL()"
+	ll_assert defined(url), "url is undef in parseFileURL()"
 	lMatches = url.match(///^
 			file : \/\/
 			(.*)
@@ -167,7 +167,7 @@ export parseFileURL = (url) =>
 				source: 'node'
 				}
 		else
-			croak "Invalid file url: '#{url}'"
+			ll_croak "Invalid file url: '#{url}'"
 	return hParsed
 
 # ---------------------------------------------------------------------------

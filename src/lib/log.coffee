@@ -1,6 +1,5 @@
 # log.coffee
 
-import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	pass, undef, defined, notdefined, deepCopy, getOptions,
 	hEsc, escapeStr, OL, untabify, isObject, rtrim, DUMP,
@@ -8,6 +7,7 @@ import {
 	isNumber, isInteger, isString, isHash, isFunction, isBoolean,
 	isEmpty, nonEmpty, hEscNoNL, jsType, hasChar, quoted,
 	} from '@jdeighan/base-utils'
+import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {toTAML} from '@jdeighan/base-utils/taml'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {getMyOutsideCaller} from '@jdeighan/base-utils/ll-v8-stack'

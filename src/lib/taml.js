@@ -7,11 +7,6 @@ import {
 } from 'yaml';
 
 import {
-  assert,
-  croak
-} from '@jdeighan/base-utils/exceptions';
-
-import {
   undef,
   defined,
   notdefined,
@@ -28,6 +23,11 @@ import {
   escapeStr,
   rtrim
 } from '@jdeighan/base-utils';
+
+import {
+  assert,
+  croak
+} from '@jdeighan/base-utils/exceptions';
 
 // ---------------------------------------------------------------------------
 //   isTAML - is the string valid TAML?

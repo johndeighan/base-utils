@@ -67,19 +67,28 @@ utest.truthy 66, isFile(file2)
 utest.equal 67, pathType(file2), 'file'
 if (dir == 'c:/Users/johnd/base-utils/test')
 	utest.equal 69, parsePath(dir), {
+		base: 'test'
+		dir: 'c:/Users/johnd/base-utils'
+		ext: ''
+		fileName: 'test'
+		name: 'test'
+		path: 'c:/Users/johnd/base-utils/test'
+		purpose: undef
 		root: 'c:/'
-		dir: 'c:/Users/johnd/base-utils/test'     # parent directory
-		lDirs: ['c:','Users','johnd','base-utils','test']
+		stub: 'test'
+		type: 'dir'
 		}
 	utest.equal 74, parsePath(file2), {
+		base: 'file99.test.txt'
 		dir: 'c:/Users/johnd/base-utils/test/test'
 		ext: '.txt'
 		fileName: 'file99.test.txt'
-		filePath: 'c:/Users/johnd/base-utils/test/test/file99.test.txt'
-		lDirs: ['c:','Users','johnd','base-utils','test','test']
+		name: 'file99.test'
+		path: 'c:/Users/johnd/base-utils/test/test/file99.test.txt'
 		purpose: 'test'
 		root: 'c:/'
 		stub: 'file99.test'
+		type: 'file'
 		}
 rmFile file2
 utest.falsy 85, isFile(file2)

@@ -1,9 +1,11 @@
 # exceptions.coffee
 
-import {getV8Stack, nodeStr} from '@jdeighan/base-utils/ll-v8-stack'
 import {
 	undef, defined, notdefined, isEmpty,
-	} from '@jdeighan/base-utils/ll-utils'
+	} from '@jdeighan/base-utils'
+import {
+	getV8Stack, nodeStr,
+	} from '@jdeighan/base-utils/ll-v8-stack'
 
 doHaltOnError = false
 doLog = true

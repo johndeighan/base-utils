@@ -1,12 +1,12 @@
 # stack.coffee
 
-import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	undef, defined, notdefined, OL, OLS, deepCopy, warn, oneof,
 	isString, isArray, isBoolean, isInteger, isFunctionName,
 	isEmpty, nonEmpty, isNonEmptyString,
 	spaces, tabs, getOptions,
 	} from '@jdeighan/base-utils'
+import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {LOG, LOGVALUE, getMyLogs} from '@jdeighan/base-utils/log'
 
 mainName = '_MAIN_'

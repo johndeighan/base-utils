@@ -8,22 +8,22 @@ import NReadLines from 'n-readlines'
 import {
 	undef, defined, nonEmpty, toBlock, toArray, getOptions,
 	isString, isNumber, isHash, isArray, isIterable,
-	fromJSON, toJSON,
+	fromJSON, toJSON, OL,
 	} from '@jdeighan/base-utils'
+import {
+	fileExt, workingDir, myself, mydir, mkpath, withExt,
+	mkDir, clearDir, touch, isFile, isDir, rename,
+	pathType, rmFile, rmDir, parsePath, parentDir,
+	} from '@jdeighan/base-utils/ll-fs'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 import {toTAML, fromTAML} from '@jdeighan/base-utils/taml'
-import {
-	myself, mydir, mkpath,
-	mkDir, clearDir, touch, isFile, isDir, rename,
-	pathType, rmFile, rmDir, parsePath,
-	} from '@jdeighan/base-utils/ll-fs'
 
 export {
-	myself, mydir, mkpath,
+	fileExt, workingDir, myself, mydir, mkpath, withExt,
 	mkDir, clearDir, touch, isFile, isDir, rename,
-	pathType, rmFile, rmDir, parsePath,
+	pathType, rmFile, rmDir, parsePath, parentDir,
 	}
 
 # ---------------------------------------------------------------------------
@@ -191,8 +191,10 @@ export getTextFileContents = (filePath) =>
 # ---------------------------------------------------------------------------
 
 export allFilesIn = (dir, hOptions={}) ->
-	# --- yields hFileInfo with keys:
-	#        filePath, fileName, stub, ext, metadata, contents
+	# --- yields hFile with keys:
+	#        path, type, root, dir, base, fileName,
+	#        name, stub, ext, purpose
+	#        (if eager) metadata, lLines
 	# --- dir must be a directory
 	# --- Valid options:
 	#        recursive - descend into subdirectories
@@ -203,6 +205,7 @@ export allFilesIn = (dir, hOptions={}) ->
 		recursive: true
 		eager: false
 		})
+	dir = mkpath dir
 	assert isDir(dir), "Not a directory: #{dir}"
 	hOptions = {withFileTypes: true, recursive}
 	for ent in fs.readdirSync(dir, hOptions)
@@ -210,13 +213,13 @@ export allFilesIn = (dir, hOptions={}) ->
 		if ent.isFile()
 			path = mkpath(ent.path, ent.name)
 			dbg "PATH = #{path}"
-			hFileInfo = parsePath(path)
-			assert defined(hFileInfo), "allFilesIn(): hFileInfo = undef"
+			hFile = parsePath(path)
+			assert isHash(hFile), "hFile = #{OL(hFile)}"
 			if eager
-				hContents = getTextFileContents(hFileInfo.filePath)
-				Object.assign hFileInfo, hContents
-			dbg 'hFileInfo', hFileInfo
-			yield hFileInfo
+				hContents = getTextFileContents(path)
+				Object.assign hFile, hContents
+			dbg 'hFile', hFile
+			yield hFile
 	dbgReturn 'allFilesIn'
 	return
 

@@ -1,6 +1,5 @@
 # debug.coffee
 
-import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	pass, undef, defined, notdefined, OL, OLS,
 	isIdentifier, isFunctionName, isArrayOfStrings,
@@ -8,6 +7,7 @@ import {
 	isEmpty, nonEmpty, arrayToBlock, getOptions,
 	words, oneof, jsType, blockToArray,
 	} from '@jdeighan/base-utils'
+import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {
 	LOG, LOGVALUE, stringFits, debugLogging,

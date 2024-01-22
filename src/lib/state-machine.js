@@ -2,11 +2,6 @@
 var hasProp = {}.hasOwnProperty;
 
 import {
-  assert,
-  croak
-} from '@jdeighan/base-utils/exceptions';
-
-import {
   undef,
   defined,
   notdefined,
@@ -15,6 +10,11 @@ import {
   isHash,
   isNonEmptyString
 } from '@jdeighan/base-utils';
+
+import {
+  assert,
+  croak
+} from '@jdeighan/base-utils/exceptions';
 
 import {
   dbgEnter,

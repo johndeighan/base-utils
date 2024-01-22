@@ -1,10 +1,5 @@
   // indent.coffee
 import {
-  assert,
-  croak
-} from '@jdeighan/base-utils/exceptions';
-
-import {
   undef,
   defined,
   notdefined,
@@ -17,6 +12,11 @@ import {
   isEmpty,
   rtrim
 } from '@jdeighan/base-utils';
+
+import {
+  assert,
+  croak
+} from '@jdeighan/base-utils/exceptions';
 
 // ---------------------------------------------------------------------------
 export var getOneIndent = (str) => {

@@ -2,11 +2,6 @@
 var dbgReturnVal, dbgYieldFrom, internalDebugging, lFuncList, logAll, logEnter, logResume, logReturn, logString, logType, logValue, logYield, stdLogReturnVal;
 
 import {
-  assert,
-  croak
-} from '@jdeighan/base-utils/exceptions';
-
-import {
   pass,
   undef,
   defined,
@@ -31,6 +26,11 @@ import {
   jsType,
   blockToArray
 } from '@jdeighan/base-utils';
+
+import {
+  assert,
+  croak
+} from '@jdeighan/base-utils/exceptions';
 
 import {
   getPrefix
