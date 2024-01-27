@@ -149,8 +149,8 @@ export class FileProcessor
 							dbg "[#{numFiles}] #{hFile.fileName} - Skip"
 
 		dbg "#{numFiles} file#{add_s(numFiles)} processed"
-		dbgReturn 'readAll'
-		return
+		dbgReturn 'readAll', @lUserData
+		return @lUserData
 
 	# ..........................................................
 

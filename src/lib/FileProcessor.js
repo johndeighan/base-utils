@@ -191,7 +191,8 @@ export var FileProcessor = class FileProcessor {
         }
     }
     dbg(`${numFiles} file${add_s(numFiles)} processed`);
-    dbgReturn('readAll');
+    dbgReturn('readAll', this.lUserData);
+    return this.lUserData;
   }
 
   // ..........................................................
