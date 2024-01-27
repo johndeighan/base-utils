@@ -1,12 +1,13 @@
 # source-map.coffee
 
 import {readFileSync, existsSync} from 'node:fs'
-import {SourceMapConsumer} from 'source-map-js'
+import {SourceMapConsumer} from 'source-map'
 
 import {
-	undef, pass, defined, notdefined, alldefined, ll_assert,
+	undef, pass, defined, notdefined, alldefined,
+	ll_assert, ll_croak,
 	isEmpty, nonEmpty, deepCopy,
-	getOptions, isInteger, isString,
+	getOptions, isInteger, isString, isHash,
 	} from '@jdeighan/base-utils'
 import {
 	isFile, fileExt, mkpath, parsePath,
@@ -20,14 +21,14 @@ hSourceMaps = {}    # { filepath => hMap, ... }
 # ---------------------------------------------------------------------------
 
 export getMap = (mapFilePath) =>
+	# --- returns a hash
 
 	# --- get from cache if available
 	if hSourceMaps.hasOwnProperty(mapFilePath)
 		return hSourceMaps[mapFilePath]
 	else
 		rawMap = readFileSync mapFilePath, 'utf8'
-		hMap = hSourceMaps[mapFilePath] = JSON.parse(rawMap)
-		return hMap
+		return hSourceMaps[mapFilePath] = JSON.parse(rawMap)
 
 # ---------------------------------------------------------------------------
 # --- Valid keys:
@@ -56,51 +57,58 @@ export dumpMap = (hMap) =>
 
 # ---------------------------------------------------------------------------
 
-export mapLineNum = (jsPath, line) =>
-
-	# --- Temporarily, since it's broken,
-	#     we simply return the original line number
-	return line
-
-#	hMapped = mapSourcePos(jsPath, line, 0)
-#	return hMapped.line
-
-# ---------------------------------------------------------------------------
-
-export mapSourcePos = (jsPath, line, column, hOptions={}) =>
-	# --- Can map only if:
-	#        1. ext is .js
-	#        2. <jsPath>.map exists
-	#
-	#     returns {source, line, column, name}
+export mapLineNum = (jsPath, line, column=0, hOptions={}) =>
 
 	{debug} = getOptions hOptions, {
 		debug: false
 		}
 
-	jsPath = mkpath jsPath
-	ll_assert isFile(jsPath), "no such file #{jsPath}"
-	if (fileExt(jsPath) != '.js')
+	if debug
+		console.log "DEBUGGING mapLineNum(#{line},#{column})"
+		console.log "   #{jsPath}"
+	ll_assert isInteger(line), "line #{line} not an integer"
+	try
+		hMapped = mapSourcePos jsPath, line, column, {debug}
+		return hMapped.line
+	catch err
 		if debug
-			console.log "#{jsPath} is not a JS file"
-		return undef
+			console.log "mapSourcePos failed, returning original line"
+			console.log err.message
+		return line
 
+# ---------------------------------------------------------------------------
+
+export mapSourcePos = (jsPath, line, column, hOptions={}) =>
+	# --- Valid options:
+	#        debug
+	# --- Can map only if:
+	#        1. ext is .js
+	#        2. <jsPath>.map exists
+	#
+	#     returns {source, line, column, name}
+	#     will return original jsPath, line and column
+	#        if no map file, or unable to map
+
+	{debug} = getOptions hOptions, {
+		debug: false
+		}
+
+	if debug
+		console.log "DEBUGGING mapSourcePos(#{line},#{column})"
+		console.log "   #{jsPath}"
+
+	jsPath = mkpath jsPath
+	mapFilePath = jsPath + '.map'
+
+	ll_assert isFile(jsPath), "no such file #{jsPath}"
+	ll_assert isFile(mapFilePath), "no such file #{mapFilePath}"
+	ll_assert fileExt(jsPath) == '.js', "Not a JS file"
 	ll_assert isInteger(line, {min: 0}), "line #{line} not an integer"
 	ll_assert isInteger(column, {min: 0}), "column #{column} not an integer"
 
-	mapFilePath = jsPath + '.map'
-	if isFile(mapFilePath)
-		if debug
-			console.log "map file #{mapFilePath} found"
-	else
-		if debug
-			console.log "map file #{mapFilePath} not found"
-		return undef
-
 	# --- get from cache if available
 	hMap = getMap mapFilePath
-
-	ll_assert defined(hMap), "Unable to get map from #{mapFilePath}"
+	ll_assert defined(hMap), "getMap() returned undef"
 	if debug
 		dumpMap hMap
 
@@ -112,4 +120,7 @@ export mapSourcePos = (jsPath, line, column, hOptions={}) =>
 	hMapped = smc.originalPositionFor({line, column})
 	if debug
 		console.log hMapped
+	ll_assert isHash(hMapped), "originalPositionFor(#{line},#{column}) returned non-hash"
+	{source, line, column, name} = hMapped
+	ll_assert isInteger(line), "originalPositionFor(#{line},#{column}) returned line = #{line}"
 	return hMapped

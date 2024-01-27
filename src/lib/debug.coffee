@@ -7,6 +7,7 @@ import {
 	isEmpty, nonEmpty, arrayToBlock, getOptions,
 	words, oneof, jsType, blockToArray,
 	} from '@jdeighan/base-utils'
+import {parsePath} from '@jdeighan/base-utils/ll-fs'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {
@@ -18,7 +19,7 @@ import {CallStack} from '@jdeighan/base-utils/stack'
 
 export {debugLogging}
 
-export callStack = new CallStack()
+export debugStack = new CallStack()
 
 # --- Comes from call to setDebugging()
 lFuncList = []      # array of {funcName, plus}
@@ -99,7 +100,7 @@ logType = (cur, std) =>
 export resetDebugging = () =>
 
 	# --- reset everything
-	callStack.reset()
+	debugStack.reset()
 	lFuncList = []
 	logAll = false
 	logEnter  = stdLogEnter
@@ -116,7 +117,7 @@ export resetDebugging = () =>
 
 export setDebugging = (debugWhat=undef, hOptions={}) =>
 	# --- debugWhat can be:
-	#        1. a boolean
+	#        1. a boolean (false=disable, true=debug all)
 	#        2. a string
 	#        3. an array of strings
 	# --- Valid options:
@@ -129,6 +130,7 @@ export setDebugging = (debugWhat=undef, hOptions={}) =>
 	if internalDebugging
 		console.log "setDebugging #{OL(debugWhat)}, #{OL(hOptions)}"
 
+	assert defined(debugWhat), "arg 1 must be defined"
 	resetDebugging()
 
 	customSet = false     # were any custom loggers set?
@@ -245,11 +247,11 @@ export dbgEnter = (funcName, lValues...) =>
 		console.log "   - doLog = #{OL(doLog)}"
 
 	if doLog
-		level = callStack.logLevel
+		level = debugStack.logLevel
 		if ! logEnter level, funcName, lValues
 			stdLogEnter level, funcName, lValues
 
-	callStack.enter funcName, lValues, doLog
+	debugStack.enter funcName, lValues, doLog
 	return true
 
 # ---------------------------------------------------------------------------
@@ -268,7 +270,7 @@ export funcMatch = (funcName) =>
 	if internalDebugging
 		console.log "CHECK funcMatch(#{OL(funcName)})"
 		console.log lFuncList
-		callStack.dump 1
+		debugStack.dump 1
 
 	lParts = isFunctionName(funcName)
 	assert defined(lParts), "not a valid function name: #{OL(funcName)}"
@@ -278,7 +280,7 @@ export funcMatch = (funcName) =>
 			if internalDebugging
 				console.log "   - TRUE - #{OL(funcName)} is in lFuncList"
 			return true
-		if h.plus && callStack.isActive(h.fullName)
+		if h.plus && debugStack.isActive(h.fullName)
 			if internalDebugging
 				console.log "   - TRUE - #{OL(h.fullName)} is active"
 			return true
@@ -302,16 +304,16 @@ export dbgReturn = (lArgs...) =>
 		return dbgReturnVal lArgs...
 	funcName = lArgs[0]
 	assert isFunctionName(funcName), "not a valid function name"
-	doLog = logAll || callStack.isLogging()
+	doLog = logAll || debugStack.isLogging()
 	if internalDebugging
 		console.log "dbgReturn #{OL(funcName)}"
 		console.log "   - doLog = #{OL(doLog)}"
 	if doLog
-		level = callStack.logLevel
+		level = debugStack.logLevel
 		if ! logReturn level, funcName
 			stdLogReturn level, funcName
 
-	callStack.returnFrom funcName
+	debugStack.returnFrom funcName
 	return true
 
 # ---------------------------------------------------------------------------
@@ -319,16 +321,16 @@ export dbgReturn = (lArgs...) =>
 dbgReturnVal = (funcName, val) =>
 
 	assert isFunctionName(funcName), "not a valid function name"
-	doLog = logAll || callStack.isLogging()
+	doLog = logAll || debugStack.isLogging()
 	if internalDebugging
 		console.log "dbgReturn #{OL(funcName)}, #{OL(val)}"
 		console.log "   - doLog = #{OL(doLog)}"
 	if doLog
-		level = callStack.logLevel
+		level = debugStack.logLevel
 		if ! logReturn level, funcName, val
 			stdLogReturn level, funcName, val
 
-	callStack.returnFrom funcName, val
+	debugStack.returnFrom funcName, val
 	return true
 
 # ---------------------------------------------------------------------------
@@ -342,16 +344,16 @@ export dbgYield = (lArgs...) =>
 		return dbgYieldFrom(funcName)
 
 	assert isFunctionName(funcName), "not a function name"
-	doLog = logAll || callStack.isLogging()
+	doLog = logAll || debugStack.isLogging()
 	if internalDebugging
 		console.log "dbgYield #{OL(funcName)} #{OL(val)}"
 		console.log "   - doLog = #{OL(doLog)}"
 	if doLog
-		level = callStack.logLevel
+		level = debugStack.logLevel
 		if ! logYield level, funcName, val
 			stdLogYield level, funcName, val
 
-	callStack.yield funcName, val
+	debugStack.yield funcName, val
 	return true
 
 # ---------------------------------------------------------------------------
@@ -359,16 +361,16 @@ export dbgYield = (lArgs...) =>
 dbgYieldFrom = (funcName) =>
 
 	assert isFunctionName(funcName), "not a function name"
-	doLog = logAll || callStack.isLogging()
+	doLog = logAll || debugStack.isLogging()
 	if internalDebugging
 		console.log "dbgYieldFrom #{OL(funcName)}"
 		console.log "   - doLog = #{OL(doLog)}"
 	if doLog
-		level = callStack.logLevel
+		level = debugStack.logLevel
 		if ! logYieldFrom level, funcName
 			stdLogYieldFrom level, funcName
 
-	callStack.yield funcName
+	debugStack.yield funcName
 	return true
 
 # ---------------------------------------------------------------------------
@@ -376,13 +378,13 @@ dbgYieldFrom = (funcName) =>
 export dbgResume = (funcName) =>
 
 	assert isFunctionName(funcName), "not a valid function name"
-	callStack.resume funcName
-	doLog = logAll || callStack.isLogging()
+	debugStack.resume funcName
+	doLog = logAll || debugStack.isLogging()
 	if internalDebugging
 		console.log "dbgResume #{OL(funcName)}"
 		console.log "   - doLog = #{OL(doLog)}"
 	if doLog
-		level = callStack.logLevel
+		level = debugStack.logLevel
 		if ! logResume funcName, level-1
 			stdLogResume funcName, level-1
 
@@ -405,12 +407,12 @@ export dbgValue = (label, val) =>
 
 	assert isString(label), "not a string"
 
-	doLog = logAll || callStack.isLogging()
+	doLog = logAll || debugStack.isLogging()
 	if internalDebugging
 		console.log "dbgValue #{OL(label)}, #{OL(val)}"
 		console.log "   - doLog = #{OL(doLog)}"
 	if doLog
-		level = callStack.logLevel
+		level = debugStack.logLevel
 		if ! logValue level, label, val
 			stdLogValue level, label, val
 
@@ -422,12 +424,12 @@ export dbgValue = (label, val) =>
 export dbgString = (str) =>
 
 	assert isString(str), "not a string"
-	doLog = logAll || callStack.isLogging()
+	doLog = logAll || debugStack.isLogging()
 	if internalDebugging
 		console.log "dbgString(#{OL(str)})"
 		console.log "   - doLog = #{OL(doLog)}"
 	if doLog
-		level = callStack.logLevel
+		level = debugStack.logLevel
 		if ! logString level, str
 			stdLogString level, str
 

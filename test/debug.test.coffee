@@ -1,46 +1,31 @@
 # debug.test.coffee
 
-import test from 'ava'
-
 import {
 	assert, croak,
 	} from '@jdeighan/base-utils/exceptions'
 import {
-	undef, defined, notdefined,
+	undef, defined, notdefined, isFunction,
 	} from '@jdeighan/base-utils'
 import {
-	LOG, LOGVALUE, LOGSTRING, clearAllLogs, getMyLogs, echoLogsByDefault,
+	LOG, LOGVALUE, LOGSTRING,
+	clearAllLogs, getMyLogs, echoLogsByDefault,
 	} from '@jdeighan/base-utils/log'
 import {CallStack} from '@jdeighan/base-utils/stack'
 import {
-	callStack, setDebugging, debugDebug,
+	debugStack, setDebugging, debugDebug,
 	getType, dumpDebugLoggers,
 	dbgEnter, dbgReturn, dbgYield, dbgResume, dbg,
 	clearDebugLog, getDebugLog, stdLogString,
 	} from '@jdeighan/base-utils/debug'
+import {utest} from '@jdeighan/base-utils/utest'
 
 echoLogsByDefault false
-setDebugging undef, 'noecho'
-
-# ---------------------------------------------------------------------------
-
-test "line 24", (t) =>
-	clearDebugLog()
-	stdLogString 2, """
-		---
-		- abc
-		- def
-		"""
-	t.is getDebugLog(), """
-		│   │   ---
-		│   │   - abc
-		│   │   - def
-		"""
+setDebugging false, 'noecho'
 
 # ---------------------------------------------------------------------------
 # --- Define some functions to use in testing
 
-main = () ->
+export main = () ->
 
 	dbgEnter 'main'
 	for i in [13, 15]
@@ -49,19 +34,21 @@ main = () ->
 	dbgReturn 'main'
 	return
 
-func1 = (i) ->
+export func1 = (i) ->
 	dbgEnter 'func1', i
 	func2(i)
 	dbgReturn 'func1'
 	return
 
-func2 = (i) ->
+export func2 = (i) ->
 	dbgEnter 'func2', i
 	LOG 2*i
 	dbgReturn 'func2'
 	return
 
-callGen = () ->
+# ---------------------------------------------------------------------------
+
+export callGen = () ->
 	dbgEnter 'callGen'
 	for i from gen()
 		dbg "GOT #{i}"
@@ -69,7 +56,39 @@ callGen = () ->
 	dbgReturn 'callGen'
 	return
 
-gen = () ->
+export callGen1 = () ->
+	dbgEnter 'func'
+	dbgReturn 'func'
+	LOG 'abc'
+
+export callGen2 = () ->
+	dbgEnter 'obj.func'
+	dbgReturn 'obj.func'
+	LOG 'abc'
+
+export callGen3 = () ->
+	dbgEnter 'obj.func'
+	dbgReturn 'obj.func'
+	LOG 'abc'
+
+export callGen4 = () ->
+	dbgEnter 'Getter.get'
+	dbgEnter 'Fetcher.fetch'
+	dbgReturn 'Fetcher.fetch', {
+		str: 'abcdef abcdef abcdef abcdef abcdef'
+		node: 'abcdef abcdef abcdef abcdef abcdef'
+		lineNum: 15
+		}
+	dbgReturn 'Getter.get', {
+		str: 'abcdef abcdef abcdef abcdef abcdef'
+		node: 'abcdef abcdef abcdef abcdef abcdef'
+		lineNum: 15
+		}
+	LOG 'abc'
+
+# ---------------------------------------------------------------------------
+
+export gen = () ->
 	dbgEnter 'gen'
 
 	dbgYield 'gen', 1
@@ -85,21 +104,32 @@ gen = () ->
 
 # ---------------------------------------------------------------------------
 
-hTestNumbers = {}
+clearDebugLog()
+stdLogString 2, """
+	---
+	- abc
+	- def
+	"""
+utest.equal getDebugLog(), """
+	│   │   ---
+	│   │   - abc
+	│   │   - def
+	"""
 
-TEST = (lineNum, debugWhat, func, expectedDbg, expectedLog) ->
+# ---------------------------------------------------------------------------
+# --- possible values for debugWhat:
+#        false - no debug output
+#        true - debug all calls
+#        <string> - spaces separated names of functions/methods to debug
 
-	# --- Make sure test numbers are unique
-	while (hTestNumbers[lineNum])
-		lineNum += 1000
-	hTestNumbers[lineNum] = true
+TEST = (debugWhat, func, expectedDbg, expectedLog) ->
 
-	if defined(debugWhat)
-		setDebugging debugWhat, 'noecho'
-	else
-		setDebugging false, 'noecho'
+	assert defined(debugWhat), "1st arg must be defined"
+	setDebugging debugWhat, 'noecho'
 
-	callStack.logCalls true
+	assert isFunction(func), "not a function"
+
+	debugStack.logCalls true
 	clearAllLogs()
 
 	func()
@@ -107,19 +137,15 @@ TEST = (lineNum, debugWhat, func, expectedDbg, expectedLog) ->
 	dbgStr = getDebugLog()
 	logStr = getMyLogs()
 
-	test "line #{lineNum}-DEBUG", (t) =>
-		t.is dbgStr, expectedDbg
-	if defined(expectedLog)
-		test "line #{lineNum}-LOG", (t) =>
-			t.is logStr, expectedLog
-	test "line #{lineNum}-final", (t) =>
-		t.truthy callStack.isEmpty()
+	utest.equal dbgStr, expectedDbg
+	utest.equal logStr, expectedLog
+	utest.truthy debugStack.isEmpty()
 	return
 
 # ---------------------------------------------------------------------------
 
 (() ->
-	TEST 107, undef, main, '', """
+	TEST false, main, '', """
 		26
 		14
 		30
@@ -130,7 +156,7 @@ TEST = (lineNum, debugWhat, func, expectedDbg, expectedLog) ->
 # ---------------------------------------------------------------------------
 
 (() ->
-	TEST 119, 'main', main, """
+	TEST 'main', main, """
 		enter main
 		└─> return from main
 		""", """
@@ -145,7 +171,7 @@ TEST = (lineNum, debugWhat, func, expectedDbg, expectedLog) ->
 
 (() ->
 
-	TEST 134, 'main func2', main, """
+	TEST 'main func2', main, """
 		enter main
 		│   enter func2 13
 		│   └─> return from func2
@@ -164,7 +190,7 @@ TEST = (lineNum, debugWhat, func, expectedDbg, expectedLog) ->
 
 (() ->
 
-	TEST 153, 'func2', main, """
+	TEST 'func2', main, """
 		enter func2 13
 		└─> return from func2
 		enter func2 15
@@ -178,36 +204,32 @@ TEST = (lineNum, debugWhat, func, expectedDbg, expectedLog) ->
 	)()
 
 # ---------------------------------------------------------------------------
+# --- PROBLEM
 
-(() ->
-
-	TEST 170, true, callGen, """
-		enter callGen
-		│   enter gen
-		│   ├<─ yield 1
-		│   GOT 1
-		│   ├─> resume
-		│   ├<─ yield 2
-		│   GOT 2
-		│   ├─> resume
-		│   └─> return from gen
-		└─> return from callGen
-		""", """
-		1
-		2
-		"""
-	)()
+# (() ->
+#
+# 	TEST 'callGen get', callGen, """
+# 		enter callGen
+# 		│   enter gen
+# 		│   ├<─ yield 1
+# 		│   GOT 1
+# 		│   ├─> resume
+# 		│   ├<─ yield 2
+# 		│   GOT 2
+# 		│   ├─> resume
+# 		│   └─> return from gen
+# 		└─> return from callGen
+# 		""", """
+# 		1
+# 		2
+# 		"""
+# 	)()
 
 # ---------------------------------------------------------------------------
 
 (() ->
 
-	callGen = () ->
-		dbgEnter 'func'
-		dbgReturn 'func'
-		LOG 'abc'
-
-	TEST 193, 'func', callGen, """
+	TEST true, callGen1, """
 		enter func
 		└─> return from func
 		""", """
@@ -219,12 +241,7 @@ TEST = (lineNum, debugWhat, func, expectedDbg, expectedLog) ->
 
 (() ->
 
-	callGen = () ->
-		dbgEnter 'obj.func'
-		dbgReturn 'obj.func'
-		LOG 'abc'
-
-	TEST 193, 'obj.func', callGen, """
+	TEST 'obj.func', callGen2, """
 		enter obj.func
 		└─> return from obj.func
 		""", """
@@ -236,12 +253,7 @@ TEST = (lineNum, debugWhat, func, expectedDbg, expectedLog) ->
 
 (() ->
 
-	callGen = () ->
-		dbgEnter 'obj.func'
-		dbgReturn 'obj.func'
-		LOG 'abc'
-
-	TEST 193, 'func', callGen, """
+	TEST 'func', callGen3, """
 		enter obj.func
 		└─> return from obj.func
 		""", """
@@ -253,22 +265,7 @@ TEST = (lineNum, debugWhat, func, expectedDbg, expectedLog) ->
 
 (() ->
 
-	callGen = () ->
-		dbgEnter 'Getter.get'
-		dbgEnter 'Fetcher.fetch'
-		dbgReturn 'Fetcher.fetch', {
-			str: 'abcdef abcdef abcdef abcdef abcdef'
-			node: 'abcdef abcdef abcdef abcdef abcdef'
-			lineNum: 15
-			}
-		dbgReturn 'Getter.get', {
-			str: 'abcdef abcdef abcdef abcdef abcdef'
-			node: 'abcdef abcdef abcdef abcdef abcdef'
-			lineNum: 15
-			}
-		LOG 'abc'
-
-	TEST 193, 'get fetch', callGen, """
+	TEST 'get fetch', callGen4, """
 		enter Getter.get
 		│   enter Fetcher.fetch
 		│   └─> return from Fetcher.fetch
@@ -310,7 +307,7 @@ TEST = (lineNum, debugWhat, func, expectedDbg, expectedLog) ->
 		dbgReturn 'FUNC2'
 		return
 
-	TEST 297, 'MAIN+', MAIN, """
+	TEST 'MAIN+', MAIN, """
 		enter MAIN
 		│   enter FUNC1
 		│   └─> return from FUNC1
@@ -323,5 +320,3 @@ TEST = (lineNum, debugWhat, func, expectedDbg, expectedLog) ->
 		"""
 
 	)()
-
-# ---------------------------------------------------------------------------

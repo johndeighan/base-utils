@@ -145,6 +145,13 @@ export var hasAnyKey = (obj, ...lKeys) => {
 };
 
 // ---------------------------------------------------------------------------
+export var addNewKey = function(h, key, value) {
+  ll_assert(!hasKey(h, key), `hash has key ${key}`);
+  h[key] = value;
+  return h;
+};
+
+// ---------------------------------------------------------------------------
 export var subkeys = (obj) => {
   var h, j, k, key, lSubKeys, len, len1, ref, ref1, subkey;
   lSubKeys = [];
@@ -193,26 +200,29 @@ export var fromJSON = (strJson) => {
 };
 
 // ---------------------------------------------------------------------------
-export var toJSON = (hJson) => {
+export var toJSON = (hJson, hOptions = {}) => {
+  var replacer, useTabs;
   // --- data structure to string
-  return JSON.stringify(hJson, null, "\t");
+  ({useTabs, replacer} = getOptions(hOptions, {
+    useTabs: true,
+    replacer: undef
+  }));
+  if (useTabs) {
+    return JSON.stringify(hJson, replacer, "\t");
+  } else {
+    return JSON.stringify(hJson, replacer, 3);
+  }
 };
 
 // ---------------------------------------------------------------------------
 export var runCmd = (cmd) => {
-  var err, result;
-  try {
-    result = execSync(cmd, {
-      stdio: 'pipe',
-      windowsHide: true,
-      encoding: 'utf8'
-    });
-    return result || "<STDOUT>";
-  } catch (error1) {
-    err = error1;
-    console.error(`Failed to execute cmd '${cmd}'`, err);
-    return undef;
-  }
+  var result;
+  result = execSync(cmd, {
+    stdio: 'pipe',
+    windowsHide: true,
+    encoding: 'utf8'
+  });
+  return result || "<STDOUT>";
 };
 
 // ---------------------------------------------------------------------------

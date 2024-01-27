@@ -1,23 +1,19 @@
 # exceptions.test.coffee
 
-import test from 'ava'
-
 import {
 	assert, croak, suppressExceptionLogging,
 	} from '@jdeighan/base-utils/exceptions'
+import {utest} from '@jdeighan/base-utils/utest'
 
 # ---------------------------------------------------------------------------
 
-test "line 12", (t) =>
-	t.throws(() ->
-		suppressExceptionLogging true
-		croak("BAD")
-		)
-test "line 13", (t) =>
-	t.throws(() ->
-		suppressExceptionLogging true
-		assert(2+2 != 4, 'EXCEPTION'))
+utest.throws () ->
+	suppressExceptionLogging true
+	croak("BAD")
 
-test "line 14", (t) =>
-	t.notThrows(() ->
-		assert(2+2 == 4))
+utest.throws () ->
+	suppressExceptionLogging true
+	assert(2+2 != 4, 'EXCEPTION')
+
+utest.succeeds () ->
+	assert(2+2 == 4)

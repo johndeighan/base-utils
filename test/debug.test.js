@@ -1,7 +1,5 @@
 // debug.test.coffee
-var TEST, callGen, func1, func2, gen, hTestNumbers, main;
-
-import test from 'ava';
+var TEST;
 
 import {
   assert,
@@ -11,7 +9,8 @@ import {
 import {
   undef,
   defined,
-  notdefined
+  notdefined,
+  isFunction
 } from '@jdeighan/base-utils';
 
 import {
@@ -28,7 +27,7 @@ import {
 } from '@jdeighan/base-utils/stack';
 
 import {
-  callStack,
+  debugStack,
   setDebugging,
   debugDebug,
   getType,
@@ -43,24 +42,17 @@ import {
   stdLogString
 } from '@jdeighan/base-utils/debug';
 
+import {
+  utest
+} from '@jdeighan/base-utils/utest';
+
 echoLogsByDefault(false);
 
-setDebugging(undef, 'noecho');
-
-// ---------------------------------------------------------------------------
-test("line 24", (t) => {
-  clearDebugLog();
-  stdLogString(2, `---
-- abc
-- def`);
-  return t.is(getDebugLog(), `│   │   ---
-│   │   - abc
-│   │   - def`);
-});
+setDebugging(false, 'noecho');
 
 // ---------------------------------------------------------------------------
 // --- Define some functions to use in testing
-main = function() {
+export var main = function() {
   var i, j, len, ref;
   dbgEnter('main');
   ref = [13, 15];
@@ -72,19 +64,20 @@ main = function() {
   dbgReturn('main');
 };
 
-func1 = function(i) {
+export var func1 = function(i) {
   dbgEnter('func1', i);
   func2(i);
   dbgReturn('func1');
 };
 
-func2 = function(i) {
+export var func2 = function(i) {
   dbgEnter('func2', i);
   LOG(2 * i);
   dbgReturn('func2');
 };
 
-callGen = function() {
+// ---------------------------------------------------------------------------
+export var callGen = function() {
   var i, ref;
   dbgEnter('callGen');
   ref = gen();
@@ -95,7 +88,42 @@ callGen = function() {
   dbgReturn('callGen');
 };
 
-gen = function*() {
+export var callGen1 = function() {
+  dbgEnter('func');
+  dbgReturn('func');
+  return LOG('abc');
+};
+
+export var callGen2 = function() {
+  dbgEnter('obj.func');
+  dbgReturn('obj.func');
+  return LOG('abc');
+};
+
+export var callGen3 = function() {
+  dbgEnter('obj.func');
+  dbgReturn('obj.func');
+  return LOG('abc');
+};
+
+export var callGen4 = function() {
+  dbgEnter('Getter.get');
+  dbgEnter('Fetcher.fetch');
+  dbgReturn('Fetcher.fetch', {
+    str: 'abcdef abcdef abcdef abcdef abcdef',
+    node: 'abcdef abcdef abcdef abcdef abcdef',
+    lineNum: 15
+  });
+  dbgReturn('Getter.get', {
+    str: 'abcdef abcdef abcdef abcdef abcdef',
+    node: 'abcdef abcdef abcdef abcdef abcdef',
+    lineNum: 15
+  });
+  return LOG('abc');
+};
+
+// ---------------------------------------------------------------------------
+export var gen = function*() {
   dbgEnter('gen');
   dbgYield('gen', 1);
   yield 1;
@@ -107,41 +135,39 @@ gen = function*() {
 };
 
 // ---------------------------------------------------------------------------
-hTestNumbers = {};
+clearDebugLog();
 
-TEST = function(lineNum, debugWhat, func, expectedDbg, expectedLog) {
+stdLogString(2, `---
+- abc
+- def`);
+
+utest.equal(getDebugLog(), `│   │   ---
+│   │   - abc
+│   │   - def`);
+
+// ---------------------------------------------------------------------------
+// --- possible values for debugWhat:
+//        false - no debug output
+//        true - debug all calls
+//        <string> - spaces separated names of functions/methods to debug
+TEST = function(debugWhat, func, expectedDbg, expectedLog) {
   var dbgStr, logStr;
-  // --- Make sure test numbers are unique
-  while (hTestNumbers[lineNum]) {
-    lineNum += 1000;
-  }
-  hTestNumbers[lineNum] = true;
-  if (defined(debugWhat)) {
-    setDebugging(debugWhat, 'noecho');
-  } else {
-    setDebugging(false, 'noecho');
-  }
-  callStack.logCalls(true);
+  assert(defined(debugWhat), "1st arg must be defined");
+  setDebugging(debugWhat, 'noecho');
+  assert(isFunction(func), "not a function");
+  debugStack.logCalls(true);
   clearAllLogs();
   func();
   dbgStr = getDebugLog();
   logStr = getMyLogs();
-  test(`line ${lineNum}-DEBUG`, (t) => {
-    return t.is(dbgStr, expectedDbg);
-  });
-  if (defined(expectedLog)) {
-    test(`line ${lineNum}-LOG`, (t) => {
-      return t.is(logStr, expectedLog);
-    });
-  }
-  test(`line ${lineNum}-final`, (t) => {
-    return t.truthy(callStack.isEmpty());
-  });
+  utest.equal(dbgStr, expectedDbg);
+  utest.equal(logStr, expectedLog);
+  utest.truthy(debugStack.isEmpty());
 };
 
 // ---------------------------------------------------------------------------
 (function() {
-  return TEST(107, undef, main, '', `26
+  return TEST(false, main, '', `26
 14
 30
 16`);
@@ -149,7 +175,7 @@ TEST = function(lineNum, debugWhat, func, expectedDbg, expectedLog) {
 
 // ---------------------------------------------------------------------------
 (function() {
-  return TEST(119, 'main', main, `enter main
+  return TEST('main', main, `enter main
 └─> return from main`, `26
 14
 30
@@ -158,7 +184,7 @@ TEST = function(lineNum, debugWhat, func, expectedDbg, expectedLog) {
 
 // ---------------------------------------------------------------------------
 (function() {
-  return TEST(134, 'main func2', main, `enter main
+  return TEST('main func2', main, `enter main
 │   enter func2 13
 │   └─> return from func2
 │   enter func2 15
@@ -171,7 +197,7 @@ TEST = function(lineNum, debugWhat, func, expectedDbg, expectedLog) {
 
 // ---------------------------------------------------------------------------
 (function() {
-  return TEST(153, 'func2', main, `enter func2 13
+  return TEST('func2', main, `enter func2 13
 └─> return from func2
 enter func2 15
 └─> return from func2`, `26
@@ -181,71 +207,48 @@ enter func2 15
 })();
 
 // ---------------------------------------------------------------------------
-(function() {
-  return TEST(170, true, callGen, `enter callGen
-│   enter gen
-│   ├<─ yield 1
-│   GOT 1
-│   ├─> resume
-│   ├<─ yield 2
-│   GOT 2
-│   ├─> resume
-│   └─> return from gen
-└─> return from callGen`, `1
-2`);
-})();
+// --- PROBLEM
 
-// ---------------------------------------------------------------------------
+  // (() ->
+
+// 	TEST 'callGen get', callGen, """
+// 		enter callGen
+// 		│   enter gen
+// 		│   ├<─ yield 1
+// 		│   GOT 1
+// 		│   ├─> resume
+// 		│   ├<─ yield 2
+// 		│   GOT 2
+// 		│   ├─> resume
+// 		│   └─> return from gen
+// 		└─> return from callGen
+// 		""", """
+// 		1
+// 		2
+// 		"""
+// 	)()
+
+  // ---------------------------------------------------------------------------
 (function() {
-  callGen = function() {
-    dbgEnter('func');
-    dbgReturn('func');
-    return LOG('abc');
-  };
-  return TEST(193, 'func', callGen, `enter func
+  return TEST(true, callGen1, `enter func
 └─> return from func`, `abc`);
 })();
 
 // ---------------------------------------------------------------------------
 (function() {
-  callGen = function() {
-    dbgEnter('obj.func');
-    dbgReturn('obj.func');
-    return LOG('abc');
-  };
-  return TEST(193, 'obj.func', callGen, `enter obj.func
+  return TEST('obj.func', callGen2, `enter obj.func
 └─> return from obj.func`, `abc`);
 })();
 
 // ---------------------------------------------------------------------------
 (function() {
-  callGen = function() {
-    dbgEnter('obj.func');
-    dbgReturn('obj.func');
-    return LOG('abc');
-  };
-  return TEST(193, 'func', callGen, `enter obj.func
+  return TEST('func', callGen3, `enter obj.func
 └─> return from obj.func`, `abc`);
 })();
 
 // ---------------------------------------------------------------------------
 (function() {
-  callGen = function() {
-    dbgEnter('Getter.get');
-    dbgEnter('Fetcher.fetch');
-    dbgReturn('Fetcher.fetch', {
-      str: 'abcdef abcdef abcdef abcdef abcdef',
-      node: 'abcdef abcdef abcdef abcdef abcdef',
-      lineNum: 15
-    });
-    dbgReturn('Getter.get', {
-      str: 'abcdef abcdef abcdef abcdef abcdef',
-      node: 'abcdef abcdef abcdef abcdef abcdef',
-      lineNum: 15
-    });
-    return LOG('abc');
-  };
-  return TEST(193, 'get fetch', callGen, `enter Getter.get
+  return TEST('get fetch', callGen4, `enter Getter.get
 │   enter Fetcher.fetch
 │   └─> return from Fetcher.fetch
 │       val =
@@ -280,7 +283,7 @@ enter func2 15
     LOG('Hi');
     dbgReturn('FUNC2');
   };
-  return TEST(297, 'MAIN+', MAIN, `enter MAIN
+  return TEST('MAIN+', MAIN, `enter MAIN
 │   enter FUNC1
 │   └─> return from FUNC1
 │   enter FUNC2
@@ -288,7 +291,5 @@ enter func2 15
 └─> return from MAIN`, `Hello
 Hi`);
 })();
-
-// ---------------------------------------------------------------------------
 
 //# sourceMappingURL=debug.test.js.map

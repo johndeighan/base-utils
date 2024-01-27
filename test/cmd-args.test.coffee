@@ -7,7 +7,7 @@ import {utest} from '@jdeighan/base-utils/utest'
 # ---------------------------------------------------------------------------
 
 (() =>
-	hOptions = {
+	hExpected = {
 		boolean: ['a','b','c','h']
 		string: ['name']
 		number: ['count']
@@ -17,8 +17,8 @@ import {utest} from '@jdeighan/base-utils/utest'
 		}
 
 	cmdLine = '-c --name=abc --count=5 def ghi'
-	hOpts = getArgs hOptions, cmdLine
-	utest.equal 18, hOpts, {
+	hOpts = getArgs hExpected, cmdLine
+	utest.equal hOpts, {
 		a: true,          # default value
 		b: false,         # not on cmd line
 		c: true,          # explicitly on cmd line

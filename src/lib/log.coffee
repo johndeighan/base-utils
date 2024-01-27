@@ -8,9 +8,10 @@ import {
 	isEmpty, nonEmpty, hEscNoNL, jsType, hasChar, quoted,
 	} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
+import {parsePath} from '@jdeighan/base-utils/ll-fs'
 import {toTAML} from '@jdeighan/base-utils/taml'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
-import {getMyOutsideCaller} from '@jdeighan/base-utils/ll-v8-stack'
+import {getMyOutsideCaller} from '@jdeighan/base-utils/v8-stack'
 import {NamedLogs} from '@jdeighan/base-utils/named-logs'
 
 export logWidth = 42
@@ -87,20 +88,39 @@ export getAllLogs = () =>
 
 # ---------------------------------------------------------------------------
 
+export LOG = (str="", prefix="") =>
+
+	if internalDebugging
+		if isEmpty(prefix)
+			console.log "CALL LOG(#{OL(str)})"
+		else
+			console.log "CALL LOG(#{OL(str)}), prefix=#{OL(prefix)}"
+
+	PUTSTR "#{prefix}#{str}"
+	return true   # to allow use in boolean expressions
+
+# ---------------------------------------------------------------------------
+
 export PUTSTR = (str) =>
 
 	if internalDebugging
 		console.log "CALL PUTSTR(#{OL(str)})"
-		if defined(putstr) && (putstr != console.log)
-			console.log "   - use custom logger"
-
+		if defined(putstr)
+			if (putstr != console.log)
+				console.log "   - use custom logger"
+		else
+			console.log "   - putstr not defined"
 	str = rtrim(str)
 
-	filePath = getMyOutsideCaller()?.filePath
-	if defined(filePath)
+	# --- logs are maintained for each possible file
+	caller = getMyOutsideCaller()
+	if defined(caller)
+		filePath = caller.filePath
+		fileName = parsePath(filePath).fileName
 		doEcho = logs.getKey(filePath, 'doEcho')
-	if internalDebugging
-		console.log "   filePath = #{OL(filePath)}, doEcho = #{OL(doEcho)}"
+		if internalDebugging
+#			console.log "   filePath = #{OL(filePath)}, doEcho = #{OL(doEcho)}"
+			console.log "   - from #{fileName}"
 	logs.log filePath, str
 	if doEcho
 		if defined(putstr) && (putstr != console.log)
@@ -109,16 +129,6 @@ export PUTSTR = (str) =>
 			# --- console doesn't handle TABs correctly, so...
 			console.log untabify(str)
 	return
-
-# ---------------------------------------------------------------------------
-
-export LOG = (str="", prefix="") =>
-
-	if internalDebugging
-		console.log "CALL LOG(#{OL(str)}), prefix=#{OL(prefix)}"
-
-	PUTSTR "#{prefix}#{str}"
-	return true   # to allow use in boolean expressions
 
 # ---------------------------------------------------------------------------
 

@@ -1,15 +1,14 @@
 // taml.test.coffee
 var h;
 
-import test from 'ava';
-
 import {
   undef,
   defined,
   notdefined,
   pass,
   escapeStr,
-  OL
+  OL,
+  spaces
 } from '@jdeighan/base-utils';
 
 import {
@@ -22,38 +21,26 @@ import {
   fixValStr
 } from '@jdeighan/base-utils/taml';
 
+import {
+  utest
+} from '@jdeighan/base-utils/utest';
+
 // ---------------------------------------------------------------------------
-test("line 15", (t) => {
-  return t.deepEqual(llSplit("a: 53"), ["a: ", "53"]);
-});
+utest.equal(llSplit("a: 53"), ["a: ", "53"]);
 
-test("line 16", (t) => {
-  return t.deepEqual(llSplit("a: 53"), ["a: ", "53"]);
-});
+utest.equal(llSplit("a: 53"), ["a: ", "53"]);
 
-test("line 17", (t) => {
-  return t.deepEqual(llSplit("a  :   53"), ["a: ", "53"]);
-});
+utest.equal(llSplit("a  :   53"), ["a: ", "53"]);
 
-test("line 19", (t) => {
-  return t.deepEqual(llSplit("- abc"), ["- ", "abc"]);
-});
+utest.equal(llSplit("- abc"), ["- ", "abc"]);
 
-test("line 20", (t) => {
-  return t.deepEqual(llSplit("-   abc"), ["- ", "abc"]);
-});
+utest.equal(llSplit("-   abc"), ["- ", "abc"]);
 
-test("line 22", (t) => {
-  return t.is(llSplit("abc"), undef);
-});
+utest.equal(llSplit("abc"), undef);
 
-test("line 23", (t) => {
-  return t.is(llSplit("24"), undef);
-});
+utest.equal(llSplit("24"), undef);
 
-test("line 24", (t) => {
-  return t.is(llSplit("'abc'"), undef);
-});
+utest.equal(llSplit("'abc'"), undef);
 
 // ---------------------------------------------------------------------------
 // Leave these alone:
@@ -65,87 +52,73 @@ test("line 24", (t) => {
 //    '<str>'
 //    true
 //    false
-test("line 37", (t) => {
-  return t.is(fixValStr(''), '');
-});
+utest.equal(fixValStr(''), '');
 
-test("line 38", (t) => {
-  return t.is(fixValStr('[]'), '[]');
-});
+utest.equal(fixValStr('[]'), '[]');
 
-test("line 39", (t) => {
-  return t.is(fixValStr('{}'), '{}');
-});
+utest.equal(fixValStr('{}'), '{}');
 
-test("line 40", (t) => {
-  return t.is(fixValStr('42'), '42');
-});
+utest.equal(fixValStr('42'), '42');
 
-test("line 41", (t) => {
-  return t.is(fixValStr('"abc"'), '"abc"');
-});
+utest.equal(fixValStr('"abc"'), '"abc"');
 
-test("line 42", (t) => {
-  return t.is(fixValStr("'abc'"), "'abc'");
-});
+utest.equal(fixValStr("'abc'"), "'abc'");
 
-test("line 43", (t) => {
-  return t.is(fixValStr('true'), 'true');
-});
+utest.equal(fixValStr('true'), 'true');
 
-test("line 44", (t) => {
-  return t.is(fixValStr('false'), 'false');
-});
+utest.equal(fixValStr('false'), 'false');
 
 // --- quote everything else
-test("line 48", (t) => {
-  return t.is(fixValStr("abc"), "'abc'");
-});
+utest.equal(fixValStr("abc"), "'abc'");
 
-test("line 49", (t) => {
-  return t.is(fixValStr("it's"), "'it''s'");
-});
+utest.equal(fixValStr("it's"), "'it''s'");
 
 // ---------------------------------------------------------------------------
-test("line 53", (t) => {
-  return t.deepEqual(splitTaml('a: - abc'), ['a: ', '- ', "'abc'"]);
-});
+utest.equal(splitTaml('a: - abc'), ['a: ', '- ', "'abc'"]);
 
-test("line 54", (t) => {
-  return t.deepEqual(splitTaml('-  a:   53'), ['- ', 'a: ', '53']);
-});
+utest.equal(splitTaml('-  a:   53'), ['- ', 'a: ', '53']);
 
-test("line 55", (t) => {
-  return t.deepEqual(splitTaml('"abc"'), ['"abc"']);
-});
+utest.equal(splitTaml('"abc"'), ['"abc"']);
 
-test("line 56", (t) => {
-  return t.deepEqual(splitTaml('abc'), ["'abc'"]);
-});
+utest.equal(splitTaml('abc'), ["'abc'"]);
 
 // ---------------------------------------------------------------------------
-test("line 60", (t) => {
-  return t.is(toTAML([]), '---\n[]');
-});
+utest.equal(toTAML([]), '---\n[]');
 
-test("line 61", (t) => {
-  return t.is(toTAML({}), '---\n{}');
-});
+utest.equal(toTAML({}), '---\n{}');
 
-test("line 62", (t) => {
-  return t.is(toTAML([1, 2]), '---\n- 1\n- 2');
-});
+utest.equal(toTAML([1, 2]), '---\n- 1\n- 2');
 
-test("line 63", (t) => {
-  return t.is(toTAML(['1', '2']), '---\n- "1"\n- "2"');
-});
+utest.equal(toTAML(['1', '2']), `---
+- "1"
+- "2"`);
 
-test("line 64", (t) => {
-  return t.is(toTAML({
-    a: 1,
-    b: 2
-  }), '---\na: 1\nb: 2');
-});
+utest.equal(toTAML({
+  a: 1,
+  b: 2
+}), `---
+a: 1
+b: 2`);
+
+utest.equal(toTAML({
+  a: 1,
+  b: 2
+}, '!useDashes'), `a: 1
+b: 2`);
+
+utest.equal(toTAML({
+  a: 1,
+  b: 2
+}, 'indent=3'), `\t\t\t---
+\t\t\ta: 1
+\t\t\tb: 2`);
+
+utest.equal(toTAML({
+  a: 1,
+  b: 2
+}, 'indent=3 !useTabs'), `${spaces(6)}---
+${spaces(6)}a: 1
+${spaces(6)}b: 2`);
 
 h = {
   h: [
@@ -158,9 +131,7 @@ h = {
   ]
 };
 
-test("line 72", (t) => {
-  return t.is(toTAML(h), '---\nh:\n\t- a: 1\n\t- b: 2');
-});
+utest.equal(toTAML(h), '---\nh:\n\t- a: 1\n\t- b: 2');
 
 // ---------------------------------------------------------------------------
 (() => {
@@ -172,22 +143,20 @@ test("line 72", (t) => {
 	state: learning
 - index: 2
 	state: learning`;
-  return test("line 87", (t) => {
-    return t.deepEqual(fromTAML(str), [
-      {
-        index: 0,
-        state: 'learning'
-      },
-      {
-        index: 1,
-        state: 'learning'
-      },
-      {
-        index: 2,
-        state: 'learning'
-      }
-    ]);
-  });
+  return utest.equal(fromTAML(str), [
+    {
+      index: 0,
+      state: 'learning'
+    },
+    {
+      index: 1,
+      state: 'learning'
+    },
+    {
+      index: 2,
+      state: 'learning'
+    }
+  ]);
 })();
 
 // ---------------------------------------------------------------------------
@@ -200,18 +169,16 @@ test("line 72", (t) => {
 -
 	label: Books
 	url: /books`;
-  return test("line 107", (t) => {
-    return t.deepEqual(fromTAML(str), [
-      {
-        label: 'Help',
-        url: '/help'
-      },
-      {
-        label: 'Books',
-        url: '/books'
-      }
-    ]);
-  });
+  return utest.equal(fromTAML(str), [
+    {
+      label: 'Help',
+      url: '/help'
+    },
+    {
+      label: 'Books',
+      url: '/books'
+    }
+  ]);
 })();
 
 // ---------------------------------------------------------------------------
@@ -224,18 +191,16 @@ test("line 72", (t) => {
 -
 	label: Books
 	url: /books`;
-  return test("line 126", (t) => {
-    return t.deepEqual(fromTAML(str), [
-      {
-        label: 'Help',
-        url: '/help'
-      },
-      {
-        label: 'Books',
-        url: '/books'
-      }
-    ]);
-  });
+  return utest.equal(fromTAML(str), [
+    {
+      label: 'Help',
+      url: '/help'
+    },
+    {
+      label: 'Books',
+      url: '/books'
+    }
+  ]);
 })();
 
 // ---------------------------------------------------------------------------
@@ -249,15 +214,13 @@ WhileStatement:
 	lWalkTrees:
 		- test
 		- body`;
-  return test("line 146", (t) => {
-    return t.deepEqual(fromTAML(str), {
-      File: {
-        lWalkTrees: ['program']
-      },
-      WhileStatement: {
-        lWalkTrees: ['test', 'body']
-      }
-    });
+  return utest.equal(fromTAML(str), {
+    File: {
+      lWalkTrees: ['program']
+    },
+    WhileStatement: {
+      lWalkTrees: ['test', 'body']
+    }
   });
 })();
 
@@ -268,12 +231,10 @@ WhileStatement:
 type: function
 funcName: main
 source: C:/Users/johnd/base-utils/test/v8-stack.test.js`;
-  return test("line 166", (t) => {
-    return t.deepEqual(fromTAML(str), {
-      type: 'function',
-      funcName: 'main',
-      source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
-    });
+  return utest.equal(fromTAML(str), {
+    type: 'function',
+    funcName: 'main',
+    source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
   });
 })();
 

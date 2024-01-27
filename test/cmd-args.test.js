@@ -13,8 +13,8 @@ import {
 
 // ---------------------------------------------------------------------------
 (() => {
-  var cmdLine, hOptions, hOpts;
-  hOptions = {
+  var cmdLine, hExpected, hOpts;
+  hExpected = {
     boolean: ['a', 'b', 'c', 'h'],
     string: ['name'],
     number: ['count'],
@@ -23,8 +23,8 @@ import {
     }
   };
   cmdLine = '-c --name=abc --count=5 def ghi';
-  hOpts = getArgs(hOptions, cmdLine);
-  return utest.equal(18, hOpts, {
+  hOpts = getArgs(hExpected, cmdLine);
+  return utest.equal(hOpts, {
     a: true, // default value
     b: false, // not on cmd line
     c: true, // explicitly on cmd line

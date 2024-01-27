@@ -5,9 +5,10 @@ import {parse, stringify} from 'yaml'
 import {
 	undef, defined, notdefined, OL, hasChar, getOptions,
 	isEmpty, isString, isFunction, isBoolean, isArray,
-	blockToArray, arrayToBlock, escapeStr, rtrim,
+	blockToArray, arrayToBlock, escapeStr, rtrim, spaces,
 	} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
+import {indented} from '@jdeighan/base-utils/indent'
 
 # ---------------------------------------------------------------------------
 #   isTAML - is the string valid TAML?
@@ -139,9 +140,21 @@ export toTAML = (obj, hOptions={}) =>
 	hDefaults = {
 		useTabs: true
 		sortKeys: true
+		useDashes: true
+		indent: undef
 		}
-	{useTabs, sortKeys, escape, replacer
+	{useTabs, sortKeys, useDashes, indent, escape, replacer
 		} = getOptions(hOptions, hDefaults)
+
+	# --- define a compare function for sorting
+	compareFunc = (a, b) =>
+
+		if (a < b)
+			return -1
+		else if (a > b)
+			return 1
+		else
+			return 0
 
 	if (obj == undef)
 		return "---\nundef"
@@ -174,20 +187,18 @@ export toTAML = (obj, hOptions={}) =>
 	hStrOptions = {sortMapEntries: true}
 	str = stringify(obj, myReplacer, hStrOptions)
 	str = str.replace(/<UNDEFINED_VALUE>/g, 'undef')
+	str = rtrim(str)
 	if useTabs
 		str = str.replace(/  /g, "\t")
-	return "---\n" + rtrim(str)
-
-# ---------------------------------------------------------------------------
-
-compareFunc = (a, b) =>
-
-	if (a < b)
-		return -1
-	else if (a > b)
-		return 1
+	if useDashes
+		str = "---\n" + str
+	if indent
+		if useTabs
+			return indented(str, indent)
+		else
+			return indented(str, indent, '  ')
 	else
-		return 0
+		return str
 
 # ---------------------------------------------------------------------------
 

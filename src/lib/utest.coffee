@@ -1,42 +1,14 @@
 # utest.coffee
 
 import test from 'ava'
+
 import {defined, isInteger} from '@jdeighan/base-utils'
-import {assert, croak} from '@jdeighan/base-utils/exceptions'
-import {isFile, parsePath, fileExt, withExt} from '@jdeighan/base-utils/ll-fs'
+import {
+	assert, croak, exReset, exGetLog,
+	} from '@jdeighan/base-utils/exceptions'
+import {isFile, parsePath, fileExt} from '@jdeighan/base-utils/ll-fs'
 import {mapLineNum} from '@jdeighan/base-utils/source-map'
-import {getMyOutsideCaller} from '@jdeighan/base-utils/ll-v8-stack'
-
-# ---------------------------------------------------------------------------
-
-getParms = (lParms, nExpected) =>
-
-	nParms = lParms.length
-	if (nParms == nExpected)
-		# --- Disable this feature for now
-		throw new Error('Currently you must provide a line number in unit tests')
-
-		# --- We need to figure out the line number of the caller
-		{filePath, line, col} = getMyOutsideCaller()
-		if (fileExt(filePath) == '.js')
-			console.log "file is a JS file"
-			mapFile = "#{filePath}.map"
-			console.log "map file is #{mapFile}"
-			if isFile(mapFile)
-				console.log "map file exists"
-				# --- Attempt to use source map to get true line number
-				line = mapLineNum filePath, line
-				if defined(line)
-					console.log "SOURCE MAP: #{line}"
-			else
-				console.log "map file does not exist"
-		assert isInteger(line), "line number not an integer"
-		console.log "AUTO LINE NUM: #{line}"
-		return [line, lParms...]
-	else if (nParms = nExpected + 1)
-		return lParms
-	else
-		croak "Bad parameters to utest function"
+import {getMyOutsideCaller} from '@jdeighan/base-utils/v8-stack'
 
 # ---------------------------------------------------------------------------
 # --- Available tests w/num required params (aside from line num)
@@ -44,82 +16,153 @@ getParms = (lParms, nExpected) =>
 #        truthy 1
 #        falsy 1
 #        like 2
-#        throws/fails 1 (a function)
+#        throws 1 (a function)
 #        succeeds 1 (a function)
 # ---------------------------------------------------------------------------
 
-class SimpleUnitTester
+export class UnitTester
 
 	constructor: () ->
 
+		@debug = false
 		@hFound = {}   # used line numbers
+
+	# ........................................................................
+
+	doDebug: () =>
+
+		@debug = true
+		return
+
+	# ........................................................................
+
+	getParms: (lParms, nExpected) =>
+
+		nParms = lParms.length
+		if @debug
+			console.log "getParms(): #{nParms} parameters"
+		if (nParms == nExpected)
+			if @debug
+				console.log "   find correct line number"
+
+			# --- We need to figure out the line number of the caller
+			{filePath, line, column} = getMyOutsideCaller()
+			if @debug
+				console.log "   filePath = '#{filePath}'"
+				console.log "   line = #{line}, col = #{column}"
+
+			if ! isInteger(line)
+				console.log "getMyOutsideCaller() returned non-integer"
+				console.log {filePath, line, column}
+			assert fileExt(filePath) == '.js', "caller not a JS file", "fileExt(filePath) == '.js'"
+
+			# --- Attempt to use source map to get true line number
+			mapFile = "#{filePath}.map"
+			try
+				assert isFile(mapFile), "Missing map file for #{filePath}", "isFile(mapFile)"
+				mline = mapLineNum filePath, line, column, {debug: @debug}
+				if @debug
+					console.log "   mapped to #{mline}"
+				assert isInteger(mline), "not an integer: #{mline}", "isInteger(mline)"
+				return [@dedupLine(mline), lParms...]
+			catch err
+				return [@dedupLine(line), lParms...]
+		else if (nParms = nExpected + 1)
+			line = lParms[0]
+			assert isInteger(line), "not an integer #{line}", "isInteger(line)"
+			lParms[0] = @dedupLine(lParms[0])
+			return lParms
+		else
+			croak "Bad parameters to utest function"
 
 	# ..........................................................
 
-	getLineNum: (lineNum) ->
+	dedupLine: (line) ->
 
-		assert isInteger(lineNum), "#{lineNum} is not an integer"
-		# --- patch lineNum to avoid duplicates
-		while @hFound[lineNum]
-			lineNum += 1000
-		@hFound[lineNum] = true
-		return lineNum
+		assert isInteger(line), "#{line} is not an integer"
+		# --- patch line to avoid duplicates
+		while @hFound[line]
+			line += 10000
+		@hFound[line] = true
+		return line
 
+	# ........................................................................
+
+	transformValue: (val) ->
+
+		return val
+
+	# ........................................................................
+
+	transformExpected: (expected) ->
+
+		return expected
+
+	# ..........................................................
 	# ..........................................................
 
 	equal: (lParms...) ->
 
-		[lineNum, val1, val2] = getParms lParms, 2
-		lineNum = @getLineNum(lineNum)
-		test "line #{lineNum}", (t) => t.deepEqual(val1, val2)
+		[lineNum, val, expected] = @getParms lParms, 2
+		test "line #{lineNum}", (t) =>
+			t.deepEqual(@transformValue(val), @transformExpected(expected))
 
 	# ..........................................................
 
-	truthy: (lineNum, bool) ->
+	notequal: (lParms...) ->
 
-		lineNum = @getLineNum(lineNum)
-		test "line #{lineNum}", (t) => t.truthy(bool)
-
-	# ..........................................................
-
-	falsy: (lineNum, bool) ->
-
-		lineNum = @getLineNum(lineNum)
-		test "line #{lineNum}", (t) => t.falsy(bool)
+		[lineNum, val, expected] = @getParms lParms, 2
+		test "line #{lineNum}", (t) =>
+			t.notDeepEqual(@transformValue(val), @transformExpected(expected))
 
 	# ..........................................................
 
-	like: (lineNum, val1, val2) ->
+	truthy: (lParms...) ->
 
-		lineNum = @getLineNum(lineNum)
-		test "line #{lineNum}", (t) => t.like(val1, val2)
+		[lineNum, bool] = @getParms lParms, 1
+		test "line #{lineNum}", (t) =>
+			t.truthy(@transformValue(bool))
 
 	# ..........................................................
 
-	throws: (lineNum, func) ->
+	falsy: (lParms...) ->
 
-		lineNum = @getLineNum(lineNum)
+		[lineNum, bool] = @getParms lParms, 1
+		test "line #{lineNum}", (t) =>
+			t.falsy(@transformValue(bool))
+
+	# ..........................................................
+
+	like: (lParms...) ->
+
+		[lineNum, val, expected] = @getParms lParms, 2
+		test "line #{lineNum}", (t) =>
+			t.like(@transformValue(val), @transformExpected(expected))
+
+	# ..........................................................
+
+	throws: (lParams...) ->
+
+		[lineNum, func] = @getParms lParams, 1
 		if (typeof func != 'function')
-			throw new Error("SimpleUnitTester.fails(): function expected")
+			throw new Error("function expected")
 		try
+			exReset()   # suppress logging of errors
 			func()
 			ok = true
 		catch err
 			ok = false
+		log = exGetLog()   # we really don't care about log
 
 		test "line #{lineNum}", (t) => t.falsy(ok)
 
-	fails: (lineNum, func) ->
-
-		return @throws(lineNum, func)
-
 	# ..........................................................
 
-	succeeds: (lineNum, func) ->
+	succeeds: (lParams...) ->
 
-		lineNum = @getLineNum(lineNum)
+		[lineNum, func] = @getParms lParams, 1
 		if (typeof func != 'function')
-			throw new Error("SimpleUnitTester.fails(): function expected")
+			throw new Error("function expected")
 		try
 			func()
 			ok = true
@@ -128,4 +171,5 @@ class SimpleUnitTester
 
 		test "line #{lineNum}", (t) => t.truthy(ok)
 
-export utest = new SimpleUnitTester()
+export utest = new UnitTester()
+export u = new UnitTester()

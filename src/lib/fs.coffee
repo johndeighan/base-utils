@@ -13,7 +13,9 @@ import {
 import {
 	fileExt, workingDir, myself, mydir, mkpath, withExt,
 	mkDir, clearDir, touch, isFile, isDir, rename,
-	pathType, rmFile, rmDir, parsePath, parentDir,
+	pathType, rmFile, rmDir, parsePath,
+	parentDir, parallelPath, subPath,
+	fileDirPath, mkDirsForFile,
 	} from '@jdeighan/base-utils/ll-fs'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
@@ -23,7 +25,9 @@ import {toTAML, fromTAML} from '@jdeighan/base-utils/taml'
 export {
 	fileExt, workingDir, myself, mydir, mkpath, withExt,
 	mkDir, clearDir, touch, isFile, isDir, rename,
-	pathType, rmFile, rmDir, parsePath, parentDir,
+	pathType, rmFile, rmDir, parsePath,
+	parentDir, parallelPath, subPath,
+	fileDirPath,  mkDirsForFile,
 	}
 
 # ---------------------------------------------------------------------------
@@ -113,11 +117,13 @@ export slurpPkgJSON = (lParts...) =>
 
 # ---------------------------------------------------------------------------
 #   barf - write a string to a file
+#          will ensure that all necessary directories exist
 
 export barf = (text, lParts...) =>
 
 	assert (lParts.length > 0), "Missing file path"
 	filePath = mkpath(lParts...)
+	mkDirsForFile(filePath)
 	fs.writeFileSync(filePath, text)
 	return
 
@@ -231,8 +237,6 @@ export allLinesIn = (filePath) ->
 	while (buffer = reader.next())
 		yield buffer.toString().replace(/\r/g, '')
 	return
-
-export lineIterator = allLinesIn     # for backward compatibility
 
 # ---------------------------------------------------------------------------
 

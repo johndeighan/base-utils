@@ -28,6 +28,10 @@ import {
 } from '@jdeighan/base-utils';
 
 import {
+  parsePath
+} from '@jdeighan/base-utils/ll-fs';
+
+import {
   assert,
   croak
 } from '@jdeighan/base-utils/exceptions';
@@ -58,7 +62,7 @@ export {
   debugLogging
 };
 
-export var callStack = new CallStack();
+export var debugStack = new CallStack();
 
 // --- Comes from call to setDebugging()
 lFuncList = []; // array of {funcName, plus}
@@ -139,7 +143,7 @@ logType = (cur, std) => {
 // ---------------------------------------------------------------------------
 export var resetDebugging = () => {
   // --- reset everything
-  callStack.reset();
+  debugStack.reset();
   lFuncList = [];
   logAll = false;
   logEnter = stdLogEnter;
@@ -156,7 +160,7 @@ export var resetDebugging = () => {
 export var setDebugging = (debugWhat = undef, hOptions = {}) => {
   var customSet, j, key, len, ref, subtype, type;
   // --- debugWhat can be:
-  //        1. a boolean
+  //        1. a boolean (false=disable, true=debug all)
   //        2. a string
   //        3. an array of strings
   // --- Valid options:
@@ -168,6 +172,7 @@ export var setDebugging = (debugWhat = undef, hOptions = {}) => {
   if (internalDebugging) {
     console.log(`setDebugging ${OL(debugWhat)}, ${OL(hOptions)}`);
   }
+  assert(defined(debugWhat), "arg 1 must be defined");
   resetDebugging();
   customSet = false; // were any custom loggers set?
   
@@ -307,12 +312,12 @@ export var dbgEnter = (funcName, ...lValues) => {
     console.log(`   - doLog = ${OL(doLog)}`);
   }
   if (doLog) {
-    level = callStack.logLevel;
+    level = debugStack.logLevel;
     if (!logEnter(level, funcName, lValues)) {
       stdLogEnter(level, funcName, lValues);
     }
   }
-  callStack.enter(funcName, lValues, doLog);
+  debugStack.enter(funcName, lValues, doLog);
   return true;
 };
 
@@ -330,7 +335,7 @@ export var funcMatch = (funcName) => {
   if (internalDebugging) {
     console.log(`CHECK funcMatch(${OL(funcName)})`);
     console.log(lFuncList);
-    callStack.dump(1);
+    debugStack.dump(1);
   }
   lParts = isFunctionName(funcName);
   assert(defined(lParts), `not a valid function name: ${OL(funcName)}`);
@@ -342,7 +347,7 @@ export var funcMatch = (funcName) => {
       }
       return true;
     }
-    if (h.plus && callStack.isActive(h.fullName)) {
+    if (h.plus && debugStack.isActive(h.fullName)) {
       if (internalDebugging) {
         console.log(`   - TRUE - ${OL(h.fullName)} is active`);
       }
@@ -375,18 +380,18 @@ export var dbgReturn = (...lArgs) => {
   }
   funcName = lArgs[0];
   assert(isFunctionName(funcName), "not a valid function name");
-  doLog = logAll || callStack.isLogging();
+  doLog = logAll || debugStack.isLogging();
   if (internalDebugging) {
     console.log(`dbgReturn ${OL(funcName)}`);
     console.log(`   - doLog = ${OL(doLog)}`);
   }
   if (doLog) {
-    level = callStack.logLevel;
+    level = debugStack.logLevel;
     if (!logReturn(level, funcName)) {
       stdLogReturn(level, funcName);
     }
   }
-  callStack.returnFrom(funcName);
+  debugStack.returnFrom(funcName);
   return true;
 };
 
@@ -394,18 +399,18 @@ export var dbgReturn = (...lArgs) => {
 dbgReturnVal = (funcName, val) => {
   var doLog, level;
   assert(isFunctionName(funcName), "not a valid function name");
-  doLog = logAll || callStack.isLogging();
+  doLog = logAll || debugStack.isLogging();
   if (internalDebugging) {
     console.log(`dbgReturn ${OL(funcName)}, ${OL(val)}`);
     console.log(`   - doLog = ${OL(doLog)}`);
   }
   if (doLog) {
-    level = callStack.logLevel;
+    level = debugStack.logLevel;
     if (!logReturn(level, funcName, val)) {
       stdLogReturn(level, funcName, val);
     }
   }
-  callStack.returnFrom(funcName, val);
+  debugStack.returnFrom(funcName, val);
   return true;
 };
 
@@ -419,18 +424,18 @@ export var dbgYield = (...lArgs) => {
     return dbgYieldFrom(funcName);
   }
   assert(isFunctionName(funcName), "not a function name");
-  doLog = logAll || callStack.isLogging();
+  doLog = logAll || debugStack.isLogging();
   if (internalDebugging) {
     console.log(`dbgYield ${OL(funcName)} ${OL(val)}`);
     console.log(`   - doLog = ${OL(doLog)}`);
   }
   if (doLog) {
-    level = callStack.logLevel;
+    level = debugStack.logLevel;
     if (!logYield(level, funcName, val)) {
       stdLogYield(level, funcName, val);
     }
   }
-  callStack.yield(funcName, val);
+  debugStack.yield(funcName, val);
   return true;
 };
 
@@ -438,18 +443,18 @@ export var dbgYield = (...lArgs) => {
 dbgYieldFrom = (funcName) => {
   var doLog, level;
   assert(isFunctionName(funcName), "not a function name");
-  doLog = logAll || callStack.isLogging();
+  doLog = logAll || debugStack.isLogging();
   if (internalDebugging) {
     console.log(`dbgYieldFrom ${OL(funcName)}`);
     console.log(`   - doLog = ${OL(doLog)}`);
   }
   if (doLog) {
-    level = callStack.logLevel;
+    level = debugStack.logLevel;
     if (!logYieldFrom(level, funcName)) {
       stdLogYieldFrom(level, funcName);
     }
   }
-  callStack.yield(funcName);
+  debugStack.yield(funcName);
   return true;
 };
 
@@ -457,14 +462,14 @@ dbgYieldFrom = (funcName) => {
 export var dbgResume = (funcName) => {
   var doLog, level;
   assert(isFunctionName(funcName), "not a valid function name");
-  callStack.resume(funcName);
-  doLog = logAll || callStack.isLogging();
+  debugStack.resume(funcName);
+  doLog = logAll || debugStack.isLogging();
   if (internalDebugging) {
     console.log(`dbgResume ${OL(funcName)}`);
     console.log(`   - doLog = ${OL(doLog)}`);
   }
   if (doLog) {
-    level = callStack.logLevel;
+    level = debugStack.logLevel;
     if (!logResume(funcName, level - 1)) {
       stdLogResume(funcName, level - 1);
     }
@@ -488,13 +493,13 @@ export var dbg = (...lArgs) => {
 export var dbgValue = (label, val) => {
   var doLog, level;
   assert(isString(label), "not a string");
-  doLog = logAll || callStack.isLogging();
+  doLog = logAll || debugStack.isLogging();
   if (internalDebugging) {
     console.log(`dbgValue ${OL(label)}, ${OL(val)}`);
     console.log(`   - doLog = ${OL(doLog)}`);
   }
   if (doLog) {
-    level = callStack.logLevel;
+    level = debugStack.logLevel;
     if (!logValue(level, label, val)) {
       stdLogValue(level, label, val);
     }
@@ -507,13 +512,13 @@ export var dbgValue = (label, val) => {
 export var dbgString = (str) => {
   var doLog, level;
   assert(isString(str), "not a string");
-  doLog = logAll || callStack.isLogging();
+  doLog = logAll || debugStack.isLogging();
   if (internalDebugging) {
     console.log(`dbgString(${OL(str)})`);
     console.log(`   - doLog = ${OL(doLog)}`);
   }
   if (doLog) {
-    level = callStack.logLevel;
+    level = debugStack.logLevel;
     if (!logString(level, str)) {
       stdLogString(level, str);
     }

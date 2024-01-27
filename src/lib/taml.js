@@ -1,5 +1,5 @@
 // taml.coffee
-var compareFunc, myReplacer, squote;
+var myReplacer, squote;
 
 import {
   parse,
@@ -21,13 +21,18 @@ import {
   blockToArray,
   arrayToBlock,
   escapeStr,
-  rtrim
+  rtrim,
+  spaces
 } from '@jdeighan/base-utils';
 
 import {
   assert,
   croak
 } from '@jdeighan/base-utils/exceptions';
+
+import {
+  indented
+} from '@jdeighan/base-utils/indent';
 
 // ---------------------------------------------------------------------------
 //   isTAML - is the string valid TAML?
@@ -147,12 +152,24 @@ myReplacer = (name, value) => {
 
 // ---------------------------------------------------------------------------
 export var toTAML = (obj, hOptions = {}) => {
-  var escape, h, hDefaults, hStrOptions, i, j, key, len, replacer, sortKeys, str, useTabs;
+  var compareFunc, escape, h, hDefaults, hStrOptions, i, indent, j, key, len, replacer, sortKeys, str, useDashes, useTabs;
   hDefaults = {
     useTabs: true,
-    sortKeys: true
+    sortKeys: true,
+    useDashes: true,
+    indent: undef
   };
-  ({useTabs, sortKeys, escape, replacer} = getOptions(hOptions, hDefaults));
+  ({useTabs, sortKeys, useDashes, indent, escape, replacer} = getOptions(hOptions, hDefaults));
+  // --- define a compare function for sorting
+  compareFunc = (a, b) => {
+    if (a < b) {
+      return -1;
+    } else if (a > b) {
+      return 1;
+    } else {
+      return 0;
+    }
+  };
   if (obj === undef) {
     return "---\nundef";
   }
@@ -191,20 +208,21 @@ export var toTAML = (obj, hOptions = {}) => {
   };
   str = stringify(obj, myReplacer, hStrOptions);
   str = str.replace(/<UNDEFINED_VALUE>/g, 'undef');
+  str = rtrim(str);
   if (useTabs) {
     str = str.replace(/  /g, "\t");
   }
-  return "---\n" + rtrim(str);
-};
-
-// ---------------------------------------------------------------------------
-compareFunc = (a, b) => {
-  if (a < b) {
-    return -1;
-  } else if (a > b) {
-    return 1;
+  if (useDashes) {
+    str = "---\n" + str;
+  }
+  if (indent) {
+    if (useTabs) {
+      return indented(str, indent);
+    } else {
+      return indented(str, indent, '  ');
+    }
   } else {
-    return 0;
+    return str;
   }
 };
 

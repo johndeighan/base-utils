@@ -5,9 +5,35 @@ import urlLib from 'url'
 import fs from 'fs'
 
 import {
-	pass, undef,defined, notdefined, LOG, isString, getOptions,
+	pass, undef, defined, notdefined, LOG, isString, getOptions,
 	ll_assert, ll_croak,
 	} from '@jdeighan/base-utils'
+
+# ---------------------------------------------------------------------------
+
+export fileDirPath = (filePath) =>
+	# --- file does not need to exist yet, but
+	#     it should be a file path
+
+	ll_assert isString(filePath), "not a string: '#{filePath}'"
+	fullPath = mkpath(filePath)
+	hFile = parsePath(fullPath)
+	dirStr = hFile.dir
+	rootLen = hFile.root.length
+	lParts = dirStr.substring(rootLen).split(/[\\\/]/)
+	return [hFile.root, lParts]
+
+# ---------------------------------------------------------------------------
+
+export mkDirsForFile = (filePath) =>
+
+	[root, lParts] = fileDirPath(filePath)
+	dir = root
+	for part in lParts
+		dir = "#{dir}/#{part}"
+		if ! isDir(dir)
+			mkDir(dir)
+	return
 
 # ---------------------------------------------------------------------------
 
@@ -223,6 +249,7 @@ export parsePath = (path, shouldNotExist) =>
 		purpose = undef
 	return {
 		path
+		filePath: path
 		type
 		root
 		dir
@@ -240,3 +267,27 @@ export parentDir = (path) =>
 
 	hParsed = parsePath(path)
 	return hParsed.dir
+
+# ---------------------------------------------------------------------------
+
+export parallelPath = (path, name="temp") =>
+
+	fullPath = mkpath(path)  # make full path with '/' as separator
+	{dir, fileName} = parsePath fullPath
+	if (lMatches = dir.match(///^
+			(.*)
+			\/         # separator
+			[^\/]+     # final dir name
+			$///))
+		[_, subpath] = lMatches
+		return "#{subpath}/#{name}/#{fileName}"
+	else
+		croak "Can't get parallelPath for '#{path}'"
+
+# ---------------------------------------------------------------------------
+
+export subPath = (path, name="temp") =>
+
+	fullPath = mkpath(path)  # make full path with '/' as separator
+	{dir, fileName} = parsePath fullPath
+	return "#{dir}/#{name}/#{fileName}"

@@ -8,7 +8,7 @@
 		".": "./src/lib/base-utils.js",
 		"./ll-fs": "./src/lib/ll-fs.js",
 		"./source-map": "./src/lib/source-map.js",
-		"./ll-v8-stack": "./src/lib/ll-v8-stack.js",
+		"./v8-stack": "./src/lib/v8-stack.js",
 		"./exceptions": "./src/lib/exceptions.js",
 		"./utest": "./src/lib/utest.js",
 		"./named-logs": "./src/lib/named-logs.js",
@@ -20,9 +20,8 @@
 		"./stack": "./src/lib/stack.js",
 		"./debug": "./src/lib/debug.js",
 		"./state-machine": "./src/lib/state-machine.js",
-		"./v8-stack": "./src/lib/v8-stack.js",
-
 		"./fs": "./src/lib/fs.js",
+		"./FileProcessor": "./src/lib/FileProcessor.js",
 		"./package.json": "./package.json"
 	},
 	"bin": {
@@ -40,10 +39,11 @@
 	"license": "MIT",
 	"dependencies": {
 		"ava": "^6.0.1",
+		"glob": "^10.3.10",
 		"js-yaml": "^4.1.0",
 		"minimist": "^1.2.8",
 		"n-readlines": "^1.0.1",
-		"source-map-js": "^1.0.2",
+		"source-map": "^0.6.1",
 		"stack-utils": "^2.0.6",
 		"yaml": "^2.3.1"
 	},

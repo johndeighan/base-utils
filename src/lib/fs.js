@@ -41,7 +41,11 @@ import {
   rmFile,
   rmDir,
   parsePath,
-  parentDir
+  parentDir,
+  parallelPath,
+  subPath,
+  fileDirPath,
+  mkDirsForFile
 } from '@jdeighan/base-utils/ll-fs';
 
 import {
@@ -82,7 +86,11 @@ export {
   rmFile,
   rmDir,
   parsePath,
-  parentDir
+  parentDir,
+  parallelPath,
+  subPath,
+  fileDirPath,
+  mkDirsForFile
 };
 
 // ---------------------------------------------------------------------------
@@ -170,10 +178,12 @@ export var slurpPkgJSON = (...lParts) => {
 
 // ---------------------------------------------------------------------------
 //   barf - write a string to a file
+//          will ensure that all necessary directories exist
 export var barf = (text, ...lParts) => {
   var filePath;
   assert(lParts.length > 0, "Missing file path");
   filePath = mkpath(...lParts);
+  mkDirsForFile(filePath);
   fs.writeFileSync(filePath, text);
 };
 
@@ -289,9 +299,6 @@ export var allLinesIn = function*(filePath) {
     yield buffer.toString().replace(/\r/g, '');
   }
 };
-
-export var lineIterator = allLinesIn; // for backward compatibility
-
 
 // ---------------------------------------------------------------------------
 export var forEachFileInDir = (dir, func, hContext = {}) => {

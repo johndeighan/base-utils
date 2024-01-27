@@ -1,6 +1,8 @@
 @jdeighan/base-utils
 ====================
 
+[unit tests](../test/base-utils.test.coffee)
+
 This library contains many useful functions and synonyms.
 Note that the following synopsis uses CoffeeScript. In
 CoffeeScript, you never declare variables - they exist

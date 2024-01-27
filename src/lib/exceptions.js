@@ -1,5 +1,5 @@
 // exceptions.coffee
-var EXLOG, doHaltOnError, doLog, lExceptionLog;
+var EXLOG, debug, doHaltOnError, doLog, lExceptionLog;
 
 import {
   undef,
@@ -11,11 +11,18 @@ import {
 import {
   getV8Stack,
   nodeStr
-} from '@jdeighan/base-utils/ll-v8-stack';
+} from '@jdeighan/base-utils/v8-stack';
 
 doHaltOnError = false;
 
 doLog = true;
+
+debug = false;
+
+// ---------------------------------------------------------------------------
+export var doDebug = () => {
+  debug = true;
+};
 
 // ---------------------------------------------------------------------------
 // simple redirect to an array - useful in unit tests
@@ -61,8 +68,16 @@ EXLOG = (str) => {
 // ---------------------------------------------------------------------------
 //   assert - mimic nodejs's assert
 //   return true so we can use it in boolean expressions
-export var assert = (cond, msg) => {
-  var i, lFrames, len, node;
+export var assert = (cond, msg, condStr = undef) => {
+  var boolStr, i, lFrames, len, node;
+  if (debug) {
+    boolStr = cond.toString();
+    if (condStr) {
+      console.log(`ASSERT: cond is ${condStr} (${boolStr})`);
+    } else {
+      console.log(`ASSERT: cond is ${boolStr}`);
+    }
+  }
   if (!cond) {
     lFrames = getV8Stack();
     EXLOG('-------------------------');

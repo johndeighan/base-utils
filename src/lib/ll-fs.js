@@ -20,6 +20,34 @@ import {
 } from '@jdeighan/base-utils';
 
 // ---------------------------------------------------------------------------
+export var fileDirPath = (filePath) => {
+  var dirStr, fullPath, hFile, lParts, rootLen;
+  // --- file does not need to exist yet, but
+  //     it should be a file path
+  ll_assert(isString(filePath), `not a string: '${filePath}'`);
+  fullPath = mkpath(filePath);
+  hFile = parsePath(fullPath);
+  dirStr = hFile.dir;
+  rootLen = hFile.root.length;
+  lParts = dirStr.substring(rootLen).split(/[\\\/]/);
+  return [hFile.root, lParts];
+};
+
+// ---------------------------------------------------------------------------
+export var mkDirsForFile = (filePath) => {
+  var dir, i, lParts, len, part, root;
+  [root, lParts] = fileDirPath(filePath);
+  dir = root;
+  for (i = 0, len = lParts.length; i < len; i++) {
+    part = lParts[i];
+    dir = `${dir}/${part}`;
+    if (!isDir(dir)) {
+      mkDir(dir);
+    }
+  }
+};
+
+// ---------------------------------------------------------------------------
 export var fileExt = (path) => {
   var lMatches;
   ll_assert(isString(path), "fileExt(): path not a string");
@@ -247,6 +275,7 @@ export var parsePath = (path, shouldNotExist) => {
   }
   return {
     path,
+    filePath: path,
     type,
     root,
     dir,
@@ -264,6 +293,28 @@ export var parentDir = (path) => {
   var hParsed;
   hParsed = parsePath(path);
   return hParsed.dir;
+};
+
+// ---------------------------------------------------------------------------
+export var parallelPath = (path, name = "temp") => {
+  var _, dir, fileName, fullPath, lMatches, subpath;
+  fullPath = mkpath(path); // make full path with '/' as separator
+  ({dir, fileName} = parsePath(fullPath));
+  if ((lMatches = dir.match(/^(.*)\/[^\/]+$/))) { // separator
+    // final dir name
+    [_, subpath] = lMatches;
+    return `${subpath}/${name}/${fileName}`;
+  } else {
+    return croak(`Can't get parallelPath for '${path}'`);
+  }
+};
+
+// ---------------------------------------------------------------------------
+export var subPath = (path, name = "temp") => {
+  var dir, fileName, fullPath;
+  fullPath = mkpath(path); // make full path with '/' as separator
+  ({dir, fileName} = parsePath(fullPath));
+  return `${dir}/${name}/${fileName}`;
 };
 
 //# sourceMappingURL=ll-fs.js.map

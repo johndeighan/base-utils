@@ -1,13 +1,12 @@
 # prefix.test.coffee
 
-import test from 'ava'
-
 import {
 	undef, defined, notdefined, pass, escapeStr,
 	} from '@jdeighan/base-utils'
 import {
 	getPrefix,
 	} from '@jdeighan/base-utils/prefix'
+import {utest} from '@jdeighan/base-utils/utest'
 
 un = (str) =>
 
@@ -19,8 +18,8 @@ un = (str) =>
 
 # ---------------------------------------------------------------------------
 
-test "line 16", (t) => t.is(getPrefix(2),               un('˳˳˳˳˳˳˳˳'))
-test "line 17", (t) => t.is(getPrefix(2, 'plain'),      un('│˳˳˳│˳˳˳'))
-test "line 18", (t) => t.is(getPrefix(2, 'withArrow'),  un('│˳˳˳└─>˳'))
-test "line 19", (t) => t.is(getPrefix(2, 'noLastVbar'), un('│˳˳˳˳˳˳˳'))
-test "line 20", (t) => t.is(getPrefix(2),               un('˳˳˳˳˳˳˳˳'))
+utest.equal getPrefix(2),               un('˳˳˳˳˳˳˳˳')
+utest.equal getPrefix(2, 'plain'),      un('│˳˳˳│˳˳˳')
+utest.equal getPrefix(2, 'withArrow'),  un('│˳˳˳└─>˳')
+utest.equal getPrefix(2, 'noLastVbar'), un('│˳˳˳˳˳˳˳')
+utest.equal getPrefix(2),               un('˳˳˳˳˳˳˳˳')

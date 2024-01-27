@@ -1,8 +1,6 @@
 // prefix.test.coffee
 var un;
 
-import test from 'ava';
-
 import {
   undef,
   defined,
@@ -15,6 +13,10 @@ import {
   getPrefix
 } from '@jdeighan/base-utils/prefix';
 
+import {
+  utest
+} from '@jdeighan/base-utils/utest';
+
 un = (str) => {
   return escapeStr(str, {
     '®': "\n",
@@ -24,24 +26,14 @@ un = (str) => {
 };
 
 // ---------------------------------------------------------------------------
-test("line 16", (t) => {
-  return t.is(getPrefix(2), un('˳˳˳˳˳˳˳˳'));
-});
+utest.equal(getPrefix(2), un('˳˳˳˳˳˳˳˳'));
 
-test("line 17", (t) => {
-  return t.is(getPrefix(2, 'plain'), un('│˳˳˳│˳˳˳'));
-});
+utest.equal(getPrefix(2, 'plain'), un('│˳˳˳│˳˳˳'));
 
-test("line 18", (t) => {
-  return t.is(getPrefix(2, 'withArrow'), un('│˳˳˳└─>˳'));
-});
+utest.equal(getPrefix(2, 'withArrow'), un('│˳˳˳└─>˳'));
 
-test("line 19", (t) => {
-  return t.is(getPrefix(2, 'noLastVbar'), un('│˳˳˳˳˳˳˳'));
-});
+utest.equal(getPrefix(2, 'noLastVbar'), un('│˳˳˳˳˳˳˳'));
 
-test("line 20", (t) => {
-  return t.is(getPrefix(2), un('˳˳˳˳˳˳˳˳'));
-});
+utest.equal(getPrefix(2), un('˳˳˳˳˳˳˳˳'));
 
 //# sourceMappingURL=prefix.test.js.map

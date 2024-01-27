@@ -1,6 +1,4 @@
 // utest.coffee
-var SimpleUnitTester, getParms;
-
 import test from 'ava';
 
 import {
@@ -10,14 +8,15 @@ import {
 
 import {
   assert,
-  croak
+  croak,
+  exReset,
+  exGetLog
 } from '@jdeighan/base-utils/exceptions';
 
 import {
   isFile,
   parsePath,
-  fileExt,
-  withExt
+  fileExt
 } from '@jdeighan/base-utils/ll-fs';
 
 import {
@@ -26,41 +25,7 @@ import {
 
 import {
   getMyOutsideCaller
-} from '@jdeighan/base-utils/ll-v8-stack';
-
-// ---------------------------------------------------------------------------
-getParms = (lParms, nExpected) => {
-  var col, filePath, line, mapFile, nParms;
-  nParms = lParms.length;
-  if (nParms === nExpected) {
-    // --- Disable this feature for now
-    throw new Error('Currently you must provide a line number in unit tests');
-    // --- We need to figure out the line number of the caller
-    ({filePath, line, col} = getMyOutsideCaller());
-    if (fileExt(filePath) === '.js') {
-      console.log("file is a JS file");
-      mapFile = `${filePath}.map`;
-      console.log(`map file is ${mapFile}`);
-      if (isFile(mapFile)) {
-        console.log("map file exists");
-        // --- Attempt to use source map to get true line number
-        line = mapLineNum(filePath, line);
-        if (defined(line)) {
-          console.log(`SOURCE MAP: ${line}`);
-        }
-      } else {
-        console.log("map file does not exist");
-      }
-    }
-    assert(isInteger(line), "line number not an integer");
-    console.log(`AUTO LINE NUM: ${line}`);
-    return [line, ...lParms];
-  } else if ((nParms = nExpected + 1)) {
-    return lParms;
-  } else {
-    return croak("Bad parameters to utest function");
-  }
-};
+} from '@jdeighan/base-utils/v8-stack';
 
 // ---------------------------------------------------------------------------
 // --- Available tests w/num required params (aside from line num)
@@ -68,89 +33,165 @@ getParms = (lParms, nExpected) => {
 //        truthy 1
 //        falsy 1
 //        like 2
-//        throws/fails 1 (a function)
+//        throws 1 (a function)
 //        succeeds 1 (a function)
 // ---------------------------------------------------------------------------
-SimpleUnitTester = class SimpleUnitTester {
+export var UnitTester = class UnitTester {
   constructor() {
+    
+    // ........................................................................
+    this.doDebug = this.doDebug.bind(this);
+    // ........................................................................
+    this.getParms = this.getParms.bind(this);
+    this.debug = false;
     this.hFound = {}; // used line numbers
   }
 
-  
-    // ..........................................................
-  getLineNum(lineNum) {
-    assert(isInteger(lineNum), `${lineNum} is not an integer`);
-    // --- patch lineNum to avoid duplicates
-    while (this.hFound[lineNum]) {
-      lineNum += 1000;
-    }
-    this.hFound[lineNum] = true;
-    return lineNum;
+  doDebug() {
+    this.debug = true;
   }
 
+  getParms(lParms, nExpected) {
+    var column, err, filePath, line, mapFile, mline, nParms;
+    nParms = lParms.length;
+    if (this.debug) {
+      console.log(`getParms(): ${nParms} parameters`);
+    }
+    if (nParms === nExpected) {
+      if (this.debug) {
+        console.log("   find correct line number");
+      }
+      // --- We need to figure out the line number of the caller
+      ({filePath, line, column} = getMyOutsideCaller());
+      if (this.debug) {
+        console.log(`   filePath = '${filePath}'`);
+        console.log(`   line = ${line}, col = ${column}`);
+      }
+      if (!isInteger(line)) {
+        console.log("getMyOutsideCaller() returned non-integer");
+        console.log({filePath, line, column});
+      }
+      assert(fileExt(filePath) === '.js', "caller not a JS file", "fileExt(filePath) == '.js'");
+      // --- Attempt to use source map to get true line number
+      mapFile = `${filePath}.map`;
+      try {
+        assert(isFile(mapFile), `Missing map file for ${filePath}`, "isFile(mapFile)");
+        mline = mapLineNum(filePath, line, column, {
+          debug: this.debug
+        });
+        if (this.debug) {
+          console.log(`   mapped to ${mline}`);
+        }
+        assert(isInteger(mline), `not an integer: ${mline}`, "isInteger(mline)");
+        return [this.dedupLine(mline), ...lParms];
+      } catch (error) {
+        err = error;
+        return [this.dedupLine(line), ...lParms];
+      }
+    } else if ((nParms = nExpected + 1)) {
+      line = lParms[0];
+      assert(isInteger(line), `not an integer ${line}`, "isInteger(line)");
+      lParms[0] = this.dedupLine(lParms[0]);
+      return lParms;
+    } else {
+      return croak("Bad parameters to utest function");
+    }
+  }
+
+  // ..........................................................
+  dedupLine(line) {
+    assert(isInteger(line), `${line} is not an integer`);
+    // --- patch line to avoid duplicates
+    while (this.hFound[line]) {
+      line += 10000;
+    }
+    this.hFound[line] = true;
+    return line;
+  }
+
+  // ........................................................................
+  transformValue(val) {
+    return val;
+  }
+
+  // ........................................................................
+  transformExpected(expected) {
+    return expected;
+  }
+
+  // ..........................................................
   // ..........................................................
   equal(...lParms) {
-    var lineNum, val1, val2;
-    [lineNum, val1, val2] = getParms(lParms, 2);
-    lineNum = this.getLineNum(lineNum);
+    var expected, lineNum, val;
+    [lineNum, val, expected] = this.getParms(lParms, 2);
     return test(`line ${lineNum}`, (t) => {
-      return t.deepEqual(val1, val2);
+      return t.deepEqual(this.transformValue(val), this.transformExpected(expected));
     });
   }
 
   // ..........................................................
-  truthy(lineNum, bool) {
-    lineNum = this.getLineNum(lineNum);
+  notequal(...lParms) {
+    var expected, lineNum, val;
+    [lineNum, val, expected] = this.getParms(lParms, 2);
     return test(`line ${lineNum}`, (t) => {
-      return t.truthy(bool);
+      return t.notDeepEqual(this.transformValue(val), this.transformExpected(expected));
     });
   }
 
   // ..........................................................
-  falsy(lineNum, bool) {
-    lineNum = this.getLineNum(lineNum);
+  truthy(...lParms) {
+    var bool, lineNum;
+    [lineNum, bool] = this.getParms(lParms, 1);
     return test(`line ${lineNum}`, (t) => {
-      return t.falsy(bool);
+      return t.truthy(this.transformValue(bool));
     });
   }
 
   // ..........................................................
-  like(lineNum, val1, val2) {
-    lineNum = this.getLineNum(lineNum);
+  falsy(...lParms) {
+    var bool, lineNum;
+    [lineNum, bool] = this.getParms(lParms, 1);
     return test(`line ${lineNum}`, (t) => {
-      return t.like(val1, val2);
+      return t.falsy(this.transformValue(bool));
     });
   }
 
   // ..........................................................
-  throws(lineNum, func) {
-    var err, ok;
-    lineNum = this.getLineNum(lineNum);
+  like(...lParms) {
+    var expected, lineNum, val;
+    [lineNum, val, expected] = this.getParms(lParms, 2);
+    return test(`line ${lineNum}`, (t) => {
+      return t.like(this.transformValue(val), this.transformExpected(expected));
+    });
+  }
+
+  // ..........................................................
+  throws(...lParams) {
+    var err, func, lineNum, log, ok;
+    [lineNum, func] = this.getParms(lParams, 1);
     if (typeof func !== 'function') {
-      throw new Error("SimpleUnitTester.fails(): function expected");
+      throw new Error("function expected");
     }
     try {
+      exReset(); // suppress logging of errors
       func();
       ok = true;
     } catch (error) {
       err = error;
       ok = false;
     }
+    log = exGetLog(); // we really don't care about log
     return test(`line ${lineNum}`, (t) => {
       return t.falsy(ok);
     });
   }
 
-  fails(lineNum, func) {
-    return this.throws(lineNum, func);
-  }
-
   // ..........................................................
-  succeeds(lineNum, func) {
-    var err, ok;
-    lineNum = this.getLineNum(lineNum);
+  succeeds(...lParams) {
+    var err, func, lineNum, ok;
+    [lineNum, func] = this.getParms(lParams, 1);
     if (typeof func !== 'function') {
-      throw new Error("SimpleUnitTester.fails(): function expected");
+      throw new Error("function expected");
     }
     try {
       func();
@@ -166,6 +207,8 @@ SimpleUnitTester = class SimpleUnitTester {
 
 };
 
-export var utest = new SimpleUnitTester();
+export var utest = new UnitTester();
+
+export var u = new UnitTester();
 
 //# sourceMappingURL=utest.js.map

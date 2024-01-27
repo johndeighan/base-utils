@@ -134,6 +134,14 @@ export hasAnyKey = (obj, lKeys...) =>
 
 # ---------------------------------------------------------------------------
 
+export addNewKey = (h, key, value) ->
+
+	ll_assert !hasKey(h, key), "hash has key #{key}"
+	h[key] = value
+	return h
+
+# ---------------------------------------------------------------------------
+
 export subkeys = (obj) =>
 
 	lSubKeys = []
@@ -170,25 +178,28 @@ export fromJSON = (strJson) =>
 
 # ---------------------------------------------------------------------------
 
-export toJSON = (hJson) =>
+export toJSON = (hJson, hOptions={}) =>
 	# --- data structure to string
 
-	return JSON.stringify(hJson, null, "\t")
+	{useTabs, replacer} = getOptions hOptions, {
+		useTabs: true
+		replacer: undef
+		}
+	if useTabs
+		return JSON.stringify(hJson, replacer, "\t")
+	else
+		return JSON.stringify(hJson, replacer, 3)
 
 # ---------------------------------------------------------------------------
 
 export runCmd = (cmd) =>
 
-	try
-		result = execSync cmd, {
-			stdio: 'pipe'
-			windowsHide: true
-			encoding: 'utf8'
-			}
-		return result || "<STDOUT>"
-	catch err
-		console.error "Failed to execute cmd '#{cmd}'", err
-		return undef
+	result = execSync cmd, {
+		stdio: 'pipe'
+		windowsHide: true
+		encoding: 'utf8'
+		}
+	return result || "<STDOUT>"
 
 # ---------------------------------------------------------------------------
 

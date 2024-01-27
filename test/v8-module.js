@@ -4,7 +4,7 @@ var secondFunc, thirdFunc;
 import {
   getMyDirectCaller,
   getMyOutsideCaller
-} from '@jdeighan/base-utils/ll-v8-stack';
+} from '@jdeighan/base-utils/v8-stack';
 
 // ---------------------------------------------------------------------------
 export var getBoth = function() {

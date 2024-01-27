@@ -1,9 +1,9 @@
 # v8-stack.test.coffee
 
-import test from 'ava'
-
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
-import {undef, defined} from '@jdeighan/base-utils'
+import {
+	undef, defined, notdefined,
+	} from '@jdeighan/base-utils'
 import {fromTAML} from '@jdeighan/base-utils/taml'
 import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
 import {
@@ -11,6 +11,65 @@ import {
 	getV8Stack, debugV8Stack, getV8StackStr,
 	} from '@jdeighan/base-utils/v8-stack'
 import {getBoth} from './v8-module.js'
+import {utest} from '@jdeighan/base-utils/utest'
+
+# ---------------------------------------------------------------------------
+
+(() ->
+	stack1 = undef
+	stack2 = undef
+
+	main = () ->
+		func1()
+		func2()
+
+	func1 = () ->
+		stack1 = getV8Stack()
+
+	func2 = () ->
+		stack2 = getV8Stack()
+		return
+
+	main()
+	utest.like stack1, [
+		{
+			functionName: 'func1'
+			}
+		]
+	utest.like stack2, [
+		{
+			functionName: 'func2'
+			}
+		]
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() ->
+	caller1 = undef
+	caller2 = undef
+
+	main = () ->
+		func1()
+		func2()
+
+	func1 = () ->
+		caller1 = getMyDirectCaller()
+
+	func2 = () ->
+		caller2 = getMyDirectCaller()
+		return
+
+	main()
+	utest.like caller1, {
+		functionName: 'main'
+		fileName: 'v8-stack.test.js'
+		}
+	utest.like caller2, {
+		functionName: 'main'
+		fileName: 'v8-stack.test.js'
+		}
+	)()
 
 # ---------------------------------------------------------------------------
 
@@ -30,14 +89,14 @@ import {getBoth} from './v8-module.js'
 
 	# ------------------------------------------------------------------------
 
-	test "line 33", (t) =>
-		main()
+	main()
 
-		t.like hCaller, {
-			type: 'function'
-			functionName: 'main'
-			fileName: 'v8-stack.test.js'
-			}
+	utest.like hCaller, {
+		type: 'function'
+		functionName: 'main'
+		fileName: 'v8-stack.test.js'
+		}
+
 	)()
 
 # ---------------------------------------------------------------------------
@@ -57,28 +116,28 @@ import {getBoth} from './v8-module.js'
 		lCallers2 = getBoth()
 		return
 
-	test "line 60", (t) =>
-		main()
-		t.like lCallers1[0], {
-			type: 'function'
-			functionName: 'secondFunc'
-			fileName: 'v8-module.js'
-			}
-		t.like lCallers1[1], {
-			type: 'function'
-			functionName: 'func1'
-			fileName: 'v8-stack.test.js'
-			}
-		t.like lCallers2[0], {
-			type: 'function'
-			functionName: 'secondFunc'
-			fileName: 'v8-module.js'
-			}
-		t.like lCallers2[1], {
-			type: 'function'
-			functionName: 'func2'
-			fileName: 'v8-stack.test.js'
-			}
+	main()
+	utest.like lCallers1[0], {
+		type: 'function'
+		functionName: 'secondFunc'
+		fileName: 'v8-module.js'
+		}
+	utest.like lCallers1[1], {
+		type: 'function'
+		functionName: 'func1'
+		fileName: 'v8-stack.test.js'
+		}
+	utest.like lCallers2[0], {
+		type: 'function'
+		functionName: 'secondFunc'
+		fileName: 'v8-module.js'
+		}
+	utest.like lCallers2[1], {
+		type: 'function'
+		functionName: 'func2'
+		fileName: 'v8-stack.test.js'
+		}
+
 	)()
 
 # ---------------------------------------------------------------------------
@@ -91,12 +150,12 @@ import {getBoth} from './v8-module.js'
 		stackStr = await getV8StackStr()
 		return stackStr
 
-	test "line 94", (t) => t.is(await func1(), """
-		function at v8-stack.js:62:19
-		function at v8-stack.test.js:106:23
-		function at v8-stack.test.js:102:19
-		script at v8-stack.test.js:110:24
-		""")
+	utest.equal await func1(), """
+		function at v8-stack.test.js:150:23
+		function at v8-stack.test.js:147:19
+		script at v8-stack.test.js:162:29
+		"""
+
 	)()
 
 # ---------------------------------------------------------------------------
@@ -110,9 +169,8 @@ import {getBoth} from './v8-module.js'
 		x = 2 * 2
 		return x
 
-	test "line 113", (t) => t.is(await func1(), """
-		function at v8-stack.js:62:19
-		function at v8-stack.test.js:122:19
-		script at v8-stack.test.js:130:24
-		""")
+	utest.equal await func1(), """
+		function at v8-stack.test.js:166:19
+		script at v8-stack.test.js:179:29
+		"""
 	)()

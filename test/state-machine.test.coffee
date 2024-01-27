@@ -14,15 +14,15 @@ suppressExceptionLogging()
 (() ->
 	mach = new StateMachine('init', {flag: true, str: 'a string'})
 
-	utest.truthy 17, mach.inState('init')
-	utest.falsy  18, mach.inState('not')
-	utest.equal  19, mach.state, 'init'
-	utest.succeeds 20, () => mach.expectState('init','not')
-	utest.fails 21, () => mach.expectState('xxx','not')
-	utest.succeeds 22, () => mach.expectDefined('flag','str')
-	utest.fails 23, () => mach.expectDefined('flag','str','notdef')
-	utest.equal 24, mach.getVar('flag'), true
-	utest.equal 25, mach.getVar('str'), 'a string'
+	utest.truthy mach.inState('init')
+	utest.falsy  mach.inState('not')
+	utest.equal  mach.state, 'init'
+	utest.succeeds () => mach.expectState('init','not')
+	utest.throws () => mach.expectState('xxx','not')
+	utest.succeeds () => mach.expectDefined('flag','str')
+	utest.throws () => mach.expectDefined('flag','str','notdef')
+	utest.equal mach.getVar('flag'), true
+	utest.equal mach.getVar('str'), 'a string'
 	)()
 
 # ---------------------------------------------------------------------------
@@ -56,11 +56,11 @@ suppressExceptionLogging()
 	mach3.FIRST()
 	mach3.SECOND()
 
-	utest.truthy 56, mach1.inState('init')
-	utest.truthy 57, mach2.inState('middle')
-	utest.truthy 58, mach3.inState('final')
+	utest.truthy mach1.inState('init')
+	utest.truthy mach2.inState('middle')
+	utest.truthy mach3.inState('final')
 
-	utest.fails 60, () => mach1.SECOND()
-	utest.succeeds 61, () => mach1.FIRST()
-	utest.fails 65, () => mach1.setState('some state')
+	utest.throws () => mach1.SECOND()
+	utest.succeeds () => mach1.FIRST()
+	utest.throws () => mach1.setState('some state')
 	)()

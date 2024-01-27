@@ -22,7 +22,7 @@ testPath = mkpath(projDir, 'test', 'readline.txt')
 
 # ---------------------------------------------------------------------------
 
-utest.like 24, parsePath(import.meta.url), {
+utest.like parsePath(import.meta.url), {
 	type: 'file'
 	root: 'c:/'
 	base: 'fs.test.js'
@@ -33,7 +33,7 @@ utest.like 24, parsePath(import.meta.url), {
 	purpose: 'test'
 	}
 
-utest.like 36, parsePath(projDir), {
+utest.like parsePath(projDir), {
 	path: projDir
 	type: 'dir'
 	root: 'c:/'
@@ -46,7 +46,7 @@ utest.like 36, parsePath(projDir), {
 	purpose: undef
 	}
 
-utest.like 49, parsePath(dir), {
+utest.like parsePath(dir), {
 	path: dir
 	type: 'dir'
 	root: 'c:/'
@@ -59,7 +59,7 @@ utest.like 49, parsePath(dir), {
 	purpose: undef
 	}
 
-utest.like 62, parsePath(subdir), {
+utest.like parsePath(subdir), {
 	path: subdir
 	type: 'dir'
 	root: 'c:/'
@@ -72,7 +72,7 @@ utest.like 62, parsePath(subdir), {
 	purpose: undef
 	}
 
-utest.like 75, parsePath(file), {
+utest.like parsePath(file), {
 	path: file
 	type: 'file'
 	root: 'c:/'
@@ -85,7 +85,7 @@ utest.like 75, parsePath(file), {
 	purpose: 'test'
 	}
 
-utest.like 88, parsePath(testPath), {
+utest.like parsePath(testPath), {
 	path: testPath
 	type: 'file'
 	root: 'c:/'
@@ -100,18 +100,18 @@ utest.like 88, parsePath(testPath), {
 
 # ---------------------------------------------------------------------------
 
-utest.equal 43, slurp(testPath, {maxLines: 2}), """
+utest.equal slurp(testPath, {maxLines: 2}), """
 	abc
 	def
 	"""
 
-utest.equal 48, slurp(testPath, {maxLines: 3}), """
+utest.equal slurp(testPath, {maxLines: 3}), """
 	abc
 	def
 	ghi
 	"""
 
-utest.equal 54, slurp(testPath, {maxLines: 1000}), """
+utest.equal slurp(testPath, {maxLines: 1000}), """
 	abc
 	def
 	ghi
@@ -121,18 +121,18 @@ utest.equal 54, slurp(testPath, {maxLines: 1000}), """
 
 # --- Test without building path first
 
-utest.equal 64, slurp(projDir, 'test', 'readline.txt', {maxLines: 2}), """
+utest.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 2}), """
 	abc
 	def
 	"""
 
-utest.equal 69, slurp(projDir, 'test', 'readline.txt', {maxLines: 3}), """
+utest.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 3}), """
 	abc
 	def
 	ghi
 	"""
 
-utest.equal 75, slurp(projDir, 'test', 'readline.txt', {maxLines: 1000}), """
+utest.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 1000}), """
 	abc
 	def
 	ghi
@@ -146,7 +146,7 @@ utest.equal 75, slurp(projDir, 'test', 'readline.txt', {maxLines: 1000}), """
 (() =>
 	path = "./test/test/file3.txt"
 	h = getTextFileContents(path)
-	utest.equal 124, h, {
+	utest.equal h, {
 		metadata: {fName: 'John', lName: 'Deighan'}
 		lLines: ['', 'This is a test']
 		}
@@ -160,11 +160,11 @@ utest.equal 75, slurp(projDir, 'test', 'readline.txt', {maxLines: 1000}), """
 	for hFileInfo from allFilesIn('./test/test', 'eager')
 		lFiles.push hFileInfo
 
-	utest.like 138, lFiles, [
-		{fileName: 'file1.txt', metadata: undef, lLines: ['DONE']}
-		{fileName: 'file1.zh',  metadata: undef, lLines: ['DONE']}
-		{fileName: 'file2.txt', metadata: undef, lLines: ['DONE']}
-		{fileName: 'file2.zh',  metadata: undef, lLines: ['DONE']}
+	utest.like lFiles, [
+		{fileName: 'file1.txt', metadata: undef, lLines: ['Hello']}
+		{fileName: 'file1.zh',  metadata: undef, lLines: ['你好']}
+		{fileName: 'file2.txt', metadata: undef, lLines: ['Goodbye']}
+		{fileName: 'file2.zh',  metadata: undef, lLines: ['再见']}
 		{
 			fileName: 'file3.txt'
 			metadata: {
@@ -194,4 +194,47 @@ utest.equal 75, slurp(projDir, 'test', 'readline.txt', {maxLines: 1000}), """
 
 	text = slurp path
 	utest.equal 168, text, "line 1\nline 2\n"
+	)()
+
+# ---------------------------------------------------------------------------
+# --- test forEachItem()
+
+(() =>
+	countGenerator = () ->
+		yield 1
+		yield 2
+		yield 3
+		yield 4
+		return
+
+	callback = (item, hContext) =>
+		if (item > 2)
+			return "#{hContext.label} #{item}"
+		else
+			return undef
+
+	result = forEachItem countGenerator(), callback, {label: 'X'}
+	utest.equal result, ['X 3', 'X 4']
+	)()
+
+# ---------------------------------------------------------------------------
+# --- test forEachLineInFile()
+
+(() =>
+	# --- Contents:
+	#        abc
+	#        def
+	#        ghi
+	#        jkl
+	#        mno
+	#
+
+	callback = (item, hContext) =>
+		if (item == 'def') || (item == 'jkl')
+			return "#{hContext.label} #{item}"
+		else
+			return undef
+
+	result = forEachLineInFile testPath, callback, {label: '-->'}
+	utest.equal result, ['--> def', '--> jkl']
 	)()

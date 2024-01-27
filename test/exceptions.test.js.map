@@ -6,8 +6,8 @@
     "test\\exceptions.test.coffee"
   ],
   "names": [],
-  "mappings": "AAAwB;AAExB,OAAO,IAAP,MAAA;;AAEA,OAAA;EACC,MADD;EACS,KADT;EACgB,wBADhB;CAAA,MAAA,kCAJwB;;;AAUxB,IAAA,CAAK,SAAL,EAAgB,CAAC,CAAD,CAAA,GAAA;SACf,CAAC,CAAC,MAAF,CAAS,QAAA,CAAA,CAAA;IACR,wBAAA,CAAyB,IAAzB;WACA,KAAA,CAAM,KAAN;EAFQ,CAAT;AADe,CAAhB;;AAKA,IAAA,CAAK,SAAL,EAAgB,CAAC,CAAD,CAAA,GAAA;SACf,CAAC,CAAC,MAAF,CAAS,QAAA,CAAA,CAAA;IACR,wBAAA,CAAyB,IAAzB;WACA,MAAA,CAAO,CAAA,GAAE,CAAF,KAAO,CAAd,EAAiB,WAAjB;EAFQ,CAAT;AADe,CAAhB;;AAKA,IAAA,CAAK,SAAL,EAAgB,CAAC,CAAD,CAAA,GAAA;SACf,CAAC,CAAC,SAAF,CAAY,QAAA,CAAA,CAAA;WACX,MAAA,CAAO,CAAA,GAAE,CAAF,KAAO,CAAd;EADW,CAAZ;AADe,CAAhB",
+  "mappings": "AAAwB;AAExB,OAAA;EACC,MADD;EACS,KADT;EACgB,wBADhB;CAAA,MAAA;;AAGA,OAAA;EAAQ,KAAR;CAAA,MAAA,6BALwB;;;AASxB,KAAK,CAAC,MAAN,CAAa,QAAA,CAAA,CAAA;EACZ,wBAAA,CAAyB,IAAzB;SACA,KAAA,CAAM,KAAN;AAFY,CAAb;;AAIA,KAAK,CAAC,MAAN,CAAa,QAAA,CAAA,CAAA;EACZ,wBAAA,CAAyB,IAAzB;SACA,MAAA,CAAO,CAAA,GAAE,CAAF,KAAO,CAAd,EAAiB,WAAjB;AAFY,CAAb;;AAIA,KAAK,CAAC,QAAN,CAAe,QAAA,CAAA,CAAA;SACd,MAAA,CAAO,CAAA,GAAE,CAAF,KAAO,CAAd;AADc,CAAf",
   "sourcesContent": [
-    "# exceptions.test.coffee\n\nimport test from 'ava'\n\nimport {\n\tassert, croak, suppressExceptionLogging,\n\t} from '@jdeighan/base-utils/exceptions'\n\n# ---------------------------------------------------------------------------\n\ntest \"line 12\", (t) =>\n\tt.throws(() ->\n\t\tsuppressExceptionLogging true\n\t\tcroak(\"BAD\")\n\t\t)\ntest \"line 13\", (t) =>\n\tt.throws(() ->\n\t\tsuppressExceptionLogging true\n\t\tassert(2+2 != 4, 'EXCEPTION'))\n\ntest \"line 14\", (t) =>\n\tt.notThrows(() ->\n\t\tassert(2+2 == 4))\n"
+    "# exceptions.test.coffee\n\nimport {\n\tassert, croak, suppressExceptionLogging,\n\t} from '@jdeighan/base-utils/exceptions'\nimport {utest} from '@jdeighan/base-utils/utest'\n\n# ---------------------------------------------------------------------------\n\nutest.throws () ->\n\tsuppressExceptionLogging true\n\tcroak(\"BAD\")\n\nutest.throws () ->\n\tsuppressExceptionLogging true\n\tassert(2+2 != 4, 'EXCEPTION')\n\nutest.succeeds () ->\n\tassert(2+2 == 4)\n"
   ]
 }
