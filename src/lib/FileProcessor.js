@@ -257,12 +257,44 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
 
   // ..........................................................
   handleFile(filePath) {
-    var fileChanged, item, lRecipe, line, lineNum, ref, result;
+    var addToRecipe, fileChanged, item, lRecipe, line, lineNum, ref, result;
     dbgEnter('handleFile', filePath);
     assert(isString(filePath), "not a string");
     lRecipe = []; // --- array of hashes
     lineNum = 1;
     fileChanged = false;
+    addToRecipe = (item, orgLine) => {
+      var i, len, results, subitem;
+      switch (jsType(item)[0]) {
+        case 'string':
+          lRecipe.push(item);
+          if (item === orgLine) {
+            return dbg(`RECIPE: '${item}'`);
+          } else {
+            fileChanged = true;
+            return dbg(`RECIPE: '${item}' - changed`);
+          }
+          break;
+        case 'hash':
+          fileChanged = true;
+          addNewKey(item, 'lineNum', lineNum);
+          dbg("RECIPE:", item);
+          return lRecipe.push(item);
+        case 'array':
+          fileChanged = true;
+          results = [];
+          for (i = 0, len = item.length; i < len; i++) {
+            subitem = item[i];
+            results.push(addToRecipe(subitem, orgLine));
+          }
+          return results;
+          break;
+        default:
+          assert(notdefined(item), "bad return from handleLine()");
+          fileChanged = true;
+          return dbg(`RECIPE: line '${line}' removed`);
+      }
+    };
     ref = allLinesIn(filePath);
     for (line of ref) {
       dbg(`LINE: '${line}'`);
@@ -271,27 +303,7 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
       //     - string to write a line literally
       //     - a hash which cannot contain key 'lineNum'
       item = this.handleLine(line, lineNum, filePath);
-      switch (jsType(item)[0]) {
-        case 'string':
-          lRecipe.push(item);
-          if (item === line) {
-            dbg(`RECIPE: '${item}'`);
-          } else {
-            fileChanged = true;
-            dbg(`RECIPE: '${item}' - changed`);
-          }
-          break;
-        case 'hash':
-          addNewKey(item, 'lineNum', lineNum);
-          dbg("RECIPE:", item);
-          lRecipe.push(item);
-          fileChanged = true;
-          break;
-        default:
-          assert(notdefined(item), "bad return from handleLine()");
-          fileChanged = true;
-          dbg(`RECIPE: line '${line}' removed`);
-      }
+      addToRecipe(item, line);
       lineNum += 1;
     }
     if (fileChanged) {
@@ -299,6 +311,7 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
     } else {
       result = {};
     }
+    dbg(`${lineNum - 1} lines processed`);
     dbgReturn('handleFile', result);
     return result;
   }

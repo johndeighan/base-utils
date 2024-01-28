@@ -222,6 +222,31 @@ export class LineProcessor extends FileProcessor
 		lRecipe = []   # --- array of hashes
 		lineNum = 1
 		fileChanged = false
+
+		addToRecipe = (item, orgLine) =>
+			switch jsType(item)[0]
+				when 'string'
+					lRecipe.push item
+					if (item == orgLine)
+						dbg "RECIPE: '#{item}'"
+					else
+						fileChanged = true
+						dbg "RECIPE: '#{item}' - changed"
+				when 'hash'
+					fileChanged = true
+					addNewKey item, 'lineNum', lineNum
+					dbg "RECIPE:", item
+					lRecipe.push item
+				when 'array'
+					fileChanged = true
+					for subitem in item
+						addToRecipe subitem, orgLine
+				else
+					assert notdefined(item), "bad return from handleLine()"
+					fileChanged = true
+					dbg "RECIPE: line '#{line}' removed"
+
+
 		for line from allLinesIn(filePath)
 			dbg "LINE: '#{line}'"
 
@@ -231,28 +256,13 @@ export class LineProcessor extends FileProcessor
 			#     - a hash which cannot contain key 'lineNum'
 
 			item = @handleLine line, lineNum, filePath
-			switch jsType(item)[0]
-				when 'string'
-					lRecipe.push item
-					if (item == line)
-						dbg "RECIPE: '#{item}'"
-					else
-						fileChanged = true
-						dbg "RECIPE: '#{item}' - changed"
-				when 'hash'
-					addNewKey item, 'lineNum', lineNum
-					dbg "RECIPE:", item
-					lRecipe.push item
-					fileChanged = true
-				else
-					assert notdefined(item), "bad return from handleLine()"
-					fileChanged = true
-					dbg "RECIPE: line '#{line}' removed"
+			addToRecipe item, line
 			lineNum += 1
 		if fileChanged
 			result = {lRecipe}
 		else
 			result = {}
+		dbg "#{lineNum-1} lines processed"
 		dbgReturn 'handleFile', result
 		return result
 
