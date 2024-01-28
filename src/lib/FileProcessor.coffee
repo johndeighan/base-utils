@@ -4,7 +4,7 @@ import {globSync as glob} from 'glob'
 
 import {
 	undef, defined, notdefined, getOptions, add_s,
-	isString, isHash, toJSON,
+	isString, isHash, toJSON, jsType, OL,
 	hasKey, hasAnyKey, addNewKey, toBlock, toArray,
 	} from '@jdeighan/base-utils'
 import {toTAML} from '@jdeighan/base-utils/taml'
@@ -208,9 +208,9 @@ export class LineProcessor extends FileProcessor
 
 	dumpdata: (hUserData) ->
 
-		{lineNum, lLines} = hUserData
+		{lineNum, lRecipe} = hUserData
 		console.log "LINE #{lineNum}:"
-		console.log toTAML(lLines)
+		console.log toTAML(lRecipe)
 		return
 
 	# ..........................................................
@@ -219,27 +219,40 @@ export class LineProcessor extends FileProcessor
 
 		dbgEnter 'handleFile', filePath
 		assert isString(filePath), "not a string"
-		lLines = []   # --- array of hashes
+		lRecipe = []   # --- array of hashes
 		lineNum = 1
+		fileChanged = false
 		for line from allLinesIn(filePath)
 			dbg "LINE: '#{line}'"
 
-			# --- handleLine should return undef to ignore line
-			#     otherwise, a hash which:
-			#        cannot contain key 'lineNum'
-			#        may contain keys:
-			#           newLine - to later overwrite the line
-			#           delete - to later delete the line
+			# --- handleLine should return:
+			#     - undef to ignore line
+			#     - string to write a line literally
+			#     - a hash which cannot contain key 'lineNum'
 
-			h = @handleLine line, lineNum, filePath
-			if defined(h)
-				dbg "returned by handleLine()", h
-				addNewKey h, 'lineNum', lineNum
-				lLines.push h
-			else
-				dbg "line '#{line}' ignored"
+			item = @handleLine line, lineNum, filePath
+			switch jsType(item)[0]
+				when 'string'
+					lRecipe.push item
+					if (item == line)
+						dbg "RECIPE: '#{item}'"
+					else
+						fileChanged = true
+						dbg "RECIPE: '#{item}' - changed"
+				when 'hash'
+					addNewKey item, 'lineNum', lineNum
+					dbg "RECIPE:", item
+					lRecipe.push item
+					fileChanged = true
+				else
+					assert notdefined(item), "bad return from handleLine()"
+					fileChanged = true
+					dbg "RECIPE: line '#{line}' removed"
 			lineNum += 1
-		result = {lLines}
+		if fileChanged
+			result = {lRecipe}
+		else
+			result = {}
 		dbgReturn 'handleFile', result
 		return result
 
@@ -255,27 +268,32 @@ export class LineProcessor extends FileProcessor
 	writeFile: (newPath, hUserData) ->
 
 		dbgEnter 'writeFile', newPath, hUserData
-		{lLines, filePath} = hUserData
+		{lRecipe, filePath} = hUserData
 
 		if ! @hOptions.allowOverwrite
 			assert (newPath != filePath), "Attempt to write org file"
 
-		lOutput = []
-		for hLine in lLines
-			text = @writeLine hLine
-			if defined(text)
-				assert isString(text), "text not a string"
-				lOutput.push text
+		if defined(lRecipe)
+			lOutput = []
+			for item in lRecipe
+				if isString(item)
+					lOutput.push item
+				else
+					assert isHash(item), "Bad item in recipe: #{OL(item)}"
+					text = @writeLine item
+					if defined(text)
+						assert isString(text), "text not a string"
+						lOutput.push text
 
-		# --- Now write out the text in lOutput
-		if (lOutput.length > 0)
-			barf toBlock(lOutput), newPath
+			# --- Now write out the text in lOutput
+			if (lOutput.length > 0)
+				barf toBlock(lOutput), newPath
 		dbgReturn 'writeFile'
 		return
 
 	# ..........................................................
 	# --- SHOULD OVERRIDE, to write data for a given line
 
-	writeLine: (hLine) ->
+	writeLine: (h) ->
 
 		return    # --- by default, returns nothing

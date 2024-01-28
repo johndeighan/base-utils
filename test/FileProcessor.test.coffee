@@ -4,7 +4,9 @@ import {
 	undef, defined, notdefined, LOG, rtrim, toArray,
 	} from '@jdeighan/base-utils'
 import {setDebugging} from '@jdeighan/base-utils/debug'
-import {slurp, subPath, isDir} from '@jdeighan/base-utils/fs'
+import {
+	slurp, subPath, isDir, dirContents,
+	} from '@jdeighan/base-utils/fs'
 import {
 	FileProcessor, LineProcessor,
 	} from '@jdeighan/base-utils/FileProcessor'
@@ -27,6 +29,8 @@ import {utest} from '@jdeighan/base-utils/utest'
 #        many hashes there are in `lUserData`.
 
 (() =>
+	# --- There are 2 *.zh files in `./test/test`
+
 	fp = new FileProcessor './test/test', '*.zh'
 	fp.handleFile = (filePath) ->
 		return {}
@@ -37,6 +41,8 @@ import {utest} from '@jdeighan/base-utils/utest'
 	)()
 
 (() =>
+	# --- There are 3 *.txt files in `./test/test`
+
 	fp = new FileProcessor './test/test', '*.txt'
 	fp.handleFile = (filePath) ->
 		return {}
@@ -47,6 +53,8 @@ import {utest} from '@jdeighan/base-utils/utest'
 	)()
 
 (() =>
+	# --- There are 26 total files in `./test/words`
+
 	fp = new FileProcessor './test/words', '*'
 	fp.handleFile = (filePath) ->
 		return {}
@@ -57,6 +65,8 @@ import {utest} from '@jdeighan/base-utils/utest'
 	)()
 
 (() =>
+	# --- There are 25 *.zh files in `./test/words`
+
 	fp = new FileProcessor './test/words', '*.zh'
 	fp.handleFile = (filePath) ->
 		return {}
@@ -124,7 +134,7 @@ import {utest} from '@jdeighan/base-utils/utest'
 			@numWords += 1
 		else
 			@numWords = 1
-		return undef
+		return undef     # write nothing out
 	fp.readAll()
 
 	utest.equal fp.numWords, 2048
@@ -142,14 +152,18 @@ import {utest} from '@jdeighan/base-utils/utest'
 		else
 			@numWords = 1
 		return {hWord: line2hWord(line)}
-	fp.writeLine = (hLine) ->
-		{hWord} = hLine   # extract previously written hWord
+	fp.writeLine = (h) ->
+		{hWord} = h         # extract previously written hWord
 		word = hWord.zh[0].zh
 		return word
 	fp.readAll()
 	fp.writeAll()
 
 	utest.equal fp.numWords, 2048
+	utest.equal dirContents('./test/words/temp').length, 25
+	utest.equal dirContents('./test/words/temp', '*.zh').length, 25
+	utest.equal dirContents('./test/words/temp', '*', 'filesOnly').length, 25
+	utest.equal dirContents('./test/words/temp', '*', 'dirsOnly').length, 0
 	)()
 
 # ---------------------------------------------------------------------------
@@ -173,5 +187,9 @@ import {utest} from '@jdeighan/base-utils/utest'
 	utest.truthy isDir('./test/words/temp2')
 	utest.truthy slurp('./test/words/adjectives.zh').startsWith('11 ')
 	utest.truthy slurp('./test/words/temp2/adjectives.zh').startsWith('16 ')
+	utest.equal dirContents('./test/words/temp2').length, 25
+	utest.equal dirContents('./test/words/temp2', '*.zh').length, 25
+	utest.equal dirContents('./test/words/temp2', '*', 'filesOnly').length, 25
+	utest.equal dirContents('./test/words/temp2', '*', 'dirsOnly').length, 0
 
 	)()

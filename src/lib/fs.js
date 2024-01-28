@@ -8,6 +8,10 @@ import fs from 'fs';
 import NReadLines from 'n-readlines';
 
 import {
+  globSync as glob
+} from 'glob';
+
+import {
   undef,
   defined,
   nonEmpty,
@@ -297,6 +301,34 @@ export var allLinesIn = function*(filePath) {
   reader = new NReadLines(filePath);
   while ((buffer = reader.next())) {
     yield buffer.toString().replace(/\r/g, '');
+  }
+};
+
+// ---------------------------------------------------------------------------
+export var dirContents = function(dirPath, pattern = '*', hOptions = {}) {
+  var absolute, cwd, dirsOnly, dot, filesOnly, lPaths;
+  ({absolute, cwd, dot, filesOnly, dirsOnly} = getOptions(hOptions, {
+    absolute: true,
+    dot: false,
+    filesOnly: false,
+    dirsOnly: false
+  }));
+  assert(!(filesOnly && dirsOnly), "Incompatible options");
+  lPaths = glob(pattern, {
+    absolute,
+    cwd: dirPath,
+    dot
+  });
+  if (filesOnly) {
+    return lPaths.filter((path) => {
+      return isFile(path);
+    });
+  } else if (dirsOnly) {
+    return lPaths.filter((path) => {
+      return isDir(path);
+    });
+  } else {
+    return lPaths;
   }
 };
 

@@ -15,7 +15,8 @@ import {
 import {
   slurp,
   subPath,
-  isDir
+  isDir,
+  dirContents
 } from '@jdeighan/base-utils/fs';
 
 import {
@@ -46,6 +47,7 @@ import {
 //        many hashes there are in `lUserData`.
 (() => {
   var fp, lUserData;
+  // --- There are 2 *.zh files in `./test/test`
   fp = new FileProcessor('./test/test', '*.zh');
   fp.handleFile = function(filePath) {
     return {};
@@ -57,6 +59,7 @@ import {
 
 (() => {
   var fp, lUserData;
+  // --- There are 3 *.txt files in `./test/test`
   fp = new FileProcessor('./test/test', '*.txt');
   fp.handleFile = function(filePath) {
     return {};
@@ -68,6 +71,7 @@ import {
 
 (() => {
   var fp, lUserData;
+  // --- There are 26 total files in `./test/words`
   fp = new FileProcessor('./test/words', '*');
   fp.handleFile = function(filePath) {
     return {};
@@ -79,6 +83,7 @@ import {
 
 (() => {
   var fp, lUserData;
+  // --- There are 25 *.zh files in `./test/words`
   fp = new FileProcessor('./test/words', '*.zh');
   fp.handleFile = function(filePath) {
     return {};
@@ -155,7 +160,7 @@ import {
     } else {
       this.numWords = 1;
     }
-    return undef;
+    return undef; // write nothing out
   };
   fp.readAll();
   return utest.equal(fp.numWords, 2048);
@@ -177,15 +182,19 @@ import {
       hWord: line2hWord(line)
     };
   };
-  fp.writeLine = function(hLine) {
+  fp.writeLine = function(h) {
     var hWord, word;
-    ({hWord} = hLine); // extract previously written hWord
+    ({hWord} = h); // extract previously written hWord
     word = hWord.zh[0].zh;
     return word;
   };
   fp.readAll();
   fp.writeAll();
-  return utest.equal(fp.numWords, 2048);
+  utest.equal(fp.numWords, 2048);
+  utest.equal(dirContents('./test/words/temp').length, 25);
+  utest.equal(dirContents('./test/words/temp', '*.zh').length, 25);
+  utest.equal(dirContents('./test/words/temp', '*', 'filesOnly').length, 25);
+  return utest.equal(dirContents('./test/words/temp', '*', 'dirsOnly').length, 0);
 })();
 
 // ---------------------------------------------------------------------------
@@ -213,7 +222,11 @@ import {
   fp.writeAll();
   utest.truthy(isDir('./test/words/temp2'));
   utest.truthy(slurp('./test/words/adjectives.zh').startsWith('11 '));
-  return utest.truthy(slurp('./test/words/temp2/adjectives.zh').startsWith('16 '));
+  utest.truthy(slurp('./test/words/temp2/adjectives.zh').startsWith('16 '));
+  utest.equal(dirContents('./test/words/temp2').length, 25);
+  utest.equal(dirContents('./test/words/temp2', '*.zh').length, 25);
+  utest.equal(dirContents('./test/words/temp2', '*', 'filesOnly').length, 25);
+  return utest.equal(dirContents('./test/words/temp2', '*', 'dirsOnly').length, 0);
 })();
 
 //# sourceMappingURL=FileProcessor.test.js.map

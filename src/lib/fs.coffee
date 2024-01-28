@@ -4,6 +4,7 @@ import pathLib from 'node:path'
 import urlLib from 'url'
 import fs from 'fs'
 import NReadLines from 'n-readlines'
+import {globSync as glob} from 'glob'
 
 import {
 	undef, defined, nonEmpty, toBlock, toArray, getOptions,
@@ -237,6 +238,27 @@ export allLinesIn = (filePath) ->
 	while (buffer = reader.next())
 		yield buffer.toString().replace(/\r/g, '')
 	return
+
+# ---------------------------------------------------------------------------
+
+export dirContents = (dirPath, pattern='*', hOptions={}) ->
+
+	{absolute, cwd, dot, filesOnly, dirsOnly
+		} = getOptions hOptions, {
+		absolute: true
+		dot: false
+		filesOnly: false
+		dirsOnly: false
+		}
+
+	assert ! (filesOnly && dirsOnly), "Incompatible options"
+	lPaths = glob(pattern, {absolute, cwd: dirPath, dot})
+	if filesOnly
+		return lPaths.filter((path) => isFile(path))
+	else if dirsOnly
+		return lPaths.filter((path) => isDir(path))
+	else
+		return lPaths
 
 # ---------------------------------------------------------------------------
 

@@ -1,5 +1,5 @@
 // fs.test.coffee
-var dir, file, projDir, subdir, testPath;
+var dir, file, projDir, smDir, subdir, testPath;
 
 import {
   utest
@@ -41,7 +41,8 @@ import {
   forEachItem,
   forEachLineInFile,
   FileWriter,
-  FileWriterSync
+  FileWriterSync,
+  dirContents
 } from '@jdeighan/base-utils/fs';
 
 // --- should be root directory of @jdeighan/base-utils
@@ -290,5 +291,19 @@ mno`);
   });
   return utest.equal(result, ['--> def', '--> jkl']);
 })();
+
+// ---------------------------------------------------------------------------
+// --- test dirContents()
+smDir = './test/source-map';
+
+utest.equal(dirContents(smDir, '*.coffee').length, 1);
+
+utest.equal(dirContents(smDir, '*.js').length, 2);
+
+utest.equal(dirContents(smDir, '*').length, 6);
+
+utest.equal(dirContents(smDir, '*', 'filesOnly').length, 4);
+
+utest.equal(dirContents(smDir, '*', 'dirsOnly').length, 2);
 
 //# sourceMappingURL=fs.test.js.map

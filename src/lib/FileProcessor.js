@@ -12,6 +12,8 @@ import {
   isString,
   isHash,
   toJSON,
+  jsType,
+  OL,
   hasKey,
   hasAnyKey,
   addNewKey,
@@ -247,39 +249,56 @@ export var FileProcessor = class FileProcessor {
 // --- path may be a new path
 export var LineProcessor = class LineProcessor extends FileProcessor {
   dumpdata(hUserData) {
-    var lLines, lineNum;
-    ({lineNum, lLines} = hUserData);
+    var lRecipe, lineNum;
+    ({lineNum, lRecipe} = hUserData);
     console.log(`LINE ${lineNum}:`);
-    console.log(toTAML(lLines));
+    console.log(toTAML(lRecipe));
   }
 
   // ..........................................................
   handleFile(filePath) {
-    var h, lLines, line, lineNum, ref, result;
+    var fileChanged, item, lRecipe, line, lineNum, ref, result;
     dbgEnter('handleFile', filePath);
     assert(isString(filePath), "not a string");
-    lLines = []; // --- array of hashes
+    lRecipe = []; // --- array of hashes
     lineNum = 1;
+    fileChanged = false;
     ref = allLinesIn(filePath);
     for (line of ref) {
       dbg(`LINE: '${line}'`);
-      // --- handleLine should return undef to ignore line
-      //     otherwise, a hash which:
-      //        cannot contain key 'lineNum'
-      //        may contain keys:
-      //           newLine - to later overwrite the line
-      //           delete - to later delete the line
-      h = this.handleLine(line, lineNum, filePath);
-      if (defined(h)) {
-        dbg("returned by handleLine()", h);
-        addNewKey(h, 'lineNum', lineNum);
-        lLines.push(h);
-      } else {
-        dbg(`line '${line}' ignored`);
+      // --- handleLine should return:
+      //     - undef to ignore line
+      //     - string to write a line literally
+      //     - a hash which cannot contain key 'lineNum'
+      item = this.handleLine(line, lineNum, filePath);
+      switch (jsType(item)[0]) {
+        case 'string':
+          lRecipe.push(item);
+          if (item === line) {
+            dbg(`RECIPE: '${item}'`);
+          } else {
+            fileChanged = true;
+            dbg(`RECIPE: '${item}' - changed`);
+          }
+          break;
+        case 'hash':
+          addNewKey(item, 'lineNum', lineNum);
+          dbg("RECIPE:", item);
+          lRecipe.push(item);
+          fileChanged = true;
+          break;
+        default:
+          assert(notdefined(item), "bad return from handleLine()");
+          fileChanged = true;
+          dbg(`RECIPE: line '${line}' removed`);
       }
       lineNum += 1;
     }
-    result = {lLines};
+    if (fileChanged) {
+      result = {lRecipe};
+    } else {
+      result = {};
+    }
     dbgReturn('handleFile', result);
     return result;
   }
@@ -291,31 +310,38 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
   
     // ..........................................................
   writeFile(newPath, hUserData) {
-    var filePath, hLine, i, lLines, lOutput, len, text;
+    var filePath, i, item, lOutput, lRecipe, len, text;
     dbgEnter('writeFile', newPath, hUserData);
-    ({lLines, filePath} = hUserData);
+    ({lRecipe, filePath} = hUserData);
     if (!this.hOptions.allowOverwrite) {
       assert(newPath !== filePath, "Attempt to write org file");
     }
-    lOutput = [];
-    for (i = 0, len = lLines.length; i < len; i++) {
-      hLine = lLines[i];
-      text = this.writeLine(hLine);
-      if (defined(text)) {
-        assert(isString(text), "text not a string");
-        lOutput.push(text);
+    if (defined(lRecipe)) {
+      lOutput = [];
+      for (i = 0, len = lRecipe.length; i < len; i++) {
+        item = lRecipe[i];
+        if (isString(item)) {
+          lOutput.push(item);
+        } else {
+          assert(isHash(item), `Bad item in recipe: ${OL(item)}`);
+          text = this.writeLine(item);
+          if (defined(text)) {
+            assert(isString(text), "text not a string");
+            lOutput.push(text);
+          }
+        }
       }
-    }
-    // --- Now write out the text in lOutput
-    if (lOutput.length > 0) {
-      barf(toBlock(lOutput), newPath);
+      // --- Now write out the text in lOutput
+      if (lOutput.length > 0) {
+        barf(toBlock(lOutput), newPath);
+      }
     }
     dbgReturn('writeFile');
   }
 
   // ..........................................................
   // --- SHOULD OVERRIDE, to write data for a given line
-  writeLine(hLine) {} // --- by default, returns nothing
+  writeLine(h) {} // --- by default, returns nothing
 
 };
 
