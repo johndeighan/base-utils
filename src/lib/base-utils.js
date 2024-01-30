@@ -1441,4 +1441,43 @@ export var pad = (x, width, hOptions = {}) => {
   }
 };
 
+// ---------------------------------------------------------------------------
+export var forEachItem = (iter, func, hContext = {}) => {
+  var err, index, item, lItems, result;
+  // --- func() gets (item, hContext)
+  //        hContext includes key _index
+  //     return value from func() is added to
+  //        returned array if defined
+  //     if func() throws
+  //        thrown strings are interpreted as
+  //           "stop" - stop the iteration
+  //           any other string - an error
+  //           non-string - is rethrown
+  ll_assert(isIterable(iter), "not an iterable");
+  lItems = [];
+  index = 0;
+  for (item of iter) {
+    hContext._index = index;
+    index += 1;
+    try {
+      result = func(item, hContext);
+      if (defined(result)) {
+        lItems.push(result);
+      }
+    } catch (error1) {
+      err = error1;
+      if (isString(err)) {
+        if (err === 'stop') {
+          return lItems;
+        } else {
+          throw new Error(`forEachItem: Bad throw '${err}'`);
+        }
+      } else {
+        throw err; // rethrow the error
+      }
+    }
+  }
+  return lItems;
+};
+
 //# sourceMappingURL=base-utils.js.map

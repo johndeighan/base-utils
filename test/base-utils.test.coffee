@@ -19,6 +19,7 @@ import {
 	forEachLine, mapEachLine, getProxy, sleep, schedule,
 	eachCharInString, runCmd, hit, choose, shuffle,
 	deepCopy, timestamp, msSinceEpoch, formatDate, pad,
+	forEachItem,
 	} from '@jdeighan/base-utils'
 import {assert} from '@jdeighan/base-utils/exceptions'
 
@@ -1134,3 +1135,73 @@ u.falsy hasAllKeys(h, '2023-Oct', '2023-Nov', '2023-Dec')
 u.truthy hasAnyKey(h, '2023-Oct', '2023-Nov', '2023-Dec')
 u.truthy hasAnyKey(h, '2023-Oct', '2023-Nov')
 u.falsy hasAnyKey(h, '2023-Jan', '2023-Feb', '2023-Mar')
+
+# ---------------------------------------------------------------------------
+# --- test forEachItem()
+
+(() =>
+	lWords = ['bridge', 'highway', 'garbage']
+	result = forEachItem lWords, (item, h) =>
+		return item
+	u.equal result, lWords
+	)()
+
+(() =>
+	lWords = ['bridge', 'highway', 'garbage']
+	result = forEachItem lWords, (item, h) =>
+		if (item == 'highway')
+			return undef
+		else
+			return item
+	u.equal result, ['bridge', 'garbage']
+	)()
+
+(() =>
+	lWords = ['bridge', 'highway', 'garbage']
+	result = forEachItem lWords, (item, h) =>
+		return item.toUpperCase()
+	u.equal result, ['BRIDGE', 'HIGHWAY', 'GARBAGE']
+	)()
+
+(() =>
+	lWords = ['bridge', 'highway', 'garbage']
+	result = forEachItem lWords, (item, h) =>
+		if (item == 'garbage')
+			throw 'stop'
+		return item
+	u.equal result, ['bridge', 'highway']
+	)()
+
+(() =>
+	lWords = ['bridge', 'highway', 'garbage']
+	result = forEachItem lWords, (item, h) =>
+		if (h._index == 2)
+			throw 'stop'
+		return item
+	u.equal result, ['bridge', 'highway']
+	)()
+
+(() =>
+	lWords = ['bridge', 'highway', 'garbage']
+	u.throws () =>
+		result = forEachItem lWords, (item, h) =>
+			throw new Error("unknown error")
+	)()
+
+(() =>
+	countGenerator = () ->
+		yield 1
+		yield 2
+		yield 3
+		yield 4
+		return
+
+	callback = (item, hContext) =>
+		if (item > 2)
+			return "#{hContext.label} #{item}"
+		else
+			return undef
+
+	result = forEachItem countGenerator(), callback, {label: 'X'}
+	u.equal result, ['X 3', 'X 4']
+	)()

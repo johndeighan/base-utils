@@ -25,7 +25,8 @@ import {
   isIterable,
   fromJSON,
   toJSON,
-  OL
+  OL,
+  forEachItem
 } from '@jdeighan/base-utils';
 
 import {
@@ -73,6 +74,11 @@ import {
   fromTAML
 } from '@jdeighan/base-utils/taml';
 
+import {
+  allLinesIn,
+  forEachLineInFile
+} from '@jdeighan/base-utils/readline';
+
 export {
   fileExt,
   workingDir,
@@ -94,7 +100,9 @@ export {
   parallelPath,
   subPath,
   fileDirPath,
-  mkDirsForFile
+  mkDirsForFile,
+  allLinesIn,
+  forEachLineInFile
 };
 
 // ---------------------------------------------------------------------------
@@ -122,100 +130,6 @@ export var getPkgJsonPath = () => {
   filePath = mkpath(process.cwd(), 'package.json');
   assert(isFile(filePath), "Missing pacakge.json at cur dir");
   return filePath;
-};
-
-// ---------------------------------------------------------------------------
-//   slurp - read a file into a string
-export var slurp = (...lParts) => {
-  var buffer, contents, filePath, hOptions, lLines, maxLines, nLines, reader;
-  // --- last argument can be an options hash
-  //     Valid options:
-  //        maxLines: <int>
-  assert(lParts.length > 0, "No parameters");
-  if (isHash(lParts[lParts.length - 1])) {
-    hOptions = lParts.pop();
-    assert(lParts.length > 0, "Options hash but no parameters");
-    ({maxLines} = hOptions);
-  }
-  filePath = mkpath(...lParts);
-  if (defined(maxLines)) {
-    lLines = [];
-    reader = new NReadLines(filePath);
-    nLines = 0;
-    while ((buffer = reader.next()) && (nLines < maxLines)) {
-      nLines += 1;
-      // --- text is split on \n chars,
-      //     we also need to remove \r chars
-      lLines.push(buffer.toString().replace(/\r/g, ''));
-    }
-    contents = toBlock(lLines);
-  } else {
-    contents = fs.readFileSync(filePath, 'utf8').toString();
-  }
-  return contents;
-};
-
-// ---------------------------------------------------------------------------
-//   slurpJSON - read a file into a hash
-export var slurpJSON = (...lParts) => {
-  return fromJSON(slurp(...lParts));
-};
-
-// ---------------------------------------------------------------------------
-//   slurpTAML - read a file into a hash
-export var slurpTAML = (...lParts) => {
-  return fromTAML(slurp(...lParts));
-};
-
-// ---------------------------------------------------------------------------
-//   slurpPkgJSON - read package.json into a hash
-export var slurpPkgJSON = (...lParts) => {
-  var pkgJsonPath;
-  if (lParts.length === 0) {
-    pkgJsonPath = getPkgJsonPath();
-  } else {
-    pkgJsonPath = mkpath(...lParts);
-    assert(isFile(pkgJsonPath), "Missing package.json at cur dir");
-  }
-  return slurpJSON(pkgJsonPath);
-};
-
-// ---------------------------------------------------------------------------
-//   barf - write a string to a file
-//          will ensure that all necessary directories exist
-export var barf = (text, ...lParts) => {
-  var filePath;
-  assert(lParts.length > 0, "Missing file path");
-  filePath = mkpath(...lParts);
-  mkDirsForFile(filePath);
-  fs.writeFileSync(filePath, text);
-};
-
-// ---------------------------------------------------------------------------
-//   barfJSON - write a string to a file
-export var barfJSON = (hJson, ...lParts) => {
-  assert(isHash(hJson), "hJson not a hash");
-  barf(toJSON(hJson), ...lParts);
-};
-
-// ---------------------------------------------------------------------------
-//   barfTAML - write a string to a file
-export var barfTAML = (ds, ...lParts) => {
-  assert(isHash(ds) || isArray(ds), "ds not a hash or array");
-  barf(toTAML(ds), ...lParts);
-};
-
-// ---------------------------------------------------------------------------
-//   barfPkgJSON - write a string to a file
-export var barfPkgJSON = (hJson, ...lParts) => {
-  var pkgJsonPath;
-  if (lParts.length === 0) {
-    pkgJsonPath = getPkgJsonPath();
-  } else {
-    pkgJsonPath = mkpath(...lParts);
-    assert(isFile(pkgJsonPath), "Missing package.json at cur dir");
-  }
-  barfJSON(hJson, pkgJsonPath);
 };
 
 // ---------------------------------------------------------------------------
@@ -296,15 +210,6 @@ export var allFilesIn = function*(dir, hOptions = {}) {
 };
 
 // ---------------------------------------------------------------------------
-export var allLinesIn = function*(filePath) {
-  var buffer, reader;
-  reader = new NReadLines(filePath);
-  while ((buffer = reader.next())) {
-    yield buffer.toString().replace(/\r/g, '');
-  }
-};
-
-// ---------------------------------------------------------------------------
 export var dirContents = function(dirPath, pattern = '*', hOptions = {}) {
   var absolute, cwd, dirsOnly, dot, filesOnly, lPaths;
   ({absolute, cwd, dot, filesOnly, dirsOnly} = getOptions(hOptions, {
@@ -349,46 +254,101 @@ export var forEachFileInDir = (dir, func, hContext = {}) => {
 };
 
 // ---------------------------------------------------------------------------
-export var forEachItem = (iter, func, hContext = {}) => {
-  var err, index, item, lItems, result;
-  // --- func() gets (item, hContext)
-  assert(isIterable(iter), "not an iterable");
-  lItems = [];
-  index = 0;
-  for (item of iter) {
-    hContext.index = index;
-    index += 1;
-    try {
-      result = func(item, hContext);
-      if (defined(result)) {
-        lItems.push(result);
-      }
-    } catch (error) {
-      err = error;
-      reader.close();
-      if (isString(err)) {
-        return lItems;
-      } else {
-        throw err; // rethrow the error
+//   slurp - read a file into a string
+export var slurp = (...lParts) => {
+  var block, filePath, hOptions, lLines, line, maxLines, ref;
+  // --- last argument can be an options hash
+  //     Valid options:
+  //        maxLines: <int>
+  dbgEnter('slurp', lParts);
+  assert(lParts.length > 0, "No parameters");
+  if (isHash(lParts[lParts.length - 1])) {
+    hOptions = lParts.pop();
+    assert(lParts.length > 0, "Options hash but no parameters");
+    ({maxLines} = hOptions);
+  }
+  filePath = mkpath(...lParts);
+  if (defined(maxLines)) {
+    dbg(`maxLines = ${maxLines}`);
+    lLines = [];
+    ref = allLinesIn(filePath);
+    for (line of ref) {
+      lLines.push(line);
+      if (lLines.length === maxLines) {
+        break;
       }
     }
+    dbg('lLines', lLines);
+    block = toBlock(lLines);
+  } else {
+    block = fs.readFileSync(filePath, 'utf8').toString().replaceAll('\r', '');
   }
-  return lItems;
+  dbg('block', block);
+  dbgReturn('slurp', block);
+  return block;
 };
 
 // ---------------------------------------------------------------------------
-export var forEachLineInFile = (filePath, func, hContext = {}) => {
-  var linefunc;
-  // --- func gets (line, hContext) - lineNum starts at 1
-  //     hContext will include keys:
-  //        filePath
-  //        lineNum - first line is line 1
-  linefunc = (line, hContext) => {
-    hContext.filePath = filePath;
-    hContext.lineNum = hContext.index + 1;
-    return func(line, hContext);
-  };
-  return forEachItem(allLinesIn(filePath), linefunc, hContext);
+//   slurpJSON - read a file into a hash
+export var slurpJSON = (...lParts) => {
+  return fromJSON(slurp(...lParts));
+};
+
+// ---------------------------------------------------------------------------
+//   slurpTAML - read a file into a hash
+export var slurpTAML = (...lParts) => {
+  return fromTAML(slurp(...lParts));
+};
+
+// ---------------------------------------------------------------------------
+//   slurpPkgJSON - read package.json into a hash
+export var slurpPkgJSON = (...lParts) => {
+  var pkgJsonPath;
+  if (lParts.length === 0) {
+    pkgJsonPath = getPkgJsonPath();
+  } else {
+    pkgJsonPath = mkpath(...lParts);
+    assert(isFile(pkgJsonPath), "Missing package.json at cur dir");
+  }
+  return slurpJSON(pkgJsonPath);
+};
+
+// ---------------------------------------------------------------------------
+//   barf - write a string to a file
+//          will ensure that all necessary directories exist
+export var barf = (text, ...lParts) => {
+  var filePath;
+  assert(lParts.length > 0, "Missing file path");
+  filePath = mkpath(...lParts);
+  mkDirsForFile(filePath);
+  fs.writeFileSync(filePath, text);
+};
+
+// ---------------------------------------------------------------------------
+//   barfJSON - write a string to a file
+export var barfJSON = (hJson, ...lParts) => {
+  assert(isHash(hJson), "hJson not a hash");
+  barf(toJSON(hJson), ...lParts);
+};
+
+// ---------------------------------------------------------------------------
+//   barfTAML - write a string to a file
+export var barfTAML = (ds, ...lParts) => {
+  assert(isHash(ds) || isArray(ds), "ds not a hash or array");
+  barf(toTAML(ds), ...lParts);
+};
+
+// ---------------------------------------------------------------------------
+//   barfPkgJSON - write a string to a file
+export var barfPkgJSON = (hJson, ...lParts) => {
+  var pkgJsonPath;
+  if (lParts.length === 0) {
+    pkgJsonPath = getPkgJsonPath();
+  } else {
+    pkgJsonPath = mkpath(...lParts);
+    assert(isFile(pkgJsonPath), "Missing package.json at cur dir");
+  }
+  barfJSON(hJson, pkgJsonPath);
 };
 
 // ---------------------------------------------------------------------------

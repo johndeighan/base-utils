@@ -1,6 +1,6 @@
 # fs.test.coffee
 
-import {utest} from '@jdeighan/base-utils/utest'
+import {u} from '@jdeighan/base-utils/utest'
 import {undef, fromJSON, toJSON, LOG} from '@jdeighan/base-utils'
 import {setDebugging} from '@jdeighan/base-utils/debug'
 import {
@@ -9,7 +9,7 @@ import {
 	slurp, slurpJSON, slurpTAML, slurpPkgJSON,
 	barf, barfJSON, barfTAML, barfPkgJSON,
 	parsePath, getTextFileContents, allFilesIn, allLinesIn,
-	forEachFileInDir, forEachItem, forEachLineInFile,
+	forEachFileInDir, forEachLineInFile,
 	FileWriter, FileWriterSync, dirContents,
 	} from '@jdeighan/base-utils/fs'
 
@@ -21,8 +21,23 @@ file = myself(import.meta.url)
 testPath = mkpath(projDir, 'test', 'readline.txt')
 
 # ---------------------------------------------------------------------------
+# --- test allLinesIn()
 
-utest.like parsePath(import.meta.url), {
+(() =>
+	path = './test/readline3.txt'
+	lLines = Array.from allLinesIn(path)
+	u.equal lLines, [
+		'ghi'
+		'jkl'
+		''
+		'mno'
+		'pqr'
+		]
+	)()
+
+# ---------------------------------------------------------------------------
+
+u.like parsePath(import.meta.url), {
 	type: 'file'
 	root: 'c:/'
 	base: 'fs.test.js'
@@ -33,7 +48,7 @@ utest.like parsePath(import.meta.url), {
 	purpose: 'test'
 	}
 
-utest.like parsePath(projDir), {
+u.like parsePath(projDir), {
 	path: projDir
 	type: 'dir'
 	root: 'c:/'
@@ -46,7 +61,7 @@ utest.like parsePath(projDir), {
 	purpose: undef
 	}
 
-utest.like parsePath(dir), {
+u.like parsePath(dir), {
 	path: dir
 	type: 'dir'
 	root: 'c:/'
@@ -59,7 +74,7 @@ utest.like parsePath(dir), {
 	purpose: undef
 	}
 
-utest.like parsePath(subdir), {
+u.like parsePath(subdir), {
 	path: subdir
 	type: 'dir'
 	root: 'c:/'
@@ -72,7 +87,7 @@ utest.like parsePath(subdir), {
 	purpose: undef
 	}
 
-utest.like parsePath(file), {
+u.like parsePath(file), {
 	path: file
 	type: 'file'
 	root: 'c:/'
@@ -85,7 +100,7 @@ utest.like parsePath(file), {
 	purpose: 'test'
 	}
 
-utest.like parsePath(testPath), {
+u.like parsePath(testPath), {
 	path: testPath
 	type: 'file'
 	root: 'c:/'
@@ -100,18 +115,18 @@ utest.like parsePath(testPath), {
 
 # ---------------------------------------------------------------------------
 
-utest.equal slurp(testPath, {maxLines: 2}), """
+u.equal slurp(testPath, {maxLines: 2}), """
 	abc
 	def
 	"""
 
-utest.equal slurp(testPath, {maxLines: 3}), """
+u.equal slurp(testPath, {maxLines: 3}), """
 	abc
 	def
 	ghi
 	"""
 
-utest.equal slurp(testPath, {maxLines: 1000}), """
+u.equal slurp(testPath, {maxLines: 1000}), """
 	abc
 	def
 	ghi
@@ -121,18 +136,18 @@ utest.equal slurp(testPath, {maxLines: 1000}), """
 
 # --- Test without building path first
 
-utest.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 2}), """
+u.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 2}), """
 	abc
 	def
 	"""
 
-utest.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 3}), """
+u.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 3}), """
 	abc
 	def
 	ghi
 	"""
 
-utest.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 1000}), """
+u.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 1000}), """
 	abc
 	def
 	ghi
@@ -146,7 +161,7 @@ utest.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 1000}), """
 (() =>
 	path = "./test/test/file3.txt"
 	h = getTextFileContents(path)
-	utest.equal h, {
+	u.equal h, {
 		metadata: {fName: 'John', lName: 'Deighan'}
 		lLines: ['', 'This is a test']
 		}
@@ -160,7 +175,7 @@ utest.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 1000}), """
 	for hFileInfo from allFilesIn('./test/test', 'eager')
 		lFiles.push hFileInfo
 
-	utest.like lFiles, [
+	u.like lFiles, [
 		{fileName: 'file1.txt', metadata: undef, lLines: ['Hello']}
 		{fileName: 'file1.zh',  metadata: undef, lLines: ['你好']}
 		{fileName: 'file2.txt', metadata: undef, lLines: ['Goodbye']}
@@ -190,31 +205,10 @@ utest.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 1000}), """
 	writer.writeln "line 2"
 	writer.end()
 
-	utest.truthy 165, isFile(path)
+	u.truthy isFile(path)
 
 	text = slurp path
-	utest.equal 168, text, "line 1\nline 2\n"
-	)()
-
-# ---------------------------------------------------------------------------
-# --- test forEachItem()
-
-(() =>
-	countGenerator = () ->
-		yield 1
-		yield 2
-		yield 3
-		yield 4
-		return
-
-	callback = (item, hContext) =>
-		if (item > 2)
-			return "#{hContext.label} #{item}"
-		else
-			return undef
-
-	result = forEachItem countGenerator(), callback, {label: 'X'}
-	utest.equal result, ['X 3', 'X 4']
+	u.equal text, "line 1\nline 2\n"
 	)()
 
 # ---------------------------------------------------------------------------
@@ -236,15 +230,15 @@ utest.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 1000}), """
 			return undef
 
 	result = forEachLineInFile testPath, callback, {label: '-->'}
-	utest.equal result, ['--> def', '--> jkl']
+	u.equal result, ['--> def', '--> jkl']
 	)()
 
 # ---------------------------------------------------------------------------
 # --- test dirContents()
 
 smDir = './test/source-map'
-utest.equal dirContents(smDir, '*.coffee').length, 1
-utest.equal dirContents(smDir, '*.js').length, 2
-utest.equal dirContents(smDir, '*').length, 6
-utest.equal dirContents(smDir, '*', 'filesOnly').length, 4
-utest.equal dirContents(smDir, '*', 'dirsOnly').length, 2
+u.equal dirContents(smDir, '*.coffee').length, 1
+u.equal dirContents(smDir, '*.js').length, 2
+u.equal dirContents(smDir, '*').length, 6
+u.equal dirContents(smDir, '*', 'filesOnly').length, 4
+u.equal dirContents(smDir, '*', 'dirsOnly').length, 2

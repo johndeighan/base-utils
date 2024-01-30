@@ -84,7 +84,8 @@ import {
   timestamp,
   msSinceEpoch,
   formatDate,
-  pad
+  pad,
+  forEachItem
 } from '@jdeighan/base-utils';
 
 import {
@@ -1472,5 +1473,94 @@ u.truthy(hasAnyKey(h, '2023-Oct', '2023-Nov', '2023-Dec'));
 u.truthy(hasAnyKey(h, '2023-Oct', '2023-Nov'));
 
 u.falsy(hasAnyKey(h, '2023-Jan', '2023-Feb', '2023-Mar'));
+
+// ---------------------------------------------------------------------------
+// --- test forEachItem()
+(() => {
+  var lWords, result;
+  lWords = ['bridge', 'highway', 'garbage'];
+  result = forEachItem(lWords, (item, h) => {
+    return item;
+  });
+  return u.equal(result, lWords);
+})();
+
+(() => {
+  var lWords, result;
+  lWords = ['bridge', 'highway', 'garbage'];
+  result = forEachItem(lWords, (item, h) => {
+    if (item === 'highway') {
+      return undef;
+    } else {
+      return item;
+    }
+  });
+  return u.equal(result, ['bridge', 'garbage']);
+})();
+
+(() => {
+  var lWords, result;
+  lWords = ['bridge', 'highway', 'garbage'];
+  result = forEachItem(lWords, (item, h) => {
+    return item.toUpperCase();
+  });
+  return u.equal(result, ['BRIDGE', 'HIGHWAY', 'GARBAGE']);
+})();
+
+(() => {
+  var lWords, result;
+  lWords = ['bridge', 'highway', 'garbage'];
+  result = forEachItem(lWords, (item, h) => {
+    if (item === 'garbage') {
+      throw 'stop';
+    }
+    return item;
+  });
+  return u.equal(result, ['bridge', 'highway']);
+})();
+
+(() => {
+  var lWords, result;
+  lWords = ['bridge', 'highway', 'garbage'];
+  result = forEachItem(lWords, (item, h) => {
+    if (h._index === 2) {
+      throw 'stop';
+    }
+    return item;
+  });
+  return u.equal(result, ['bridge', 'highway']);
+})();
+
+(() => {
+  var lWords;
+  lWords = ['bridge', 'highway', 'garbage'];
+  return u.throws(() => {
+    var result;
+    return result = forEachItem(lWords, (item, h) => {
+      throw new Error("unknown error");
+    });
+  });
+})();
+
+(() => {
+  var callback, countGenerator, result;
+  countGenerator = function*() {
+    yield 1;
+    yield 2;
+    yield 3;
+    yield 4;
+  };
+  callback = (item, hContext) => {
+    if (item > 2) {
+      return `${hContext.label} ${item}`;
+    } else {
+      return undef;
+    }
+  };
+  result = forEachItem(countGenerator(), callback, {
+    label: 'X'
+  });
+  return u.equal(result, ['X 3', 'X 4']);
+})();
 
 //# sourceMappingURL=base-utils.test.js.map

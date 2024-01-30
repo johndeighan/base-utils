@@ -9,7 +9,7 @@ import {globSync as glob} from 'glob'
 import {
 	undef, defined, nonEmpty, toBlock, toArray, getOptions,
 	isString, isNumber, isHash, isArray, isIterable,
-	fromJSON, toJSON, OL,
+	fromJSON, toJSON, OL, forEachItem,
 	} from '@jdeighan/base-utils'
 import {
 	fileExt, workingDir, myself, mydir, mkpath, withExt,
@@ -22,6 +22,9 @@ import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 import {toTAML, fromTAML} from '@jdeighan/base-utils/taml'
+import {
+	allLinesIn, forEachLineInFile,
+	} from '@jdeighan/base-utils/readline'
 
 export {
 	fileExt, workingDir, myself, mydir, mkpath, withExt,
@@ -29,6 +32,7 @@ export {
 	pathType, rmFile, rmDir, parsePath,
 	parentDir, parallelPath, subPath,
 	fileDirPath,  mkDirsForFile,
+	allLinesIn, forEachLineInFile,
 	}
 
 # ---------------------------------------------------------------------------
@@ -59,105 +63,6 @@ export getPkgJsonPath = () =>
 	filePath = mkpath(process.cwd(), 'package.json')
 	assert isFile(filePath), "Missing pacakge.json at cur dir"
 	return filePath
-
-# ---------------------------------------------------------------------------
-#   slurp - read a file into a string
-
-export slurp = (lParts...) =>
-	# --- last argument can be an options hash
-	#     Valid options:
-	#        maxLines: <int>
-
-	assert (lParts.length > 0), "No parameters"
-	if isHash(lParts[lParts.length - 1])
-		hOptions = lParts.pop()
-		assert (lParts.length > 0), "Options hash but no parameters"
-		{maxLines} = hOptions
-	filePath = mkpath(lParts...)
-	if defined(maxLines)
-		lLines = []
-
-		reader = new NReadLines(filePath)
-		nLines = 0
-
-		while (buffer = reader.next()) && (nLines < maxLines)
-			nLines += 1
-			# --- text is split on \n chars,
-			#     we also need to remove \r chars
-			lLines.push buffer.toString().replace(/\r/g, '')
-		contents = toBlock(lLines)
-	else
-		contents = fs.readFileSync(filePath, 'utf8').toString()
-	return contents
-
-# ---------------------------------------------------------------------------
-#   slurpJSON - read a file into a hash
-
-export slurpJSON = (lParts...) =>
-
-	return fromJSON(slurp(lParts...))
-
-# ---------------------------------------------------------------------------
-#   slurpTAML - read a file into a hash
-
-export slurpTAML = (lParts...) =>
-
-	return fromTAML(slurp(lParts...))
-
-# ---------------------------------------------------------------------------
-#   slurpPkgJSON - read package.json into a hash
-
-export slurpPkgJSON = (lParts...) =>
-
-	if (lParts.length == 0)
-		pkgJsonPath = getPkgJsonPath()
-	else
-		pkgJsonPath = mkpath(lParts...)
-		assert isFile(pkgJsonPath), "Missing package.json at cur dir"
-	return slurpJSON(pkgJsonPath)
-
-# ---------------------------------------------------------------------------
-#   barf - write a string to a file
-#          will ensure that all necessary directories exist
-
-export barf = (text, lParts...) =>
-
-	assert (lParts.length > 0), "Missing file path"
-	filePath = mkpath(lParts...)
-	mkDirsForFile(filePath)
-	fs.writeFileSync(filePath, text)
-	return
-
-# ---------------------------------------------------------------------------
-#   barfJSON - write a string to a file
-
-export barfJSON = (hJson, lParts...) =>
-
-	assert isHash(hJson), "hJson not a hash"
-	barf(toJSON(hJson), lParts...)
-	return
-
-# ---------------------------------------------------------------------------
-#   barfTAML - write a string to a file
-
-export barfTAML = (ds, lParts...) =>
-
-	assert isHash(ds) || isArray(ds), "ds not a hash or array"
-	barf(toTAML(ds), lParts...)
-	return
-
-# ---------------------------------------------------------------------------
-#   barfPkgJSON - write a string to a file
-
-export barfPkgJSON = (hJson, lParts...) =>
-
-	if (lParts.length == 0)
-		pkgJsonPath = getPkgJsonPath()
-	else
-		pkgJsonPath = mkpath(lParts...)
-		assert isFile(pkgJsonPath), "Missing package.json at cur dir"
-	barfJSON(hJson, pkgJsonPath)
-	return
 
 # ---------------------------------------------------------------------------
 
@@ -232,15 +137,6 @@ export allFilesIn = (dir, hOptions={}) ->
 
 # ---------------------------------------------------------------------------
 
-export allLinesIn = (filePath) ->
-
-	reader = new NReadLines(filePath)
-	while (buffer = reader.next())
-		yield buffer.toString().replace(/\r/g, '')
-	return
-
-# ---------------------------------------------------------------------------
-
 export dirContents = (dirPath, pattern='*', hOptions={}) ->
 
 	{absolute, cwd, dot, filesOnly, dirsOnly
@@ -272,44 +168,109 @@ export forEachFileInDir = (dir, func, hContext={}) =>
 	return
 
 # ---------------------------------------------------------------------------
+#   slurp - read a file into a string
 
-export forEachItem = (iter, func, hContext={}) =>
-	# --- func() gets (item, hContext)
+export slurp = (lParts...) =>
+	# --- last argument can be an options hash
+	#     Valid options:
+	#        maxLines: <int>
 
-	assert isIterable(iter), "not an iterable"
-	lItems = []
-	index = 0
-	for item from iter
-		hContext.index = index
-		index += 1
-		try
-			result = func(item, hContext)
-			if defined(result)
-				lItems.push result
-		catch err
-			reader.close()
-			if isString(err)
-				return lItems
-			else
-				throw err    # rethrow the error
-	return lItems
+	dbgEnter 'slurp', lParts
+	assert (lParts.length > 0), "No parameters"
+	if isHash(lParts[lParts.length - 1])
+		hOptions = lParts.pop()
+		assert (lParts.length > 0), "Options hash but no parameters"
+		{maxLines} = hOptions
 
-# ---------------------------------------------------------------------------
+	filePath = mkpath(lParts...)
+	if defined(maxLines)
+		dbg "maxLines = #{maxLines}"
+		lLines = []
+		for line from allLinesIn(filePath)
+			lLines.push line
+			if (lLines.length == maxLines)
+				break
+		dbg 'lLines', lLines
+		block = toBlock(lLines)
+	else
+		block = fs.readFileSync(filePath, 'utf8') \
+				.toString() \
+				.replaceAll('\r', '')
+	dbg 'block', block
 
-export forEachLineInFile = (filePath, func, hContext={}) =>
-	# --- func gets (line, hContext) - lineNum starts at 1
-	#     hContext will include keys:
-	#        filePath
-	#        lineNum - first line is line 1
-
-	linefunc = (line, hContext) =>
-		hContext.filePath = filePath
-		hContext.lineNum = hContext.index + 1
-		return func(line, hContext)
-
-	return forEachItem(allLinesIn(filePath), linefunc, hContext)
+	dbgReturn 'slurp', block
+	return block
 
 # ---------------------------------------------------------------------------
+#   slurpJSON - read a file into a hash
+
+export slurpJSON = (lParts...) =>
+
+	return fromJSON(slurp(lParts...))
+
+# ---------------------------------------------------------------------------
+#   slurpTAML - read a file into a hash
+
+export slurpTAML = (lParts...) =>
+
+	return fromTAML(slurp(lParts...))
+
+# ---------------------------------------------------------------------------
+#   slurpPkgJSON - read package.json into a hash
+
+export slurpPkgJSON = (lParts...) =>
+
+	if (lParts.length == 0)
+		pkgJsonPath = getPkgJsonPath()
+	else
+		pkgJsonPath = mkpath(lParts...)
+		assert isFile(pkgJsonPath), "Missing package.json at cur dir"
+	return slurpJSON(pkgJsonPath)
+
+# ---------------------------------------------------------------------------
+#   barf - write a string to a file
+#          will ensure that all necessary directories exist
+
+export barf = (text, lParts...) =>
+
+	assert (lParts.length > 0), "Missing file path"
+	filePath = mkpath(lParts...)
+	mkDirsForFile(filePath)
+	fs.writeFileSync(filePath, text)
+	return
+
+# ---------------------------------------------------------------------------
+#   barfJSON - write a string to a file
+
+export barfJSON = (hJson, lParts...) =>
+
+	assert isHash(hJson), "hJson not a hash"
+	barf(toJSON(hJson), lParts...)
+	return
+
+# ---------------------------------------------------------------------------
+#   barfTAML - write a string to a file
+
+export barfTAML = (ds, lParts...) =>
+
+	assert isHash(ds) || isArray(ds), "ds not a hash or array"
+	barf(toTAML(ds), lParts...)
+	return
+
+# ---------------------------------------------------------------------------
+#   barfPkgJSON - write a string to a file
+
+export barfPkgJSON = (hJson, lParts...) =>
+
+	if (lParts.length == 0)
+		pkgJsonPath = getPkgJsonPath()
+	else
+		pkgJsonPath = mkpath(lParts...)
+		assert isFile(pkgJsonPath), "Missing package.json at cur dir"
+	barfJSON(hJson, pkgJsonPath)
+	return
+
+ # ---------------------------------------------------------------------------
 
 export class FileWriter
 

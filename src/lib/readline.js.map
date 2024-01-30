@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "readline.js",
+  "sourceRoot": "..\\..\\",
+  "sources": [
+    "src\\lib\\readline.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAiB;AAEjB,OAAO,EAAP,MAAA;;AACA,OAAO,UAAP,MAAA;;AAEA,OAAA;EACC,KADD;EACQ,OADR;EACiB,WADjB;CAAA,MAAA;;AAGA,OAAA;EAAQ,MAAR;CAAA,MAAA,kCARiB;;;AAYjB,OAAA,IAAO,UAAA,GAAa,SAAA,CAAC,QAAD,CAAA;AAEpB,MAAA,MAAA,EAAA;EAAC,MAAA,GAAS,IAAI,UAAJ,CAAe,QAAf;AACT,SAAM,MAAA,GAAS,MAAM,CAAC,IAAP,CAAA,CAAf;IACC,MAAM,MAAM,CAAC,QAAP,CAAA,CAAiB,CAAC,UAAlB,CAA6B,IAA7B,EAAmC,EAAnC;EADP;AAHmB,EAZH;;;;AAsBjB,OAAA,IAAO,iBAAA,GAAoB,CAAC,QAAD,EAAW,IAAX,EAAiB,WAAS,CAAA,CAA1B,CAAA,GAAA;AAC3B,MAAA,QAAA;;;;;EAKC,QAAA,GAAW,CAAC,IAAD,EAAO,QAAP,CAAA,GAAA;IACV,QAAQ,CAAC,QAAT,GAAoB;IACpB,QAAQ,CAAC,OAAT,GAAmB,QAAQ,CAAC,KAAT,GAAiB;AACpC,WAAO,IAAA,CAAK,IAAL,EAAW,QAAX;EAHG;AAKX,SAAO,WAAA,CACN,UAAA,CAAW,QAAX,CADM,EAEN,QAFM,EAGN,QAHM;AAXmB",
+  "sourcesContent": [
+    "# readline.coffee\r\n\r\nimport fs from 'node:fs'\r\nimport NReadLines from 'n-readlines'\r\n\r\nimport {\r\n\tundef, defined, forEachItem,\r\n\t} from '@jdeighan/base-utils'\r\nimport {assert} from '@jdeighan/base-utils/exceptions'\r\n\r\n# ---------------------------------------------------------------------------\r\n\r\nexport allLinesIn = (filePath) ->\r\n\r\n\treader = new NReadLines(filePath)\r\n\twhile buffer = reader.next()\r\n\t\tyield buffer.toString().replaceAll('\\r', '')\r\n\t# --- reader.close() fails with error if EOF reached\r\n\treturn\r\n\r\n# ---------------------------------------------------------------------------\r\n\r\nexport forEachLineInFile = (filePath, func, hContext={}) =>\r\n\t# --- func gets (line, hContext)\r\n\t#     hContext will include keys:\r\n\t#        filePath\r\n\t#        lineNum - first line is line 1\r\n\r\n\tlinefunc = (line, hContext) =>\r\n\t\thContext.filePath = filePath\r\n\t\thContext.lineNum = hContext.index + 1\r\n\t\treturn func(line, hContext)\r\n\r\n\treturn forEachItem(\r\n\t\tallLinesIn(filePath),\r\n\t\tlinefunc,\r\n\t\thContext\r\n\t\t)\r\n\r\n"
+  ]
+}
