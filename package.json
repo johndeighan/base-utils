@@ -22,7 +22,6 @@
 		"./state-machine": "./src/lib/state-machine.js",
 		"./fs": "./src/lib/fs.js",
 		"./FileProcessor": "./src/lib/FileProcessor.js",
-		"./readline": "./src/lib/readline.js",
 		"./package.json": "./package.json"
 	},
 	"bin": {

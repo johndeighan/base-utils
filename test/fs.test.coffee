@@ -1,16 +1,18 @@
 # fs.test.coffee
 
 import {u} from '@jdeighan/base-utils/utest'
-import {undef, fromJSON, toJSON, LOG} from '@jdeighan/base-utils'
+import {
+	undef, fromJSON, toJSON, LOG, chomp, jsType,
+	} from '@jdeighan/base-utils'
 import {setDebugging} from '@jdeighan/base-utils/debug'
 import {
 	workingDir, parentDir, myself, mydir, mkpath, isFile,
 	getPkgJsonDir, getPkgJsonPath,
 	slurp, slurpJSON, slurpTAML, slurpPkgJSON,
 	barf, barfJSON, barfTAML, barfPkgJSON,
-	parsePath, getTextFileContents, allFilesIn, allLinesIn,
-	forEachFileInDir, forEachLineInFile,
-	FileWriter, FileWriterSync, dirContents,
+	parsePath, getTextFileContents, allFilesIn,
+	allLinesIn, forEachFileInDir, forEachLineInFile,
+	dirContents, FileWriter,
 	} from '@jdeighan/base-utils/fs'
 
 # --- should be root directory of @jdeighan/base-utils
@@ -134,25 +136,10 @@ u.equal slurp(testPath, {maxLines: 1000}), """
 	mno
 	"""
 
-# --- Test without building path first
-
-u.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 2}), """
-	abc
-	def
-	"""
-
-u.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 3}), """
+u.equal slurp(testPath, 'maxLines=3'), """
 	abc
 	def
 	ghi
-	"""
-
-u.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 1000}), """
-	abc
-	def
-	ghi
-	jkl
-	mno
 	"""
 
 # ---------------------------------------------------------------------------
@@ -193,25 +180,6 @@ u.equal slurp(projDir, 'test', 'readline.txt', {maxLines: 1000}), """
 	)()
 
 # ---------------------------------------------------------------------------
-
-(() =>
-	path = './test/testfile.txt'
-
-	# --- put garbage into the file
-	barf "garbage...", path
-
-	writer = new FileWriterSync(path)
-	writer.writeln "line 1"
-	writer.writeln "line 2"
-	writer.end()
-
-	u.truthy isFile(path)
-
-	text = slurp path
-	u.equal text, "line 1\nline 2\n"
-	)()
-
-# ---------------------------------------------------------------------------
 # --- test forEachLineInFile()
 
 (() =>
@@ -242,3 +210,144 @@ u.equal dirContents(smDir, '*.js').length, 2
 u.equal dirContents(smDir, '*').length, 6
 u.equal dirContents(smDir, '*', 'filesOnly').length, 4
 u.equal dirContents(smDir, '*', 'dirsOnly').length, 2
+
+# ---------------------------------------------------------------------------
+
+(() =>
+
+	lLines = []
+
+	filePath4 = './test/readline4.txt'
+	for line from allLinesIn(filePath4)
+		lLines.push line
+
+	u.equal lLines, ['ghi', 'jkl', '', 'mno', 'pqr']
+	)()
+
+# ---------------------------------------------------------------------------
+# --- Produce capitalized version, with a prefix "> "
+#        skipping blank lines
+
+(() =>
+
+	func = (line, hContext) =>
+		if (line == '')
+			return undef
+		else
+			return "#{hContext.prefix}#{line.toUpperCase()}"
+
+	filePath3 = './test/readline3.txt'
+	lLines = forEachLineInFile filePath3, func, {prefix: '> '}
+
+	u.equal lLines, ['> GHI', '> JKL', '> MNO', '> PQR']
+	)()
+
+# ---------------------------------------------------------------------------
+# --- Produce capitalized version, with a prefix "> "
+#        skipping blank lines
+
+(() =>
+
+	func = (line, hContext) =>
+		if (line == '')
+			return undef
+		else
+			return "#{hContext.prefix}#{line.toUpperCase()}"
+
+	filePath4 = './test/readline4.txt'
+	lLines = forEachLineInFile filePath4, func, {prefix: '> '}
+
+	u.equal lLines, ['> GHI', '> JKL', '> MNO', '> PQR']
+	)()
+
+# ---------------------------------------------------------------------------
+# --- This time, stop processing when a blank line is found
+
+(() =>
+
+	func = (line, hContext) =>
+		if (line == '')
+			throw 'stop'
+		else
+			return "#{hContext.prefix}#{line.toUpperCase()}"
+
+	filePath4 = './test/readline4.txt'
+	lLines = forEachLineInFile filePath4, func, {prefix: '> '}
+
+	u.equal lLines, ['> GHI', '> JKL']
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() =>
+	# --- put garbage into the file
+	path = './test/testfile.txt'
+	barf "garbage...", path
+
+	writer = new FileWriter(path)
+	writer.writeln "line 1"
+	writer.writeln "line 2"
+	writer.close()
+
+	u.truthy isFile(path)
+
+	text = slurp path
+	u.equal text, "line 1\nline 2\n"
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() =>
+	# --- put garbage into the file
+	path = './test/testfile.txt'
+	barf "garbage...", path
+
+	writer = new FileWriter(path)
+	writer.writeln "line 1"
+	writer.writeln "line 2"
+	writer.close()
+
+	u.truthy isFile(path)
+
+	text = slurp path
+	u.equal chomp(text), """
+		line 1
+		line 2
+		"""
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() =>
+	# --- put garbage into the file
+	path = './test/testfile.txt'
+	barf "garbage...", path
+
+	writer = new FileWriter(path)
+	writer.writeln "line 1", " - some text"
+	writer.writeln "line 2", " - more text"
+	writer.close()
+
+	u.truthy isFile(path)
+
+	text = slurp path
+	u.equal text, "line 1 - some text\nline 2 - more text\n"
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() =>
+	# --- put garbage into the file
+	path = './test/testfile.txt'
+	barf "garbage...", path
+
+	writer = new FileWriter(path, {async: true})
+	await writer.writeln "line 1"
+	await writer.writeln "line 2"
+	await writer.close()
+
+	u.truthy isFile(path)
+
+	text = slurp path
+	u.equal text, "line 1\nline 2\n"
+	)()

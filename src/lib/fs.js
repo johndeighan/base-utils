@@ -12,21 +12,29 @@ import {
 } from 'glob';
 
 import {
+  open
+} from 'node:fs/promises';
+
+import {
   undef,
   defined,
+  notdefined,
   nonEmpty,
   toBlock,
   toArray,
   getOptions,
+  isNonEmptyString,
   isString,
   isNumber,
+  isInteger,
   isHash,
   isArray,
   isIterable,
   fromJSON,
   toJSON,
   OL,
-  forEachItem
+  forEachItem,
+  jsType
 } from '@jdeighan/base-utils';
 
 import {
@@ -74,11 +82,6 @@ import {
   fromTAML
 } from '@jdeighan/base-utils/taml';
 
-import {
-  allLinesIn,
-  forEachLineInFile
-} from '@jdeighan/base-utils/readline';
-
 export {
   fileExt,
   workingDir,
@@ -100,9 +103,7 @@ export {
   parallelPath,
   subPath,
   fileDirPath,
-  mkDirsForFile,
-  allLinesIn,
-  forEachLineInFile
+  mkDirsForFile
 };
 
 // ---------------------------------------------------------------------------
@@ -255,19 +256,19 @@ export var forEachFileInDir = (dir, func, hContext = {}) => {
 
 // ---------------------------------------------------------------------------
 //   slurp - read a file into a string
-export var slurp = (...lParts) => {
-  var block, filePath, hOptions, lLines, line, maxLines, ref;
-  // --- last argument can be an options hash
-  //     Valid options:
+export var slurp = (filePath, hOptions) => {
+  var block, lLines, line, maxLines, ref;
+  // --- Valid options:
   //        maxLines: <int>
-  dbgEnter('slurp', lParts);
-  assert(lParts.length > 0, "No parameters");
-  if (isHash(lParts[lParts.length - 1])) {
-    hOptions = lParts.pop();
-    assert(lParts.length > 0, "Options hash but no parameters");
-    ({maxLines} = hOptions);
+  dbgEnter('slurp', filePath, hOptions);
+  assert(isNonEmptyString(filePath), "empty path");
+  ({maxLines} = getOptions(hOptions, {
+    maxLines: undef
+  }));
+  if (defined(maxLines)) {
+    assert(isInteger(maxLines), "maxLines must be an integer");
   }
-  filePath = mkpath(...lParts);
+  filePath = mkpath(filePath);
   if (defined(maxLines)) {
     dbg(`maxLines = ${maxLines}`);
     lLines = [];
@@ -290,26 +291,22 @@ export var slurp = (...lParts) => {
 
 // ---------------------------------------------------------------------------
 //   slurpJSON - read a file into a hash
-export var slurpJSON = (...lParts) => {
-  return fromJSON(slurp(...lParts));
+export var slurpJSON = (filePath) => {
+  return fromJSON(slurp(filePath));
 };
 
 // ---------------------------------------------------------------------------
 //   slurpTAML - read a file into a hash
-export var slurpTAML = (...lParts) => {
-  return fromTAML(slurp(...lParts));
+export var slurpTAML = (filePath) => {
+  return fromTAML(slurp(filePath));
 };
 
 // ---------------------------------------------------------------------------
 //   slurpPkgJSON - read package.json into a hash
-export var slurpPkgJSON = (...lParts) => {
+export var slurpPkgJSON = () => {
   var pkgJsonPath;
-  if (lParts.length === 0) {
-    pkgJsonPath = getPkgJsonPath();
-  } else {
-    pkgJsonPath = mkpath(...lParts);
-    assert(isFile(pkgJsonPath), "Missing package.json at cur dir");
-  }
+  pkgJsonPath = getPkgJsonPath();
+  assert(isFile(pkgJsonPath), "Missing package.json at cur dir");
   return slurpJSON(pkgJsonPath);
 };
 
@@ -352,85 +349,106 @@ export var barfPkgJSON = (hJson, ...lParts) => {
 };
 
 // ---------------------------------------------------------------------------
-export var FileWriter = class FileWriter {
-  constructor(filePath1) {
-    this.filePath = filePath1;
-    assert(isString(this.filePath), `Not a string: ${this.filePath}`);
-    this.writer = fs.createWriteStream(this.filePath);
+export var allLinesIn = function*(filePath) {
+  var buffer, reader;
+  reader = new NReadLines(filePath);
+  while (buffer = reader.next()) {
+    yield buffer.toString().replaceAll('\r', '');
   }
-
-  DESTROY() {
-    if (defined(this.writer)) {
-      this.end();
-    }
-  }
-
-  write(...lStrings) {
-    var i, len, str;
-    assert(defined(this.writer), "Write after end()");
-    for (i = 0, len = lStrings.length; i < len; i++) {
-      str = lStrings[i];
-      assert(isString(str), `Not a string: '${str}'`);
-      this.writer.write(str);
-    }
-  }
-
-  writeln(...lStrings) {
-    var i, len, str;
-    assert(defined(this.writer), "Write after end()");
-    for (i = 0, len = lStrings.length; i < len; i++) {
-      str = lStrings[i];
-      assert(isString(str), `Not a string: '${str}'`);
-      this.writer.write(str);
-      this.writer.write("\n");
-    }
-  }
-
-  end() {
-    this.writer.end();
-    this.writer = undef;
-  }
-
 };
 
 // ---------------------------------------------------------------------------
-export var FileWriterSync = class FileWriterSync {
-  constructor(filePath1) {
+// --- reader.close() fails with error if EOF reached
+export var forEachLineInFile = (filePath, func, hContext = {}) => {
+  var linefunc;
+  // --- func gets (line, hContext)
+  //     hContext will include keys:
+  //        filePath
+  //        lineNum - first line is line 1
+  linefunc = (line, hContext) => {
+    hContext.filePath = filePath;
+    hContext.lineNum = hContext.index + 1;
+    return func(line, hContext);
+  };
+  return forEachItem(allLinesIn(filePath), linefunc, hContext);
+};
+
+// ---------------------------------------------------------------------------
+export var FileWriter = class FileWriter {
+  constructor(filePath1, hOptions) {
     this.filePath = filePath1;
-    assert(isString(this.filePath), `Not a string: ${this.filePath}`);
+    this.hOptions = getOptions(hOptions, {
+      async: false
+    });
+    this.async = this.hOptions.async;
     this.fullPath = mkpath(this.filePath);
-    assert(isString(this.fullPath), `Bad path: ${this.filePath}`);
-    this.fd = fs.openSync(this.fullPath, 'w');
   }
 
-  DESTROY() {
-    if (defined(this.fd)) {
-      this.end();
+  // ..........................................................
+  convert(item) {
+    // --- convert arbitrary value into a string
+    switch (jsType(item)[0]) {
+      case 'string':
+        return item;
+      case 'number':
+        return item.toString();
+      default:
+        return OL(item);
     }
   }
 
-  write(...lStrings) {
-    var i, len, str;
-    assert(defined(this.fd), "Write after end()");
-    for (i = 0, len = lStrings.length; i < len; i++) {
-      str = lStrings[i];
-      if (isNumber(str)) {
-        fs.writeSync(this.fd, str.toString());
-      } else {
-        assert(isString(str), `Not a string: '${str}'`);
+  // ..........................................................
+  async write(...lItems) {
+    var i, item, j, k, lStrings, len, len1, len2, str;
+    lStrings = [];
+    for (i = 0, len = lItems.length; i < len; i++) {
+      item = lItems[i];
+      lStrings.push(this.convert(item));
+    }
+    // --- open on first use
+    if (this.async) {
+      if (notdefined(this.writer)) {
+        this.fd = (await open(this.fullPath, 'w'));
+        this.writer = this.fd.createWriteStream();
+      }
+      for (j = 0, len1 = lStrings.length; j < len1; j++) {
+        str = lStrings[j];
+        this.writer.write(str);
+      }
+    } else {
+      if (notdefined(this.fd)) {
+        this.fd = fs.openSync(this.fullPath, 'w');
+      }
+      for (k = 0, len2 = lStrings.length; k < len2; k++) {
+        str = lStrings[k];
         fs.writeSync(this.fd, str);
       }
     }
   }
 
-  writeln(...lStrings) {
-    this.write(...lStrings);
-    this.write("\n");
+  // ..........................................................
+  async writeln(...lItems) {
+    await this.write(...lItems, "\n");
   }
 
-  end() {
-    fs.closeSync(this.fd);
-    this.fd = undef;
+  // ..........................................................
+  DESTROY() {
+    this.end();
+  }
+
+  // ..........................................................
+  async close() {
+    if (this.async) {
+      if (defined(this.writer)) {
+        await this.writer.close();
+        this.writer = undef;
+      }
+    } else {
+      if (defined(this.fd)) {
+        fs.closeSync(this.fd);
+        this.fd = undef;
+      }
+    }
   }
 
 };

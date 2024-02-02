@@ -85,7 +85,9 @@ import {
   msSinceEpoch,
   formatDate,
   pad,
-  forEachItem
+  forEachItem,
+  addToHash,
+  chomp
 } from '@jdeighan/base-utils';
 
 import {
@@ -1475,6 +1477,34 @@ u.truthy(hasAnyKey(h, '2023-Oct', '2023-Nov'));
 u.falsy(hasAnyKey(h, '2023-Jan', '2023-Feb', '2023-Mar'));
 
 // ---------------------------------------------------------------------------
+u.equal(keys({
+  a: 1,
+  b: 2
+}, {
+  c: 3,
+  b: 5
+}), ['a', 'b', 'c']);
+
+(() => {
+  var hFeb, hJan, hMar;
+  hJan = {
+    Gas: 210,
+    Dining: 345,
+    Insurance: 910
+  };
+  hFeb = {
+    Insurance: 450,
+    Dining: 440
+  };
+  hMar = {
+    Dining: 550,
+    Gas: 200,
+    Starbucks: 125
+  };
+  return u.equal(keys(hJan, hFeb, hMar), ['Gas', 'Dining', 'Insurance', 'Starbucks']);
+})();
+
+// ---------------------------------------------------------------------------
 // --- test forEachItem()
 (() => {
   var lWords, result;
@@ -1562,5 +1592,20 @@ u.falsy(hasAnyKey(h, '2023-Jan', '2023-Feb', '2023-Mar'));
   });
   return u.equal(result, ['X 3', 'X 4']);
 })();
+
+// ---------------------------------------------------------------------------
+(() => {
+  h = {};
+  addToHash(h, [2024, 'Mar', 'Eat Out', 'Starbucks'], 23);
+  return u.equal(h[2024]['Mar']['Eat Out']['Starbucks'], 23.00);
+})();
+
+// ---------------------------------------------------------------------------
+// --- test chomp()
+u.equal(chomp('abc'), 'abc');
+
+u.equal(chomp('abc\n'), 'abc');
+
+u.equal(chomp('abc\r\n'), 'abc');
 
 //# sourceMappingURL=base-utils.test.js.map

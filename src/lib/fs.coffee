@@ -5,11 +5,14 @@ import urlLib from 'url'
 import fs from 'fs'
 import NReadLines from 'n-readlines'
 import {globSync as glob} from 'glob'
+import {open} from 'node:fs/promises'
 
 import {
-	undef, defined, nonEmpty, toBlock, toArray, getOptions,
-	isString, isNumber, isHash, isArray, isIterable,
-	fromJSON, toJSON, OL, forEachItem,
+	undef, defined, notdefined, nonEmpty,
+	toBlock, toArray, getOptions, isNonEmptyString,
+	isString, isNumber, isInteger,
+	isHash, isArray, isIterable,
+	fromJSON, toJSON, OL, forEachItem, jsType,
 	} from '@jdeighan/base-utils'
 import {
 	fileExt, workingDir, myself, mydir, mkpath, withExt,
@@ -22,9 +25,6 @@ import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 import {toTAML, fromTAML} from '@jdeighan/base-utils/taml'
-import {
-	allLinesIn, forEachLineInFile,
-	} from '@jdeighan/base-utils/readline'
 
 export {
 	fileExt, workingDir, myself, mydir, mkpath, withExt,
@@ -32,7 +32,6 @@ export {
 	pathType, rmFile, rmDir, parsePath,
 	parentDir, parallelPath, subPath,
 	fileDirPath,  mkDirsForFile,
-	allLinesIn, forEachLineInFile,
 	}
 
 # ---------------------------------------------------------------------------
@@ -170,19 +169,18 @@ export forEachFileInDir = (dir, func, hContext={}) =>
 # ---------------------------------------------------------------------------
 #   slurp - read a file into a string
 
-export slurp = (lParts...) =>
-	# --- last argument can be an options hash
-	#     Valid options:
+export slurp = (filePath, hOptions) =>
+	# --- Valid options:
 	#        maxLines: <int>
 
-	dbgEnter 'slurp', lParts
-	assert (lParts.length > 0), "No parameters"
-	if isHash(lParts[lParts.length - 1])
-		hOptions = lParts.pop()
-		assert (lParts.length > 0), "Options hash but no parameters"
-		{maxLines} = hOptions
-
-	filePath = mkpath(lParts...)
+	dbgEnter 'slurp', filePath, hOptions
+	assert isNonEmptyString(filePath), "empty path"
+	{maxLines} = getOptions hOptions, {
+		maxLines: undef
+		}
+	if defined(maxLines)
+		assert isInteger(maxLines), "maxLines must be an integer"
+	filePath = mkpath(filePath)
 	if defined(maxLines)
 		dbg "maxLines = #{maxLines}"
 		lLines = []
@@ -204,27 +202,24 @@ export slurp = (lParts...) =>
 # ---------------------------------------------------------------------------
 #   slurpJSON - read a file into a hash
 
-export slurpJSON = (lParts...) =>
+export slurpJSON = (filePath) =>
 
-	return fromJSON(slurp(lParts...))
+	return fromJSON(slurp(filePath))
 
 # ---------------------------------------------------------------------------
 #   slurpTAML - read a file into a hash
 
-export slurpTAML = (lParts...) =>
+export slurpTAML = (filePath) =>
 
-	return fromTAML(slurp(lParts...))
+	return fromTAML(slurp(filePath))
 
 # ---------------------------------------------------------------------------
 #   slurpPkgJSON - read package.json into a hash
 
-export slurpPkgJSON = (lParts...) =>
+export slurpPkgJSON = () =>
 
-	if (lParts.length == 0)
-		pkgJsonPath = getPkgJsonPath()
-	else
-		pkgJsonPath = mkpath(lParts...)
-		assert isFile(pkgJsonPath), "Missing package.json at cur dir"
+	pkgJsonPath = getPkgJsonPath()
+	assert isFile(pkgJsonPath), "Missing package.json at cur dir"
 	return slurpJSON(pkgJsonPath)
 
 # ---------------------------------------------------------------------------
@@ -270,81 +265,107 @@ export barfPkgJSON = (hJson, lParts...) =>
 	barfJSON(hJson, pkgJsonPath)
 	return
 
- # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 
-export class FileWriter
+export allLinesIn = (filePath) ->
 
-	constructor: (@filePath) ->
-
-		assert isString(@filePath), "Not a string: #{@filePath}"
-		@writer = fs.createWriteStream(@filePath)
-
-	DESTROY: () ->
-
-		if defined(@writer)
-			@end()
-		return
-
-	write: (lStrings...) ->
-
-		assert defined(@writer), "Write after end()"
-		for str in lStrings
-			assert isString(str), "Not a string: '#{str}'"
-			@writer.write str
-		return
-
-	writeln: (lStrings...) ->
-
-		assert defined(@writer), "Write after end()"
-		for str in lStrings
-			assert isString(str), "Not a string: '#{str}'"
-			@writer.write str
-			@writer.write "\n"
-		return
-
-	end: () ->
-
-		@writer.end()
-		@writer = undef
-		return
+	reader = new NReadLines(filePath)
+	while buffer = reader.next()
+		yield buffer.toString().replaceAll('\r', '')
+	# --- reader.close() fails with error if EOF reached
+	return
 
 # ---------------------------------------------------------------------------
 
-export class FileWriterSync
+export forEachLineInFile = (filePath, func, hContext={}) =>
+	# --- func gets (line, hContext)
+	#     hContext will include keys:
+	#        filePath
+	#        lineNum - first line is line 1
 
-	constructor: (@filePath) ->
+	linefunc = (line, hContext) =>
+		hContext.filePath = filePath
+		hContext.lineNum = hContext.index + 1
+		return func(line, hContext)
 
-		assert isString(@filePath), "Not a string: #{@filePath}"
+	return forEachItem(
+		allLinesIn(filePath),
+		linefunc,
+		hContext
+		)
+
+# ---------------------------------------------------------------------------
+
+export class FileWriter
+
+	constructor: (@filePath, hOptions) ->
+
+		@hOptions = getOptions hOptions, {
+			async: false
+			}
+		@async = @hOptions.async
 		@fullPath = mkpath(@filePath)
-		assert isString(@fullPath), "Bad path: #{@filePath}"
-		@fd = fs.openSync(@fullPath, 'w')
 
-	DESTROY: () ->
+	# ..........................................................
 
-		if defined(@fd)
-			@end()
-		return
+	convert: (item) ->
+		# --- convert arbitrary value into a string
 
-	write: (lStrings...) ->
-
-		assert defined(@fd), "Write after end()"
-		for str in lStrings
-			if isNumber(str)
-				fs.writeSync @fd, str.toString()
+		switch jsType(item)[0]
+			when 'string'
+				return item
+			when 'number'
+				return item.toString()
 			else
-				assert isString(str), "Not a string: '#{str}'"
+				return OL(item)
+
+	# ..........................................................
+
+	write: (lItems...) ->
+
+		lStrings = []
+		for item in lItems
+			lStrings.push @convert(item)
+
+		# --- open on first use
+		if @async
+			if notdefined(@writer)
+				@fd = await open(@fullPath, 'w')
+				@writer = @fd.createWriteStream()
+			for str in lStrings
+				@writer.write str
+		else
+			if notdefined(@fd)
+				@fd = fs.openSync(@fullPath, 'w')
+			for str in lStrings
 				fs.writeSync @fd, str
 		return
 
-	writeln: (lStrings...) ->
+	# ..........................................................
 
-		@write lStrings...
-		@write "\n"
+	writeln: (lItems...) ->
+
+		await @write lItems..., "\n"
 		return
 
-	end: () ->
+	# ..........................................................
 
-		fs.closeSync(@fd)
-		@fd = undef
+	DESTROY: () ->
+
+		@end()
 		return
 
+	# ..........................................................
+
+	close: () ->
+
+		if @async
+			if defined(@writer)
+				await @writer.close()
+				@writer = undef
+		else
+			if defined(@fd)
+				fs.closeSync(@fd)
+				@fd = undef
+
+		return

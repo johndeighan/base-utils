@@ -54,6 +54,20 @@ export alldefined = (lObj...) =>
 	return true
 
 # ---------------------------------------------------------------------------
+
+export chomp = (str) =>
+	# --- Remove trailing \n if present
+
+	len = str.length
+	if (str[len-1] == '\n')
+		if (str[len-2] == '\r')
+			return str.substring(0, len-2)
+		else
+			return str.substring(0, len-1)
+	else
+		return str
+
+# ---------------------------------------------------------------------------
 #   isEmpty
 #      - string is whitespace, array has no elements, hash has no keys
 
@@ -104,9 +118,14 @@ export add_s = (n) =>
 
 # ---------------------------------------------------------------------------
 
-export keys = (obj) =>
+export keys = (lHashes...) =>
 
-	return Object.keys(obj)
+	lKeys = []
+	for h in lHashes
+		for key in Object.keys(h)
+			if ! lKeys.includes(key)
+				lKeys.push key
+	return lKeys
 
 # ---------------------------------------------------------------------------
 
@@ -1294,3 +1313,22 @@ export forEachItem = (iter, func, hContext={}) =>
 			else
 				throw err    # rethrow the error
 	return lItems
+
+# ---------------------------------------------------------------------------
+
+export addToHash = (h, lPath, value) =>
+
+	ll_assert isHash(h), "arg 1 not a hash"
+	pathLen = lPath.length
+	index = 0
+	for key in lPath
+		index += 1
+		if defined(h[key])
+			h = h[key]
+			ll_assert isHash(h), "Not a hash"
+		else if (index == pathLen)
+			h[key] = value
+		else
+			h[key] = {}
+			h = h[key]
+	return
