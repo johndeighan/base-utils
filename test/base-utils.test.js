@@ -1595,9 +1595,36 @@ u.equal(keys({
 
 // ---------------------------------------------------------------------------
 (() => {
-  h = {};
-  addToHash(h, [2024, 'Mar', 'Eat Out', 'Starbucks'], 23);
-  return u.equal(h[2024]['Mar']['Eat Out']['Starbucks'], 23.00);
+  var obj;
+  obj = addToHash({}, [2024, 'Mar', 'Eat Out', 'Starbucks'], 23);
+  u.equal(obj, {
+    '2024': {
+      Mar: {
+        'Eat Out': {
+          Starbucks: 23
+        }
+      }
+    }
+  });
+  return u.equal(obj[2024]['Mar']['Eat Out']['Starbucks'], 23);
+})();
+
+(() => {
+  var obj;
+  obj = {};
+  addToHash(obj, 'Mar', 23);
+  return u.equal(obj, {
+    Mar: 23
+  });
+})();
+
+(() => {
+  var obj;
+  obj = {};
+  addToHash(obj, 2, 23);
+  return u.equal(obj, {
+    '2': 23
+  });
 })();
 
 // ---------------------------------------------------------------------------

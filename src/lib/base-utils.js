@@ -1509,24 +1509,32 @@ export var forEachItem = (iter, func, hContext = {}) => {
 };
 
 // ---------------------------------------------------------------------------
-export var addToHash = (h, lPath, value) => {
-  var index, j, key, len1, pathLen;
-  ll_assert(isHash(h), "arg 1 not a hash");
-  pathLen = lPath.length;
-  index = 0;
-  for (j = 0, len1 = lPath.length; j < len1; j++) {
-    key = lPath[j];
-    index += 1;
-    if (defined(h[key])) {
-      h = h[key];
-      ll_assert(isHash(h), "Not a hash");
-    } else if (index === pathLen) {
-      h[key] = value;
+export var addToHash = (obj, lIndexes, value) => {
+  var index, j, key, len1, pos, subobj;
+  ll_assert(isHash(obj), "Bad obj");
+  // --- Allow passing a simple string or integer
+  if (isString(lIndexes) || isInteger(lIndexes)) {
+    lIndexes = [lIndexes];
+  } else {
+    ll_assert(isArray(lIndexes), `Bad indexes: ${OL(lIndexes)}`);
+  }
+  ll_assert(nonEmpty(lIndexes), "empty lIndexes");
+  key = lIndexes.pop();
+  pos = 0;
+  subobj = obj;
+  for (j = 0, len1 = lIndexes.length; j < len1; j++) {
+    index = lIndexes[j];
+    if (defined(obj[index])) {
+      subobj = subobj[index];
+    } else if (isNumber(index) || isString(index)) {
+      subobj[index] = {};
+      subobj = subobj[index];
     } else {
-      h[key] = {};
-      h = h[key];
+      ll_croak(`Bad index: ${OL(index)}`);
     }
   }
+  subobj[key] = value;
+  return obj;
 };
 
 //# sourceMappingURL=base-utils.js.map

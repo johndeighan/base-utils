@@ -1316,19 +1316,28 @@ export forEachItem = (iter, func, hContext={}) =>
 
 # ---------------------------------------------------------------------------
 
-export addToHash = (h, lPath, value) =>
+export addToHash = (obj, lIndexes, value) =>
 
-	ll_assert isHash(h), "arg 1 not a hash"
-	pathLen = lPath.length
-	index = 0
-	for key in lPath
-		index += 1
-		if defined(h[key])
-			h = h[key]
-			ll_assert isHash(h), "Not a hash"
-		else if (index == pathLen)
-			h[key] = value
+	ll_assert isHash(obj), "Bad obj"
+
+	# --- Allow passing a simple string or integer
+	if isString(lIndexes) || isInteger(lIndexes)
+		lIndexes = [lIndexes]
+	else
+		ll_assert isArray(lIndexes), "Bad indexes: #{OL(lIndexes)}"
+
+	ll_assert nonEmpty(lIndexes), "empty lIndexes"
+	key = lIndexes.pop()
+
+	pos = 0
+	subobj = obj
+	for index in lIndexes
+		if defined(obj[index])
+			subobj = subobj[index]
+		else if isNumber(index) || isString(index)
+			subobj[index] = {}
+			subobj = subobj[index]
 		else
-			h[key] = {}
-			h = h[key]
-	return
+			ll_croak "Bad index: #{OL(index)}"
+	subobj[key] = value
+	return obj

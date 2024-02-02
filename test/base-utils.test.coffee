@@ -1236,9 +1236,23 @@ u.equal keys({a:1, b:2},{c:3, b:5}), ['a','b','c']
 # ---------------------------------------------------------------------------
 
 (() =>
-	h = {}
-	addToHash h, [2024, 'Mar', 'Eat Out', 'Starbucks'], 23
-	u.equal h[2024]['Mar']['Eat Out']['Starbucks'], 23.00
+	obj = addToHash {}, [2024, 'Mar', 'Eat Out', 'Starbucks'], 23
+	u.equal obj, {
+		'2024': { Mar: { 'Eat Out': { Starbucks: 23 } } }
+		}
+	u.equal obj[2024]['Mar']['Eat Out']['Starbucks'], 23
+	)()
+
+(() =>
+	obj = {}
+	addToHash obj, 'Mar', 23
+	u.equal obj, {Mar: 23}
+	)()
+
+(() =>
+	obj = {}
+	addToHash obj, 2, 23
+	u.equal obj, {'2': 23}
 	)()
 
 # ---------------------------------------------------------------------------
