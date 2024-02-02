@@ -12,8 +12,6 @@ import {
   defined,
   notdefined,
   alldefined,
-  ll_assert,
-  ll_croak,
   spaces,
   keys,
   hasKey,

@@ -15,7 +15,7 @@ export const LOG = console.log;
 
 // ---------------------------------------------------------------------------
 // low-level version of assert()
-export var ll_assert = (cond, msg) => {
+export var assert = (cond, msg) => {
   if (!cond) {
     throw new Error(msg);
   }
@@ -24,7 +24,7 @@ export var ll_assert = (cond, msg) => {
 
 // ---------------------------------------------------------------------------
 // low-level version of croak()
-export var ll_croak = (msg) => {
+export var croak = (msg) => {
   throw new Error(msg);
   return true;
 };
@@ -174,7 +174,7 @@ export var hasAnyKey = (obj, ...lKeys) => {
 
 // ---------------------------------------------------------------------------
 export var addNewKey = function(h, key, value) {
-  ll_assert(!hasKey(h, key), `hash has key ${key}`);
+  assert(!hasKey(h, key), `hash has key ${key}`);
   h[key] = value;
   return h;
 };
@@ -201,8 +201,8 @@ export var subkeys = (obj) => {
 // ---------------------------------------------------------------------------
 export var samelist = (lItems1, lItems2) => {
   var item, j, k, len1, len2;
-  ll_assert(isArray(lItems1), "arg 1 not an array");
-  ll_assert(isArray(lItems2), "arg 2 not an array");
+  assert(isArray(lItems1), "arg 1 not an array");
+  assert(isArray(lItems2), "arg 2 not an array");
   if (lItems1.length !== lItems2.length) {
     return false;
   }
@@ -333,14 +333,14 @@ export var ltrunc = (str, nChars) => {
 
 // ---------------------------------------------------------------------------
 export var CWS = (str) => {
-  ll_assert(isString(str), "CWS(): parameter not a string");
+  assert(isString(str), "CWS(): parameter not a string");
   return str.trim().replace(/\s+/sg, ' ');
 };
 
 // ---------------------------------------------------------------------------
 export var splitPrefix = (line) => {
   var lMatches;
-  ll_assert(isString(line), `non-string ${OL(line)}`);
+  assert(isString(line), `non-string ${OL(line)}`);
   line = rtrim(line);
   lMatches = line.match(/^(\s*)(.*)$/);
   return [lMatches[1], lMatches[2]];
@@ -349,7 +349,7 @@ export var splitPrefix = (line) => {
 // ---------------------------------------------------------------------------
 export var hasPrefix = (line) => {
   var lMatches;
-  ll_assert(isString(line), `non-string ${OL(line)}`);
+  assert(isString(line), `non-string ${OL(line)}`);
   lMatches = line.match(/^(\s*)/);
   return lMatches[1].length > 0;
 };
@@ -370,11 +370,11 @@ export var tabify = (item, numSpaces = undef) => {
     if (prefixLen === 0) {
       lLines.push(theRest);
     } else {
-      ll_assert(prefix.indexOf('\t') === -1, "found TAB");
+      assert(prefix.indexOf('\t') === -1, "found TAB");
       if (numSpaces === undef) {
         numSpaces = prefixLen;
       }
-      ll_assert(prefixLen % numSpaces === 0, "Bad prefix");
+      assert(prefixLen % numSpaces === 0, "Bad prefix");
       level = prefixLen / numSpaces;
       lLines.push('\t'.repeat(level) + theRest);
     }
@@ -408,7 +408,7 @@ export var forEachLine = (item, func) => {
       lineNum: i + 1,
       nextLine: lInput[i + 1]
     });
-    ll_assert(isBoolean(result), `result must be a boolean, got ${OL(result)}`);
+    assert(isBoolean(result), `result must be a boolean, got ${OL(result)}`);
     if (result) { // return of true causes premature exit
       return;
     }
@@ -477,7 +477,7 @@ export var OL = (obj) => {
 // ---------------------------------------------------------------------------
 export var OLS = (lObjects, sep = ',') => {
   var j, lParts, len1, obj;
-  ll_assert(isArray(lObjects), "not an array");
+  assert(isArray(lObjects), "not an array");
   lParts = [];
   for (j = 0, len1 = lObjects.length; j < len1; j++) {
     obj = lObjects[j];
@@ -501,7 +501,7 @@ export var qStr = (x) => {
 
 // ---------------------------------------------------------------------------
 export var quoted = (str, escape = undef) => {
-  ll_assert(isString(str), `not a string: ${str}`);
+  assert(isString(str), `not a string: ${str}`);
   switch (escape) {
     case 'escape':
       str = escapeStr(str);
@@ -551,7 +551,7 @@ export var escapeStr = (str, hReplace = hEsc) => {
         throw new Error("Invalid hReplace string value");
     }
   }
-  ll_assert(isString(str), "escapeStr(): not a string");
+  assert(isString(str), "escapeStr(): not a string");
   lParts = (function() {
     var j, len1, ref, results;
     ref = str.split('');
@@ -736,7 +736,7 @@ export var isNumber = (x, hOptions = undef) => {
     return false;
   }
   if (defined(hOptions)) {
-    ll_assert(isHash(hOptions), `2nd arg not a hash: ${OL(hOptions)}`);
+    assert(isHash(hOptions), `2nd arg not a hash: ${OL(hOptions)}`);
     ({min, max} = hOptions);
     if (defined(min) && (x < min)) {
       return false;
@@ -892,7 +892,7 @@ export var isHash = (x, lKeys) => {
 // ---------------------------------------------------------------------------
 export var removeKeys = (item, lKeys) => {
   var j, k, key, len1, len2, prop, subitem, subtype, type, value;
-  ll_assert(isArray(lKeys), "not an array");
+  assert(isArray(lKeys), "not an array");
   [type, subtype] = jsType(item);
   switch (type) {
     case 'array':
@@ -927,7 +927,7 @@ export var isObject = (x, lReqKeys = undef) => {
     if (isString(lReqKeys)) {
       lReqKeys = words(lReqKeys);
     }
-    ll_assert(isArray(lReqKeys), `lReqKeys not an array: ${OL(lReqKeys)}`);
+    assert(isArray(lReqKeys), `lReqKeys not an array: ${OL(lReqKeys)}`);
     for (j = 0, len1 = lReqKeys.length; j < len1; j++) {
       key = lReqKeys[j];
       type = undef;
@@ -979,7 +979,7 @@ export var blockToArray = (block) => {
   if ((block === undef) || (block === '')) {
     return [];
   } else {
-    ll_assert(isString(block), `block is ${OL(block)}`);
+    assert(isString(block), `block is ${OL(block)}`);
     lLines = block.split(/\r?\n/);
     return lLines;
   }
@@ -992,7 +992,7 @@ export var arrayToBlock = (lLines, hEsc = undef) => {
   if (lLines === undef) {
     return '';
   }
-  ll_assert(isArray(lLines), "lLines is not an array");
+  assert(isArray(lLines), "lLines is not an array");
   lResult = [];
   for (j = 0, len1 = lLines.length; j < len1; j++) {
     line = lLines[j];
@@ -1064,7 +1064,7 @@ export var prefixBlock = (block, prefix) => {
 //   rtrim - strip trailing whitespace
 export var rtrim = (line) => {
   var lMatches, n;
-  ll_assert(isString(line), "rtrim(): line is not a string");
+  assert(isString(line), "rtrim(): line is not a string");
   lMatches = line.match(/\s+$/);
   if (defined(lMatches)) {
     n = lMatches[0].length; // num chars to remove
@@ -1077,7 +1077,7 @@ export var rtrim = (line) => {
 // ---------------------------------------------------------------------------
 export var hashFromString = (str) => {
   var _, eq, h, ident, j, lMatches, len1, neg, num, ref, word;
-  ll_assert(isString(str), `not a string: ${OL(str)}`);
+  assert(isString(str), `not a string: ${OL(str)}`);
   h = {};
   ref = words(str);
   for (j = 0, len1 = ref.length; j < len1; j++) {
@@ -1086,7 +1086,7 @@ export var hashFromString = (str) => {
       // identifier
       [_, neg, ident, eq, str] = lMatches;
       if (nonEmpty(eq)) {
-        ll_assert(isEmpty(neg), "negation with string value");
+        assert(isEmpty(neg), "negation with string value");
         // --- check if str is a valid number
         num = parseFloat(str);
         if (Number.isNaN(num)) {
@@ -1306,7 +1306,7 @@ export var eachCharInString = (str, func) => {
 
 // ---------------------------------------------------------------------------
 export var DUMP = (label, obj, hOptions = {}) => {
-  ll_assert(isString(label), "no label");
+  assert(isString(label), "no label");
   console.log(getDumpStr(label, obj, hOptions));
 };
 
@@ -1357,7 +1357,7 @@ hTimers = {}; // { <id> => <timer>, ... }
 
 export var schedule = (secs, keyVal, func, ...lArgs) => {
   var timer;
-  ll_assert(isFunction(func), `not a function: ${OL(func)}`);
+  assert(isFunction(func), `not a function: ${OL(func)}`);
   // --- if there's currently a timer with the same keyVal, kill it
   if (defined(timer = hTimers[keyVal])) {
     clearTimeout(timer);
@@ -1481,7 +1481,7 @@ export var forEachItem = (iter, func, hContext = {}) => {
   //           "stop" - stop the iteration
   //           any other string - an error
   //           non-string - is rethrown
-  ll_assert(isIterable(iter), "not an iterable");
+  assert(isIterable(iter), "not an iterable");
   lItems = [];
   index = 0;
   for (item of iter) {
@@ -1510,17 +1510,15 @@ export var forEachItem = (iter, func, hContext = {}) => {
 
 // ---------------------------------------------------------------------------
 export var addToHash = (obj, lIndexes, value) => {
-  var index, j, key, len1, pos, subobj;
-  ll_assert(isHash(obj), "Bad obj");
+  var index, j, key, len1, subobj;
   // --- Allow passing a simple string or integer
   if (isString(lIndexes) || isInteger(lIndexes)) {
     lIndexes = [lIndexes];
   } else {
-    ll_assert(isArray(lIndexes), `Bad indexes: ${OL(lIndexes)}`);
+    assert(isArray(lIndexes), `Bad indexes: ${OL(lIndexes)}`);
   }
-  ll_assert(nonEmpty(lIndexes), "empty lIndexes");
+  assert(nonEmpty(lIndexes), "empty lIndexes");
   key = lIndexes.pop();
-  pos = 0;
   subobj = obj;
   for (j = 0, len1 = lIndexes.length; j < len1; j++) {
     index = lIndexes[j];
@@ -1530,7 +1528,7 @@ export var addToHash = (obj, lIndexes, value) => {
       subobj[index] = {};
       subobj = subobj[index];
     } else {
-      ll_croak(`Bad index: ${OL(index)}`);
+      croak(`Bad index: ${OL(index)}`);
     }
   }
   subobj[key] = value;

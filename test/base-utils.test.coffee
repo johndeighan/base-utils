@@ -2,8 +2,7 @@
 
 import {u, UnitTester} from '@jdeighan/base-utils/utest'
 import {
-	undef, pass, defined, notdefined, alldefined,
-	ll_assert, ll_croak, spaces,
+	undef, pass, defined, notdefined, alldefined, spaces,
 	keys, hasKey, hasAllKeys, hasAnyKey, subkeys,
 	tabify, untabify, prefixBlock,
 	escapeStr, OL, OLS,  isHashComment, splitPrefix, hasPrefix,

@@ -12,8 +12,8 @@ import {
   alldefined,
   isEmpty,
   nonEmpty,
-  ll_assert,
-  ll_croak,
+  assert,
+  croak,
   OL,
   isIdentifier,
   isFunctionName,
@@ -154,7 +154,7 @@ export var getV8Stack = (hOptions = {}) => {
       return lFrames;
     };
     lStackFrames = new Error().stack;
-    ll_assert(lStackFrames.length > 0, "lStackFrames is empty!");
+    assert(lStackFrames.length > 0, "lStackFrames is empty!");
     // --- reset to previous values
     Error.stackTraceLimit = oldLimit;
     Error.prepareStackTrace = oldPreparer;
@@ -168,7 +168,7 @@ export var getV8Stack = (hOptions = {}) => {
 // ---------------------------------------------------------------------------
 export var parseFileURL = (url) => {
   var _, ext, fileName, hParsed, lMatches, pathStr, stub;
-  ll_assert(defined(url), "url is undef in parseFileURL()");
+  assert(defined(url), "url is undef in parseFileURL()");
   lMatches = url.match(/^file:\/\/(.*)$/);
   if (defined(lMatches)) {
     [_, pathStr] = lMatches;
@@ -195,7 +195,7 @@ export var parseFileURL = (url) => {
         source: 'node'
       };
     } else {
-      ll_croak(`Invalid file url: '${url}'`);
+      croak(`Invalid file url: '${url}'`);
     }
   }
   return hParsed;

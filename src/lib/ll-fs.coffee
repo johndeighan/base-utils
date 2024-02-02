@@ -6,7 +6,7 @@ import fs from 'fs'
 
 import {
 	pass, undef, defined, notdefined, LOG, isString, getOptions,
-	ll_assert, ll_croak,
+	assert, croak,
 	} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
@@ -15,7 +15,7 @@ export fileDirPath = (filePath) =>
 	# --- file does not need to exist yet, but
 	#     it should be a file path
 
-	ll_assert isString(filePath), "not a string: '#{filePath}'"
+	assert isString(filePath), "not a string: '#{filePath}'"
 	fullPath = mkpath(filePath)
 	hFile = parsePath(fullPath)
 	dirStr = hFile.dir
@@ -39,7 +39,7 @@ export mkDirsForFile = (filePath) =>
 
 export fileExt = (path) =>
 
-	ll_assert isString(path), "fileExt(): path not a string"
+	assert isString(path), "fileExt(): path not a string"
 	if lMatches = path.match(/\.[A-Za-z0-9_]+$/)
 		return lMatches[0]
 	else
@@ -50,14 +50,14 @@ export fileExt = (path) =>
 
 export withExt = (path, newExt) =>
 
-	ll_assert newExt, "withExt(): No newExt provided"
+	assert newExt, "withExt(): No newExt provided"
 	if newExt.indexOf('.') != 0
 		newExt = '.' + newExt
 
 	if lMatches = path.match(/^(.*)\.[^\.]+$/)
 		[_, pre] = lMatches
 		return pre + newExt
-	ll_croak "Bad path: '#{path}'"
+	croak "Bad path: '#{path}'"
 
 # ---------------------------------------------------------------------------
 #     convert \ to /
@@ -166,7 +166,7 @@ export clearDir = (dirPath) =>
 
 export rmDir = (dirPath, recursive=true) =>
 
-	ll_assert isDir(dirPath), "#{dirPath} is not a directory"
+	assert isDir(dirPath), "#{dirPath} is not a directory"
 	fs.rmSync dirPath, {recursive}
 	return
 
@@ -200,7 +200,7 @@ export rename = (oldPath, newPath) =>
 
 export rmFile = (filePath) =>
 
-	ll_assert isFile(filePath), "#{filePath} is not a file"
+	assert isFile(filePath), "#{filePath} is not a file"
 	fs.rmSync filePath
 	return
 
@@ -213,7 +213,7 @@ export rmFile = (filePath) =>
 
 export pathType = (fullPath) =>
 
-	ll_assert isString(fullPath), "not a string"
+	assert isString(fullPath), "not a string"
 	if fs.existsSync fullPath
 		if isFile fullPath
 			return 'file'
@@ -230,8 +230,8 @@ export parsePath = (path, shouldNotExist) =>
 	# --- NOTE: path may be a file URL, e.g. import.meta.url
 	#           path may be a relative path
 
-	ll_assert isString(path), "path is type #{typeof path}"
-	ll_assert notdefined(shouldNotExist), "multiple arguments!"
+	assert isString(path), "path is type #{typeof path}"
+	assert notdefined(shouldNotExist), "multiple arguments!"
 	if path.match(/^file\:\/\//)
 		path = normalize urlLib.fileURLToPath(path)
 	else

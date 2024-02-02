@@ -11,7 +11,7 @@ import assertLib from 'node:assert'
 # ---------------------------------------------------------------------------
 # low-level version of assert()
 
-export ll_assert = (cond, msg) =>
+export assert = (cond, msg) =>
 
 	if !cond
 		throw new Error(msg)
@@ -20,7 +20,7 @@ export ll_assert = (cond, msg) =>
 # ---------------------------------------------------------------------------
 # low-level version of croak()
 
-export ll_croak = (msg) =>
+export croak = (msg) =>
 
 	throw new Error(msg)
 	return true
@@ -155,7 +155,7 @@ export hasAnyKey = (obj, lKeys...) =>
 
 export addNewKey = (h, key, value) ->
 
-	ll_assert !hasKey(h, key), "hash has key #{key}"
+	assert !hasKey(h, key), "hash has key #{key}"
 	h[key] = value
 	return h
 
@@ -175,8 +175,8 @@ export subkeys = (obj) =>
 
 export samelist = (lItems1, lItems2) =>
 
-	ll_assert isArray(lItems1), "arg 1 not an array"
-	ll_assert isArray(lItems2), "arg 2 not an array"
+	assert isArray(lItems1), "arg 1 not an array"
+	assert isArray(lItems2), "arg 2 not an array"
 	if (lItems1.length != lItems2.length)
 		return false
 	for item in lItems1
@@ -297,14 +297,14 @@ export ltrunc = (str, nChars) =>
 
 export CWS = (str) =>
 
-	ll_assert isString(str), "CWS(): parameter not a string"
+	assert isString(str), "CWS(): parameter not a string"
 	return str.trim().replace(/\s+/sg, ' ')
 
 # ---------------------------------------------------------------------------
 
 export splitPrefix = (line) =>
 
-	ll_assert isString(line), "non-string #{OL(line)}"
+	assert isString(line), "non-string #{OL(line)}"
 	line = rtrim(line)
 	lMatches = line.match(/^(\s*)(.*)$/)
 	return [lMatches[1], lMatches[2]]
@@ -313,7 +313,7 @@ export splitPrefix = (line) =>
 
 export hasPrefix = (line) =>
 
-	ll_assert isString(line), "non-string #{OL(line)}"
+	assert isString(line), "non-string #{OL(line)}"
 	lMatches = line.match(/^(\s*)/)
 	return (lMatches[1].length > 0)
 
@@ -332,10 +332,10 @@ export tabify = (item, numSpaces=undef) =>
 		if prefixLen == 0
 			lLines.push theRest
 		else
-			ll_assert (prefix.indexOf('\t') == -1), "found TAB"
+			assert (prefix.indexOf('\t') == -1), "found TAB"
 			if numSpaces == undef
 				numSpaces = prefixLen
-			ll_assert (prefixLen % numSpaces == 0), "Bad prefix"
+			assert (prefixLen % numSpaces == 0), "Bad prefix"
 			level = prefixLen / numSpaces
 			lLines.push '\t'.repeat(level) + theRest
 	if isArray(item)
@@ -366,7 +366,7 @@ export forEachLine = (item, func) =>
 			lineNum: i+1
 			nextLine: lInput[i+1]
 			})
-		ll_assert isBoolean(result), "result must be a boolean, got #{OL(result)}"
+		assert isBoolean(result), "result must be a boolean, got #{OL(result)}"
 		if result   # return of true causes premature exit
 			return
 	return
@@ -429,7 +429,7 @@ export OL = (obj) =>
 
 export OLS = (lObjects, sep=',') =>
 
-	ll_assert isArray(lObjects), "not an array"
+	assert isArray(lObjects), "not an array"
 	lParts = []
 	for obj in lObjects
 		lParts.push OL(obj)
@@ -452,7 +452,7 @@ export qStr = (x) =>
 
 export quoted = (str, escape=undef) =>
 
-	ll_assert isString(str), "not a string: #{str}"
+	assert isString(str), "not a string: #{str}"
 	switch escape
 		when 'escape'
 			str = escapeStr(str)
@@ -494,7 +494,7 @@ export escapeStr = (str, hReplace=hEsc) =>
 			else
 				throw new Error("Invalid hReplace string value")
 
-	ll_assert isString(str), "escapeStr(): not a string"
+	assert isString(str), "escapeStr(): not a string"
 	lParts = for ch in str.split('')
 		if defined(hReplace[ch]) then hReplace[ch] else ch
 	return lParts.join('')
@@ -657,7 +657,7 @@ export isNumber = (x, hOptions=undef) =>
 	if (jsType(x)[0] != 'number')
 		return false
 	if defined(hOptions)
-		ll_assert isHash(hOptions), "2nd arg not a hash: #{OL(hOptions)}"
+		assert isHash(hOptions), "2nd arg not a hash: #{OL(hOptions)}"
 		{min, max} = hOptions
 		if defined(min) && (x < min)
 			return false
@@ -787,7 +787,7 @@ export isHash = (x, lKeys) =>
 
 export removeKeys = (item, lKeys) =>
 
-	ll_assert isArray(lKeys), "not an array"
+	assert isArray(lKeys), "not an array"
 	[type, subtype] = jsType(item)
 	switch type
 		when 'array'
@@ -811,7 +811,7 @@ export isObject = (x, lReqKeys=undef) =>
 	if defined(lReqKeys)
 		if isString(lReqKeys)
 			lReqKeys = words(lReqKeys)
-		ll_assert isArray(lReqKeys), "lReqKeys not an array: #{OL(lReqKeys)}"
+		assert isArray(lReqKeys), "lReqKeys not an array: #{OL(lReqKeys)}"
 		for key in lReqKeys
 			type = undef
 			if lMatches = key.match(///^ (\&) (.*) $///)
@@ -857,7 +857,7 @@ export blockToArray = (block) =>
 	if (block == undef) || (block == '')
 		return []
 	else
-		ll_assert isString(block), "block is #{OL(block)}"
+		assert isString(block), "block is #{OL(block)}"
 		lLines = block.split(/\r?\n/)
 		return lLines
 
@@ -868,7 +868,7 @@ export arrayToBlock = (lLines, hEsc=undef) =>
 
 	if (lLines == undef)
 		return ''
-	ll_assert isArray(lLines), "lLines is not an array"
+	assert isArray(lLines), "lLines is not an array"
 	lResult = []
 	for line in lLines
 		if defined(line)
@@ -920,7 +920,7 @@ export prefixBlock = (block, prefix) =>
 
 export rtrim = (line) =>
 
-	ll_assert isString(line), "rtrim(): line is not a string"
+	assert isString(line), "rtrim(): line is not a string"
 	lMatches = line.match(/\s+$/)
 	if defined(lMatches)
 		n = lMatches[0].length   # num chars to remove
@@ -932,7 +932,7 @@ export rtrim = (line) =>
 
 export hashFromString = (str) =>
 
-	ll_assert isString(str), "not a string: #{OL(str)}"
+	assert isString(str), "not a string: #{OL(str)}"
 	h = {}
 	for word in words(str)
 		if lMatches = word.match(///^
@@ -945,7 +945,7 @@ export hashFromString = (str) =>
 				$///)
 			[_, neg, ident, eq, str] = lMatches
 			if nonEmpty(eq)
-				ll_assert isEmpty(neg), "negation with string value"
+				assert isEmpty(neg), "negation with string value"
 
 				# --- check if str is a valid number
 				num = parseFloat(str)
@@ -1133,7 +1133,7 @@ export eachCharInString = (str, func) =>
 
 export DUMP = (label, obj, hOptions={}) =>
 
-	ll_assert isString(label), "no label"
+	assert isString(label), "no label"
 	console.log getDumpStr(label, obj, hOptions)
 	return
 
@@ -1178,7 +1178,7 @@ hTimers = {}    # { <id> => <timer>, ... }
 
 export schedule = (secs, keyVal, func, lArgs...) =>
 
-	ll_assert isFunction(func), "not a function: #{OL(func)}"
+	assert isFunction(func), "not a function: #{OL(func)}"
 
 	# --- if there's currently a timer with the same keyVal, kill it
 	if defined(timer = hTimers[keyVal])
@@ -1294,7 +1294,7 @@ export forEachItem = (iter, func, hContext={}) =>
 	#           any other string - an error
 	#           non-string - is rethrown
 
-	ll_assert isIterable(iter), "not an iterable"
+	assert isIterable(iter), "not an iterable"
 	lItems = []
 	index = 0
 	for item from iter
@@ -1318,18 +1318,15 @@ export forEachItem = (iter, func, hContext={}) =>
 
 export addToHash = (obj, lIndexes, value) =>
 
-	ll_assert isHash(obj), "Bad obj"
-
 	# --- Allow passing a simple string or integer
 	if isString(lIndexes) || isInteger(lIndexes)
 		lIndexes = [lIndexes]
 	else
-		ll_assert isArray(lIndexes), "Bad indexes: #{OL(lIndexes)}"
+		assert isArray(lIndexes), "Bad indexes: #{OL(lIndexes)}"
 
-	ll_assert nonEmpty(lIndexes), "empty lIndexes"
+	assert nonEmpty(lIndexes), "empty lIndexes"
 	key = lIndexes.pop()
 
-	pos = 0
 	subobj = obj
 	for index in lIndexes
 		if defined(obj[index])
@@ -1338,6 +1335,6 @@ export addToHash = (obj, lIndexes, value) =>
 			subobj[index] = {}
 			subobj = subobj[index]
 		else
-			ll_croak "Bad index: #{OL(index)}"
+			croak "Bad index: #{OL(index)}"
 	subobj[key] = value
 	return obj

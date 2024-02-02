@@ -5,7 +5,7 @@ import fs from 'fs'
 
 import {
 	undef, defined, notdefined, alldefined, isEmpty, nonEmpty,
-	ll_assert, ll_croak,
+	assert, croak,
 	OL, isIdentifier, isFunctionName, getOptions,
 	} from '@jdeighan/base-utils'
 import {mydir} from '@jdeighan/base-utils/ll-fs'
@@ -134,7 +134,7 @@ export getV8Stack = (hOptions={}) =>
 			return lFrames
 
 		lStackFrames = new Error().stack
-		ll_assert (lStackFrames.length > 0), "lStackFrames is empty!"
+		assert (lStackFrames.length > 0), "lStackFrames is empty!"
 
 		# --- reset to previous values
 		Error.stackTraceLimit = oldLimit
@@ -147,7 +147,7 @@ export getV8Stack = (hOptions={}) =>
 
 export parseFileURL = (url) =>
 
-	ll_assert defined(url), "url is undef in parseFileURL()"
+	assert defined(url), "url is undef in parseFileURL()"
 	lMatches = url.match(///^
 			file : \/\/
 			(.*)
@@ -174,7 +174,7 @@ export parseFileURL = (url) =>
 				source: 'node'
 				}
 		else
-			ll_croak "Invalid file url: '#{url}'"
+			croak "Invalid file url: '#{url}'"
 	return hParsed
 
 # ---------------------------------------------------------------------------

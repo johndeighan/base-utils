@@ -5,7 +5,7 @@ import {SourceMapConsumer} from 'source-map'
 
 import {
 	undef, pass, defined, notdefined, alldefined,
-	ll_assert, ll_croak,
+	assert, croak,
 	isEmpty, nonEmpty, deepCopy,
 	getOptions, isInteger, isString, isHash,
 	} from '@jdeighan/base-utils'
@@ -66,7 +66,7 @@ export mapLineNum = (jsPath, line, column=0, hOptions={}) =>
 	if debug
 		console.log "DEBUGGING mapLineNum(#{line},#{column})"
 		console.log "   #{jsPath}"
-	ll_assert isInteger(line), "line #{line} not an integer"
+	assert isInteger(line), "line #{line} not an integer"
 	try
 		hMapped = mapSourcePos jsPath, line, column, {debug}
 		return hMapped.line
@@ -100,15 +100,15 @@ export mapSourcePos = (jsPath, line, column, hOptions={}) =>
 	jsPath = mkpath jsPath
 	mapFilePath = jsPath + '.map'
 
-	ll_assert isFile(jsPath), "no such file #{jsPath}"
-	ll_assert isFile(mapFilePath), "no such file #{mapFilePath}"
-	ll_assert fileExt(jsPath) == '.js', "Not a JS file"
-	ll_assert isInteger(line, {min: 0}), "line #{line} not an integer"
-	ll_assert isInteger(column, {min: 0}), "column #{column} not an integer"
+	assert isFile(jsPath), "no such file #{jsPath}"
+	assert isFile(mapFilePath), "no such file #{mapFilePath}"
+	assert fileExt(jsPath) == '.js', "Not a JS file"
+	assert isInteger(line, {min: 0}), "line #{line} not an integer"
+	assert isInteger(column, {min: 0}), "column #{column} not an integer"
 
 	# --- get from cache if available
 	hMap = getMap mapFilePath
-	ll_assert defined(hMap), "getMap() returned undef"
+	assert defined(hMap), "getMap() returned undef"
 	if debug
 		dumpMap hMap
 
@@ -120,7 +120,7 @@ export mapSourcePos = (jsPath, line, column, hOptions={}) =>
 	hMapped = smc.originalPositionFor({line, column})
 	if debug
 		console.log hMapped
-	ll_assert isHash(hMapped), "originalPositionFor(#{line},#{column}) returned non-hash"
+	assert isHash(hMapped), "originalPositionFor(#{line},#{column}) returned non-hash"
 	{source, line, column, name} = hMapped
-	ll_assert isInteger(line), "originalPositionFor(#{line},#{column}) returned line = #{line}"
+	assert isInteger(line), "originalPositionFor(#{line},#{column}) returned line = #{line}"
 	return hMapped
