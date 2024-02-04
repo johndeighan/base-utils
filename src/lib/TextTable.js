@@ -43,6 +43,7 @@ hAlignCodes = {
 // ---------------------------------------------------------------------------
 export var TextTable = class TextTable {
   constructor(formatStr, hOptions = {}) {
+    // --- currently no options
     dbgEnter('TextTable', formatStr, hOptions);
     assert(defined(formatStr), "missing format string");
     this.lColFormats = words(formatStr).map((str) => {
@@ -94,15 +95,6 @@ export var TextTable = class TextTable {
   }
 
   // ..........................................................
-  addSep(ch = '-') {
-    dbgEnter('addSep');
-    assert(!this.closed, "table is closed");
-    assert(ch.length === 1, "Non-char arg");
-    this.lRows.push(ch);
-    dbgReturn('addSep');
-  }
-
-  // ..........................................................
   addLabels(lRow) {
     dbgEnter('addLabels');
     assert(!this.closed, "table is closed");
@@ -111,6 +103,15 @@ export var TextTable = class TextTable {
     this.lLabelRows.push(this.lRows.length);
     this.lRows.push(lRow);
     dbgReturn('addLabels');
+  }
+
+  // ..........................................................
+  addSep(ch = '-') {
+    dbgEnter('addSep');
+    assert(!this.closed, "table is closed");
+    assert(ch.length === 1, "Non-char arg");
+    this.lRows.push(ch);
+    dbgReturn('addSep');
   }
 
   // ..........................................................
@@ -162,12 +163,16 @@ export var TextTable = class TextTable {
           for (j = 0, len1 = ref1.length; j < len1; j++) {
             colNum = ref1[j];
             total = this.lColTotals[colNum];
-            [align, fmt] = this.lColFormats[colNum];
-            formatted = sprintf(fmt, total);
-            if (formatted.length > this.lColWidths[colNum]) {
-              this.lColWidths[colNum] = formatted.length;
+            if (defined(total)) {
+              [align, fmt] = this.lColFormats[colNum];
+              formatted = sprintf(fmt, total);
+              if (formatted.length > this.lColWidths[colNum]) {
+                this.lColWidths[colNum] = formatted.length;
+              }
+              results.push(formatted);
+            } else {
+              results.push('');
             }
-            results.push(formatted);
           }
           return results;
         }).call(this);

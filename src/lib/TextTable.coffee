@@ -24,6 +24,7 @@ hAlignCodes = {
 export class TextTable
 
 	constructor: (formatStr, hOptions={}) ->
+		# --- currently no options
 
 		dbgEnter 'TextTable', formatStr, hOptions
 		assert defined(formatStr), "missing format string"
@@ -74,17 +75,6 @@ export class TextTable
 
 	# ..........................................................
 
-	addSep: (ch='-') ->
-
-		dbgEnter 'addSep'
-		assert ! @closed, "table is closed"
-		assert (ch.length == 1), "Non-char arg"
-		@lRows.push ch
-		dbgReturn 'addSep'
-		return
-
-	# ..........................................................
-
 	addLabels: (lRow) ->
 
 		dbgEnter 'addLabels'
@@ -94,6 +84,17 @@ export class TextTable
 		@lLabelRows.push @lRows.length
 		@lRows.push lRow
 		dbgReturn 'addLabels'
+		return
+
+	# ..........................................................
+
+	addSep: (ch='-') ->
+
+		dbgEnter 'addSep'
+		assert ! @closed, "table is closed"
+		assert (ch.length == 1), "Non-char arg"
+		@lRows.push ch
+		dbgReturn 'addSep'
 		return
 
 	# ..........................................................
@@ -140,11 +141,14 @@ export class TextTable
 			if (row == 'total')
 				lFormattedItems = for colNum in range(@numCols)
 					total = @lColTotals[colNum]
-					[align, fmt] = @lColFormats[colNum]
-					formatted = sprintf(fmt, total)
-					if (formatted.length > @lColWidths[colNum])
-						@lColWidths[colNum] = formatted.length
-					formatted
+					if defined(total)
+						[align, fmt] = @lColFormats[colNum]
+						formatted = sprintf(fmt, total)
+						if (formatted.length > @lColWidths[colNum])
+							@lColWidths[colNum] = formatted.length
+						formatted
+					else
+						''
 				@lFormattedRows.push lFormattedItems
 			else if isString(row)
 				@lFormattedRows.push row
