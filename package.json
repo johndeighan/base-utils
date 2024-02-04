@@ -1,6 +1,6 @@
 {
 	"name": "@jdeighan/base-utils",
-	"version": "13.0.2",
+	"version": "13.0.3",
 	"type": "module",
 	"description": "low level utilities",
 	"main": "index.js",
