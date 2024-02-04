@@ -6,7 +6,23 @@ import assertLib from 'node:assert'
 # --- ABSOLUTELY NO IMPORTS FROM OUR LIBS !!!!!
 
 `export const undef = void 0`
-`export const LOG = console.log`
+
+# ---------------------------------------------------------------------------
+
+export LOG = (lItems...) =>
+
+	lSimpleItems = []
+	for item in lItems
+		if isHash(item) || isArray(item)
+			if (lSimpleItems.length > 0)
+				console.log lSimpleItems...
+				lSimpleItems = []
+			console.dir item, {depth: null}
+		else
+			lSimpleItems.push item
+	if (lSimpleItems.length > 0)
+		console.log lSimpleItems...
+	return
 
 # ---------------------------------------------------------------------------
 # low-level version of assert()

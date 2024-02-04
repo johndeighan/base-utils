@@ -22,6 +22,7 @@
 		"./state-machine": "./src/lib/state-machine.js",
 		"./fs": "./src/lib/fs.js",
 		"./FileProcessor": "./src/lib/FileProcessor.js",
+		"./TextTable": "./src/lib/TextTable.js",
 		"./package.json": "./package.json"
 	},
 	"bin": {
@@ -44,6 +45,7 @@
 		"minimist": "^1.2.8",
 		"n-readlines": "^1.0.1",
 		"source-map": "^0.6.1",
+		"sprintf-js": "^1.1.3",
 		"stack-utils": "^2.0.6",
 		"yaml": "^2.3.1"
 	},

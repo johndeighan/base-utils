@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "TextTable.test.js",
+  "sourceRoot": "..\\",
+  "sources": [
+    "test\\TextTable.test.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAuB;AAEvB,OAAA;EAAQ,CAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,SAAR;CAAA,MAAA,iCAHuB;;;AAOvB,CAAC,CAAA,CAAA,GAAA;AACD,MAAA,GAAA,EAAA;EAAC,KAAA,GAAQ,IAAI,SAAJ,CAAc,eAAd;EACR,KAAK,CAAC,SAAN,CAAgB,CAAC,UAAD,EAAa,KAAb,EAAoB,KAApB,CAAhB;EACA,KAAK,CAAC,MAAN,CAAA;EACA,KAAK,CAAC,OAAN,CAAc,CAAC,UAAD,EAAa,IAAb,EAAmB,IAAnB,CAAd;EACA,KAAK,CAAC,OAAN,CAAc,CAAC,SAAD,EAAa,EAAb,EAAiB,EAAjB,CAAd;EACA,KAAK,CAAC,MAAN,CAAA;EACA,KAAK,CAAC,SAAN,CAAA;EACA,GAAA,GAAM,KAAK,CAAC,QAAN,CAAA;SACN,CAAC,CAAC,KAAF,CAAQ,GAAR,EAAa,CAAA;;;;;sBAAA,CAAb;AATA,CAAD,CAAA,CAAA,EAPuB;;;AA4BvB,CAAC,CAAA,CAAA,GAAA;AACD,MAAA,GAAA,EAAA;EAAC,KAAA,GAAQ,IAAI,SAAJ,CAAc,eAAd;EACR,KAAK,CAAC,SAAN,CAAgB,CAAC,UAAD,EAAa,SAAb,EAAwB,UAAxB,CAAhB;EACA,KAAK,CAAC,MAAN,CAAA;EACA,KAAK,CAAC,OAAN,CAAc,CAAC,UAAD,EAAa,IAAb,EAAmB,IAAnB,CAAd;EACA,KAAK,CAAC,OAAN,CAAc,CAAC,SAAD,EAAa,EAAb,EAAiB,EAAjB,CAAd;EACA,KAAK,CAAC,MAAN,CAAa,GAAb;EACA,KAAK,CAAC,SAAN,CAAA;EACA,GAAA,GAAM,KAAK,CAAC,QAAN,CAAA;SACN,CAAC,CAAC,KAAF,CAAQ,GAAR,EAAa,CAAA;;;;;0BAAA,CAAb;AATA,CAAD,CAAA,CAAA",
+  "sourcesContent": [
+    "# TextTable.test.coffee\r\n\r\nimport {u} from '@jdeighan/base-utils/utest'\r\nimport {TextTable} from '@jdeighan/base-utils/TextTable'\r\n\r\n# -------------------------------------------------------------\r\n\r\n(() =>\r\n\ttable = new TextTable('l r%.2f r%.2f')\r\n\ttable.addLabels ['Category', 'Jan', 'Feb']\r\n\ttable.addSep()\r\n\ttable.addData ['Computer', 23.5, 50.9]\r\n\ttable.addData ['Science',  99, 53]\r\n\ttable.addSep()\r\n\ttable.addTotals()\r\n\tstr = table.asString()\r\n\tu.equal str, \"\"\"\r\n\t\tCategory  Jan    Feb\r\n\t\t-------- ------ ------\r\n\t\tComputer  23.50  50.90\r\n\t\tScience   99.00  53.00\r\n\t\t-------- ------ ------\r\n\t\t         122.50 103.90\r\n\t\t\"\"\"\r\n\t)()\r\n\r\n# -------------------------------------------------------------\r\n\r\n(() =>\r\n\ttable = new TextTable('r r%.4f r%.4f')\r\n\ttable.addLabels ['Category', 'January', 'February']\r\n\ttable.addSep()\r\n\ttable.addData ['Computer', 23.5, 50.9]\r\n\ttable.addData ['Science',  99, 53]\r\n\ttable.addSep('=')\r\n\ttable.addTotals()\r\n\tstr = table.asString()\r\n\tu.equal str, \"\"\"\r\n\t\tCategory January  February\r\n\t\t-------- -------- --------\r\n\t\tComputer  23.5000  50.9000\r\n\t\t Science  99.0000  53.0000\r\n\t\t======== ======== ========\r\n\t\t         122.5000 103.9000\r\n\t\t\"\"\"\r\n\t)()\r\n"
+  ]
+}
