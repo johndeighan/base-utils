@@ -44,3 +44,26 @@ import {TextTable} from '@jdeighan/base-utils/TextTable'
 		         122.5000 103.9000
 		"""
 	)()
+
+# -------------------------------------------------------------
+# --- Without a format spec, numbers default to 2 dec places
+
+(() =>
+	table = new TextTable('l r r')
+	table.addLabels ['Category', 'Jan', 'Feb']
+	table.addSep()
+	table.addData ['Computer', 23.5, 50.9]
+	table.addData ['Science',  99, 53]
+	table.addSep()
+	table.addTotals()
+
+	str = table.asString()
+	u.equal str, """
+		Category  Jan    Feb
+		-------- ------ ------
+		Computer  23.50  50.90
+		Science   99.00  53.00
+		-------- ------ ------
+		         122.50 103.90
+		"""
+	)()

@@ -24,10 +24,15 @@ hAlignCodes = {
 export class TextTable
 
 	constructor: (formatStr, hOptions={}) ->
-		# --- currently no options
+		# --- Valid options:
+		#        decPlaces - used for numbers with no % style format
+		#                    default: 2
 
 		dbgEnter 'TextTable', formatStr, hOptions
 		assert defined(formatStr), "missing format string"
+		@hOptions = getOptions hOptions, {
+			decPlaces: 2
+			}
 		@lColFormats = words(formatStr).map (str) =>
 			if (lMatches = str.match(/^(l|c|r)(\%.*)?$/))
 				[_, align, fmt] = lMatches
@@ -47,7 +52,7 @@ export class TextTable
 		@lRows = []
 		@lLabelRows = []      # --- [<index>, ...]
 		@lFormattedRows = []  # --- copy of @lRows with
-		                      #     formats applied, but not aligned
+		                      #        formats applied, but not aligned
 		@lColWidths = []
 		@closed = false
 
@@ -120,6 +125,19 @@ export class TextTable
 		return
 
 	# ..........................................................
+
+	formatItem: (item, fmt) ->
+
+		if defined(fmt)
+			return sprintf(fmt, item)
+		else if isString(item)
+			return item
+		else if isNumber(item)
+			return item.toFixed(@hOptions.decPlaces)
+		else
+			return OL(item)
+
+	# ..........................................................
 	# --- Create @lFormattedRows from @lRows
 	#     Calculate @lColWidths
 
@@ -140,19 +158,22 @@ export class TextTable
 		dbg "Calculate column widths, build lFormattedRows"
 
 		@lColWidths = @lColFormats.map (x) => 0
-		@lColTotals = @lColFormats.map (x) => 0
+		@lColTotals = @lColFormats.map (x) => undef
+
 		for row,rowNum in @lRows
 			if (row == 'total')
+				dbg 'TOTALS row'
+				dbg 'lColTotals', @lColTotals
 				lFormattedItems = for colNum in range(@numCols)
 					total = @lColTotals[colNum]
-					if defined(total)
+					if notdefined(total)
+						''
+					else
 						[align, fmt] = @lColFormats[colNum]
-						formatted = sprintf(fmt, total)
+						formatted = @formatItem(total, fmt)
 						if (formatted.length > @lColWidths[colNum])
 							@lColWidths[colNum] = formatted.length
 						formatted
-					else
-						''
 				@lFormattedRows.push lFormattedItems
 			else if isString(row)
 				@lFormattedRows.push row
@@ -164,20 +185,20 @@ export class TextTable
 						if notdefined(item)
 							return ''
 						if isNumber(item)
-							@lColTotals[colNum] += item
+							if defined(@lColTotals[colNum])
+								@lColTotals[colNum] += item
+							else
+								@lColTotals[colNum] = item
 						[align, fmt] = @lColFormats[colNum]
-						# LOG "format = '#{fmt}'"
-						# LOG "item = #{OL(item)}"
-						if defined(fmt)
-							formatted = sprintf(fmt, item)
-						else
-							formatted = item
+						formatted = @formatItem(item, fmt)
 						if (formatted.length > @lColWidths[colNum])
 							@lColWidths[colNum] = formatted.length
 						return formatted
 					@lFormattedRows.push lFormattedItems
 			else
 				@lFormattedRows.push row
+
+		dbg 'lColWidths', @lColWidths
 
 		# --- Now that we have all column widths, we can
 		#     expand separator rows
@@ -207,14 +228,11 @@ export class TextTable
 			assert isArray(row), "lFormattedRows contains #{OL(row)}"
 			if @isLabelRow(rowNum)
 				return row.map((item, colNum) =>
-					if notdefined(item)
-						''
-					else
-						assert isString(item), "item not a string: #{OL(item)}"
-						pad(item, @lColWidths[colNum], 'justify=center')).join(' ')
+					assert isString(item), "item not a string: #{OL(item)}"
+					pad(item, @lColWidths[colNum], 'justify=center')).join(' ')
 			else
 				return row.map((item, colNum) =>
-					assert isString(item), "item not a string"
+					assert isString(item), "item not a string: #{OL(item)}"
 					align = @lColFormats[colNum][0]
 					pad(item, @lColWidths[colNum], "justify=#{align}")
 					).join(' ')

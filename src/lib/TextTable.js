@@ -44,9 +44,14 @@ hAlignCodes = {
 // ---------------------------------------------------------------------------
 export var TextTable = class TextTable {
   constructor(formatStr, hOptions = {}) {
-    // --- currently no options
+    // --- Valid options:
+    //        decPlaces - used for numbers with no % style format
+    //                    default: 2
     dbgEnter('TextTable', formatStr, hOptions);
     assert(defined(formatStr), "missing format string");
+    this.hOptions = getOptions(hOptions, {
+      decPlaces: 2
+    });
     this.lColFormats = words(formatStr).map((str) => {
       var _, align, fmt, lMatches;
       if ((lMatches = str.match(/^(l|c|r)(\%.*)?$/))) {
@@ -67,7 +72,7 @@ export var TextTable = class TextTable {
     this.lRows = [];
     this.lLabelRows = []; // --- [<index>, ...]
     this.lFormattedRows = []; // --- copy of @lRows with
-    //     formats applied, but not aligned
+    //        formats applied, but not aligned
     this.lColWidths = [];
     this.closed = false;
   }
@@ -134,6 +139,19 @@ export var TextTable = class TextTable {
   }
 
   // ..........................................................
+  formatItem(item, fmt) {
+    if (defined(fmt)) {
+      return sprintf(fmt, item);
+    } else if (isString(item)) {
+      return item;
+    } else if (isNumber(item)) {
+      return item.toFixed(this.hOptions.decPlaces);
+    } else {
+      return OL(item);
+    }
+  }
+
+  // ..........................................................
   // --- Create @lFormattedRows from @lRows
   //     Calculate @lColWidths
   close() {
@@ -153,12 +171,14 @@ export var TextTable = class TextTable {
       return 0;
     });
     this.lColTotals = this.lColFormats.map((x) => {
-      return 0;
+      return undef;
     });
     ref = this.lRows;
     for (rowNum = i = 0, len = ref.length; i < len; rowNum = ++i) {
       row = ref[rowNum];
       if (row === 'total') {
+        dbg('TOTALS row');
+        dbg('lColTotals', this.lColTotals);
         lFormattedItems = (function() {
           var j, len1, ref1, results;
           ref1 = range(this.numCols);
@@ -166,15 +186,15 @@ export var TextTable = class TextTable {
           for (j = 0, len1 = ref1.length; j < len1; j++) {
             colNum = ref1[j];
             total = this.lColTotals[colNum];
-            if (defined(total)) {
+            if (notdefined(total)) {
+              results.push('');
+            } else {
               [align, fmt] = this.lColFormats[colNum];
-              formatted = sprintf(fmt, total);
+              formatted = this.formatItem(total, fmt);
               if (formatted.length > this.lColWidths[colNum]) {
                 this.lColWidths[colNum] = formatted.length;
               }
               results.push(formatted);
-            } else {
-              results.push('');
             }
           }
           return results;
@@ -191,16 +211,14 @@ export var TextTable = class TextTable {
               return '';
             }
             if (isNumber(item)) {
-              this.lColTotals[colNum] += item;
+              if (defined(this.lColTotals[colNum])) {
+                this.lColTotals[colNum] += item;
+              } else {
+                this.lColTotals[colNum] = item;
+              }
             }
             [align, fmt] = this.lColFormats[colNum];
-            // LOG "format = '#{fmt}'"
-            // LOG "item = #{OL(item)}"
-            if (defined(fmt)) {
-              formatted = sprintf(fmt, item);
-            } else {
-              formatted = item;
-            }
+            formatted = this.formatItem(item, fmt);
             if (formatted.length > this.lColWidths[colNum]) {
               this.lColWidths[colNum] = formatted.length;
             }
@@ -212,6 +230,7 @@ export var TextTable = class TextTable {
         this.lFormattedRows.push(row);
       }
     }
+    dbg('lColWidths', this.lColWidths);
     // --- Now that we have all column widths, we can
     //     expand separator rows
     dbg("Expand separator rows");
@@ -241,17 +260,13 @@ export var TextTable = class TextTable {
       assert(isArray(row), `lFormattedRows contains ${OL(row)}`);
       if (this.isLabelRow(rowNum)) {
         return row.map((item, colNum) => {
-          if (notdefined(item)) {
-            return '';
-          } else {
-            assert(isString(item), `item not a string: ${OL(item)}`);
-            return pad(item, this.lColWidths[colNum], 'justify=center');
-          }
+          assert(isString(item), `item not a string: ${OL(item)}`);
+          return pad(item, this.lColWidths[colNum], 'justify=center');
         }).join(' ');
       } else {
         return row.map((item, colNum) => {
           var align;
-          assert(isString(item), "item not a string");
+          assert(isString(item), `item not a string: ${OL(item)}`);
           align = this.lColFormats[colNum][0];
           return pad(item, this.lColWidths[colNum], `justify=${align}`);
         }).join(' ');
