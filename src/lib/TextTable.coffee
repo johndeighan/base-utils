@@ -157,6 +157,8 @@ export class TextTable
 					@lFormattedRows.push row
 				else
 					lFormattedItems = row.map (item, colNum) =>
+						if notdefined(item)
+							return ''
 						if isNumber(item)
 							@lColTotals[colNum] += item
 						[align, fmt] = @lColFormats[colNum]

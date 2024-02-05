@@ -184,6 +184,9 @@ export var TextTable = class TextTable {
           this.lFormattedRows.push(row);
         } else {
           lFormattedItems = row.map((item, colNum) => {
+            if (notdefined(item)) {
+              return '';
+            }
             if (isNumber(item)) {
               this.lColTotals[colNum] += item;
             }
