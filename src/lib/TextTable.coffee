@@ -10,7 +10,7 @@ import {
 	assert, croak,
 	} from '@jdeighan/base-utils/exceptions'
 import {
-	dbgEnter, dbgReturn, dbg,
+	dbgEnter, dbgReturn, dbg, dbgCall,
 	} from '@jdeighan/base-utils/debug'
 
 hAlignCodes = {
@@ -129,12 +129,16 @@ export class TextTable
 
 		# --- Allow multiple calls to close()
 		if @closed
+			dbg "already closed, returning"
 			dbgReturn 'close'
 			return
 
 		# --- Calculate column widths as max of all values in col
 		#     Keep running totals for each column, which
 		#        may affect column widths
+
+		dbg "Calculate column widths, build lFormattedRows"
+
 		@lColWidths = @lColFormats.map (x) => 0
 		@lColTotals = @lColFormats.map (x) => 0
 		for row,rowNum in @lRows
@@ -178,6 +182,8 @@ export class TextTable
 		# --- Now that we have all column widths, we can
 		#     expand separator rows
 
+		dbg "Expand separator rows"
+
 		for row, rowNum in @lFormattedRows
 			if isString(row)
 				@lFormattedRows[rowNum] = range(@numCols).map((colNum) =>
@@ -185,6 +191,7 @@ export class TextTable
 					)
 
 		@closed = true
+		dbgCall () => @dumpInternals()
 		dbgReturn 'close'
 		return
 
@@ -200,9 +207,11 @@ export class TextTable
 			assert isArray(row), "lFormattedRows contains #{OL(row)}"
 			if @isLabelRow(rowNum)
 				return row.map((item, colNum) =>
-					assert isString(item), "item not a string"
-					pad(item, @lColWidths[colNum], 'justify=center')
-					).join(' ')
+					if notdefined(item)
+						''
+					else
+						assert isString(item), "item not a string: #{OL(item)}"
+						pad(item, @lColWidths[colNum], 'justify=center')).join(' ')
 			else
 				return row.map((item, colNum) =>
 					assert isString(item), "item not a string"

@@ -31,7 +31,8 @@ import {
 import {
   dbgEnter,
   dbgReturn,
-  dbg
+  dbg,
+  dbgCall
 } from '@jdeighan/base-utils/debug';
 
 hAlignCodes = {
@@ -140,12 +141,14 @@ export var TextTable = class TextTable {
     dbgEnter('close');
     // --- Allow multiple calls to close()
     if (this.closed) {
+      dbg("already closed, returning");
       dbgReturn('close');
       return;
     }
     // --- Calculate column widths as max of all values in col
     //     Keep running totals for each column, which
     //        may affect column widths
+    dbg("Calculate column widths, build lFormattedRows");
     this.lColWidths = this.lColFormats.map((x) => {
       return 0;
     });
@@ -209,9 +212,10 @@ export var TextTable = class TextTable {
         this.lFormattedRows.push(row);
       }
     }
-    ref1 = this.lFormattedRows;
     // --- Now that we have all column widths, we can
     //     expand separator rows
+    dbg("Expand separator rows");
+    ref1 = this.lFormattedRows;
     for (rowNum = j = 0, len1 = ref1.length; j < len1; rowNum = ++j) {
       row = ref1[rowNum];
       if (isString(row)) {
@@ -221,6 +225,9 @@ export var TextTable = class TextTable {
       }
     }
     this.closed = true;
+    dbgCall(() => {
+      return this.dumpInternals();
+    });
     dbgReturn('close');
   }
 
@@ -234,8 +241,12 @@ export var TextTable = class TextTable {
       assert(isArray(row), `lFormattedRows contains ${OL(row)}`);
       if (this.isLabelRow(rowNum)) {
         return row.map((item, colNum) => {
-          assert(isString(item), "item not a string");
-          return pad(item, this.lColWidths[colNum], 'justify=center');
+          if (notdefined(item)) {
+            return '';
+          } else {
+            assert(isString(item), `item not a string: ${OL(item)}`);
+            return pad(item, this.lColWidths[colNum], 'justify=center');
+          }
         }).join(' ');
       } else {
         return row.map((item, colNum) => {

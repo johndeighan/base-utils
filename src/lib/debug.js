@@ -84,7 +84,8 @@ logString = undef;
 
 logValue = undef;
 
-export var doDbg = true;
+export var doDbg = true; // overall flag - if false, no debugging
+
 
 // ---------------------------------------------------------------------------
 export var disableDbg = function() {
@@ -475,6 +476,18 @@ export var dbgResume = (funcName) => {
     }
   }
   return true;
+};
+
+// ---------------------------------------------------------------------------
+export var dbgCall = (func) => {
+  var doLog;
+  assert(isFunction(func), "not a function");
+  doLog = logAll || debugStack.isLogging();
+  if (doLog) {
+    return func();
+  } else {
+
+  }
 };
 
 // ---------------------------------------------------------------------------

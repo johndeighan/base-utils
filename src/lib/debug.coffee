@@ -35,7 +35,7 @@ logResume    = undef
 logString    = undef
 logValue     = undef
 
-export doDbg = true
+export doDbg = true     # overall flag - if false, no debugging
 
 # ---------------------------------------------------------------------------
 
@@ -389,6 +389,17 @@ export dbgResume = (funcName) =>
 			stdLogResume funcName, level-1
 
 	return true
+
+# ---------------------------------------------------------------------------
+
+export dbgCall = (func) =>
+
+	assert isFunction(func), "not a function"
+	doLog = logAll || debugStack.isLogging()
+	if doLog
+		return func()
+	else
+		return
 
 # ---------------------------------------------------------------------------
 
