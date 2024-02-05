@@ -4,7 +4,7 @@ import {sprintf} from 'sprintf-js'
 import {
 	undef, defined, notdefined, getOptions, words, OL, range,
 	pad, toBlock, LOG, nonEmpty,
-	jsType, isString, isNumber, isArray,
+	jsType, isString, isNumber, isArray, isArrayOfStrings,
 	} from '@jdeighan/base-utils'
 import {
 	assert, croak,
@@ -27,11 +27,14 @@ export class TextTable
 		# --- Valid options:
 		#        decPlaces - used for numbers with no % style format
 		#                    default: 2
+		#        parseNumbers - string data that looks like a number
+		#                       is treated as a number
 
 		dbgEnter 'TextTable', formatStr, hOptions
 		assert defined(formatStr), "missing format string"
 		@hOptions = getOptions hOptions, {
 			decPlaces: 2
+			parseNumbers: false
 			}
 		@lColFormats = words(formatStr).map (str) =>
 			if (lMatches = str.match(/^(l|c|r)(\%.*)?$/))
@@ -85,6 +88,7 @@ export class TextTable
 		dbgEnter 'addLabels'
 		assert ! @closed, "table is closed"
 		assert (lRow.length == @numCols), "lRow = #{OL(lRow)}"
+		assert isArrayOfStrings(lRow), "non-strings in label row"
 		dbg 'lRow', lRow
 		@lLabelRows.push @lRows.length
 		@lRows.push lRow
@@ -110,6 +114,20 @@ export class TextTable
 		assert ! @closed, "table is closed"
 		assert (lRow.length == @numCols), "lRow = #{OL(lRow)}"
 		dbg 'lRow', lRow
+		if @hOptions.parseNumbers
+			lRow = lRow.map (item) =>
+				if isString(item)
+					if item.match(///^
+							\d+         # one or more digits
+							(\.\d*)?    # optional decimal part
+							([Ee]\d+)?  # optional exponent
+							$///)
+						return parseFloat(item)
+					else
+						return item
+				else
+					return item
+
 		@lRows.push lRow
 		dbgReturn 'addData'
 		return
@@ -157,7 +175,6 @@ export class TextTable
 
 		dbg "Calculate column widths, build lFormattedRows"
 
-		@lColWidths = @lColFormats.map (x) => 0
 		@lColTotals = @lColFormats.map (x) => undef
 
 		for row,rowNum in @lRows
@@ -170,10 +187,7 @@ export class TextTable
 						''
 					else
 						[align, fmt] = @lColFormats[colNum]
-						formatted = @formatItem(total, fmt)
-						if (formatted.length > @lColWidths[colNum])
-							@lColWidths[colNum] = formatted.length
-						formatted
+						@formatItem(total, fmt)
 				@lFormattedRows.push lFormattedItems
 			else if isString(row)
 				@lFormattedRows.push row
@@ -190,15 +204,20 @@ export class TextTable
 							else
 								@lColTotals[colNum] = item
 						[align, fmt] = @lColFormats[colNum]
-						formatted = @formatItem(item, fmt)
-						if (formatted.length > @lColWidths[colNum])
-							@lColWidths[colNum] = formatted.length
-						return formatted
+						return @formatItem(item, fmt)
 					@lFormattedRows.push lFormattedItems
 			else
 				@lFormattedRows.push row
 
-		dbg 'lColWidths', @lColWidths
+		dbg "Calculate column widths"
+
+		@lColWidths = @lColFormats.map (x) => 0
+		for row in @lFormattedRows
+			if ! isString(row)
+				assert isArrayOfStrings(row), "Bad formatted row: #{OL(row)}"
+				for formatted,colNum in row
+					if (formatted.length > @lColWidths[colNum])
+						@lColWidths[colNum] = formatted.length
 
 		# --- Now that we have all column widths, we can
 		#     expand separator rows

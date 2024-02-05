@@ -20,7 +20,8 @@ import {
   jsType,
   isString,
   isNumber,
-  isArray
+  isArray,
+  isArrayOfStrings
 } from '@jdeighan/base-utils';
 
 import {
@@ -47,10 +48,13 @@ export var TextTable = class TextTable {
     // --- Valid options:
     //        decPlaces - used for numbers with no % style format
     //                    default: 2
+    //        parseNumbers - string data that looks like a number
+    //                       is treated as a number
     dbgEnter('TextTable', formatStr, hOptions);
     assert(defined(formatStr), "missing format string");
     this.hOptions = getOptions(hOptions, {
-      decPlaces: 2
+      decPlaces: 2,
+      parseNumbers: false
     });
     this.lColFormats = words(formatStr).map((str) => {
       var _, align, fmt, lMatches;
@@ -105,6 +109,7 @@ export var TextTable = class TextTable {
     dbgEnter('addLabels');
     assert(!this.closed, "table is closed");
     assert(lRow.length === this.numCols, `lRow = ${OL(lRow)}`);
+    assert(isArrayOfStrings(lRow), "non-strings in label row");
     dbg('lRow', lRow);
     this.lLabelRows.push(this.lRows.length);
     this.lRows.push(lRow);
@@ -126,6 +131,21 @@ export var TextTable = class TextTable {
     assert(!this.closed, "table is closed");
     assert(lRow.length === this.numCols, `lRow = ${OL(lRow)}`);
     dbg('lRow', lRow);
+    if (this.hOptions.parseNumbers) {
+      lRow = lRow.map((item) => {
+        if (isString(item)) {
+          if (item.match(/^\d+(\.\d*)?([Ee]\d+)?$/)) { // one or more digits
+            // optional decimal part
+            // optional exponent
+            return parseFloat(item);
+          } else {
+            return item;
+          }
+        } else {
+          return item;
+        }
+      });
+    }
     this.lRows.push(lRow);
     dbgReturn('addData');
   }
@@ -155,7 +175,7 @@ export var TextTable = class TextTable {
   // --- Create @lFormattedRows from @lRows
   //     Calculate @lColWidths
   close() {
-    var align, colNum, fmt, formatted, i, j, lFormattedItems, len, len1, ref, ref1, row, rowNum, total;
+    var align, colNum, fmt, formatted, i, j, k, l, lFormattedItems, len, len1, len2, len3, ref, ref1, ref2, row, rowNum, total;
     dbgEnter('close');
     // --- Allow multiple calls to close()
     if (this.closed) {
@@ -167,9 +187,6 @@ export var TextTable = class TextTable {
     //     Keep running totals for each column, which
     //        may affect column widths
     dbg("Calculate column widths, build lFormattedRows");
-    this.lColWidths = this.lColFormats.map((x) => {
-      return 0;
-    });
     this.lColTotals = this.lColFormats.map((x) => {
       return undef;
     });
@@ -190,11 +207,7 @@ export var TextTable = class TextTable {
               results.push('');
             } else {
               [align, fmt] = this.lColFormats[colNum];
-              formatted = this.formatItem(total, fmt);
-              if (formatted.length > this.lColWidths[colNum]) {
-                this.lColWidths[colNum] = formatted.length;
-              }
-              results.push(formatted);
+              results.push(this.formatItem(total, fmt));
             }
           }
           return results;
@@ -218,11 +231,7 @@ export var TextTable = class TextTable {
               }
             }
             [align, fmt] = this.lColFormats[colNum];
-            formatted = this.formatItem(item, fmt);
-            if (formatted.length > this.lColWidths[colNum]) {
-              this.lColWidths[colNum] = formatted.length;
-            }
-            return formatted;
+            return this.formatItem(item, fmt);
           });
           this.lFormattedRows.push(lFormattedItems);
         }
@@ -230,13 +239,29 @@ export var TextTable = class TextTable {
         this.lFormattedRows.push(row);
       }
     }
-    dbg('lColWidths', this.lColWidths);
+    dbg("Calculate column widths");
+    this.lColWidths = this.lColFormats.map((x) => {
+      return 0;
+    });
+    ref1 = this.lFormattedRows;
+    for (j = 0, len1 = ref1.length; j < len1; j++) {
+      row = ref1[j];
+      if (!isString(row)) {
+        assert(isArrayOfStrings(row), `Bad formatted row: ${OL(row)}`);
+        for (colNum = k = 0, len2 = row.length; k < len2; colNum = ++k) {
+          formatted = row[colNum];
+          if (formatted.length > this.lColWidths[colNum]) {
+            this.lColWidths[colNum] = formatted.length;
+          }
+        }
+      }
+    }
     // --- Now that we have all column widths, we can
     //     expand separator rows
     dbg("Expand separator rows");
-    ref1 = this.lFormattedRows;
-    for (rowNum = j = 0, len1 = ref1.length; j < len1; rowNum = ++j) {
-      row = ref1[rowNum];
+    ref2 = this.lFormattedRows;
+    for (rowNum = l = 0, len3 = ref2.length; l < len3; rowNum = ++l) {
+      row = ref2[rowNum];
       if (isString(row)) {
         this.lFormattedRows[rowNum] = range(this.numCols).map((colNum) => {
           return row.repeat(this.lColWidths[colNum]);
