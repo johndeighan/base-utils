@@ -1,5 +1,9 @@
   // TextTable.test.coffee
 import {
+  undef
+} from '@jdeighan/base-utils';
+
+import {
   u
 } from '@jdeighan/base-utils/utest';
 
@@ -9,104 +13,509 @@ import {
 
 // -------------------------------------------------------------
 (() => {
+  var table;
+  table = new TextTable('l r%.2f r%.2f');
+  u.equal(table.hOptions.decPlaces, 2);
+  u.equal(table.hOptions.parseNumbers, false);
+  u.equal(table.numCols, 3);
+  u.equal(table.lColAligns, ['left', 'right', 'right']);
+  u.equal(table.lColFormats, [undef, '%.2f', '%.2f']);
+  u.equal(table.lRows, []);
+  u.equal(table.lColWidths, [0, 0, 0]);
+  u.equal(table.lColTotals, [undef, undef, undef]);
+  return u.equal(table.lColSubTotals, [undef, undef, undef]);
+})();
+
+// -------------------------------------------------------------
+(() => {
+  var table;
+  table = new TextTable('l r%.2f r%.2f');
+  table.labels('Coffee', 'Jan', 'Feb');
+  u.equal(table.lRows, [
+    {
+      opcode: 'labels',
+      lFormatted: ['Coffee',
+    'Jan',
+    'Feb']
+    }
+  ]);
+  u.equal(table.lColWidths, [6, 3, 3]);
+  u.equal(table.lColTotals, [undef, undef, undef]);
+  return u.equal(table.lColSubTotals, [undef, undef, undef]);
+})();
+
+// -------------------------------------------------------------
+(() => {
+  var table;
+  table = new TextTable('l r%.2f r%.2f');
+  table.labels('Coffee', 'Jan', 'Feb');
+  table.data(undef, 30, 40);
+  u.equal(table.lRows, [
+    {
+      opcode: 'labels',
+      lFormatted: ['Coffee',
+    'Jan',
+    'Feb']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '30.00',
+    '40.00']
+    }
+  ]);
+  u.equal(table.lColWidths, [6, 5, 5]);
+  u.equal(table.lColTotals, [undef, 30, 40]);
+  return u.equal(table.lColSubTotals, [undef, 30, 40]);
+})();
+
+// -------------------------------------------------------------
+(() => {
+  var table;
+  table = new TextTable('l r%.2f r%.2f');
+  table.labels('Coffee', 'Jan', 'Feb');
+  table.data(undef, 30, 40);
+  table.data(undef, 130, 40);
+  u.equal(table.lRows, [
+    {
+      opcode: 'labels',
+      lFormatted: ['Coffee',
+    'Jan',
+    'Feb']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '30.00',
+    '40.00']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '130.00',
+    '40.00']
+    }
+  ]);
+  u.equal(table.lColWidths, [6, 6, 5]);
+  u.equal(table.lColTotals, [undef, 160, 80]);
+  return u.equal(table.lColSubTotals, [undef, 160, 80]);
+})();
+
+// -------------------------------------------------------------
+(() => {
+  var table;
+  table = new TextTable('l r%.2f r%.2f');
+  table.labels('Coffee', 'Jan', 'Feb');
+  table.data(undef, 30, 40);
+  table.data(undef, 130, 40);
+  table.literal('this is literal text');
+  table.callback(() => {
+    return 'more literal text';
+  });
+  u.like(table.lRows, [
+    {
+      opcode: 'labels',
+      lFormatted: ['Coffee',
+    'Jan',
+    'Feb']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '30.00',
+    '40.00']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '130.00',
+    '40.00']
+    },
+    {
+      opcode: 'literal',
+      literal: 'this is literal text'
+    },
+    {
+      opcode: 'callback'
+    }
+  ]);
+  u.equal(table.lColWidths, [6, 6, 5]);
+  u.equal(table.lColTotals, [undef, 160, 80]);
+  return u.equal(table.lColSubTotals, [undef, 160, 80]);
+})();
+
+// -------------------------------------------------------------
+(() => {
+  var table;
+  table = new TextTable('l r%.2f r%.2f');
+  table.labels('Coffee', 'Jan', 'Feb');
+  table.data(undef, 30, 40);
+  table.data(undef, 130, 40);
+  table.sep('-');
+  table.subtotals();
+  u.equal(table.lRows, [
+    {
+      opcode: 'labels',
+      lFormatted: ['Coffee',
+    'Jan',
+    'Feb']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '30.00',
+    '40.00']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '130.00',
+    '40.00']
+    },
+    {
+      opcode: 'sep',
+      sep: '-'
+    },
+    {
+      opcode: 'subtotals',
+      lFormatted: ['',
+    '160.00',
+    '80.00']
+    }
+  ]);
+  u.equal(table.lColWidths, [6, 6, 5]);
+  u.equal(table.lColTotals, [undef, 160, 80]);
+  return u.equal(table.lColSubTotals, [undef, undef, undef]);
+})();
+
+// -------------------------------------------------------------
+(() => {
+  var table;
+  table = new TextTable('l r%.2f r%.2f');
+  table.labels('Coffee', 'Jan', 'Feb');
+  table.data(undef, 30, 40);
+  table.data(undef, 130, 40);
+  table.sep('-');
+  table.subtotals();
+  table.data(undef, 10, 20);
+  table.data(undef, 1000, 40);
+  u.equal(table.lRows, [
+    {
+      opcode: 'labels',
+      lFormatted: ['Coffee',
+    'Jan',
+    'Feb']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '30.00',
+    '40.00']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '130.00',
+    '40.00']
+    },
+    {
+      opcode: 'sep',
+      sep: '-'
+    },
+    {
+      opcode: 'subtotals',
+      lFormatted: ['',
+    '160.00',
+    '80.00']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '10.00',
+    '20.00']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '1000.00',
+    '40.00']
+    }
+  ]);
+  u.equal(table.lColWidths, [6, 7, 5]);
+  u.equal(table.lColTotals, [undef, 1170, 140]);
+  return u.equal(table.lColSubTotals, [undef, 1010, 60]);
+})();
+
+// -------------------------------------------------------------
+// NOTE: Pass arrays to labels() and data()
+(() => {
+  var table;
+  table = new TextTable('l r%.2f r%.2f');
+  table.labels(['Coffee', 'Jan', 'Feb']);
+  table.data([undef, 30, 40]);
+  table.data([undef, 130, 40]);
+  table.sep('-');
+  table.subtotals();
+  table.data([undef, 10, 20]);
+  table.data([undef, 1000, 40]);
+  table.fullsep('=');
+  table.totals();
+  u.equal(table.lRows, [
+    {
+      opcode: 'labels',
+      lFormatted: ['Coffee',
+    'Jan',
+    'Feb']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '30.00',
+    '40.00']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '130.00',
+    '40.00']
+    },
+    {
+      opcode: 'sep',
+      sep: '-'
+    },
+    {
+      opcode: 'subtotals',
+      lFormatted: ['',
+    '160.00',
+    '80.00']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '10.00',
+    '20.00']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '1000.00',
+    '40.00']
+    },
+    {
+      opcode: 'fullsep',
+      fullsep: '='
+    },
+    {
+      opcode: 'totals',
+      lFormatted: ['',
+    '1170.00',
+    '140.00']
+    }
+  ]);
+  u.equal(table.lColWidths, [6, 7, 6]);
+  u.equal(table.lColTotals, [undef, 1170, 140]);
+  return u.equal(table.lColSubTotals, [undef, 1010, 60]);
+})();
+
+// -------------------------------------------------------------
+(() => {
+  var table;
+  table = new TextTable('l r%.2f r%.2f');
+  table.title('My Expenses');
+  table.fullsep('-');
+  table.labels('Coffee', 'Jan', 'Feb');
+  table.data(undef, 30, 40);
+  table.data(undef, 130, 40);
+  table.sep('-');
+  table.subtotals();
+  table.data(undef, 10, 20);
+  table.data(undef, 1000, 40);
+  table.fullsep('=');
+  table.totals();
+  u.equal(table.lRows, [
+    {
+      opcode: 'title',
+      title: 'My Expenses',
+      align: 'center'
+    },
+    {
+      opcode: 'fullsep',
+      fullsep: '-'
+    },
+    {
+      opcode: 'labels',
+      lFormatted: ['Coffee',
+    'Jan',
+    'Feb']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '30.00',
+    '40.00']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '130.00',
+    '40.00']
+    },
+    {
+      opcode: 'sep',
+      sep: '-'
+    },
+    {
+      opcode: 'subtotals',
+      lFormatted: ['',
+    '160.00',
+    '80.00']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '10.00',
+    '20.00']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '1000.00',
+    '40.00']
+    },
+    {
+      opcode: 'fullsep',
+      fullsep: '='
+    },
+    {
+      opcode: 'totals',
+      lFormatted: ['',
+    '1170.00',
+    '140.00']
+    }
+  ]);
+  u.equal(table.lColWidths, [6, 7, 6]);
+  u.equal(table.lColTotals, [undef, 1170, 140]);
+  return u.equal(table.lColSubTotals, [undef, 1010, 60]);
+})();
+
+// -------------------------------------------------------------
+(() => {
+  var table;
+  table = new TextTable('l r%.2f r%.2f');
+  table.title('My Expenses');
+  table.fullsep('-');
+  table.labels('Coffee', 'Jan', 'Feb');
+  table.data(undef, 30, 40);
+  table.data(undef, 130, 40);
+  table.sep('-');
+  table.subtotals();
+  table.data(undef, 10, 20);
+  table.data(undef, 1000, 40);
+  table.fullsep('=');
+  table.totals();
+  table.close();
+  u.equal(table.lRows, [
+    {
+      opcode: 'title',
+      title: 'My Expenses',
+      align: 'center',
+      literal: '     My Expenses     '
+    },
+    {
+      opcode: 'fullsep',
+      fullsep: '-',
+      literal: '---------------------'
+    },
+    {
+      opcode: 'labels',
+      lFormatted: ['Coffee',
+    'Jan',
+    'Feb']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '30.00',
+    '40.00']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '130.00',
+    '40.00']
+    },
+    {
+      opcode: 'sep',
+      sep: '-',
+      lFormatted: ['------',
+    '-------',
+    '------']
+    },
+    {
+      opcode: 'subtotals',
+      lFormatted: ['',
+    '160.00',
+    '80.00']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '10.00',
+    '20.00']
+    },
+    {
+      opcode: 'data',
+      lFormatted: ['',
+    '1000.00',
+    '40.00']
+    },
+    {
+      opcode: 'fullsep',
+      literal: '=====================',
+      fullsep: '='
+    },
+    {
+      opcode: 'totals',
+      lFormatted: ['',
+    '1170.00',
+    '140.00']
+    }
+  ]);
+  u.equal(table.lColWidths, [6, 7, 6]);
+  u.equal(table.lColTotals, [undef, 1170, 140]);
+  u.equal(table.lColSubTotals, [undef, 1010, 60]);
+  return u.equal(table.totalWidth, 21);
+})();
+
+// -------------------------------------------------------------
+(() => {
   var str, table;
   table = new TextTable('l r%.2f r%.2f');
-  table.addLabels(['Category', 'Jan', 'Feb']);
-  table.addSep();
-  table.addData(['Computer', 23.5, 50.9]);
-  table.addData(['Science', 99, 53]);
-  table.addSep();
-  table.addTotals();
+  table.title('My Expenses');
+  table.fullsep('-');
+  table.labels('', 'Jan', 'Feb');
+  table.sep();
+  table.data('coffee', 30, 40);
+  table.data('dining', 130, 40);
+  table.sep('-');
+  table.subtotals();
+  table.data('one time', 10, 20);
+  table.data('other', 1000, 40);
+  table.fullsep('=');
+  table.totals();
   str = table.asString();
-  return u.equal(str, `Category  Jan    Feb
--------- ------ ------
-Computer  23.50  50.90
-Science   99.00  53.00
--------- ------ ------
-         122.50 103.90`);
-})();
-
-// -------------------------------------------------------------
-(() => {
-  var str, table;
-  table = new TextTable('r r%.4f r%.4f');
-  table.addLabels(['Category', 'January', 'February']);
-  table.addSep();
-  table.addData(['Computer', 23.5, 50.9]);
-  table.addData(['Science', 99, 53]);
-  table.addSep('=');
-  table.addTotals();
-  str = table.asString();
-  return u.equal(str, `Category January  February
--------- -------- --------
-Computer  23.5000  50.9000
- Science  99.0000  53.0000
-======== ======== ========
-         122.5000 103.9000`);
-})();
-
-// -------------------------------------------------------------
-// --- Without a format spec, numbers default to 2 dec places
-(() => {
-  var str, table;
-  table = new TextTable('l r r');
-  table.addLabels(['Category', 'Jan', 'Feb']);
-  table.addSep();
-  table.addData(['Computer', 23.5, 50.9]);
-  table.addData(['Science', 99, 53]);
-  table.addSep();
-  table.addTotals();
-  str = table.asString();
-  return u.equal(str, `Category  Jan    Feb
--------- ------ ------
-Computer  23.50  50.90
-Science   99.00  53.00
--------- ------ ------
-         122.50 103.90`);
-})();
-
-// -------------------------------------------------------------
-// --- support option parseNumbers
-(() => {
-  var str, table;
-  table = new TextTable('l r r', 'parseNumbers');
-  table.addLabels(['Category', 'Jan', 'Feb']);
-  table.addSep();
-  table.addData(['Computer', '23.5', '50.9']);
-  table.addData(['Science', '99', '53']);
-  table.addSep();
-  table.addTotals();
-  str = table.asString();
-  return u.equal(str, `Category  Jan    Feb
--------- ------ ------
-Computer  23.50  50.90
-Science   99.00  53.00
--------- ------ ------
-         122.50 103.90`);
-})();
-
-// -------------------------------------------------------------
-// --- Make sure headers contribute to col widths
-(() => {
-  var str, table;
-  table = new TextTable('l r r r r');
-  table.addLabels(["Category", "Dec˳2023", "Jan˳2024", "Feb˳2024", "Average"]);
-  table.addSep();
-  table.addData(["Insurance", null, null, 400, 133.33]);
-  table.addData(["Electric", 126, 126, 126, 126]);
-  table.addData(["Water", 35, 50, 40, 42]);
-  table.addData(["Eat˳Out", 24, 44, 24, 31]);
-  table.addSep();
-  table.addTotals();
-  str = table.asString();
-  return u.equal(str, `Category  Dec˳2023 Jan˳2024 Feb˳2024 Average
---------- -------- -------- -------- -------
-Insurance                     400.00  133.33
-Electric    126.00   126.00   126.00  126.00
-Water        35.00    50.00    40.00   42.00
-Eat˳Out      24.00    44.00    24.00   31.00
---------- -------- -------- -------- -------
-            185.00   220.00   590.00  332.33`);
+  return u.equal(str, `      My Expenses
+-----------------------
+             Jan    Feb
+-------- ------- ------
+coffee     30.00  40.00
+dining    130.00  40.00
+-------- ------- ------
+          160.00  80.00
+one time   10.00  20.00
+other    1000.00  40.00
+=======================
+         1170.00 140.00`);
 })();
 
 //# sourceMappingURL=TextTable.test.js.map

@@ -2,9 +2,10 @@
 
 import {sprintf} from 'sprintf-js'
 import {
-	undef, defined, notdefined, getOptions, words, OL, range,
-	pad, toBlock, LOG, nonEmpty,
+	undef, defined, notdefined, getOptions, words, OL, range, hasKey,
+	pad, toBlock, LOG, isEmpty, nonEmpty, isNonEmptyString,
 	jsType, isString, isNumber, isArray, isArrayOfStrings,
+	isFunction,
 	} from '@jdeighan/base-utils'
 import {
 	assert, croak,
@@ -13,11 +14,13 @@ import {
 	dbgEnter, dbgReturn, dbg, dbgCall,
 	} from '@jdeighan/base-utils/debug'
 
-hAlignCodes = {
+hAlignWords = {
 	l: 'left'
 	c: 'center'
 	r: 'right'
 	}
+
+lOpCodes = words('labels data sep fullsep total subtotal literal')
 
 # ---------------------------------------------------------------------------
 
@@ -28,7 +31,7 @@ export class TextTable
 		#        decPlaces - used for numbers with no % style format
 		#                    default: 2
 		#        parseNumbers - string data that looks like a number
-		#                       is treated as a number
+		#                       is treated as a number, default: false
 
 		dbgEnter 'TextTable', formatStr, hOptions
 		assert defined(formatStr), "missing format string"
@@ -36,116 +39,66 @@ export class TextTable
 			decPlaces: 2
 			parseNumbers: false
 			}
-		@lColFormats = words(formatStr).map (str) =>
-			if (lMatches = str.match(/^(l|c|r)(\%.*)?$/))
-				[_, align, fmt] = lMatches
-				return [hAlignCodes[align], fmt]
-			else
-				croak "Bad format string: #{OL(formatStr)}"
-		dbg 'lColFormats', @lColFormats
 
-		@numCols = @lColFormats.length
+		lWords = words(formatStr)
+		@numCols = lWords.length
 		dbg 'numCols', @numCols
 
-		# --- Items in @lRows can be:
-		#        an Array of labels
-		#        an Array of values
-		#        a string of length 1 (separator line)
-		#        the word 'total'
+		@lColAligns  = new Array(@numCols)
+		@lColFormats = new Array(@numCols)
+
+		for word,colNum in lWords
+			if (lMatches = word.match(/^(l|c|r)(\%\S+)?$/))
+				[_, align, fmt] = lMatches
+				alignWord = hAlignWords[align]
+				assert defined(alignWord), "Bad format string: #{OL(formatStr)}"
+				@lColAligns[colNum] = alignWord
+				@lColFormats[colNum] = fmt       # may be undef
+			else
+				croak "Bad format string: #{OL(formatStr)}"
+
+		dbg 'lColFormats', @lColFormats
+		dbg 'lColAligns', @lColAligns
+
+		# --- Items in @lRows must be a hash w/key 'opcode'
 		@lRows = []
-		@lLabelRows = []      # --- [<index>, ...]
-		@lFormattedRows = []  # --- copy of @lRows with
-		                      #        formats applied, but not aligned
-		@lColWidths = []
+		@lColWidths = new Array(@numCols).fill(0)
+		@totalWidth = undef
 		@closed = false
 
+		# --- Accumulate totals and subtotals
+		#     When a subtotal row is added, subtotals are reset to 0
+		@lColTotals    = new Array(@numCols).fill(undef)
+		@lColSubTotals = new Array(@numCols).fill(undef)
+
 	# ..........................................................
 
-	isLabelRow: (rowNum) ->
+	resetSubTotals: () ->
 
-		return @lLabelRows.includes(rowNum)
-
-	# ..........................................................
-
-	dumpInternals: () ->
-
-		LOG 'lColFormats:', @lColFormats
-		LOG 'numCols:', @numCols
-		if nonEmpty(@lRows)
-			LOG 'lRows:', @lRows
-		if nonEmpty(@lLabelRows)
-			LOG 'lLabelRows:', @lLabelRows
-		if nonEmpty(@lFormattedRows)
-			LOG 'lFormattedRows:', @lFormattedRows
-		if nonEmpty(@lColWidths)
-			LOG 'lColWidths:', @lColWidths
+		@lColSubTotals.fill(undef)
 		return
 
 	# ..........................................................
 
-	addLabels: (lRow) ->
+	alignItem: (item, colNum) ->
 
-		dbgEnter 'addLabels'
-		assert ! @closed, "table is closed"
-		assert (lRow.length == @numCols), "lRow = #{OL(lRow)}"
-		assert isArrayOfStrings(lRow), "non-strings in label row"
-		dbg 'lRow', lRow
-		@lLabelRows.push @lRows.length
-		@lRows.push lRow
-		dbgReturn 'addLabels'
-		return
-
-	# ..........................................................
-
-	addSep: (ch='-') ->
-
-		dbgEnter 'addSep'
-		assert ! @closed, "table is closed"
-		assert (ch.length == 1), "Non-char arg"
-		@lRows.push ch
-		dbgReturn 'addSep'
-		return
+		assert @closed, "table not closed"
+		assert isString(item), "Not a string: #{OL(item)}"
+		if (item.length == width)
+			return item
+		align = @lColAligns[colNum]
+		assert ['left','center','right'].includes(align), \
+				"Bad align parm: #{OL(align)}"
+		width = @lColWidths[colNum]
+		return pad(item, width, "justify=#{align}")
 
 	# ..........................................................
 
-	addData: (lRow) ->
+	formatItem: (item, colNum) ->
 
-		dbgEnter 'addData'
-		assert ! @closed, "table is closed"
-		assert (lRow.length == @numCols), "lRow = #{OL(lRow)}"
-		dbg 'lRow', lRow
-		if @hOptions.parseNumbers
-			lRow = lRow.map (item) =>
-				if isString(item)
-					if item.match(///^
-							\d+         # one or more digits
-							(\.\d*)?    # optional decimal part
-							([Ee]\d+)?  # optional exponent
-							$///)
-						return parseFloat(item)
-					else
-						return item
-				else
-					return item
-
-		@lRows.push lRow
-		dbgReturn 'addData'
-		return
-
-	# ..........................................................
-
-	addTotals: () ->
-
-		dbgEnter 'addTotals'
-		assert ! @closed, "table is closed"
-		@lRows.push 'total'
-		dbgReturn 'addTotals'
-		return
-
-	# ..........................................................
-
-	formatItem: (item, fmt) ->
-
+		if notdefined(item)
+			return ''
+		fmt = @lColFormats[colNum]
 		if defined(fmt)
 			return sprintf(fmt, item)
 		else if isString(item)
@@ -156,8 +109,226 @@ export class TextTable
 			return OL(item)
 
 	# ..........................................................
-	# --- Create @lFormattedRows from @lRows
-	#     Calculate @lColWidths
+
+	dumpInternals: () ->
+
+		LOG 'lColAligns', @lColAligns
+		LOG 'lColFormats:', @lColFormats
+		LOG 'numCols:', @numCols
+		if nonEmpty(@lRows)
+			LOG 'lRows:', @lRows
+		if nonEmpty(@lColWidths)
+			LOG 'lColWidths:', @lColWidths
+		if defined(@totalWidth)
+			LOG 'totalWidth', @totalWidth
+		if nonEmpty(@lColTotals)
+			LOG 'lColTotals:', @lColTotals
+		if nonEmpty(@lColSubTotals)
+			LOG 'lColSubTotals:', @lColSubTotals
+		return
+
+	# ..........................................................
+
+	adjustColWidths: (lFormatted) ->
+
+		for str,colNum in lFormatted
+			assert isString(str), "Not a string: #{OL(str)}"
+			if (str.length > @lColWidths[colNum])
+				@lColWidths[colNum] = str.length
+		return
+
+	# ..........................................................
+
+	accum: (num, colNum) ->
+
+		assert isNumber(num), "Not a number: #{OL(num)}"
+
+		if defined(@lColTotals[colNum])
+			@lColTotals[colNum] += num
+		else
+			@lColTotals[colNum] = num
+
+		if defined(@lColSubTotals[colNum])
+			@lColSubTotals[colNum] += num
+		else
+			@lColSubTotals[colNum] = num
+
+		return
+
+	# ..........................................................
+
+	flatten: (lRow) ->
+
+		if (lRow.length == 1) && isArray(lRow[0])
+			return lRow[0]
+		return lRow
+
+	# ..........................................................
+
+	labels: (lRow...) ->
+
+		lRow = @flatten(lRow)
+		dbgEnter 'labels', lRow
+		assert ! @closed, "table is closed"
+		assert isArray(lRow), "Not an array: #{OL(lRow)}"
+		assert (lRow.length == @numCols), "lRow = #{OL(lRow)}"
+		@adjustColWidths lRow
+		@lRows.push {
+			opcode: 'labels'
+			lFormatted: lRow
+			}
+		dbgReturn 'labels'
+		return
+
+	# ..........................................................
+
+	data: (lRow...) ->
+
+		lRow = @flatten(lRow)
+		dbgEnter 'data', lRow
+		assert ! @closed, "table is closed"
+		assert (lRow.length == @numCols), "lRow = #{OL(lRow)}"
+		lFormatted = lRow.map (item, colNum) =>
+			switch jsType(item)[0]
+				when undef
+					dbg "item is undef"
+					return ''
+				when 'string'
+					dbg "item is a string"
+					if @hOptions.parseNumbers && item.match(///^
+							\d+         # one or more digits
+							(\.\d*)?    # optional decimal part
+							([Ee]\d+)?  # optional exponent
+							$///)
+						dbg "checking if '#{item}' is a number"
+						num = parseFloat(item)
+						dbg 'num', num
+						@accum num, colNum
+						formatted = @formatItem(num, colNum)
+						dbg 'formatted', formatted
+						return formatted
+					else
+						return item
+				when 'number'
+					dbg "item is a number"
+					@accum item, colNum
+					formatted = @formatItem(item, colNum)
+					dbg 'formatted', formatted
+					return formatted
+				else
+					dbg "item is not a number or string"
+					formatted = @formatItem(num, colNum)
+					dbg 'formatted', formatted
+					return formatted
+		@adjustColWidths lFormatted
+		@lRows.push {
+			opcode: 'data'
+			lFormatted
+			}
+		dbgReturn 'data'
+		return
+
+	# ..........................................................
+
+	literal: (str) ->
+
+		assert isString(str), "Not a string: #{OL(str)}"
+		@lRows.push {
+			opcode: 'literal'
+			literal: str
+			}
+		return
+
+	# ..........................................................
+
+	callback: (func) ->
+
+		assert isFunction(func), "Not a function: #{OL(func)}"
+		@lRows.push {
+			opcode: 'callback'
+			callback: func
+			}
+		return
+
+	# ..........................................................
+
+	sep: (ch='-') ->
+
+		dbgEnter 'addSep'
+		assert ! @closed, "table is closed"
+		assert (ch.length == 1), "Non-char arg"
+		@lRows.push {
+			opcode: 'sep'
+			sep: ch
+			}
+		dbgReturn 'addSep'
+		return
+
+	# ..........................................................
+
+	fullsep: (ch='-') ->
+
+		dbgEnter 'fullsep'
+		assert ! @closed, "table is closed"
+		assert (ch.length == 1), "Non-char arg"
+		@lRows.push {
+			opcode: 'fullsep'
+			fullsep: ch
+			}
+		dbgReturn 'fullsep'
+		return
+
+	# ..........................................................
+
+	title: (title, align='center') ->
+
+		dbgEnter 'title'
+		assert ! @closed, "table is closed"
+		assert isNonEmptyString(title), "Bad title: '@{title}'"
+		assert ['left','center','right'].includes(align),
+			"Bad align: #{OL(align)}"
+		@lRows.push {
+			opcode: 'title'
+			title
+			align
+			}
+		dbgReturn 'title'
+		return
+
+	# ..........................................................
+
+	totals: () ->
+
+		dbgEnter 'totals'
+		assert ! @closed, "table is closed"
+		lFormatted = @lColTotals.map (item, colNum) =>
+			return @formatItem(item, colNum)
+		@adjustColWidths lFormatted
+		@lRows.push {
+			opcode: 'totals'
+			lFormatted
+			}
+		dbgReturn 'totals'
+		return
+
+	# ..........................................................
+
+	subtotals: () ->
+
+		dbgEnter 'subtotals'
+		assert ! @closed, "table is closed"
+		lFormatted = @lColSubTotals.map (item, colNum) =>
+			return @formatItem(item, colNum)
+		@resetSubTotals()
+		@adjustColWidths lFormatted
+		@lRows.push {
+			opcode: 'subtotals'
+			lFormatted
+			}
+		dbgReturn 'subtotals'
+		return
+
+	# ..........................................................
 
 	close: () ->
 
@@ -169,66 +340,22 @@ export class TextTable
 			dbgReturn 'close'
 			return
 
-		# --- Calculate column widths as max of all values in col
-		#     Keep running totals for each column, which
-		#        may affect column widths
+		# --- We can now compute some other stuff
+		@totalWidth = @lColWidths.reduce(
+			(acc, n) => acc+n,
+			0) + (@numCols - 1)
 
-		dbg "Calculate column widths, build lFormattedRows"
-
-		@lColTotals = @lColFormats.map (x) => undef
-
-		for row,rowNum in @lRows
-			if (row == 'total')
-				dbg 'TOTALS row'
-				dbg 'lColTotals', @lColTotals
-				lFormattedItems = for colNum in range(@numCols)
-					total = @lColTotals[colNum]
-					if notdefined(total)
-						''
-					else
-						[align, fmt] = @lColFormats[colNum]
-						@formatItem(total, fmt)
-				@lFormattedRows.push lFormattedItems
-			else if isString(row)
-				@lFormattedRows.push row
-			else if isArray(row)
-				if @isLabelRow(rowNum)
-					@lFormattedRows.push row
-				else
-					lFormattedItems = row.map (item, colNum) =>
-						if notdefined(item)
-							return ''
-						if isNumber(item)
-							if defined(@lColTotals[colNum])
-								@lColTotals[colNum] += item
-							else
-								@lColTotals[colNum] = item
-						[align, fmt] = @lColFormats[colNum]
-						return @formatItem(item, fmt)
-					@lFormattedRows.push lFormattedItems
-			else
-				@lFormattedRows.push row
-
-		dbg "Calculate column widths"
-
-		@lColWidths = @lColFormats.map (x) => 0
-		for row in @lFormattedRows
-			if ! isString(row)
-				assert isArrayOfStrings(row), "Bad formatted row: #{OL(row)}"
-				for formatted,colNum in row
-					if (formatted.length > @lColWidths[colNum])
-						@lColWidths[colNum] = formatted.length
-
-		# --- Now that we have all column widths, we can
-		#     expand separator rows
-
-		dbg "Expand separator rows"
-
-		for row, rowNum in @lFormattedRows
-			if isString(row)
-				@lFormattedRows[rowNum] = range(@numCols).map((colNum) =>
-					row.repeat(@lColWidths[colNum])
-					)
+		# --- Go through @lRows, updating some items
+		for hRow in @lRows
+			switch hRow.opcode
+				when 'sep'
+					hRow.lFormatted = @lColWidths.map((w) =>
+						hRow.sep.repeat(w))
+				when 'fullsep'
+					hRow.literal = hRow.fullsep.repeat(@totalWidth)
+				when 'title'
+					{title, align} = hRow
+					hRow.literal = pad(title, @totalWidth, "justify=#{align}")
 
 		@closed = true
 		dbgCall () => @dumpInternals()
@@ -242,19 +369,19 @@ export class TextTable
 		dbgEnter 'asString'
 		@close()
 
-		# --- Map each item in @lFormattedRows to a string
-		lLines = @lFormattedRows.map (row, rowNum) =>
-			assert isArray(row), "lFormattedRows contains #{OL(row)}"
-			if @isLabelRow(rowNum)
-				return row.map((item, colNum) =>
-					assert isString(item), "item not a string: #{OL(item)}"
-					pad(item, @lColWidths[colNum], 'justify=center')).join(' ')
-			else
-				return row.map((item, colNum) =>
-					assert isString(item), "item not a string: #{OL(item)}"
-					align = @lColFormats[colNum][0]
-					pad(item, @lColWidths[colNum], "justify=#{align}")
-					).join(' ')
+		# --- Map each item in @lRows to a string
+		lLines = @lRows.map (hRow) =>
+			{opcode, literal, lFormatted} = hRow
+			if (opcode == 'sep')
+				return lFormatted.join(' ')
+			else if defined(literal)
+				return literal
+			else if defined(lFormatted)
+				return lFormatted.map((item, colNum) =>
+					w = @lColWidths[colNum]
+					a = @lColAligns[colNum]
+					return pad(item, w, "justify=#{a}")
+			).join(' ')
 
 		table = toBlock(lLines)
 		dbgReturn 'asString', table

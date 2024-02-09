@@ -1,5 +1,5 @@
 // --- TextTable.coffee
-var hAlignCodes;
+var hAlignWords, lOpCodes;
 
 import {
   sprintf
@@ -13,15 +13,19 @@ import {
   words,
   OL,
   range,
+  hasKey,
   pad,
   toBlock,
   LOG,
+  isEmpty,
   nonEmpty,
+  isNonEmptyString,
   jsType,
   isString,
   isNumber,
   isArray,
-  isArrayOfStrings
+  isArrayOfStrings,
+  isFunction
 } from '@jdeighan/base-utils';
 
 import {
@@ -36,130 +40,85 @@ import {
   dbgCall
 } from '@jdeighan/base-utils/debug';
 
-hAlignCodes = {
+hAlignWords = {
   l: 'left',
   c: 'center',
   r: 'right'
 };
 
+lOpCodes = words('labels data sep fullsep total subtotal literal');
+
 // ---------------------------------------------------------------------------
 export var TextTable = class TextTable {
   constructor(formatStr, hOptions = {}) {
+    var _, align, alignWord, colNum, fmt, i, lMatches, lWords, len, word;
     // --- Valid options:
     //        decPlaces - used for numbers with no % style format
     //                    default: 2
     //        parseNumbers - string data that looks like a number
-    //                       is treated as a number
+    //                       is treated as a number, default: false
     dbgEnter('TextTable', formatStr, hOptions);
     assert(defined(formatStr), "missing format string");
     this.hOptions = getOptions(hOptions, {
       decPlaces: 2,
       parseNumbers: false
     });
-    this.lColFormats = words(formatStr).map((str) => {
-      var _, align, fmt, lMatches;
-      if ((lMatches = str.match(/^(l|c|r)(\%.*)?$/))) {
-        [_, align, fmt] = lMatches;
-        return [hAlignCodes[align], fmt];
-      } else {
-        return croak(`Bad format string: ${OL(formatStr)}`);
-      }
-    });
-    dbg('lColFormats', this.lColFormats);
-    this.numCols = this.lColFormats.length;
+    lWords = words(formatStr);
+    this.numCols = lWords.length;
     dbg('numCols', this.numCols);
-    // --- Items in @lRows can be:
-    //        an Array of labels
-    //        an Array of values
-    //        a string of length 1 (separator line)
-    //        the word 'total'
+    this.lColAligns = new Array(this.numCols);
+    this.lColFormats = new Array(this.numCols);
+    for (colNum = i = 0, len = lWords.length; i < len; colNum = ++i) {
+      word = lWords[colNum];
+      if ((lMatches = word.match(/^(l|c|r)(\%\S+)?$/))) {
+        [_, align, fmt] = lMatches;
+        alignWord = hAlignWords[align];
+        assert(defined(alignWord), `Bad format string: ${OL(formatStr)}`);
+        this.lColAligns[colNum] = alignWord;
+        this.lColFormats[colNum] = fmt; // may be undef
+      } else {
+        croak(`Bad format string: ${OL(formatStr)}`);
+      }
+    }
+    dbg('lColFormats', this.lColFormats);
+    dbg('lColAligns', this.lColAligns);
+    // --- Items in @lRows must be a hash w/key 'opcode'
     this.lRows = [];
-    this.lLabelRows = []; // --- [<index>, ...]
-    this.lFormattedRows = []; // --- copy of @lRows with
-    //        formats applied, but not aligned
-    this.lColWidths = [];
+    this.lColWidths = new Array(this.numCols).fill(0);
+    this.totalWidth = undef;
     this.closed = false;
+    // --- Accumulate totals and subtotals
+    //     When a subtotal row is added, subtotals are reset to 0
+    this.lColTotals = new Array(this.numCols).fill(undef);
+    this.lColSubTotals = new Array(this.numCols).fill(undef);
   }
 
   // ..........................................................
-  isLabelRow(rowNum) {
-    return this.lLabelRows.includes(rowNum);
+  resetSubTotals() {
+    this.lColSubTotals.fill(undef);
   }
 
   // ..........................................................
-  dumpInternals() {
-    LOG('lColFormats:', this.lColFormats);
-    LOG('numCols:', this.numCols);
-    if (nonEmpty(this.lRows)) {
-      LOG('lRows:', this.lRows);
+  alignItem(item, colNum) {
+    var align, width;
+    assert(this.closed, "table not closed");
+    assert(isString(item), `Not a string: ${OL(item)}`);
+    if (item.length === width) {
+      return item;
     }
-    if (nonEmpty(this.lLabelRows)) {
-      LOG('lLabelRows:', this.lLabelRows);
+    align = this.lColAligns[colNum];
+    assert(['left', 'center', 'right'].includes(align), `Bad align parm: ${OL(align)}`);
+    width = this.lColWidths[colNum];
+    return pad(item, width, `justify=${align}`);
+  }
+
+  // ..........................................................
+  formatItem(item, colNum) {
+    var fmt;
+    if (notdefined(item)) {
+      return '';
     }
-    if (nonEmpty(this.lFormattedRows)) {
-      LOG('lFormattedRows:', this.lFormattedRows);
-    }
-    if (nonEmpty(this.lColWidths)) {
-      LOG('lColWidths:', this.lColWidths);
-    }
-  }
-
-  // ..........................................................
-  addLabels(lRow) {
-    dbgEnter('addLabels');
-    assert(!this.closed, "table is closed");
-    assert(lRow.length === this.numCols, `lRow = ${OL(lRow)}`);
-    assert(isArrayOfStrings(lRow), "non-strings in label row");
-    dbg('lRow', lRow);
-    this.lLabelRows.push(this.lRows.length);
-    this.lRows.push(lRow);
-    dbgReturn('addLabels');
-  }
-
-  // ..........................................................
-  addSep(ch = '-') {
-    dbgEnter('addSep');
-    assert(!this.closed, "table is closed");
-    assert(ch.length === 1, "Non-char arg");
-    this.lRows.push(ch);
-    dbgReturn('addSep');
-  }
-
-  // ..........................................................
-  addData(lRow) {
-    dbgEnter('addData');
-    assert(!this.closed, "table is closed");
-    assert(lRow.length === this.numCols, `lRow = ${OL(lRow)}`);
-    dbg('lRow', lRow);
-    if (this.hOptions.parseNumbers) {
-      lRow = lRow.map((item) => {
-        if (isString(item)) {
-          if (item.match(/^\d+(\.\d*)?([Ee]\d+)?$/)) { // one or more digits
-            // optional decimal part
-            // optional exponent
-            return parseFloat(item);
-          } else {
-            return item;
-          }
-        } else {
-          return item;
-        }
-      });
-    }
-    this.lRows.push(lRow);
-    dbgReturn('addData');
-  }
-
-  // ..........................................................
-  addTotals() {
-    dbgEnter('addTotals');
-    assert(!this.closed, "table is closed");
-    this.lRows.push('total');
-    dbgReturn('addTotals');
-  }
-
-  // ..........................................................
-  formatItem(item, fmt) {
+    fmt = this.lColFormats[colNum];
     if (defined(fmt)) {
       return sprintf(fmt, item);
     } else if (isString(item)) {
@@ -172,10 +131,219 @@ export var TextTable = class TextTable {
   }
 
   // ..........................................................
-  // --- Create @lFormattedRows from @lRows
-  //     Calculate @lColWidths
+  dumpInternals() {
+    LOG('lColAligns', this.lColAligns);
+    LOG('lColFormats:', this.lColFormats);
+    LOG('numCols:', this.numCols);
+    if (nonEmpty(this.lRows)) {
+      LOG('lRows:', this.lRows);
+    }
+    if (nonEmpty(this.lColWidths)) {
+      LOG('lColWidths:', this.lColWidths);
+    }
+    if (defined(this.totalWidth)) {
+      LOG('totalWidth', this.totalWidth);
+    }
+    if (nonEmpty(this.lColTotals)) {
+      LOG('lColTotals:', this.lColTotals);
+    }
+    if (nonEmpty(this.lColSubTotals)) {
+      LOG('lColSubTotals:', this.lColSubTotals);
+    }
+  }
+
+  // ..........................................................
+  adjustColWidths(lFormatted) {
+    var colNum, i, len, str;
+    for (colNum = i = 0, len = lFormatted.length; i < len; colNum = ++i) {
+      str = lFormatted[colNum];
+      assert(isString(str), `Not a string: ${OL(str)}`);
+      if (str.length > this.lColWidths[colNum]) {
+        this.lColWidths[colNum] = str.length;
+      }
+    }
+  }
+
+  // ..........................................................
+  accum(num, colNum) {
+    assert(isNumber(num), `Not a number: ${OL(num)}`);
+    if (defined(this.lColTotals[colNum])) {
+      this.lColTotals[colNum] += num;
+    } else {
+      this.lColTotals[colNum] = num;
+    }
+    if (defined(this.lColSubTotals[colNum])) {
+      this.lColSubTotals[colNum] += num;
+    } else {
+      this.lColSubTotals[colNum] = num;
+    }
+  }
+
+  // ..........................................................
+  flatten(lRow) {
+    if ((lRow.length === 1) && isArray(lRow[0])) {
+      return lRow[0];
+    }
+    return lRow;
+  }
+
+  // ..........................................................
+  labels(...lRow) {
+    lRow = this.flatten(lRow);
+    dbgEnter('labels', lRow);
+    assert(!this.closed, "table is closed");
+    assert(isArray(lRow), `Not an array: ${OL(lRow)}`);
+    assert(lRow.length === this.numCols, `lRow = ${OL(lRow)}`);
+    this.adjustColWidths(lRow);
+    this.lRows.push({
+      opcode: 'labels',
+      lFormatted: lRow
+    });
+    dbgReturn('labels');
+  }
+
+  // ..........................................................
+  data(...lRow) {
+    var lFormatted;
+    lRow = this.flatten(lRow);
+    dbgEnter('data', lRow);
+    assert(!this.closed, "table is closed");
+    assert(lRow.length === this.numCols, `lRow = ${OL(lRow)}`);
+    lFormatted = lRow.map((item, colNum) => {
+      var formatted, num;
+      switch (jsType(item)[0]) {
+        case undef:
+          dbg("item is undef");
+          return '';
+        case 'string':
+          dbg("item is a string");
+          if (this.hOptions.parseNumbers && item.match(/^\d+(\.\d*)?([Ee]\d+)?$/)) { // one or more digits
+            // optional decimal part
+            // optional exponent
+            dbg(`checking if '${item}' is a number`);
+            num = parseFloat(item);
+            dbg('num', num);
+            this.accum(num, colNum);
+            formatted = this.formatItem(num, colNum);
+            dbg('formatted', formatted);
+            return formatted;
+          } else {
+            return item;
+          }
+          break;
+        case 'number':
+          dbg("item is a number");
+          this.accum(item, colNum);
+          formatted = this.formatItem(item, colNum);
+          dbg('formatted', formatted);
+          return formatted;
+        default:
+          dbg("item is not a number or string");
+          formatted = this.formatItem(num, colNum);
+          dbg('formatted', formatted);
+          return formatted;
+      }
+    });
+    this.adjustColWidths(lFormatted);
+    this.lRows.push({
+      opcode: 'data',
+      lFormatted
+    });
+    dbgReturn('data');
+  }
+
+  // ..........................................................
+  literal(str) {
+    assert(isString(str), `Not a string: ${OL(str)}`);
+    this.lRows.push({
+      opcode: 'literal',
+      literal: str
+    });
+  }
+
+  // ..........................................................
+  callback(func) {
+    assert(isFunction(func), `Not a function: ${OL(func)}`);
+    this.lRows.push({
+      opcode: 'callback',
+      callback: func
+    });
+  }
+
+  // ..........................................................
+  sep(ch = '-') {
+    dbgEnter('addSep');
+    assert(!this.closed, "table is closed");
+    assert(ch.length === 1, "Non-char arg");
+    this.lRows.push({
+      opcode: 'sep',
+      sep: ch
+    });
+    dbgReturn('addSep');
+  }
+
+  // ..........................................................
+  fullsep(ch = '-') {
+    dbgEnter('fullsep');
+    assert(!this.closed, "table is closed");
+    assert(ch.length === 1, "Non-char arg");
+    this.lRows.push({
+      opcode: 'fullsep',
+      fullsep: ch
+    });
+    dbgReturn('fullsep');
+  }
+
+  // ..........................................................
+  title(title, align = 'center') {
+    dbgEnter('title');
+    assert(!this.closed, "table is closed");
+    assert(isNonEmptyString(title), "Bad title: '@{title}'");
+    assert(['left', 'center', 'right'].includes(align), `Bad align: ${OL(align)}`);
+    this.lRows.push({
+      opcode: 'title',
+      title,
+      align
+    });
+    dbgReturn('title');
+  }
+
+  // ..........................................................
+  totals() {
+    var lFormatted;
+    dbgEnter('totals');
+    assert(!this.closed, "table is closed");
+    lFormatted = this.lColTotals.map((item, colNum) => {
+      return this.formatItem(item, colNum);
+    });
+    this.adjustColWidths(lFormatted);
+    this.lRows.push({
+      opcode: 'totals',
+      lFormatted
+    });
+    dbgReturn('totals');
+  }
+
+  // ..........................................................
+  subtotals() {
+    var lFormatted;
+    dbgEnter('subtotals');
+    assert(!this.closed, "table is closed");
+    lFormatted = this.lColSubTotals.map((item, colNum) => {
+      return this.formatItem(item, colNum);
+    });
+    this.resetSubTotals();
+    this.adjustColWidths(lFormatted);
+    this.lRows.push({
+      opcode: 'subtotals',
+      lFormatted
+    });
+    dbgReturn('subtotals');
+  }
+
+  // ..........................................................
   close() {
-    var align, colNum, fmt, formatted, i, j, k, l, lFormattedItems, len, len1, len2, len3, ref, ref1, ref2, row, rowNum, total;
+    var align, hRow, i, len, ref, title;
     dbgEnter('close');
     // --- Allow multiple calls to close()
     if (this.closed) {
@@ -183,89 +351,26 @@ export var TextTable = class TextTable {
       dbgReturn('close');
       return;
     }
-    // --- Calculate column widths as max of all values in col
-    //     Keep running totals for each column, which
-    //        may affect column widths
-    dbg("Calculate column widths, build lFormattedRows");
-    this.lColTotals = this.lColFormats.map((x) => {
-      return undef;
-    });
+    // --- We can now compute some other stuff
+    this.totalWidth = this.lColWidths.reduce((acc, n) => {
+      return acc + n;
+    }, 0) + (this.numCols - 1);
     ref = this.lRows;
-    for (rowNum = i = 0, len = ref.length; i < len; rowNum = ++i) {
-      row = ref[rowNum];
-      if (row === 'total') {
-        dbg('TOTALS row');
-        dbg('lColTotals', this.lColTotals);
-        lFormattedItems = (function() {
-          var j, len1, ref1, results;
-          ref1 = range(this.numCols);
-          results = [];
-          for (j = 0, len1 = ref1.length; j < len1; j++) {
-            colNum = ref1[j];
-            total = this.lColTotals[colNum];
-            if (notdefined(total)) {
-              results.push('');
-            } else {
-              [align, fmt] = this.lColFormats[colNum];
-              results.push(this.formatItem(total, fmt));
-            }
-          }
-          return results;
-        }).call(this);
-        this.lFormattedRows.push(lFormattedItems);
-      } else if (isString(row)) {
-        this.lFormattedRows.push(row);
-      } else if (isArray(row)) {
-        if (this.isLabelRow(rowNum)) {
-          this.lFormattedRows.push(row);
-        } else {
-          lFormattedItems = row.map((item, colNum) => {
-            if (notdefined(item)) {
-              return '';
-            }
-            if (isNumber(item)) {
-              if (defined(this.lColTotals[colNum])) {
-                this.lColTotals[colNum] += item;
-              } else {
-                this.lColTotals[colNum] = item;
-              }
-            }
-            [align, fmt] = this.lColFormats[colNum];
-            return this.formatItem(item, fmt);
+    // --- Go through @lRows, updating some items
+    for (i = 0, len = ref.length; i < len; i++) {
+      hRow = ref[i];
+      switch (hRow.opcode) {
+        case 'sep':
+          hRow.lFormatted = this.lColWidths.map((w) => {
+            return hRow.sep.repeat(w);
           });
-          this.lFormattedRows.push(lFormattedItems);
-        }
-      } else {
-        this.lFormattedRows.push(row);
-      }
-    }
-    dbg("Calculate column widths");
-    this.lColWidths = this.lColFormats.map((x) => {
-      return 0;
-    });
-    ref1 = this.lFormattedRows;
-    for (j = 0, len1 = ref1.length; j < len1; j++) {
-      row = ref1[j];
-      if (!isString(row)) {
-        assert(isArrayOfStrings(row), `Bad formatted row: ${OL(row)}`);
-        for (colNum = k = 0, len2 = row.length; k < len2; colNum = ++k) {
-          formatted = row[colNum];
-          if (formatted.length > this.lColWidths[colNum]) {
-            this.lColWidths[colNum] = formatted.length;
-          }
-        }
-      }
-    }
-    // --- Now that we have all column widths, we can
-    //     expand separator rows
-    dbg("Expand separator rows");
-    ref2 = this.lFormattedRows;
-    for (rowNum = l = 0, len3 = ref2.length; l < len3; rowNum = ++l) {
-      row = ref2[rowNum];
-      if (isString(row)) {
-        this.lFormattedRows[rowNum] = range(this.numCols).map((colNum) => {
-          return row.repeat(this.lColWidths[colNum]);
-        });
+          break;
+        case 'fullsep':
+          hRow.literal = hRow.fullsep.repeat(this.totalWidth);
+          break;
+        case 'title':
+          ({title, align} = hRow);
+          hRow.literal = pad(title, this.totalWidth, `justify=${align}`);
       }
     }
     this.closed = true;
@@ -280,20 +385,20 @@ export var TextTable = class TextTable {
     var lLines, table;
     dbgEnter('asString');
     this.close();
-    // --- Map each item in @lFormattedRows to a string
-    lLines = this.lFormattedRows.map((row, rowNum) => {
-      assert(isArray(row), `lFormattedRows contains ${OL(row)}`);
-      if (this.isLabelRow(rowNum)) {
-        return row.map((item, colNum) => {
-          assert(isString(item), `item not a string: ${OL(item)}`);
-          return pad(item, this.lColWidths[colNum], 'justify=center');
-        }).join(' ');
-      } else {
-        return row.map((item, colNum) => {
-          var align;
-          assert(isString(item), `item not a string: ${OL(item)}`);
-          align = this.lColFormats[colNum][0];
-          return pad(item, this.lColWidths[colNum], `justify=${align}`);
+    // --- Map each item in @lRows to a string
+    lLines = this.lRows.map((hRow) => {
+      var lFormatted, literal, opcode;
+      ({opcode, literal, lFormatted} = hRow);
+      if (opcode === 'sep') {
+        return lFormatted.join(' ');
+      } else if (defined(literal)) {
+        return literal;
+      } else if (defined(lFormatted)) {
+        return lFormatted.map((item, colNum) => {
+          var a, w;
+          w = this.lColWidths[colNum];
+          a = this.lColAligns[colNum];
+          return pad(item, w, `justify=${a}`);
         }).join(' ');
       }
     });
