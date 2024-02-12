@@ -22,7 +22,9 @@ utest.equal(formatString("a word"), "'a˳word'");
 
 utest.equal(formatString("\t\tword"), "'→→word'");
 
-utest.equal(formatString("first\nsecond"), "'first®second'");
+utest.equal(formatString("first\nsecond"), "'first▼second'");
+
+utest.equal(formatString("first\r\nsecond\r\n"), "'first◄▼second◄▼'");
 
 // --- strings are surrounded by quote marks that
 //     don't clash with internal characters
@@ -44,7 +46,7 @@ u.equal("a word", "'a˳word'");
 
 u.equal("\t\tword", "'→→word'");
 
-u.equal("first\nsecond", "'first®second'");
+u.equal("first\nsecond", "'first▼second'");
 
 u.equal("abc", "'abc'");
 
@@ -108,6 +110,14 @@ u.equal({
 b: 'abc'`);
 
 u.equal({
+  a: 1,
+  b: 'abc',
+  f: func2
+}, `a: 1
+b: 'abc'
+f: [Function func2]`);
+
+u.equal({
   key: 'wood',
   value: [
     "a word",
@@ -137,6 +147,6 @@ value:
 items:
 	- '→a'
 	- 2
-	- '→→b®'`);
+	- '→→b▼'`);
 
 //# sourceMappingURL=nice.test.js.map

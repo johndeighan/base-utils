@@ -10,7 +10,8 @@ import {formatString, toNICE} from '@jdeighan/base-utils/nice'
 
 utest.equal formatString("a word"), "'a˳word'"
 utest.equal formatString("\t\tword"), "'→→word'"
-utest.equal formatString("first\nsecond"), "'first®second'"
+utest.equal formatString("first\nsecond"), "'first▼second'"
+utest.equal formatString("first\r\nsecond\r\n"), "'first◄▼second◄▼'"
 
 # --- strings are surrounded by quote marks that
 #     don't clash with internal characters
@@ -27,7 +28,7 @@ u.transformValue = (str) => return toNICE(str)
 
 u.equal "a word", "'a˳word'"
 u.equal "\t\tword", "'→→word'"
-u.equal "first\nsecond", "'first®second'"
+u.equal "first\nsecond", "'first▼second'"
 u.equal "abc", "'abc'"
 u.equal "mary's lamb", '"mary\'s˳lamb"'
 u.equal "mary's \"stuff\"", '«mary\'s˳"stuff"»'
@@ -74,6 +75,12 @@ u.equal {a: [1,2], b: 'abc'}, """
 	b: 'abc'
 	"""
 
+u.equal {a:1, b:'abc', f: func2}, """
+	a: 1
+	b: 'abc'
+	f: [Function func2]
+	"""
+
 u.equal {
 	key: 'wood'
 	value: [
@@ -99,5 +106,5 @@ u.equal {
 	items:
 		- '→a'
 		- 2
-		- '→→b®'
+		- '→→b▼'
 	"""

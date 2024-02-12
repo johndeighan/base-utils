@@ -283,7 +283,7 @@ def`, '--'), `--abc
 
 // ---------------------------------------------------------------------------
 test("line 153", (t) => {
-  return t.is(escapeStr("\t\tXXX\n"), "→→XXX®");
+  return t.is(escapeStr("\t\tXXX\n"), "→→XXX▼");
 });
 
 hEsc = {
@@ -302,7 +302,7 @@ test("line 166", (t) => {
 });
 
 test("line 167", (t) => {
-  return t.is(OL("\t\tabc\nxyz"), "'→→abc®xyz'");
+  return t.is(OL("\t\tabc\nxyz"), "'→→abc▼xyz'");
 });
 
 test("line 168", (t) => {
@@ -1081,7 +1081,7 @@ utest.equal(514, words('a b c'), ['a', 'b', 'c']);
 utest.equal(515, words('  a   b   c  '), ['a', 'b', 'c']);
 
 // ---------------------------------------------------------------------------
-utest.equal(519, escapeStr("\t\tXXX\n"), "→→XXX®");
+utest.equal(519, escapeStr("\t\tXXX\n"), "→→XXX▼");
 
 hEsc = {
   "\n": "\\n",
@@ -1316,7 +1316,7 @@ utest.falsy(654, isInteger(42, {
 // ---------------------------------------------------------------------------
 utest.equal(658, OL(undef), "undef");
 
-utest.equal(659, OL("\t\tabc\nxyz"), "'→→abc®xyz'");
+utest.equal(659, OL("\t\tabc\nxyz"), "'→→abc▼xyz'");
 
 utest.equal(660, OL({
   a: 1,

@@ -543,9 +543,10 @@ export var quoted = (str, escape = undef) => {
 };
 
 // ---------------------------------------------------------------------------
-//   escapeStr - escape newlines, TAB chars, etc.
+//   escapeStr - escape newlines, carriage return, TAB chars, etc.
 export var hEsc = {
-  "\n": '®',
+  "\r": '◄',
+  "\n": '▼',
   "\t": '→',
   " ": '˳'
 };

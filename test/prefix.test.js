@@ -19,7 +19,7 @@ import {
 
 un = (str) => {
   return escapeStr(str, {
-    '®': "\n",
+    '▼': "\n",
     '→': "\t",
     '˳': " "
   });

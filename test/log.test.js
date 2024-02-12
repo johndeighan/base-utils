@@ -164,7 +164,7 @@ clearAllLogs('noecho');
 
 LOGVALUE('x', 'abc\ndef');
 
-utest.equal(getMyLogs(), `x = 'abc®def'`);
+utest.equal(getMyLogs(), `x = 'abc▼def'`);
 
 // --- hash (OL doesn't fit)
 clearAllLogs('noecho');

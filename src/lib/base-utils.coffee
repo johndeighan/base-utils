@@ -484,10 +484,11 @@ export quoted = (str, escape=undef) =>
 	return '<' + str + '>'
 
 # ---------------------------------------------------------------------------
-#   escapeStr - escape newlines, TAB chars, etc.
+#   escapeStr - escape newlines, carriage return, TAB chars, etc.
 
 export hEsc = {
-	"\n": '®'
+	"\r": '◄'
+	"\n": '▼'
 	"\t": '→'
 	" ": '˳'
 	}

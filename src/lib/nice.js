@@ -29,7 +29,8 @@ export var formatString = (str) => {
   hEsc = {
     " ": '˳',
     "\t": '→',
-    "\n": '®'
+    "\r": '◄',
+    "\n": '▼'
   };
   if (str.includes("'")) {
     if (str.includes('"')) {

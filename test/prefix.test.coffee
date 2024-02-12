@@ -11,7 +11,7 @@ import {utest} from '@jdeighan/base-utils/utest'
 un = (str) =>
 
 	return escapeStr(str, {
-	'®': "\n"
+	'▼': "\n"
 	'→': "\t"
 	'˳': " "
 	})

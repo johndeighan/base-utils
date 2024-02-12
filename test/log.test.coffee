@@ -136,7 +136,7 @@ utest.equal getMyLogs(), """
 clearAllLogs('noecho')
 LOGVALUE 'x', 'abc\ndef'
 utest.equal getMyLogs(), """
-	x = 'abc®def'
+	x = 'abc▼def'
 	"""
 
 # --- hash (OL doesn't fit)

@@ -180,21 +180,21 @@ u.equal prefixBlock("""
 
 # ---------------------------------------------------------------------------
 
-u.equal escapeStr("   XXX\n"),  "˳˳˳XXX®"
-u.equal escapeStr("\t ABC\n"),  "→˳ABC®"
-u.equal escapeStr("X\nX\nX\n"), "X®X®X®"
-u.equal escapeStr("XXX\n\t\t"), "XXX®→→"
-u.equal escapeStr("XXX\n  "),   "XXX®˳˳"
+u.equal escapeStr("   XXX\n"),  "˳˳˳XXX▼"
+u.equal escapeStr("\t ABC\n"),  "→˳ABC▼"
+u.equal escapeStr("X\nX\nX\n"), "X▼X▼X▼"
+u.equal escapeStr("XXX\n\t\t"), "XXX▼→→"
+u.equal escapeStr("XXX\n  "),   "XXX▼˳˳"
 
 (() =>
 	t = new UnitTester()
 	t.transformValue = (str) => escapeStr(str)
 
-	t.equal "   XXX\n",  "˳˳˳XXX®"
-	t.equal "\t ABC\n",  "→˳ABC®"
-	t.equal "X\nX\nX\n", "X®X®X®"
-	t.equal "XXX\n\t\t", "XXX®→→"
-	t.equal "XXX\n  ",   "XXX®˳˳"
+	t.equal "   XXX\n",  "˳˳˳XXX▼"
+	t.equal "\t ABC\n",  "→˳ABC▼"
+	t.equal "X\nX\nX\n", "X▼X▼X▼"
+	t.equal "XXX\n\t\t", "XXX▼→→"
+	t.equal "XXX\n  ",   "XXX▼˳˳"
 	)()
 
 hEsc = {
@@ -209,7 +209,7 @@ u.equal escapeStr("\thas quote: \"\nnext line", hEsc),
 # ---------------------------------------------------------------------------
 
 u.equal OL(undef), "undef"
-u.equal OL("\t\tabc\nxyz"), "'→→abc®xyz'"
+u.equal OL("\t\tabc\nxyz"), "'→→abc▼xyz'"
 u.equal OL({a:1, b:'xyz'}), '{"a":1,"b":"xyz"}'
 
 hProc = {
@@ -552,7 +552,7 @@ u.equal words('  a   b   c  '), ['a', 'b', 'c']
 
 # ---------------------------------------------------------------------------
 
-u.equal escapeStr("\t\tXXX\n"), "→→XXX®"
+u.equal escapeStr("\t\tXXX\n"), "→→XXX▼"
 hEsc = {
 	"\n": "\\n"
 	"\t": "\\t"
@@ -692,7 +692,7 @@ u.falsy isInteger(42, {max:  0})
 # ---------------------------------------------------------------------------
 
 u.equal OL(undef), "undef"
-u.equal OL("\t\tabc\nxyz"), "'→→abc®xyz'"
+u.equal OL("\t\tabc\nxyz"), "'→→abc▼xyz'"
 u.equal OL({a:1, b:'xyz'}), '{"a":1,"b":"xyz"}'
 
 # ---------------------------------------------------------------------------

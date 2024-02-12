@@ -150,7 +150,7 @@ test "line 143", (t) => t.is(prefixBlock("""
 
 # ---------------------------------------------------------------------------
 
-test "line 153", (t) => t.is(escapeStr("\t\tXXX\n"), "→→XXX®")
+test "line 153", (t) => t.is(escapeStr("\t\tXXX\n"), "→→XXX▼")
 
 hEsc = {
 	"\n": "\\n"
@@ -164,7 +164,7 @@ test "line 161", (t) => t.is(escapeStr("\thas quote: \"\nnext line", hEsc),
 # ---------------------------------------------------------------------------
 
 test "line 166", (t) => t.is(OL(undef), "undef")
-test "line 167", (t) => t.is(OL("\t\tabc\nxyz"), "'→→abc®xyz'")
+test "line 167", (t) => t.is(OL("\t\tabc\nxyz"), "'→→abc▼xyz'")
 test "line 168", (t) => t.is(OL({a:1, b:'xyz'}), '{"a":1,"b":"xyz"}')
 
 hProc = {
@@ -516,7 +516,7 @@ utest.equal 515, words('  a   b   c  '), ['a', 'b', 'c']
 
 # ---------------------------------------------------------------------------
 
-utest.equal 519, escapeStr("\t\tXXX\n"), "→→XXX®"
+utest.equal 519, escapeStr("\t\tXXX\n"), "→→XXX▼"
 hEsc = {
 	"\n": "\\n"
 	"\t": "\\t"
@@ -656,7 +656,7 @@ utest.falsy  654, isInteger(42, {max:  0})
 # ---------------------------------------------------------------------------
 
 utest.equal 658, OL(undef), "undef"
-utest.equal 659, OL("\t\tabc\nxyz"), "'→→abc®xyz'"
+utest.equal 659, OL("\t\tabc\nxyz"), "'→→abc▼xyz'"
 utest.equal 660, OL({a:1, b:'xyz'}), '{"a":1,"b":"xyz"}'
 
 # ---------------------------------------------------------------------------
