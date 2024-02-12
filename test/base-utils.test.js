@@ -528,7 +528,13 @@ u.falsy(oneof('a', 'b', 'c'));
   func2 = (x) => {};
   // --- NOTE: regular functions can't be distinguished from constructors
   u.equal(jsType(func1), ['class', undef]);
-  u.equal(jsType(func2), ['function', undef]);
+  u.equal(jsType(function() {
+    return 42;
+  }), ['class', undef]);
+  u.equal(jsType(func2), ['function', 'func2']);
+  u.equal(jsType(() => {
+    return 42;
+  }), ['function', undef]);
   u.equal(jsType(NewClass), ['class', undef]);
   return u.equal(jsType(o), ['object', undef]);
 })();

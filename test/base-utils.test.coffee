@@ -396,8 +396,10 @@ u.falsy  oneof('a', 'b', 'c')
 
 	# --- NOTE: regular functions can't be distinguished from constructors
 	u.equal(jsType(func1), ['class', undef])
+	u.equal jsType(() -> 42), ['class', undef]
 
-	u.equal jsType(func2), ['function', undef]
+	u.equal jsType(func2), ['function', 'func2']
+	u.equal jsType(() => 42), ['function', undef]
 	u.equal jsType(NewClass), ['class', undef]
 	u.equal jsType(o), ['object', undef]
 	)()

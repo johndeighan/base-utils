@@ -573,7 +573,8 @@ export jsType = (x) =>
 		when 'function'
 			if x.prototype && (x.prototype.constructor == x)
 				return ['class', undef]
-			return ['function', undef]
+			else
+				return ['function', x.name || undef]
 		when 'object'
 			if (x instanceof String)
 				if x.match(/^\s*$/)
@@ -598,7 +599,7 @@ export jsType = (x) =>
 				if x.prototype && (x.prototype.constructor == x)
 					return ['class', undef]
 				else
-					return ['function', undef]
+					return ['function', x.name || undef]
 			if defined(x.constructor.name) \
 					&& (typeof x.constructor.name == 'string') \
 					&& (x.constructor.name == 'Object')
