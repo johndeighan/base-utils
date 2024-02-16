@@ -1,5 +1,5 @@
 // base-utils.test.coffee
-var a, b, c, d, dateStr, e, fourSpaces, gen, h, hEsc, hProc, lItems, lShuffled, passTest, threeSpaces;
+var a, b, c, d, dateStr, e, fourSpaces, gen, hEsc, hProc, lItems, lShuffled, passTest, threeSpaces;
 
 import {
   u,
@@ -15,6 +15,7 @@ import {
   spaces,
   keys,
   hasKey,
+  extractKey,
   hasAllKeys,
   hasAnyKey,
   subkeys,
@@ -85,7 +86,8 @@ import {
   pad,
   forEachItem,
   addToHash,
-  chomp
+  chomp,
+  flattenToHash
 } from '@jdeighan/base-utils';
 
 import {
@@ -1441,44 +1443,89 @@ u.equal(pad(false, 3, 'truncate'), 'fal');
 
 // ---------------------------------------------------------------------------
 // test keys(), hasKey(), hasAllKeys(), hasAnyKey(), subkeys()
-h = {
-  '2023-Nov': {
+(() => {
+  var h;
+  h = {
+    '2023-Nov': {
+      Dining: {
+        amt: 200
+      },
+      Hardware: {
+        amt: 50
+      }
+    },
+    '2023-Dec': {
+      Dining: {
+        amt: 300
+      },
+      Insurance: {
+        amt: 150
+      }
+    }
+  };
+  u.equal(keys(h), ['2023-Nov', '2023-Dec']);
+  u.truthy(hasKey(h, '2023-Nov'));
+  u.falsy(hasKey(h, '2023-Oct'));
+  u.equal(subkeys(h), ['Dining', 'Hardware', 'Insurance']);
+  u.truthy(hasAllKeys(h, '2023-Nov', '2023-Dec'));
+  u.truthy(hasAllKeys(h, '2023-Nov'));
+  u.falsy(hasAllKeys(h, '2023-Oct', '2023-Nov', '2023-Dec'));
+  u.truthy(hasAnyKey(h, '2023-Oct', '2023-Nov', '2023-Dec'));
+  u.truthy(hasAnyKey(h, '2023-Oct', '2023-Nov'));
+  return u.falsy(hasAnyKey(h, '2023-Jan', '2023-Feb', '2023-Mar'));
+})();
+
+// ---------------------------------------------------------------------------
+// --- test extractKey()
+(() => {
+  var h, h2, val1, val2;
+  h = {
+    Nov: {
+      Dining: {
+        amt: 200
+      },
+      Hardware: {
+        amt: 50
+      }
+    },
+    Dec: {
+      Dining: {
+        amt: 300
+      },
+      Insurance: {
+        amt: 150
+      }
+    }
+  };
+  val1 = extractKey(h, 'Nov');
+  u.equal(val1, {
     Dining: {
       amt: 200
     },
     Hardware: {
       amt: 50
     }
-  },
-  '2023-Dec': {
-    Dining: {
-      amt: 300
-    },
-    Insurance: {
-      amt: 150
+  });
+  u.equal(h, {
+    Dec: {
+      Dining: {
+        amt: 300
+      },
+      Insurance: {
+        amt: 150
+      }
     }
-  }
-};
-
-u.equal(keys(h), ['2023-Nov', '2023-Dec']);
-
-u.truthy(hasKey(h, '2023-Nov'));
-
-u.falsy(hasKey(h, '2023-Oct'));
-
-u.equal(subkeys(h), ['Dining', 'Hardware', 'Insurance']);
-
-u.truthy(hasAllKeys(h, '2023-Nov', '2023-Dec'));
-
-u.truthy(hasAllKeys(h, '2023-Nov'));
-
-u.falsy(hasAllKeys(h, '2023-Oct', '2023-Nov', '2023-Dec'));
-
-u.truthy(hasAnyKey(h, '2023-Oct', '2023-Nov', '2023-Dec'));
-
-u.truthy(hasAnyKey(h, '2023-Oct', '2023-Nov'));
-
-u.falsy(hasAnyKey(h, '2023-Jan', '2023-Feb', '2023-Mar'));
+  });
+  h2 = {
+    fName: 'John',
+    lName: 'Deighan'
+  };
+  val2 = extractKey(h2, 'fName');
+  u.equal(val2, 'John');
+  return u.equal(h2, {
+    lName: 'Deighan'
+  });
+})();
 
 // ---------------------------------------------------------------------------
 u.equal(keys({
@@ -1638,5 +1685,97 @@ u.equal(chomp('abc'), 'abc');
 u.equal(chomp('abc\n'), 'abc');
 
 u.equal(chomp('abc\r\n'), 'abc');
+
+// ---------------------------------------------------------------------------
+// --- test flattenToHash()
+(() => {
+  u.equal(flattenToHash({
+    a: 1,
+    b: 2
+  }), {
+    a: 1,
+    b: 2
+  });
+  u.equal(flattenToHash([
+    {
+      a: 1
+    },
+    {
+      b: 2
+    }
+  ]), {
+    a: 1,
+    b: 2
+  });
+  u.equal(flattenToHash([
+    {
+      a: 1
+    },
+    [
+      {
+        b: 2
+      }
+    ]
+  ]), {
+    a: 1,
+    b: 2
+  });
+  u.equal(flattenToHash([
+    [
+      {
+        a: 1
+      }
+    ],
+    {
+      b: 2
+    }
+  ]), {
+    a: 1,
+    b: 2
+  });
+  u.equal(flattenToHash([
+    [
+      {
+        a: 1,
+        c: 3
+      }
+    ],
+    {
+      b: 2,
+      d: 4
+    }
+  ]), {
+    a: 1,
+    b: 2,
+    c: 3,
+    d: 4
+  });
+  lItems = [
+    {
+      a: 1,
+      b: 2
+    },
+    [
+      {
+        c: 3
+      },
+      {
+        d: 4
+      },
+      [
+        {
+          e: 5
+        }
+      ]
+    ]
+  ];
+  return u.equal(flattenToHash(lItems), {
+    a: 1,
+    b: 2,
+    c: 3,
+    d: 4,
+    e: 5
+  });
+})();
 
 //# sourceMappingURL=base-utils.test.js.map

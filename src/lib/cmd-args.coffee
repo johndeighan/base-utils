@@ -3,7 +3,9 @@
 import parseArgs from 'minimist'
 
 import {
-	undef, defined, notdefined, isString, isHash, isArray, LOG,
+	undef, defined, notdefined, isString, isHash, LOG,
+	isArray, isArrayOfStrings,
+	hasKey, extractKey, OL,
 	} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 
@@ -49,16 +51,23 @@ export getArgs = (hOptions, lArgs=process.argv.slice(2), helpText=undef) =>
 	#     hArgs._ contains and array of all non-options
 
 	assert isHash(hOptions), "hOptions must be a hash"
-	if hOptions.hasOwnProperty('debug')
-		debug = hOptions.debug
-		delete hOptions.debug
-	if hOptions.hasOwnProperty('number')
-		lNumbers = hOptions.number
-		if hOptions.hasOwnProperty('string')
-			hOptions.string = [hOptions.string..., lNumbers]
-		else
-			hOptions.string = lNumbers
-		delete hOptions.number
+
+	if hOptions.debug
+		LOG 'org hOptions:', hOptions
+
+	# --- some keys are unexpected by parseArgs() so we extract them
+	debug = extractKey(hOptions, 'debug')
+	minNonOptions = extractKey(hOptions, 'minNonOptions')
+	maxNonOptions = extractKey(hOptions, 'maxNonOptions')
+	lNumbers = extractKey(hOptions, 'number')
+
+	# --- Unspecified default values will be added w/value undef
+	if defined(hOptions.default)
+		assert isHash(hOptions.default), "key 'default' must be a hash"
+		hDefaultVals = hOptions.default
+	else
+		hOptions.default = hDefaultVals = {}
+
 	if isString(lArgs)
 		lArgs = lArgs.trim().split(/\s+/)
 		if debug
@@ -66,13 +75,44 @@ export getArgs = (hOptions, lArgs=process.argv.slice(2), helpText=undef) =>
 	else
 		assert isArray(lArgs), "lArgs must be an array"
 
+	# --- Non-standard key 'numbers' is list of names
+	#     where numbers are expected
+	if defined(lNumbers)
+		assert isArrayOfStrings(lNumbers),
+			"key 'number' must be an array of strings"
+		if defined(hOptions.string)
+			assert isArrayOfStrings(hOptions.string),
+				"key 'string' must be an array"
+			hOptions.string = [hOptions.string..., lNumbers...]
+		else
+			hOptions.string = lNumbers
+
+	if defined(hOptions.string)
+		assert isArrayOfStrings(hOptions.string),
+			"key 'string' must be an array of strings"
+		for str in hOptions.string
+			if ! hasKey(hDefaultVals, str)
+				hDefaultVals[str] = undef
+
+	if defined(hOptions.boolean)
+		assert isArrayOfStrings(hOptions.string),
+			"key 'string' must be an array of strings"
+		for str in hOptions.boolean
+			if ! hasKey(hDefaultVals, str)
+				hDefaultVals[str] = undef
+
 	# --- If no 'unknown' key in hOptions, add a default one
-	if notdefined(hOptions.unknown)
+	if ! hasKey(hOptions, 'unknown')
 		hOptions.unknown = (opt) =>
 			if opt.startsWith('-')
 				displayHelpText helpText
 				croak "Unknown option '#{opt}'"
 			return
+
+	hOptions.default = hDefaultVals
+	if debug
+		LOG 'final hOptions', hOptions
+
 	hArgs = parseArgs(lArgs, hOptions)
 	if defined(lNumbers)
 		for key in lNumbers

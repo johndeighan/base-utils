@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "start-project.js",
+  "sourceRoot": "..\\..\\",
+  "sources": [
+    "src\\bin\\start-project.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAA;;AAAA",
+  "sourcesContent": [
+    "`#!/usr/bin/env node\r\n`\r\n# start-project.coffee\r\n\r\n"
+  ]
+}

@@ -170,6 +170,17 @@ export var hasKey = (obj, key) => {
 };
 
 // ---------------------------------------------------------------------------
+// --- Removes key, but returns associated value
+export var extractKey = (h, key) => {
+  var val;
+  assert(isHash(h), "not a hash");
+  assert(isString(key), "key not a string");
+  val = h[key];
+  delete h[key];
+  return val;
+};
+
+// ---------------------------------------------------------------------------
 export var hasAllKeys = (obj, ...lKeys) => {
   var j, key, len1;
   for (j = 0, len1 = lKeys.length; j < len1; j++) {
@@ -1557,6 +1568,39 @@ export var addToHash = (obj, lIndexes, value) => {
   }
   subobj[key] = value;
   return obj;
+};
+
+// ---------------------------------------------------------------------------
+export var flattenToHash = (x) => {
+  var hResult, item, j, k, key, len1, len2, ref, subitem, value;
+  if (isHash(x)) {
+    return x;
+  } else if (isArray(x)) {
+    hResult = {};
+    for (j = 0, len1 = x.length; j < len1; j++) {
+      item = x[j];
+      if (isHash(item)) {
+        for (key in item) {
+          if (!hasProp.call(item, key)) continue;
+          value = item[key];
+          hResult[key] = value;
+        }
+      } else if (isArray(item)) {
+        for (k = 0, len2 = item.length; k < len2; k++) {
+          subitem = item[k];
+          ref = flattenToHash(subitem);
+          for (key in ref) {
+            if (!hasProp.call(ref, key)) continue;
+            value = ref[key];
+            hResult[key] = value;
+          }
+        }
+      } else {
+        croak(`not a hash or array: ${OL(item)}`);
+      }
+    }
+  }
+  return hResult;
 };
 
 //# sourceMappingURL=base-utils.js.map

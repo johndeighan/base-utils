@@ -3,7 +3,6 @@
 	"version": "14.0.2",
 	"type": "module",
 	"description": "low level utilities",
-	"main": "index.js",
 	"exports": {
 		".": "./src/lib/base-utils.js",
 		"./ll-fs": "./src/lib/ll-fs.js",
@@ -52,6 +51,7 @@
 	},
 	"devDependencies": {
 		"deasync": "^0.1.29",
-		"gulp": "^4.0.2"
+		"gulp": "^4.0.2",
+		"peggy": "^4.0.0"
 	}
 }

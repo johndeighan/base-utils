@@ -150,6 +150,17 @@ export hasKey = (obj, key) =>
 	return obj.hasOwnProperty(key)
 
 # ---------------------------------------------------------------------------
+# --- Removes key, but returns associated value
+
+export extractKey = (h, key) =>
+
+	assert isHash(h), "not a hash"
+	assert isString(key), "key not a string"
+	val = h[key]     # might be undef
+	delete h[key]
+	return val
+
+# ---------------------------------------------------------------------------
 
 export hasAllKeys = (obj, lKeys...) =>
 
@@ -1356,3 +1367,23 @@ export addToHash = (obj, lIndexes, value) =>
 			croak "Bad index: #{OL(index)}"
 	subobj[key] = value
 	return obj
+
+# ---------------------------------------------------------------------------
+
+export flattenToHash = (x) =>
+
+	if isHash(x)
+		return x
+	else if isArray(x)
+		hResult = {}
+		for item in x
+			if isHash(item)
+				for own key,value of item
+					hResult[key] = value
+			else if isArray(item)
+				for subitem in item
+					for own key,value of flattenToHash(subitem)
+						hResult[key] = value
+			else
+				croak "not a hash or array: #{OL(item)}"
+	return hResult

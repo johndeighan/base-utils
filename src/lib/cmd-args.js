@@ -9,8 +9,12 @@ import {
   notdefined,
   isString,
   isHash,
+  LOG,
   isArray,
-  LOG
+  isArrayOfStrings,
+  hasKey,
+  extractKey,
+  OL
 } from '@jdeighan/base-utils';
 
 import {
@@ -30,7 +34,7 @@ displayHelpText = (helpText) => {
 // ---------------------------------------------------------------------------
 // --- By default, throws error if unexpected args are seen
 export var getArgs = (hOptions, lArgs = process.argv.slice(2), helpText = undef) => {
-  var debug, hArgs, i, key, lNumbers, len;
+  var debug, hArgs, hDefaultVals, i, j, k, key, lNumbers, len, len1, len2, maxNonOptions, minNonOptions, ref, ref1, str;
   // --- hOptions should include keys for types of args
   //        with value being an array of option keys, e.g.
 
@@ -58,18 +62,20 @@ export var getArgs = (hOptions, lArgs = process.argv.slice(2), helpText = undef)
   //     if lArgs is a string, it's split on whitespace
   //     hArgs._ contains and array of all non-options
   assert(isHash(hOptions), "hOptions must be a hash");
-  if (hOptions.hasOwnProperty('debug')) {
-    debug = hOptions.debug;
-    delete hOptions.debug;
+  if (hOptions.debug) {
+    LOG('org hOptions:', hOptions);
   }
-  if (hOptions.hasOwnProperty('number')) {
-    lNumbers = hOptions.number;
-    if (hOptions.hasOwnProperty('string')) {
-      hOptions.string = [...hOptions.string, lNumbers];
-    } else {
-      hOptions.string = lNumbers;
-    }
-    delete hOptions.number;
+  // --- some keys are unexpected by parseArgs() so we extract them
+  debug = extractKey(hOptions, 'debug');
+  minNonOptions = extractKey(hOptions, 'minNonOptions');
+  maxNonOptions = extractKey(hOptions, 'maxNonOptions');
+  lNumbers = extractKey(hOptions, 'number');
+  // --- Unspecified default values will be added w/value undef
+  if (defined(hOptions.default)) {
+    assert(isHash(hOptions.default), "key 'default' must be a hash");
+    hDefaultVals = hOptions.default;
+  } else {
+    hOptions.default = hDefaultVals = {};
   }
   if (isString(lArgs)) {
     lArgs = lArgs.trim().split(/\s+/);
@@ -79,8 +85,38 @@ export var getArgs = (hOptions, lArgs = process.argv.slice(2), helpText = undef)
   } else {
     assert(isArray(lArgs), "lArgs must be an array");
   }
-  // --- If no 'unknown' key in hOptions, add a default one
-  if (notdefined(hOptions.unknown)) {
+  // --- Non-standard key 'numbers' is list of names
+  //     where numbers are expected
+  if (defined(lNumbers)) {
+    assert(isArrayOfStrings(lNumbers), "key 'number' must be an array of strings");
+    if (defined(hOptions.string)) {
+      assert(isArrayOfStrings(hOptions.string), "key 'string' must be an array");
+      hOptions.string = [...hOptions.string, ...lNumbers];
+    } else {
+      hOptions.string = lNumbers;
+    }
+  }
+  if (defined(hOptions.string)) {
+    assert(isArrayOfStrings(hOptions.string), "key 'string' must be an array of strings");
+    ref = hOptions.string;
+    for (i = 0, len = ref.length; i < len; i++) {
+      str = ref[i];
+      if (!hasKey(hDefaultVals, str)) {
+        hDefaultVals[str] = undef;
+      }
+    }
+  }
+  if (defined(hOptions.boolean)) {
+    assert(isArrayOfStrings(hOptions.string), "key 'string' must be an array of strings");
+    ref1 = hOptions.boolean;
+    for (j = 0, len1 = ref1.length; j < len1; j++) {
+      str = ref1[j];
+      if (!hasKey(hDefaultVals, str)) {
+        hDefaultVals[str] = undef;
+      }
+    }
+  }
+  if (!hasKey(hOptions, 'unknown')) {
     hOptions.unknown = (opt) => {
       if (opt.startsWith('-')) {
         displayHelpText(helpText);
@@ -88,10 +124,14 @@ export var getArgs = (hOptions, lArgs = process.argv.slice(2), helpText = undef)
       }
     };
   }
+  hOptions.default = hDefaultVals;
+  if (debug) {
+    LOG('final hOptions', hOptions);
+  }
   hArgs = parseArgs(lArgs, hOptions);
   if (defined(lNumbers)) {
-    for (i = 0, len = lNumbers.length; i < len; i++) {
-      key = lNumbers[i];
+    for (k = 0, len2 = lNumbers.length; k < len2; k++) {
+      key = lNumbers[k];
       hArgs[key] = parseFloat(hArgs[key]);
     }
   }
