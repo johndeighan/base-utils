@@ -1,6 +1,6 @@
 `#!/usr/bin/env node
 `
-# start-project.coffee
+# peggy-all.coffee
 
 import {
 	undef, defined, notdefined, LOG,
@@ -8,4 +8,4 @@ import {
 
 # ---------------------------------------------------------------------------
 
-LOG "You are running the start-project script"
+LOG "You are running the gen-parsers script"

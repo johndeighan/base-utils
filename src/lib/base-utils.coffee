@@ -247,6 +247,8 @@ export runCmd = (cmd) =>
 		}
 	return result || "<STDOUT>"
 
+export execCmd = runCmd
+
 # ---------------------------------------------------------------------------
 
 export deepEqual = (a, b) =>

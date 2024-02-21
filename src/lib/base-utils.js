@@ -285,6 +285,8 @@ export var runCmd = (cmd) => {
   return result || "<STDOUT>";
 };
 
+export var execCmd = runCmd;
+
 // ---------------------------------------------------------------------------
 export var deepEqual = (a, b) => {
   var error;

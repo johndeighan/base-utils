@@ -27,10 +27,12 @@
 	},
 	"bin": {
 		"gen-bin-key": "./src/bin/gen-bin-key.js",
-		"get-imports-from": "./src/bin/get-imports-from.js"
+		"get-imports-from": "./src/bin/get-imports-from.js",
+		"start-project": "./src/bin/start-project.js",
+		"gen-parsers": "./src/bin/peggy-all.js"
 	},
 	"scripts": {
-		"build": "cls && coffee -cm -b --no-header .",
+		"build": "clear && npx coffee -cm -b --no-header .",
 		"test": "npm run build && npx ava ./test/*.test.js && git status"
 	},
 	"keywords": [
@@ -39,7 +41,7 @@
 	"author": "John Deighan",
 	"license": "MIT",
 	"dependencies": {
-		"ava": "^6.0.1",
+		"@jdeighan/base-utils": "^14.0.3",
 		"glob": "^10.3.10",
 		"js-yaml": "^4.1.0",
 		"minimist": "^1.2.8",
@@ -50,8 +52,9 @@
 		"yaml": "^2.3.1"
 	},
 	"devDependencies": {
+		"ava": "^6.1.1",
+		"coffeescript": "^2.7.0",
 		"deasync": "^0.1.29",
-		"gulp": "^4.0.2",
 		"peggy": "^4.0.0"
 	}
 }

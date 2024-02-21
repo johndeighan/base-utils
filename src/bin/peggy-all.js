@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 ;
 import {
-  // start-project.coffee
+  // peggy-all.coffee
   undef,
   defined,
   notdefined,
@@ -9,6 +9,6 @@ import {
 } from '@jdeighan/base-utils';
 
 // ---------------------------------------------------------------------------
-LOG("You are running the start-project script");
+LOG("You are running the gen-parsers script");
 
-//# sourceMappingURL=start-project.js.map
+//# sourceMappingURL=peggy-all.js.map
