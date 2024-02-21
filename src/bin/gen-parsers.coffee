@@ -3,7 +3,7 @@
 # gen-parsers.coffee
 
 import {
-	undef, defined, notdefined, LOG,
+	undef, defined, notdefined, LOG, execCmd,
 	} from '@jdeighan/base-utils'
 import {allFilesIn} from '@jdeighan/base-utils/fs'
 
@@ -15,6 +15,6 @@ hOptions = {
 	eager: false
 	regexp: /\.peggy$/
 	}
-for hFile from allFilesIn('./src/grammar')
+for hFile from allFilesIn('./src/grammar', hOptions)
 	LOG hFile.fileName
 	execCmd "peggy --format es #{hFile.filePath}"

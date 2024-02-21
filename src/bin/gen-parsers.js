@@ -7,7 +7,8 @@ import {
   undef,
   defined,
   notdefined,
-  LOG
+  LOG,
+  execCmd
 } from '@jdeighan/base-utils';
 
 import {
@@ -23,7 +24,7 @@ hOptions = {
   regexp: /\.peggy$/
 };
 
-ref = allFilesIn('./src/grammar');
+ref = allFilesIn('./src/grammar', hOptions);
 for (hFile of ref) {
   LOG(hFile.fileName);
   execCmd(`peggy --format es ${hFile.filePath}`);
