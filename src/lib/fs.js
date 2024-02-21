@@ -30,6 +30,7 @@ import {
   isHash,
   isArray,
   isIterable,
+  isRegExp,
   fromJSON,
   toJSON,
   OL,
@@ -170,19 +171,22 @@ export var getTextFileContents = (filePath) => {
 
 // ---------------------------------------------------------------------------
 export var allFilesIn = function*(dir, hOptions = {}) {
-  var eager, ent, hContents, hFile, i, len, path, recursive, ref;
+  var eager, ent, hContents, hFile, i, len, path, recursive, ref, regexp;
   // --- yields hFile with keys:
-  //        path, type, root, dir, base, fileName,
+  //        path, filePath,
+  //        type, root, dir, base, fileName,
   //        name, stub, ext, purpose
   //        (if eager) metadata, lLines
   // --- dir must be a directory
   // --- Valid options:
   //        recursive - descend into subdirectories
   //        eager - read the file and add keys metadata, contents
+  //        regexp - only if fileName matches regexp
   dbgEnter('allFilesIn', dir, hOptions);
-  ({recursive, eager} = getOptions(hOptions, {
+  ({recursive, eager, regexp} = getOptions(hOptions, {
     recursive: true,
-    eager: false
+    eager: false,
+    regexp: undef
   }));
   dir = mkpath(dir);
   assert(isDir(dir), `Not a directory: ${dir}`);
@@ -204,7 +208,14 @@ export var allFilesIn = function*(dir, hOptions = {}) {
         Object.assign(hFile, hContents);
       }
       dbg('hFile', hFile);
-      yield hFile;
+      if (defined(regexp)) {
+        assert(isRegExp(regexp), "Not a regular expression");
+        if (hFile.fileName.match(regexp)) {
+          yield hFile;
+        }
+      } else {
+        yield hFile;
+      }
     }
   }
   dbgReturn('allFilesIn');

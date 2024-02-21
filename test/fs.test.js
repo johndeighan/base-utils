@@ -224,6 +224,42 @@ ghi`);
 })();
 
 // ---------------------------------------------------------------------------
+// --- test allFilesIn with regexp
+(() => {
+  var hFileInfo, hOptions, lFiles, ref;
+  lFiles = [];
+  hOptions = {
+    eager: true,
+    regexp: /\.txt$/
+  };
+  ref = allFilesIn('./test/test', hOptions);
+  for (hFileInfo of ref) {
+    lFiles.push(hFileInfo);
+  }
+  return u.like(lFiles, [
+    {
+      fileName: 'file1.txt',
+      metadata: undef,
+      lLines: ['Hello']
+    },
+    {
+      fileName: 'file2.txt',
+      metadata: undef,
+      lLines: ['Goodbye']
+    },
+    {
+      fileName: 'file3.txt',
+      metadata: {
+        fName: 'John',
+        lName: 'Deighan'
+      },
+      lLines: ['',
+    'This is a test']
+    }
+  ]);
+})();
+
+// ---------------------------------------------------------------------------
 // --- test forEachLineInFile()
 (() => {
   var callback, result;

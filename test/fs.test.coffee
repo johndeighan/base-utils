@@ -180,6 +180,33 @@ u.equal slurp(testPath, 'maxLines=3'), """
 	)()
 
 # ---------------------------------------------------------------------------
+# --- test allFilesIn with regexp
+
+(() =>
+	lFiles = []
+	hOptions = {
+		eager: true
+		regexp: /\.txt$/
+		}
+	for hFileInfo from allFilesIn('./test/test', hOptions)
+		lFiles.push hFileInfo
+
+	u.like lFiles, [
+		{fileName: 'file1.txt', metadata: undef, lLines: ['Hello']}
+		{fileName: 'file2.txt', metadata: undef, lLines: ['Goodbye']}
+		{
+			fileName: 'file3.txt'
+			metadata: {
+				fName: 'John'
+				lName: 'Deighan'
+				}
+			lLines: ['', 'This is a test']
+			}
+		]
+
+	)()
+
+# ---------------------------------------------------------------------------
 # --- test forEachLineInFile()
 
 (() =>

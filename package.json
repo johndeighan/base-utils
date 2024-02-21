@@ -29,7 +29,7 @@
 		"gen-bin-key": "./src/bin/gen-bin-key.js",
 		"get-imports-from": "./src/bin/get-imports-from.js",
 		"start-project": "./src/bin/start-project.js",
-		"gen-parsers": "./src/bin/peggy-all.js"
+		"gen-parsers": "./src/bin/gen-parsers.js"
 	},
 	"scripts": {
 		"build": "clear && npx coffee -cm -b --no-header .",

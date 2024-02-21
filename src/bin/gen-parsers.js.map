@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "gen-parsers.js",
+  "sourceRoot": "..\\..\\",
+  "sources": [
+    "src\\bin\\gen-parsers.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAA;;AAAA,IAAA,KAAA,EAAA,QAAA,EAAA;;AAIA,OAAA;;EACC,KADD;EACQ,OADR;EACiB,UADjB;EAC6B,GAD7B;CAAA,MAAA;;AAGA,OAAA;EAAQ,UAAR;CAAA,MAAA,0BAPA;;;AAWA,GAAA,CAAI,wCAAJ;;AACA,QAAA,GAAW;EACV,SAAA,EAAW,IADD;EAEV,KAAA,EAAO,KAFG;EAGV,MAAA,EAAQ;AAHE;;AAKX;AAAA,KAAA,YAAA;EACC,GAAA,CAAI,KAAK,CAAC,QAAV;EACA,OAAA,CAAQ,CAAA,kBAAA,CAAA,CAAqB,KAAK,CAAC,QAA3B,CAAA,CAAR;AAFD",
+  "sourcesContent": [
+    "`#!/usr/bin/env node\r\n`\r\n# gen-parsers.coffee\r\n\r\nimport {\r\n\tundef, defined, notdefined, LOG,\r\n\t} from '@jdeighan/base-utils'\r\nimport {allFilesIn} from '@jdeighan/base-utils/fs'\r\n\r\n# ---------------------------------------------------------------------------\r\n\r\nLOG \"You are running the gen-parsers script\"\r\nhOptions = {\r\n\trecursive: true\r\n\teager: false\r\n\tregexp: /\\.peggy$/\r\n\t}\r\nfor hFile from allFilesIn('./src/grammar')\r\n\tLOG hFile.fileName\r\n\texecCmd \"peggy --format es #{hFile.filePath}\"\r\n"
+  ]
+}

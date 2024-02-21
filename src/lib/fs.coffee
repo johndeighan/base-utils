@@ -11,7 +11,7 @@ import {
 	undef, defined, notdefined, nonEmpty,
 	toBlock, toArray, getOptions, isNonEmptyString,
 	isString, isNumber, isInteger,
-	isHash, isArray, isIterable,
+	isHash, isArray, isIterable, isRegExp,
 	fromJSON, toJSON, OL, forEachItem, jsType,
 	} from '@jdeighan/base-utils'
 import {
@@ -103,18 +103,21 @@ export getTextFileContents = (filePath) =>
 
 export allFilesIn = (dir, hOptions={}) ->
 	# --- yields hFile with keys:
-	#        path, type, root, dir, base, fileName,
+	#        path, filePath,
+	#        type, root, dir, base, fileName,
 	#        name, stub, ext, purpose
 	#        (if eager) metadata, lLines
 	# --- dir must be a directory
 	# --- Valid options:
 	#        recursive - descend into subdirectories
 	#        eager - read the file and add keys metadata, contents
+	#        regexp - only if fileName matches regexp
 
 	dbgEnter 'allFilesIn', dir, hOptions
-	{recursive, eager} = getOptions(hOptions, {
+	{recursive, eager, regexp} = getOptions(hOptions, {
 		recursive: true
 		eager: false
+		regexp: undef
 		})
 	dir = mkpath dir
 	assert isDir(dir), "Not a directory: #{dir}"
@@ -130,7 +133,12 @@ export allFilesIn = (dir, hOptions={}) ->
 				hContents = getTextFileContents(path)
 				Object.assign hFile, hContents
 			dbg 'hFile', hFile
-			yield hFile
+			if defined(regexp)
+				assert isRegExp(regexp), "Not a regular expression"
+				if hFile.fileName.match(regexp)
+					yield hFile
+			else
+				yield hFile
 	dbgReturn 'allFilesIn'
 	return
 
