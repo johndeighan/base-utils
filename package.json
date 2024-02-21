@@ -23,6 +23,7 @@
 		"./fs": "./src/lib/fs.js",
 		"./FileProcessor": "./src/lib/FileProcessor.js",
 		"./TextTable": "./src/lib/TextTable.js",
+		"./cmd-args-grammar": "./src/grammar/cmd-args.js",
 		"./package.json": "./package.json"
 	},
 	"bin": {
@@ -32,7 +33,7 @@
 		"gen-parsers": "./src/bin/gen-parsers.js"
 	},
 	"scripts": {
-		"build": "clear && npx coffee -cm -b --no-header .",
+		"build": "clear && npx coffee -cm -b --no-header . && npx gen-parsers",
 		"test": "npm run build && npx ava ./test/*.test.js && git status"
 	},
 	"keywords": [
