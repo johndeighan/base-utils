@@ -29,7 +29,7 @@ ref = allFilesIn('./src/grammar', hOptions);
 for (hFile of ref) {
   ({fileName, filePath} = hFile);
   newName = withExt(fileName, '.js');
-  execCmd(`peggy --format es ${filePath}`);
+  execCmd(`peggy -m --format es ${filePath}`);
   LOG(`${fileName} => ${newName}`);
 }
 
