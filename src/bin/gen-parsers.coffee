@@ -5,16 +5,18 @@
 import {
 	undef, defined, notdefined, LOG, execCmd,
 	} from '@jdeighan/base-utils'
-import {allFilesIn} from '@jdeighan/base-utils/fs'
+import {allFilesIn, withExt} from '@jdeighan/base-utils/fs'
 
 # ---------------------------------------------------------------------------
 
-LOG "You are running the gen-parsers script"
+LOG "Generate parser files"
 hOptions = {
 	recursive: true
 	eager: false
 	regexp: /\.peggy$/
 	}
 for hFile from allFilesIn('./src/grammar', hOptions)
-	LOG hFile.fileName
-	execCmd "peggy --format es #{hFile.filePath}"
+	{fileName, filePath} = hFile
+	newName = withExt(fileName, '.js')
+	execCmd "peggy --format es #{filePath}"
+	LOG "#{fileName} => #{newName}"

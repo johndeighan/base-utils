@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 ;
-var hFile, hOptions, ref;
+var fileName, filePath, hFile, hOptions, newName, ref;
 
 import {
   // gen-parsers.coffee
@@ -12,11 +12,12 @@ import {
 } from '@jdeighan/base-utils';
 
 import {
-  allFilesIn
+  allFilesIn,
+  withExt
 } from '@jdeighan/base-utils/fs';
 
 // ---------------------------------------------------------------------------
-LOG("You are running the gen-parsers script");
+LOG("Generate parser files");
 
 hOptions = {
   recursive: true,
@@ -26,8 +27,10 @@ hOptions = {
 
 ref = allFilesIn('./src/grammar', hOptions);
 for (hFile of ref) {
-  LOG(hFile.fileName);
-  execCmd(`peggy --format es ${hFile.filePath}`);
+  ({fileName, filePath} = hFile);
+  newName = withExt(fileName, '.js');
+  execCmd(`peggy --format es ${filePath}`);
+  LOG(`${fileName} => ${newName}`);
 }
 
 //# sourceMappingURL=gen-parsers.js.map
