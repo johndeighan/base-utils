@@ -19,7 +19,7 @@ import {
 	mkDir, clearDir, touch, isFile, isDir, rename,
 	pathType, rmFile, rmDir, parsePath,
 	parentDir, parallelPath, subPath,
-	fileDirPath, mkDirsForFile,
+	fileDirPath, mkDirsForFile, getFileStats,
 	} from '@jdeighan/base-utils/ll-fs'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
@@ -31,7 +31,7 @@ export {
 	mkDir, clearDir, touch, isFile, isDir, rename,
 	pathType, rmFile, rmDir, parsePath,
 	parentDir, parallelPath, subPath,
-	fileDirPath,  mkDirsForFile,
+	fileDirPath,  mkDirsForFile, getFileStats,
 	}
 
 # ---------------------------------------------------------------------------

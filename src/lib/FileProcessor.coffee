@@ -110,6 +110,12 @@ export class FileProcessor
 
 	# ..........................................................
 
+	transformFile: (path) ->
+
+		return path
+
+	# ..........................................................
+
 	readAll: () ->
 
 		dbgEnter 'readAll'
@@ -121,7 +127,7 @@ export class FileProcessor
 				hFile = parsePath(@path)
 				if @filterFile @path
 					dbg "[#{numFiles}] #{hFile.fileName} - Handle"
-					h = @handleFile @path
+					h = @handleFile @transformFile(@path)
 					if defined(h)
 						assert isHash(h), "handleFile() returned non-hash"
 						addNewKey h, 'filePath', hFile.filePath
@@ -139,7 +145,7 @@ export class FileProcessor
 						hFile = parsePath filePath
 						if @filterFile filePath
 							dbg "[#{numFiles}] #{filePath} - Handle"
-							h = @handleFile filePath
+							h = @handleFile @transformFile(filePath)
 							if defined(h)
 								assert isHash(h), "handleFile() returned non-hash"
 								addNewKey h, 'filePath', filePath
@@ -215,6 +221,12 @@ export class LineProcessor extends FileProcessor
 
 	# ..........................................................
 
+	transformLine: (line) ->
+
+		return line
+
+	# ..........................................................
+
 	handleFile: (filePath) ->
 
 		dbgEnter 'handleFile', filePath
@@ -255,7 +267,7 @@ export class LineProcessor extends FileProcessor
 			#     - string to write a line literally
 			#     - a hash which cannot contain key 'lineNum'
 
-			item = @handleLine line, lineNum, filePath
+			item = @handleLine @transformLine(line), lineNum, filePath
 			addToRecipe item, line
 			lineNum += 1
 		if fileChanged

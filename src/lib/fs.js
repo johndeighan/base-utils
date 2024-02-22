@@ -59,7 +59,8 @@ import {
   parallelPath,
   subPath,
   fileDirPath,
-  mkDirsForFile
+  mkDirsForFile,
+  getFileStats
 } from '@jdeighan/base-utils/ll-fs';
 
 import {
@@ -104,7 +105,8 @@ export {
   parallelPath,
   subPath,
   fileDirPath,
-  mkDirsForFile
+  mkDirsForFile,
+  getFileStats
 };
 
 // ---------------------------------------------------------------------------

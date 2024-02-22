@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 ;
-var fileName, filePath, hFile, hOptions, newName, ref;
+var fileName, filePath, hFile, hOptions, newName, newPath, ref;
 
 import {
   // gen-parsers.coffee
@@ -29,6 +29,7 @@ ref = allFilesIn('./src/grammar', hOptions);
 for (hFile of ref) {
   ({fileName, filePath} = hFile);
   newName = withExt(fileName, '.js');
+  newPath = withExt(filePath, '.js');
   execCmd(`peggy -m --format es ${filePath}`);
   LOG(`${fileName} => ${newName}`);
 }

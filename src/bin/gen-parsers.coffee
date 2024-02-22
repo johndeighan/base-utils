@@ -18,5 +18,6 @@ hOptions = {
 for hFile from allFilesIn('./src/grammar', hOptions)
 	{fileName, filePath} = hFile
 	newName = withExt(fileName, '.js')
+	newPath = withExt(filePath, '.js')
 	execCmd "peggy -m --format es #{filePath}"
 	LOG "#{fileName} => #{newName}"

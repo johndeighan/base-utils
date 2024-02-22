@@ -117,6 +117,31 @@ export var mkpath = (...lParts) => {
 };
 
 // ---------------------------------------------------------------------------
+// --- returned hash has keys:
+
+//  dev: 2114,
+//  ino: 48064969,
+//  mode: 33188,
+//  nlink: 1,
+//  uid: 85,
+//  gid: 100,
+//  rdev: 0,
+//  size: 527,
+//  blksize: 4096,
+//  blocks: 8,
+//  atimeMs: 1318289051000.1,
+//  mtimeMs: 1318289051000.1,
+//  ctimeMs: 1318289051000.1,
+//  birthtimeMs: 1318289051000.1,
+//  atime: Mon, 10 Oct 2011 23:24:11 GMT,
+//  mtime: Mon, 10 Oct 2011 23:24:11 GMT,
+//  ctime: Mon, 10 Oct 2011 23:24:11 GMT,
+//  birthtime: Mon, 10 Oct 2011 23:24:11 GMT
+export var getFileStats = (path) => {
+  return fs.lstatSync(path);
+};
+
+// ---------------------------------------------------------------------------
 // --- Since a disk's directory is kept in memory,
 //     directory operations can be done synchronously
 export var isDir = (dirPath) => {
@@ -124,7 +149,7 @@ export var isDir = (dirPath) => {
     return false;
   }
   try {
-    return fs.lstatSync(dirPath).isDirectory();
+    return getFileStats(dirPath).isDirectory();
   } catch (error) {
     return false;
   }
@@ -215,7 +240,7 @@ export var isFile = (filePath) => {
     return false;
   }
   try {
-    return fs.lstatSync(filePath).isFile();
+    return getFileStats(filePath).isFile();
   } catch (error) {
     return false;
   }

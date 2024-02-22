@@ -147,6 +147,11 @@ export var FileProcessor = class FileProcessor {
   }
 
   // ..........................................................
+  transformFile(path) {
+    return path;
+  }
+
+  // ..........................................................
   readAll() {
     var filePath, h, hFile, i, len, numFiles, ref;
     dbgEnter('readAll');
@@ -157,7 +162,7 @@ export var FileProcessor = class FileProcessor {
         hFile = parsePath(this.path);
         if (this.filterFile(this.path)) {
           dbg(`[${numFiles}] ${hFile.fileName} - Handle`);
-          h = this.handleFile(this.path);
+          h = this.handleFile(this.transformFile(this.path));
           if (defined(h)) {
             assert(isHash(h), "handleFile() returned non-hash");
             addNewKey(h, 'filePath', hFile.filePath);
@@ -179,7 +184,7 @@ export var FileProcessor = class FileProcessor {
             hFile = parsePath(filePath);
             if (this.filterFile(filePath)) {
               dbg(`[${numFiles}] ${filePath} - Handle`);
-              h = this.handleFile(filePath);
+              h = this.handleFile(this.transformFile(filePath));
               if (defined(h)) {
                 assert(isHash(h), "handleFile() returned non-hash");
                 addNewKey(h, 'filePath', filePath);
@@ -256,6 +261,11 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
   }
 
   // ..........................................................
+  transformLine(line) {
+    return line;
+  }
+
+  // ..........................................................
   handleFile(filePath) {
     var addToRecipe, fileChanged, item, lRecipe, line, lineNum, ref, result;
     dbgEnter('handleFile', filePath);
@@ -302,7 +312,7 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
       //     - undef to ignore line
       //     - string to write a line literally
       //     - a hash which cannot contain key 'lineNum'
-      item = this.handleLine(line, lineNum, filePath);
+      item = this.handleLine(this.transformLine(line), lineNum, filePath);
       addToRecipe(item, line);
       lineNum += 1;
     }
