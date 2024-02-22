@@ -29,9 +29,9 @@ import {utest} from '@jdeighan/base-utils/utest'
 #        many hashes there are in `lUserData`.
 
 (() =>
-	# --- There are 2 *.zh files in `./test/test`
+	# --- There are 2 *.zh files in `./test/fp-test`
 
-	fp = new FileProcessor './test/test', '*.zh'
+	fp = new FileProcessor './test/fp-test', '*.zh'
 	fp.handleFile = (filePath) ->
 		return {}
 	fp.readAll()
@@ -41,9 +41,9 @@ import {utest} from '@jdeighan/base-utils/utest'
 	)()
 
 (() =>
-	# --- There are 3 *.txt files in `./test/test`
+	# --- There are 3 *.txt files in `./test/fp-test`
 
-	fp = new FileProcessor './test/test', '*.txt'
+	fp = new FileProcessor './test/fp-test', '*.txt'
 	fp.handleFile = (filePath) ->
 		return {}
 	fp.readAll()
@@ -86,7 +86,7 @@ import {utest} from '@jdeighan/base-utils/utest'
 #        rtrim() will trim trailing whitespace, including \n
 
 (() =>
-	fp = new FileProcessor './test/test', '*.zh'
+	fp = new FileProcessor './test/fp-test', '*.zh'
 	fp.handleFile = (filePath) ->
 		return {zh: rtrim(slurp(filePath))}
 	fp.readAll()

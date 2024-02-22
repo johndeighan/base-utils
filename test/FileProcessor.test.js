@@ -47,8 +47,8 @@ import {
 //        many hashes there are in `lUserData`.
 (() => {
   var fp, lUserData;
-  // --- There are 2 *.zh files in `./test/test`
-  fp = new FileProcessor('./test/test', '*.zh');
+  // --- There are 2 *.zh files in `./test/fp-test`
+  fp = new FileProcessor('./test/fp-test', '*.zh');
   fp.handleFile = function(filePath) {
     return {};
   };
@@ -59,8 +59,8 @@ import {
 
 (() => {
   var fp, lUserData;
-  // --- There are 3 *.txt files in `./test/test`
-  fp = new FileProcessor('./test/test', '*.txt');
+  // --- There are 3 *.txt files in `./test/fp-test`
+  fp = new FileProcessor('./test/fp-test', '*.txt');
   fp.handleFile = function(filePath) {
     return {};
   };
@@ -103,7 +103,7 @@ import {
 //        rtrim() will trim trailing whitespace, including \n
 (() => {
   var fp, lUserData;
-  fp = new FileProcessor('./test/test', '*.zh');
+  fp = new FileProcessor('./test/fp-test', '*.zh');
   fp.handleFile = function(filePath) {
     return {
       zh: rtrim(slurp(filePath))
