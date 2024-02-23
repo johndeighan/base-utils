@@ -15,8 +15,6 @@ import {
 	} from './utils.js'   # relative to this dir?
 import {utest} from '@jdeighan/base-utils/utest'
 
-# setDebugging 'readAll'
-
 # ---------------------------------------------------------------------------
 # --- Build array of paths to files matching a glob pattern
 #     Explanation:
@@ -120,6 +118,27 @@ import {utest} from '@jdeighan/base-utils/utest'
 	)()
 
 # ---------------------------------------------------------------------------
+# --- Count total number of words in all `*.zh` files in `words` dir
+#     by overriding transformFile() to pass integers to handleFile()
+
+(() =>
+	fp = new FileProcessor './test/words', '*.zh'
+	fp.transformFile = (filePath) ->
+		content = rtrim(slurp(filePath))
+		return toArray(content).length
+
+	fp.handleFile = (count) ->
+		if defined(@numWords)
+			@numWords += count
+		else
+			@numWords = count
+		return undef
+	fp.readAll()
+
+	utest.equal fp.numWords, 2048
+	)()
+
+# ---------------------------------------------------------------------------
 # --- Count total number of words in all `*.zh` files
 #        in `words` dir - using a LineProcessor
 #     Explanation:
@@ -175,6 +194,38 @@ import {utest} from '@jdeighan/base-utils/utest'
 	fp = new LineProcessor './test/words', '*.zh'
 	fp.handleLine = (line) ->
 		return {hWord: line2hWord(line)}
+	fp.writeFileTo = (hUserData) ->
+		return subPath hUserData.filePath, 'temp2'
+	fp.writeLine = (hLine) ->
+		{hWord} = hLine   # extract previously written hWord
+		hWord.num += 5
+		return hWord2line(hWord)
+	fp.readAll()
+	fp.writeAll()
+
+	utest.truthy isDir('./test/words/temp2')
+	utest.truthy slurp('./test/words/adjectives.zh').startsWith('11 ')
+	utest.truthy slurp('./test/words/temp2/adjectives.zh').startsWith('16 ')
+	utest.equal dirContents('./test/words/temp2').length, 25
+	utest.equal dirContents('./test/words/temp2', '*.zh').length, 25
+	utest.equal dirContents('./test/words/temp2', '*', 'filesOnly').length, 25
+	utest.equal dirContents('./test/words/temp2', '*', 'dirsOnly').length, 0
+
+	)()
+
+# ---------------------------------------------------------------------------
+# --- Write out new files in `./test/words/temp` that contain
+#        the same lines in the original file, but with
+#        the number incremented by 5
+#     Override transformLine() to do this, override handleLin() to
+#        return its first arg
+
+(() =>
+	fp = new LineProcessor './test/words', '*.zh'
+	fp.transformLine = (line) =>
+		return {hWord: line2hWord(line)}
+	fp.handleLine = (h) ->
+		return h
 	fp.writeFileTo = (hUserData) ->
 		return subPath hUserData.filePath, 'temp2'
 	fp.writeLine = (hLine) ->

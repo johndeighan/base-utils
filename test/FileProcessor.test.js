@@ -33,9 +33,7 @@ import {
   utest
 } from '@jdeighan/base-utils/utest';
 
-// setDebugging 'readAll'
-
-  // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // --- Build array of paths to files matching a glob pattern
 //     Explanation:
 //        we override the `handleFile()` method by simply
@@ -145,6 +143,29 @@ import {
 })();
 
 // ---------------------------------------------------------------------------
+// --- Count total number of words in all `*.zh` files in `words` dir
+//     by overriding transformFile() to pass integers to handleFile()
+(() => {
+  var fp;
+  fp = new FileProcessor('./test/words', '*.zh');
+  fp.transformFile = function(filePath) {
+    var content;
+    content = rtrim(slurp(filePath));
+    return toArray(content).length;
+  };
+  fp.handleFile = function(count) {
+    if (defined(this.numWords)) {
+      this.numWords += count;
+    } else {
+      this.numWords = count;
+    }
+    return undef;
+  };
+  fp.readAll();
+  return utest.equal(fp.numWords, 2048);
+})();
+
+// ---------------------------------------------------------------------------
 // --- Count total number of words in all `*.zh` files
 //        in `words` dir - using a LineProcessor
 //     Explanation:
@@ -208,6 +229,43 @@ import {
     return {
       hWord: line2hWord(line)
     };
+  };
+  fp.writeFileTo = function(hUserData) {
+    return subPath(hUserData.filePath, 'temp2');
+  };
+  fp.writeLine = function(hLine) {
+    var hWord;
+    ({hWord} = hLine); // extract previously written hWord
+    hWord.num += 5;
+    return hWord2line(hWord);
+  };
+  fp.readAll();
+  fp.writeAll();
+  utest.truthy(isDir('./test/words/temp2'));
+  utest.truthy(slurp('./test/words/adjectives.zh').startsWith('11 '));
+  utest.truthy(slurp('./test/words/temp2/adjectives.zh').startsWith('16 '));
+  utest.equal(dirContents('./test/words/temp2').length, 25);
+  utest.equal(dirContents('./test/words/temp2', '*.zh').length, 25);
+  utest.equal(dirContents('./test/words/temp2', '*', 'filesOnly').length, 25);
+  return utest.equal(dirContents('./test/words/temp2', '*', 'dirsOnly').length, 0);
+})();
+
+// ---------------------------------------------------------------------------
+// --- Write out new files in `./test/words/temp` that contain
+//        the same lines in the original file, but with
+//        the number incremented by 5
+//     Override transformLine() to do this, override handleLin() to
+//        return its first arg
+(() => {
+  var fp;
+  fp = new LineProcessor('./test/words', '*.zh');
+  fp.transformLine = (line) => {
+    return {
+      hWord: line2hWord(line)
+    };
+  };
+  fp.handleLine = function(h) {
+    return h;
   };
   fp.writeFileTo = function(hUserData) {
     return subPath(hUserData.filePath, 'temp2');
