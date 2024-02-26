@@ -14,7 +14,7 @@ import {
 } from '@jdeighan/base-utils/prefix';
 
 import {
-  utest
+  equal
 } from '@jdeighan/base-utils/utest';
 
 un = (str) => {
@@ -26,14 +26,14 @@ un = (str) => {
 };
 
 // ---------------------------------------------------------------------------
-utest.equal(getPrefix(2), un('˳˳˳˳˳˳˳˳'));
+equal(getPrefix(2), un('˳˳˳˳˳˳˳˳'));
 
-utest.equal(getPrefix(2, 'plain'), un('│˳˳˳│˳˳˳'));
+equal(getPrefix(2, 'plain'), un('│˳˳˳│˳˳˳'));
 
-utest.equal(getPrefix(2, 'withArrow'), un('│˳˳˳└─>˳'));
+equal(getPrefix(2, 'withArrow'), un('│˳˳˳└─>˳'));
 
-utest.equal(getPrefix(2, 'noLastVbar'), un('│˳˳˳˳˳˳˳'));
+equal(getPrefix(2, 'noLastVbar'), un('│˳˳˳˳˳˳˳'));
 
-utest.equal(getPrefix(2), un('˳˳˳˳˳˳˳˳'));
+equal(getPrefix(2), un('˳˳˳˳˳˳˳˳'));
 
 //# sourceMappingURL=prefix.test.js.map

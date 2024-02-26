@@ -231,6 +231,17 @@ export var subkeys = (obj) => {
 };
 
 // ---------------------------------------------------------------------------
+export var hslice = (h, lKeys) => {
+  var hResult, j, key, len1;
+  hResult = {};
+  for (j = 0, len1 = lKeys.length; j < len1; j++) {
+    key = lKeys[j];
+    hResult[key] = h[key];
+  }
+  return hResult;
+};
+
+// ---------------------------------------------------------------------------
 export var samelist = (lItems1, lItems2) => {
   var item, j, k, len1, len2;
   assert(isArray(lItems1), "arg 1 not an array");
@@ -844,6 +855,43 @@ export var isArrayOfHashes = (lItems) => {
     }
   }
   return true;
+};
+
+// ---------------------------------------------------------------------------
+export var sortArrayOfHashes = (lHashes, key) => {
+  var compareFunc;
+  assert(isArrayOfHashes(lHashes), "Not an array of hashes");
+  // --- NOTE: works whether values are strings or numbers
+  compareFunc = (a, b) => {
+    if (a[key] < b[key]) {
+      return -1;
+    } else if (a[key] > b[key]) {
+      return 1;
+    } else {
+      return 0;
+    }
+  };
+  lHashes.sort(compareFunc);
+  // --- NOTE: array is sorted in place, but sometimes
+  //           it's useful if we return a ref to it anyway
+  return lHashes;
+};
+
+// ---------------------------------------------------------------------------
+export var sortedArrayOfHashes = (lHashes, key) => {
+  var compareFunc;
+  assert(isArrayOfHashes(lHashes), "Not an array of hashes");
+  // --- NOTE: works whether values are strings or numbers
+  compareFunc = (a, b) => {
+    if (a[key] < b[key]) {
+      return -1;
+    } else if (a[key] > b[key]) {
+      return 1;
+    } else {
+      return 0;
+    }
+  };
+  return lHashes.toSorted(compareFunc);
 };
 
 // ---------------------------------------------------------------------------

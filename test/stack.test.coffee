@@ -10,7 +10,10 @@ import {
 	clearAllLogs, echoLogsByDefault,
 	} from '@jdeighan/base-utils/log'
 import {CallStack, getStackLog} from '@jdeighan/base-utils/stack'
-import {utest} from '@jdeighan/base-utils/utest'
+import {
+	UnitTester,
+	equal, like, notequal, truthy, falsy, throws, succeeds,
+	} from '@jdeighan/base-utils/utest'
 
 echoLogsByDefault false
 
@@ -18,23 +21,23 @@ echoLogsByDefault false
 
 TEST = (stack, curFunc, strActive, strNonActive, logging, level=undef, logLevel=undef) =>
 	if defined(curFunc)
-		utest.equal stack.curFuncName, curFunc
+		equal stack.curFuncName, curFunc
 	else
-		utest.equal stack.curFuncName, '_MAIN_'
+		equal stack.curFuncName, '_MAIN_'
 	if defined(strActive)
 		for name in words(strActive)
-			utest.truthy stack.isActive(name)
+			truthy stack.isActive(name)
 	if defined(strNonActive)
 		for name in words(strNonActive)
-			utest.falsy stack.isActive(name)
+			falsy stack.isActive(name)
 	if logging
-		utest.truthy stack.isLogging()
+		truthy stack.isLogging()
 	else
-		utest.falsy stack.isLogging()
+		falsy stack.isLogging()
 	if defined(level)
-		utest.equal stack.level, level
+		equal stack.level, level
 	if defined(logLevel)
-		utest.equal stack.logLevel, logLevel
+		equal stack.logLevel, logLevel
 	return
 
 # ---------------------------------------------------------------------------
@@ -48,16 +51,16 @@ stack.enter 'func'
 TEST stack, 'func', "func", "func2", false
 
 stack.returnFrom 'func'
-utest.truthy stack.isEmpty()
+truthy stack.isEmpty()
 
-utest.equal getStackLog(), """
+equal getStackLog(), """
 	ENTER 'func'
 	RETURN FROM 'func'
 	"""
 
 # ---------------------------------------------------------------------------
 
-utest.throws () ->
+throws () ->
 	suppressExceptionLogging true
 	clearAllLogs()
 	stack = new CallStack()
@@ -79,9 +82,9 @@ stack.returnFrom 'func'
 # ---          cur     active  !active        isLogging
 #              -----   ------  --------       ---------
 TEST stack, undef,  undef,  'func func2',  false
-utest.truthy stack.isEmpty()
+truthy stack.isEmpty()
 
-utest.equal getStackLog(), """
+equal getStackLog(), """
 	ENTER 'func'
 	RETURN FROM 'func'
 	"""
@@ -116,13 +119,13 @@ stack.returnFrom 'func'
 #              -----   ------  --------     ---------
 TEST stack, undef, undef,  'func func2', false
 
-utest.equal getStackLog(), """
+equal getStackLog(), """
 	ENTER 'func'
 		ENTER 'func2'
 		RETURN FROM 'func2'
 	RETURN FROM 'func'
 	"""
-utest.truthy stack.isEmpty()
+truthy stack.isEmpty()
 
 # ---------------------------------------------------------------------------
 # --- Test yield / resume
@@ -171,7 +174,7 @@ stack.returnFrom 'func'
 #              -----   ------  --------      ---------
 TEST stack, undef, undef,   'func gen', false, 0, 0
 
-utest.truthy stack.isEmpty()
+truthy stack.isEmpty()
 
 # ---------------------------------------------------------------------------
 # --- Test multiple generators
@@ -220,7 +223,7 @@ stack.returnFrom 'func'
 #              -----   ------  --------      ---------
 TEST stack, undef, undef,   'func gen', false, 0, 0
 
-utest.truthy stack.isEmpty()
+truthy stack.isEmpty()
 
 # ---------------------------------------------------------------------------
 # test stack log
@@ -237,7 +240,7 @@ stack.resume 'func2'
 stack.returnFrom 'func2', 'def'
 stack.returnFrom 'func1'
 
-utest.equal getStackLog(), """
+equal getStackLog(), """
 	RESET STACK
 	ENTER 'func1' 13
 		ENTER 'func2' 'abc',{"mean":42}

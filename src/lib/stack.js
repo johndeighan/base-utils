@@ -46,7 +46,7 @@ export var Node = class Node {
     this.caller = caller1;
     this.doLog = doLog1;
     assert(isInteger(this.id), "id not an integer");
-    assert(isFunctionName(this.funcName), "not a function name");
+    assert(isFunctionName(this.funcName), `not a function name: ${OL(this.funcName)}`);
     assert(isArray(this.lArgs), "not an array");
     assert(notdefined(this.caller) || (this.caller instanceof Node), "Bad caller");
     this.lCalling = [];

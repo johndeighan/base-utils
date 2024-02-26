@@ -32,7 +32,14 @@ import {
 } from './v8-module.js';
 
 import {
-  utest
+  UnitTester,
+  equal,
+  like,
+  notequal,
+  succeeds,
+  throws,
+  truthy,
+  falsy
 } from '@jdeighan/base-utils/utest';
 
 // ---------------------------------------------------------------------------
@@ -51,12 +58,12 @@ import {
     stack2 = getV8Stack();
   };
   main();
-  utest.like(stack1, [
+  like(stack1, [
     {
       functionName: 'func1'
     }
   ]);
-  return utest.like(stack2, [
+  return like(stack2, [
     {
       functionName: 'func2'
     }
@@ -79,11 +86,11 @@ import {
     caller2 = getMyDirectCaller();
   };
   main();
-  utest.like(caller1, {
+  like(caller1, {
     functionName: 'main',
     fileName: 'v8-stack.test.js'
   });
-  return utest.like(caller2, {
+  return like(caller2, {
     functionName: 'main',
     fileName: 'v8-stack.test.js'
   });
@@ -103,7 +110,7 @@ import {
   };
   // ------------------------------------------------------------------------
   main();
-  return utest.like(hCaller, {
+  return like(hCaller, {
     type: 'function',
     functionName: 'main',
     fileName: 'v8-stack.test.js'
@@ -126,22 +133,22 @@ import {
     lCallers2 = getBoth();
   };
   main();
-  utest.like(lCallers1[0], {
+  like(lCallers1[0], {
     type: 'function',
     functionName: 'secondFunc',
     fileName: 'v8-module.js'
   });
-  utest.like(lCallers1[1], {
+  like(lCallers1[1], {
     type: 'function',
     functionName: 'func1',
     fileName: 'v8-stack.test.js'
   });
-  utest.like(lCallers2[0], {
+  like(lCallers2[0], {
     type: 'function',
     functionName: 'secondFunc',
     fileName: 'v8-module.js'
   });
-  return utest.like(lCallers2[1], {
+  return like(lCallers2[1], {
     type: 'function',
     functionName: 'func2',
     fileName: 'v8-stack.test.js'
@@ -159,9 +166,9 @@ import {
     stackStr = (await getV8StackStr());
     return stackStr;
   };
-  return utest.equal((await func1()), `function at v8-stack.test.js:150:23
-function at v8-stack.test.js:147:19
-script at v8-stack.test.js:162:29`);
+  return equal((await func1()), `function at v8-stack.test.js:153:23
+function at v8-stack.test.js:150:19
+script at v8-stack.test.js:169:23`);
 })();
 
 // ---------------------------------------------------------------------------
@@ -176,8 +183,8 @@ script at v8-stack.test.js:162:29`);
     x = 2 * 2;
     return x;
   };
-  return utest.equal((await func1()), `function at v8-stack.test.js:166:19
-script at v8-stack.test.js:179:29`);
+  return equal((await func1()), `function at v8-stack.test.js:169:19
+script at v8-stack.test.js:186:23`);
 })();
 
 //# sourceMappingURL=v8-stack.test.js.map

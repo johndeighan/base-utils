@@ -20,97 +20,104 @@ import {
 } from '@jdeighan/base-utils/indent';
 
 import {
-  utest
+  UnitTester,
+  equal,
+  like,
+  notequal,
+  succeeds,
+  throws,
+  truthy,
+  falsy
 } from '@jdeighan/base-utils/utest';
 
 // ---------------------------------------------------------------------------
-utest.equal(getOneIndent("abc"), undef);
+equal(getOneIndent("abc"), undef);
 
-utest.equal(getOneIndent(""), undef);
+equal(getOneIndent(""), undef);
 
-utest.equal(getOneIndent("\tabc"), "\t");
+equal(getOneIndent("\tabc"), "\t");
 
-utest.equal(getOneIndent("\t\tabc"), "\t");
+equal(getOneIndent("\t\tabc"), "\t");
 
-utest.equal(getOneIndent(" abc"), " ");
+equal(getOneIndent(" abc"), " ");
 
-utest.equal(getOneIndent("   abc"), "   ");
+equal(getOneIndent("   abc"), "   ");
 
-utest.throws(function() {
+throws(function() {
   return getOneIndent(" \tabc");
 });
 
-utest.throws(function() {
+throws(function() {
   return getOneIndent("\t abc");
 });
 
 // ---------------------------------------------------------------------------
-utest.equal(indentLevel("abc"), 0);
+equal(indentLevel("abc"), 0);
 
-utest.equal(indentLevel("\tabc"), 1);
+equal(indentLevel("\tabc"), 1);
 
-utest.equal(indentLevel("\t\tabc"), 2);
-
-// ---------------------------------------------------------------------------
-utest.truthy(isUndented("abc"));
-
-utest.falsy(isUndented("\tabc"));
-
-utest.falsy(isUndented("\t\tabc"));
+equal(indentLevel("\t\tabc"), 2);
 
 // ---------------------------------------------------------------------------
-utest.equal(indentation(0), '');
+truthy(isUndented("abc"));
 
-utest.equal(indentation(1), "\t");
+falsy(isUndented("\tabc"));
 
-utest.equal(indentation(2), "\t\t");
+falsy(isUndented("\t\tabc"));
 
 // ---------------------------------------------------------------------------
-utest.equal(undented("abc"), "abc");
+equal(indentation(0), '');
 
-utest.equal(undented("\tabc"), "abc");
+equal(indentation(1), "\t");
 
-utest.equal(undented("\t\tabc"), "abc");
+equal(indentation(2), "\t\t");
 
-utest.equal(undented([]), []);
+// ---------------------------------------------------------------------------
+equal(undented("abc"), "abc");
 
-utest.equal(undented(['abc']), ['abc']);
+equal(undented("\tabc"), "abc");
 
-utest.equal(undented(['\tabc']), ['abc']);
+equal(undented("\t\tabc"), "abc");
 
-utest.equal(undented(['\t\tabc']), ['abc']);
+equal(undented([]), []);
 
-utest.equal(undented('\n\n\t\tabc\n\t\t\t\tdef'), `abc
+equal(undented(['abc']), ['abc']);
+
+equal(undented(['\tabc']), ['abc']);
+
+equal(undented(['\t\tabc']), ['abc']);
+
+equal(undented('\n\n\t\tabc\n\t\t\t\tdef'), `abc
 		def`);
 
 // ---------------------------------------------------------------------------
 // --- test with spaces
-utest.equal(undented("abc"), "abc");
+equal(undented("abc"), "abc");
 
-utest.equal(undented("   abc"), "abc");
+equal(undented("   abc"), "abc");
 
-utest.equal(undented("      abc"), "abc");
+equal(undented("      abc"), "abc");
 
-utest.equal(undented([]), []);
+equal(undented([]), []);
 
-utest.equal(undented(['abc']), ['abc']);
+equal(undented(['abc']), ['abc']);
 
-utest.equal(undented(['   abc']), ['abc']);
+equal(undented(['   abc']), ['abc']);
 
-utest.equal(undented(['      abc']), ['abc']);
+equal(undented(['      abc']), ['abc']);
 
 // ---------------------------------------------------------------------------
 // --- test with multiple lines
-utest.equal(undented(['abc', '\txyz', 'mmm']), ['abc', '\txyz', 'mmm']);
+equal(undented(['abc', '\txyz', 'mmm']), ['abc', '\txyz', 'mmm']);
 
-utest.equal(undented(['\t\tabc', '\t\t\txyz', '\t\tmmm']), ['abc', '\txyz', 'mmm']);
+equal(undented(['\t\tabc', '\t\t\txyz', '\t\tmmm']), ['abc', '\txyz', 'mmm']);
 
 // ---------------------------------------------------------------------------
 (function() {
   var block, expected;
   block = "\t\tfirst\n\t\tsecond\n\t\t\tthird\n";
   expected = "first\nsecond\n\tthird\n";
-  return utest.equal(undented(block), expected);
+  return equal(undented(block), expected);
 })();
 
 // ---------------------------------------------------------------------------
@@ -118,39 +125,39 @@ utest.equal(undented(['\t\tabc', '\t\t\txyz', '\t\tmmm']), ['abc', '\txyz', 'mmm
   var array, expected;
   array = ["\t\tfirst", "\t\tsecond", "\t\t\tthird"];
   expected = ["first", "second", "\tthird"];
-  return utest.equal(undented(array), expected);
+  return equal(undented(array), expected);
 })();
 
 // ---------------------------------------------------------------------------
-utest.equal(splitLine("abc"), [0, "abc"]);
+equal(splitLine("abc"), [0, "abc"]);
 
-utest.equal(splitLine("\tabc"), [1, "abc"]);
+equal(splitLine("\tabc"), [1, "abc"]);
 
-utest.equal(splitLine("\t\tabc"), [2, "abc"]);
+equal(splitLine("\t\tabc"), [2, "abc"]);
 
-utest.equal(splitLine(""), [0, ""]);
+equal(splitLine(""), [0, ""]);
 
-utest.equal(splitLine("\t\t\t"), [0, ""]);
+equal(splitLine("\t\t\t"), [0, ""]);
 
-utest.equal(splitLine("\t \t"), [0, ""]);
+equal(splitLine("\t \t"), [0, ""]);
 
-utest.equal(splitLine("   "), [0, ""]);
+equal(splitLine("   "), [0, ""]);
 
 // ---------------------------------------------------------------------------
-utest.equal(indented("abc", 0), "abc");
+equal(indented("abc", 0), "abc");
 
-utest.equal(indented("abc", 1), "\tabc");
+equal(indented("abc", 1), "\tabc");
 
-utest.equal(indented("abc", 2), "\t\tabc");
+equal(indented("abc", 2), "\t\tabc");
 
-utest.equal(indented("abc", 0, '  '), "abc");
+equal(indented("abc", 0, '  '), "abc");
 
-utest.equal(indented("abc", 1, '  '), "  abc");
+equal(indented("abc", 1, '  '), "  abc");
 
-utest.equal(indented("abc", 2, '  '), "    abc");
+equal(indented("abc", 2, '  '), "    abc");
 
 // --- empty lines, indented, should just be empty lines
-utest.equal(indented("abc\n\ndef", 2), "\t\tabc\n\n\t\tdef");
+equal(indented("abc\n\ndef", 2), "\t\tabc\n\n\t\tdef");
 
 (function() {
   var block, exp;
@@ -165,43 +172,43 @@ nav
 
 \tnav
 \t\toverflow: auto`;
-  return utest.equal(indented(block, 1), exp);
+  return equal(indented(block, 1), exp);
 })();
 
 // --- indented also handles arrays, so test them, too
 
 // --- empty lines, indented, should just be empty lines
-utest.equal(indented(['abc', '', 'def'], 2), ['\t\tabc', '', '\t\tdef']);
+equal(indented(['abc', '', 'def'], 2), ['\t\tabc', '', '\t\tdef']);
 
 (function() {
   var lExp, lLines;
   lLines = ['main', '\toverflow: auto', '', 'nav', '\toverflow: auto'];
   lExp = ['\tmain', '\t\toverflow: auto', '', '\tnav', '\t\toverflow: auto'];
-  return utest.equal(indented(lLines, 1), lExp);
+  return equal(indented(lLines, 1), lExp);
 })();
 
 // --- make sure ALL internal lines are indented
-utest.equal(indented(['abc\ndef', '', 'ghi'], 1), ['\tabc', '\tdef', '', '\tghi']);
+equal(indented(['abc\ndef', '', 'ghi'], 1), ['\tabc', '\tdef', '', '\tghi']);
 
 // ---------------------------------------------------------------------------
-utest.equal(indented("export name = undef", 1), "\texport name = undef");
+equal(indented("export name = undef", 1), "\texport name = undef");
 
-utest.equal(indented("export name = undef", 2), "\t\texport name = undef");
+equal(indented("export name = undef", 2), "\t\texport name = undef");
 
 // ---------------------------------------------------------------------------
 // make sure indentLevel() works for blocks
-utest.equal(indentLevel("\t\tabc\n\t\tdef\n\t\t\tghi"), 2);
+equal(indentLevel("\t\tabc\n\t\tdef\n\t\t\tghi"), 2);
 
 // ---------------------------------------------------------------------------
 (function() {
   var block;
   block = `x = 42
 callme(x)`;
-  utest.equal(enclose(block, '<script>', '</script>'), `<script>
+  equal(enclose(block, '<script>', '</script>'), `<script>
 	x = 42
 	callme(x)
 </script>`);
-  return utest.equal(enclose(block, 'pre', 'post', '...'), `pre
+  return equal(enclose(block, 'pre', 'post', '...'), `pre
 ...x = 42
 ...callme(x)
 post`);

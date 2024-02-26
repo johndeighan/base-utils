@@ -30,7 +30,14 @@ import {
 } from './utils.js';
 
 import {
-  utest
+  UnitTester,
+  equal,
+  like,
+  notequal,
+  truthy,
+  falsy,
+  throws,
+  succeeds
 } from '@jdeighan/base-utils/utest';
 
 // ---------------------------------------------------------------------------
@@ -46,49 +53,72 @@ import {
 (() => {
   var fp, lUserData;
   // --- There are 2 *.zh files in `./test/fp-test`
-  fp = new FileProcessor('./test/fp-test', '*.zh');
-  fp.handleFile = function(filePath) {
+  fp = new FileProcessor('./test/fp-test/*.zh');
+  fp.handleFile = function(hFile) {
     return {};
   };
   fp.readAll();
   lUserData = fp.getUserData();
-  return utest.equal(lUserData.length, 2);
+  return equal(lUserData.length, 2);
+})();
+
+// --- We can also pass option 'cwd' in hGlobOptions
+(() => {
+  var fp, lUserData;
+  // --- There are 2 *.zh files in `./test/fp-test`
+  fp = new FileProcessor('*.zh', {
+    hGlobOptions: {
+      cwd: './test/fp-test'
+    }
+  });
+  fp.handleFile = function(hFile) {
+    return {};
+  };
+  fp.readAll();
+  lUserData = fp.getUserData();
+  return equal(lUserData.length, 2);
 })();
 
 (() => {
   var fp, lUserData;
   // --- There are 3 *.txt files in `./test/fp-test`
-  fp = new FileProcessor('./test/fp-test', '*.txt');
-  fp.handleFile = function(filePath) {
+  fp = new FileProcessor('./test/fp-test/*.txt');
+  fp.handleFile = function(hFile) {
     return {};
   };
   fp.readAll();
   lUserData = fp.getUserData();
-  return utest.equal(lUserData.length, 3);
+  return equal(lUserData.length, 3);
 })();
 
 (() => {
   var fp, lUserData;
   // --- There are 26 total files in `./test/words`
-  fp = new FileProcessor('./test/words', '*');
-  fp.handleFile = function(filePath) {
-    return {};
+  fp = new FileProcessor('./test/words/*');
+  fp.handleFile = function(hFile) {
+    var type;
+    ({type} = hFile);
+    if (type === 'file') {
+      return {};
+    } else {
+      return undef;
+    }
   };
   fp.readAll();
   lUserData = fp.getUserData();
-  return utest.equal(lUserData.length, 26);
+  return equal(lUserData.length, 26);
 })();
 
 (() => {
   var fp, lUserData;
   // --- There are 25 *.zh files in `./test/words`
-  fp = new FileProcessor('./test/words', '*.zh');
-  fp.handleFile = function(filePath) {
+  fp = new FileProcessor('./test/words/*.zh');
+  fp.handleFile = function(hFile) {
     return {};
   };
   fp.readAll();
   lUserData = fp.getUserData();
-  return utest.equal(lUserData.length, 25);
+  return equal(lUserData.length, 25);
 })();
 
 // ---------------------------------------------------------------------------
@@ -101,19 +131,19 @@ import {
 //        rtrim() will trim trailing whitespace, including \n
 (() => {
   var fp, lUserData;
-  fp = new FileProcessor('./test/fp-test', '*.zh');
-  fp.handleFile = function(filePath) {
+  fp = new FileProcessor('./test/fp-test/*.zh');
+  fp.handleFile = function(hFile) {
     return {
-      zh: rtrim(slurp(filePath))
+      zh: rtrim(slurp(hFile.filePath))
     };
   };
   fp.readAll();
   lUserData = fp.getSortedUserData();
-  utest.equal(lUserData.length, 2);
-  utest.like(lUserData[0], {
+  equal(lUserData.length, 2);
+  like(lUserData[0], {
     zh: '你好'
   });
-  return utest.like(lUserData[1], {
+  return like(lUserData[1], {
     zh: '再见'
   });
 })();
@@ -126,10 +156,10 @@ import {
 //        value of @numWords, but return undef
 (() => {
   var fp;
-  fp = new FileProcessor('./test/words', '*.zh');
-  fp.handleFile = function(filePath) {
+  fp = new FileProcessor('./test/words/*.zh');
+  fp.handleFile = function(hFile) {
     var content, count;
-    content = rtrim(slurp(filePath));
+    content = rtrim(slurp(hFile.filePath));
     count = toArray(content).length;
     if (defined(this.numWords)) {
       this.numWords += count;
@@ -139,7 +169,7 @@ import {
     return undef;
   };
   fp.readAll();
-  return utest.equal(fp.numWords, 2048);
+  return equal(fp.numWords, 2048);
 })();
 
 // ---------------------------------------------------------------------------
@@ -147,10 +177,10 @@ import {
 //     by overriding transformFile() to pass integers to handleFile()
 (() => {
   var fp;
-  fp = new FileProcessor('./test/words', '*.zh');
-  fp.transformFile = function(filePath) {
+  fp = new FileProcessor('./test/words/*.zh');
+  fp.transformFile = function(hFile) {
     var content;
-    content = rtrim(slurp(filePath));
+    content = rtrim(slurp(hFile.filePath));
     return toArray(content).length;
   };
   fp.handleFile = function(count) {
@@ -162,7 +192,7 @@ import {
     return undef;
   };
   fp.readAll();
-  return utest.equal(fp.numWords, 2048);
+  return equal(fp.numWords, 2048);
 })();
 
 // ---------------------------------------------------------------------------
@@ -174,7 +204,7 @@ import {
 //        value of @numWords, but return undef
 (() => {
   var fp;
-  fp = new LineProcessor('./test/words', '*.zh');
+  fp = new LineProcessor('./test/words/*.zh');
   fp.handleLine = function(line) {
     if (defined(this.numWords)) {
       this.numWords += 1;
@@ -184,7 +214,7 @@ import {
     return undef; // write nothing out
   };
   fp.readAll();
-  return utest.equal(fp.numWords, 2048);
+  return equal(fp.numWords, 2048);
 })();
 
 // ---------------------------------------------------------------------------
@@ -192,7 +222,7 @@ import {
 //        just the Chinese words in `*.zh` files
 (() => {
   var fp;
-  fp = new LineProcessor('./test/words', '*.zh');
+  fp = new LineProcessor('./test/words/*.zh');
   fp.handleLine = function(line) {
     if (defined(this.numWords)) {
       this.numWords += 1;
@@ -211,11 +241,11 @@ import {
   };
   fp.readAll();
   fp.writeAll();
-  utest.equal(fp.numWords, 2048);
-  utest.equal(dirContents('./test/words/temp').length, 25);
-  utest.equal(dirContents('./test/words/temp', '*.zh').length, 25);
-  utest.equal(dirContents('./test/words/temp', '*', 'filesOnly').length, 25);
-  return utest.equal(dirContents('./test/words/temp', '*', 'dirsOnly').length, 0);
+  equal(fp.numWords, 2048);
+  equal(dirContents('./test/words/temp').length, 25);
+  equal(dirContents('./test/words/temp', '*.zh').length, 25);
+  equal(dirContents('./test/words/temp', '*', 'filesOnly').length, 25);
+  return equal(dirContents('./test/words/temp', '*', 'dirsOnly').length, 0);
 })();
 
 // ---------------------------------------------------------------------------
@@ -224,7 +254,7 @@ import {
 //        the number incremented by 5
 (() => {
   var fp;
-  fp = new LineProcessor('./test/words', '*.zh');
+  fp = new LineProcessor('./test/words/*.zh');
   fp.handleLine = function(line) {
     return {
       hWord: line2hWord(line)
@@ -241,13 +271,13 @@ import {
   };
   fp.readAll();
   fp.writeAll();
-  utest.truthy(isDir('./test/words/temp2'));
-  utest.truthy(slurp('./test/words/adjectives.zh').startsWith('11 '));
-  utest.truthy(slurp('./test/words/temp2/adjectives.zh').startsWith('16 '));
-  utest.equal(dirContents('./test/words/temp2').length, 25);
-  utest.equal(dirContents('./test/words/temp2', '*.zh').length, 25);
-  utest.equal(dirContents('./test/words/temp2', '*', 'filesOnly').length, 25);
-  return utest.equal(dirContents('./test/words/temp2', '*', 'dirsOnly').length, 0);
+  truthy(isDir('./test/words/temp2'));
+  truthy(slurp('./test/words/adjectives.zh').startsWith('11 '));
+  truthy(slurp('./test/words/temp2/adjectives.zh').startsWith('16 '));
+  equal(dirContents('./test/words/temp2').length, 25);
+  equal(dirContents('./test/words/temp2', '*.zh').length, 25);
+  equal(dirContents('./test/words/temp2', '*', 'filesOnly').length, 25);
+  return equal(dirContents('./test/words/temp2', '*', 'dirsOnly').length, 0);
 })();
 
 // ---------------------------------------------------------------------------
@@ -258,7 +288,7 @@ import {
 //        return its first arg
 (() => {
   var fp;
-  fp = new LineProcessor('./test/words', '*.zh');
+  fp = new LineProcessor('./test/words/*.zh');
   fp.transformLine = (line) => {
     return {
       hWord: line2hWord(line)
@@ -278,13 +308,13 @@ import {
   };
   fp.readAll();
   fp.writeAll();
-  utest.truthy(isDir('./test/words/temp2'));
-  utest.truthy(slurp('./test/words/adjectives.zh').startsWith('11 '));
-  utest.truthy(slurp('./test/words/temp2/adjectives.zh').startsWith('16 '));
-  utest.equal(dirContents('./test/words/temp2').length, 25);
-  utest.equal(dirContents('./test/words/temp2', '*.zh').length, 25);
-  utest.equal(dirContents('./test/words/temp2', '*', 'filesOnly').length, 25);
-  return utest.equal(dirContents('./test/words/temp2', '*', 'dirsOnly').length, 0);
+  truthy(isDir('./test/words/temp2'));
+  truthy(slurp('./test/words/adjectives.zh').startsWith('11 '));
+  truthy(slurp('./test/words/temp2/adjectives.zh').startsWith('16 '));
+  equal(dirContents('./test/words/temp2').length, 25);
+  equal(dirContents('./test/words/temp2', '*.zh').length, 25);
+  equal(dirContents('./test/words/temp2', '*', 'filesOnly').length, 25);
+  return equal(dirContents('./test/words/temp2', '*', 'dirsOnly').length, 0);
 })();
 
 //# sourceMappingURL=FileProcessor.test.js.map

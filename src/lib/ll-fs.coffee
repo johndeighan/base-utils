@@ -5,9 +5,16 @@ import urlLib from 'url'
 import fs from 'fs'
 
 import {
-	pass, undef, defined, notdefined, LOG, isString, getOptions,
-	assert, croak,
+	pass, undef, defined, notdefined, LOG,
+	isString, getOptions, words,
+	assert, croak,                  # low level versions
 	} from '@jdeighan/base-utils'
+
+export lStatFields = words(
+	'dev ino mode nlink uid gid rdev size blksize blocks',
+	'atimeMs mtimeMs ctimeMs birthtimeMs',
+	'atime mtime ctime birthtime',
+	)
 
 # ---------------------------------------------------------------------------
 
@@ -257,7 +264,10 @@ export parsePath = (path, shouldNotExist) =>
 	#           path may be a relative path
 
 	assert isString(path), "path is type #{typeof path}"
+
+	# --- check for deprecated args
 	assert notdefined(shouldNotExist), "multiple arguments!"
+
 	if path.match(/^file\:\/\//)
 		path = normalize urlLib.fileURLToPath(path)
 	else
@@ -273,7 +283,7 @@ export parsePath = (path, shouldNotExist) =>
 		purpose = lMatches[1]
 	else
 		purpose = undef
-	return {
+	hFile = {
 		path
 		filePath: path
 		type
@@ -286,6 +296,8 @@ export parsePath = (path, shouldNotExist) =>
 		ext
 		purpose
 		}
+	Object.assign hFile, getFileStats(path)
+	return hFile
 
 # ---------------------------------------------------------------------------
 

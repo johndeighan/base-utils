@@ -2,7 +2,14 @@
 var dir, file, projDir, smDir, subdir, testPath;
 
 import {
-  u
+  UnitTester,
+  equal,
+  like,
+  notequal,
+  truthy,
+  falsy,
+  throws,
+  succeeds
 } from '@jdeighan/base-utils/utest';
 
 import {
@@ -11,7 +18,10 @@ import {
   toJSON,
   LOG,
   chomp,
-  jsType
+  jsType,
+  words,
+  hslice,
+  sortArrayOfHashes
 } from '@jdeighan/base-utils';
 
 import {
@@ -39,7 +49,6 @@ import {
   getTextFileContents,
   allFilesIn,
   allLinesIn,
-  forEachFileInDir,
   forEachLineInFile,
   dirContents,
   FileWriter
@@ -62,11 +71,11 @@ testPath = mkpath(projDir, 'test', 'readline.txt');
   var lLines, path;
   path = './test/readline3.txt';
   lLines = Array.from(allLinesIn(path));
-  return u.equal(lLines, ['ghi', 'jkl', '', 'mno', 'pqr']);
+  return equal(lLines, ['ghi', 'jkl', '', 'mno', 'pqr']);
 })();
 
 // ---------------------------------------------------------------------------
-u.like(parsePath(import.meta.url), {
+like(parsePath(import.meta.url), {
   type: 'file',
   root: 'c:/',
   base: 'fs.test.js',
@@ -77,7 +86,7 @@ u.like(parsePath(import.meta.url), {
   purpose: 'test'
 });
 
-u.like(parsePath(projDir), {
+like(parsePath(projDir), {
   path: projDir,
   type: 'dir',
   root: 'c:/',
@@ -90,7 +99,7 @@ u.like(parsePath(projDir), {
   purpose: undef
 });
 
-u.like(parsePath(dir), {
+like(parsePath(dir), {
   path: dir,
   type: 'dir',
   root: 'c:/',
@@ -103,7 +112,7 @@ u.like(parsePath(dir), {
   purpose: undef
 });
 
-u.like(parsePath(subdir), {
+like(parsePath(subdir), {
   path: subdir,
   type: 'dir',
   root: 'c:/',
@@ -116,7 +125,7 @@ u.like(parsePath(subdir), {
   purpose: undef
 });
 
-u.like(parsePath(file), {
+like(parsePath(file), {
   path: file,
   type: 'file',
   root: 'c:/',
@@ -129,7 +138,7 @@ u.like(parsePath(file), {
   purpose: 'test'
 });
 
-u.like(parsePath(testPath), {
+like(parsePath(testPath), {
   path: testPath,
   type: 'file',
   root: 'c:/',
@@ -143,18 +152,18 @@ u.like(parsePath(testPath), {
 });
 
 // ---------------------------------------------------------------------------
-u.equal(slurp(testPath, {
+equal(slurp(testPath, {
   maxLines: 2
 }), `abc
 def`);
 
-u.equal(slurp(testPath, {
+equal(slurp(testPath, {
   maxLines: 3
 }), `abc
 def
 ghi`);
 
-u.equal(slurp(testPath, {
+equal(slurp(testPath, {
   maxLines: 1000
 }), `abc
 def
@@ -162,7 +171,7 @@ ghi
 jkl
 mno`);
 
-u.equal(slurp(testPath, 'maxLines=3'), `abc
+equal(slurp(testPath, 'maxLines=3'), `abc
 def
 ghi`);
 
@@ -172,7 +181,7 @@ ghi`);
   var h, path;
   path = "./test/test/file3.txt";
   h = getTextFileContents(path);
-  return u.equal(h, {
+  return equal(h, {
     metadata: {
       fName: 'John',
       lName: 'Deighan'
@@ -184,13 +193,17 @@ ghi`);
 // ---------------------------------------------------------------------------
 // --- test allFilesIn
 (() => {
-  var hFileInfo, lFiles, ref;
+  var ext, hFile, lFiles, ref;
   lFiles = [];
-  ref = allFilesIn('./test/test', 'eager');
-  for (hFileInfo of ref) {
-    lFiles.push(hFileInfo);
+  ref = allFilesIn('./test/test/*', 'eager');
+  for (hFile of ref) {
+    ({ext} = hFile);
+    if ((ext !== '.map') && (ext !== '.js')) {
+      lFiles.push(hFile);
+    }
   }
-  return u.like(lFiles, [
+  sortArrayOfHashes(lFiles, 'fileName');
+  return like(lFiles, [
     {
       fileName: 'file1.txt',
       metadata: undef,
@@ -219,24 +232,68 @@ ghi`);
       },
       lLines: ['',
     'This is a test']
+    },
+    {
+      fileName: 'test.coffee',
+      metadata: undef,
+      lLines: ['console.log "Hello"']
     }
   ]);
 })();
 
 // ---------------------------------------------------------------------------
-// --- test allFilesIn with regexp
+// --- test allFilesIn with pattern
 (() => {
-  var hFileInfo, hOptions, lFiles, ref;
+  var hFile, hOptions, lFiles, ref;
+  lFiles = [];
+  hOptions = {
+    eager: true
+  };
+  ref = allFilesIn('./test/test/*.txt', hOptions);
+  for (hFile of ref) {
+    lFiles.push(hFile);
+  }
+  sortArrayOfHashes(lFiles, 'fileName');
+  return like(lFiles, [
+    {
+      fileName: 'file1.txt',
+      metadata: undef,
+      lLines: ['Hello']
+    },
+    {
+      fileName: 'file2.txt',
+      metadata: undef,
+      lLines: ['Goodbye']
+    },
+    {
+      fileName: 'file3.txt',
+      metadata: {
+        fName: 'John',
+        lName: 'Deighan'
+      },
+      lLines: ['',
+    'This is a test']
+    }
+  ]);
+})();
+
+// ---------------------------------------------------------------------------
+// --- test allFilesIn with pattern and cwd
+(() => {
+  var hFile, hOptions, lFiles, ref;
   lFiles = [];
   hOptions = {
     eager: true,
-    regexp: /\.txt$/
+    hGlobOptions: {
+      cwd: './test/test'
+    }
   };
-  ref = allFilesIn('./test/test', hOptions);
-  for (hFileInfo of ref) {
-    lFiles.push(hFileInfo);
+  ref = allFilesIn('*.txt', hOptions);
+  for (hFile of ref) {
+    lFiles.push(hFile);
   }
-  return u.like(lFiles, [
+  sortArrayOfHashes(lFiles, 'fileName');
+  return like(lFiles, [
     {
       fileName: 'file1.txt',
       metadata: undef,
@@ -280,22 +337,22 @@ ghi`);
   result = forEachLineInFile(testPath, callback, {
     label: '-->'
   });
-  return u.equal(result, ['--> def', '--> jkl']);
+  return equal(result, ['--> def', '--> jkl']);
 })();
 
 // ---------------------------------------------------------------------------
 // --- test dirContents()
 smDir = './test/source-map';
 
-u.equal(dirContents(smDir, '*.coffee').length, 1);
+equal(dirContents(smDir, '*.coffee').length, 1);
 
-u.equal(dirContents(smDir, '*.js').length, 2);
+equal(dirContents(smDir, '*.js').length, 2);
 
-u.equal(dirContents(smDir, '*').length, 6);
+equal(dirContents(smDir, '*').length, 6);
 
-u.equal(dirContents(smDir, '*', 'filesOnly').length, 4);
+equal(dirContents(smDir, '*', 'filesOnly').length, 4);
 
-u.equal(dirContents(smDir, '*', 'dirsOnly').length, 2);
+equal(dirContents(smDir, '*', 'dirsOnly').length, 2);
 
 // ---------------------------------------------------------------------------
 (() => {
@@ -306,7 +363,7 @@ u.equal(dirContents(smDir, '*', 'dirsOnly').length, 2);
   for (line of ref) {
     lLines.push(line);
   }
-  return u.equal(lLines, ['ghi', 'jkl', '', 'mno', 'pqr']);
+  return equal(lLines, ['ghi', 'jkl', '', 'mno', 'pqr']);
 })();
 
 // ---------------------------------------------------------------------------
@@ -325,7 +382,7 @@ u.equal(dirContents(smDir, '*', 'dirsOnly').length, 2);
   lLines = forEachLineInFile(filePath3, func, {
     prefix: '> '
   });
-  return u.equal(lLines, ['> GHI', '> JKL', '> MNO', '> PQR']);
+  return equal(lLines, ['> GHI', '> JKL', '> MNO', '> PQR']);
 })();
 
 // ---------------------------------------------------------------------------
@@ -344,7 +401,7 @@ u.equal(dirContents(smDir, '*', 'dirsOnly').length, 2);
   lLines = forEachLineInFile(filePath4, func, {
     prefix: '> '
   });
-  return u.equal(lLines, ['> GHI', '> JKL', '> MNO', '> PQR']);
+  return equal(lLines, ['> GHI', '> JKL', '> MNO', '> PQR']);
 })();
 
 // ---------------------------------------------------------------------------
@@ -362,7 +419,7 @@ u.equal(dirContents(smDir, '*', 'dirsOnly').length, 2);
   lLines = forEachLineInFile(filePath4, func, {
     prefix: '> '
   });
-  return u.equal(lLines, ['> GHI', '> JKL']);
+  return equal(lLines, ['> GHI', '> JKL']);
 })();
 
 // ---------------------------------------------------------------------------
@@ -375,9 +432,9 @@ u.equal(dirContents(smDir, '*', 'dirsOnly').length, 2);
   writer.writeln("line 1");
   writer.writeln("line 2");
   writer.close();
-  u.truthy(isFile(path));
+  truthy(isFile(path));
   text = slurp(path);
-  return u.equal(text, "line 1\nline 2\n");
+  return equal(text, "line 1\nline 2\n");
 })();
 
 // ---------------------------------------------------------------------------
@@ -390,9 +447,9 @@ u.equal(dirContents(smDir, '*', 'dirsOnly').length, 2);
   writer.writeln("line 1");
   writer.writeln("line 2");
   writer.close();
-  u.truthy(isFile(path));
+  truthy(isFile(path));
   text = slurp(path);
-  return u.equal(chomp(text), `line 1
+  return equal(chomp(text), `line 1
 line 2`);
 })();
 
@@ -406,9 +463,9 @@ line 2`);
   writer.writeln("line 1", " - some text");
   writer.writeln("line 2", " - more text");
   writer.close();
-  u.truthy(isFile(path));
+  truthy(isFile(path));
   text = slurp(path);
-  return u.equal(text, "line 1 - some text\nline 2 - more text\n");
+  return equal(text, "line 1 - some text\nline 2 - more text\n");
 })();
 
 // ---------------------------------------------------------------------------
@@ -423,9 +480,9 @@ line 2`);
   await writer.writeln("line 1");
   await writer.writeln("line 2");
   await writer.close();
-  u.truthy(isFile(path));
+  truthy(isFile(path));
   text = slurp(path);
-  return u.equal(text, "line 1\nline 2\n");
+  return equal(text, "line 1\nline 2\n");
 })();
 
 //# sourceMappingURL=fs.test.js.map

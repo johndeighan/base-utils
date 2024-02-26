@@ -1,6 +1,9 @@
 # base-utils.test.coffee
 
-import {u, UnitTester} from '@jdeighan/base-utils/utest'
+import {
+	UnitTester,
+	equal, notequal, succeeds, throws, truthy, falsy,
+	} from '@jdeighan/base-utils/utest'
 import {
 	undef, pass, defined, notdefined, alldefined, spaces,
 	keys, hasKey, extractKey, hasAllKeys, hasAnyKey, subkeys,
@@ -19,30 +22,31 @@ import {
 	eachCharInString, runCmd, hit, choose, shuffle,
 	deepCopy, timestamp, msSinceEpoch, formatDate, pad,
 	forEachItem, addToHash, chomp, flattenToHash,
+	sortArrayOfHashes,
 	} from '@jdeighan/base-utils'
 import {assert} from '@jdeighan/base-utils/exceptions'
 
-u.equal  undef, undefined
-u.succeeds () -> pass()
-u.truthy pass()
-u.truthy defined(1)
-u.falsy  defined(undefined)
-u.truthy notdefined(undefined)
-u.falsy  notdefined(12)
-u.succeeds () => pass()
-u.succeeds () => assert(12==12, "BAD")
+equal  undef, undefined
+succeeds () -> pass()
+truthy pass()
+truthy defined(1)
+falsy  defined(undefined)
+truthy notdefined(undefined)
+falsy  notdefined(12)
+succeeds () => pass()
+succeeds () => assert(12==12, "BAD")
 
 # ---------------------------------------------------------------------------
 
-u.truthy isEmpty('')
-u.truthy isEmpty('  \t\t')
-u.truthy isEmpty([])
-u.truthy isEmpty({})
+truthy isEmpty('')
+truthy isEmpty('  \t\t')
+truthy isEmpty([])
+truthy isEmpty({})
 
-u.truthy nonEmpty('a')
-u.truthy nonEmpty('.')
-u.truthy nonEmpty([2])
-u.truthy nonEmpty({width: 2})
+truthy nonEmpty('a')
+truthy nonEmpty('.')
+truthy nonEmpty([2])
+truthy nonEmpty({width: 2})
 
 # ---------------------------------------------------------------------------
 
@@ -52,65 +56,65 @@ c = 42
 d = 'dog'
 e = {a: 42}
 
-u.truthy alldefined(c,d,e)
-u.falsy  alldefined(a,b,c,d,e)
-u.falsy  alldefined(a,c,d,e)
-u.falsy  alldefined(b,c,d,e)
-u.equal  deepCopy(e), {a: 42}
+truthy alldefined(c,d,e)
+falsy  alldefined(a,b,c,d,e)
+falsy  alldefined(a,c,d,e)
+falsy  alldefined(b,c,d,e)
+equal  deepCopy(e), {a: 42}
 
 # ---------------------------------------------------------------------------
 
-u.equal    {a:1, b:2}, {a:1, b:2}
-u.notequal {a:1, b:2}, {a:1, b:3}
+equal    {a:1, b:2}, {a:1, b:2}
+notequal {a:1, b:2}, {a:1, b:3}
 
 # ---------------------------------------------------------------------------
 
-u.truthy isHashComment('   # something')
-u.truthy isHashComment('   #')
-u.falsy  isHashComment('   abc')
-u.falsy  isHashComment('#abc')
+truthy isHashComment('   # something')
+truthy isHashComment('   #')
+falsy  isHashComment('   abc')
+falsy  isHashComment('#abc')
 
-u.truthy isFunction(pass)
+truthy isFunction(pass)
 
 passTest = () =>
 	pass()
-u.succeeds(passTest)
+succeeds(passTest)
 
-u.truthy defined('')
-u.truthy defined(5)
-u.truthy defined([])
-u.truthy defined({})
-u.falsy  defined(undef)
-u.falsy  defined(null)
+truthy defined('')
+truthy defined(5)
+truthy defined([])
+truthy defined({})
+falsy  defined(undef)
+falsy  defined(null)
 
-u.truthy notdefined(undef)
-u.truthy notdefined(null)
-u.falsy  notdefined('')
-u.falsy  notdefined(5)
-u.falsy  notdefined([])
-u.falsy  notdefined({})
-
-# ---------------------------------------------------------------------------
-
-u.equal splitPrefix("abc"),     ["", "abc"]
-u.equal splitPrefix("\tabc"),   ["\t", "abc"]
-u.equal splitPrefix("\t\tabc"), ["\t\t", "abc"]
-u.equal splitPrefix(""),        ["", ""]
-u.equal splitPrefix("\t\t\t"),  ["", ""]
-u.equal splitPrefix("\t \t"),   ["", ""]
-u.equal splitPrefix("   "),     ["", ""]
+truthy notdefined(undef)
+truthy notdefined(null)
+falsy  notdefined('')
+falsy  notdefined(5)
+falsy  notdefined([])
+falsy  notdefined({})
 
 # ---------------------------------------------------------------------------
 
-u.falsy  hasPrefix("abc")
-u.truthy hasPrefix("   abc")
+equal splitPrefix("abc"),     ["", "abc"]
+equal splitPrefix("\tabc"),   ["\t", "abc"]
+equal splitPrefix("\t\tabc"), ["\t\t", "abc"]
+equal splitPrefix(""),        ["", ""]
+equal splitPrefix("\t\t\t"),  ["", ""]
+equal splitPrefix("\t \t"),   ["", ""]
+equal splitPrefix("   "),     ["", ""]
+
+# ---------------------------------------------------------------------------
+
+falsy  hasPrefix("abc")
+truthy hasPrefix("   abc")
 
 # ---------------------------------------------------------------------------
 
 threeSpaces = spaces(3)
 fourSpaces = spaces(4)
 
-u.equal tabify("""
+equal tabify("""
 	first line
 	#{threeSpaces}second line
 	#{threeSpaces}#{threeSpaces}third line
@@ -124,7 +128,7 @@ u.equal tabify("""
 # you don't need to tell it number of spaces
 # it knows from the 1st line that contains spaces
 
-u.equal tabify("""
+equal tabify("""
 	first line
 	#{threeSpaces}second line
 	#{threeSpaces}#{threeSpaces}third line
@@ -134,7 +138,7 @@ u.equal tabify("""
 	\t\tthird line
 	"""
 
-u.equal tabify("""
+equal tabify("""
 	first line
 	#{fourSpaces}second line
 	#{fourSpaces}#{fourSpaces}third line
@@ -146,7 +150,7 @@ u.equal tabify("""
 
 # ---------------------------------------------------------------------------
 
-u.equal untabify("""
+equal untabify("""
 	first line
 	\tsecond line
 	\t\tthird line
@@ -158,7 +162,7 @@ u.equal untabify("""
 
 # ---------------------------------------------------------------------------
 
-u.equal untabify("""
+equal untabify("""
 	first line
 	\tsecond line
 	\t\tthird line
@@ -170,7 +174,7 @@ u.equal untabify("""
 
 # ---------------------------------------------------------------------------
 
-u.equal prefixBlock("""
+equal prefixBlock("""
 	abc
 	def
 	""", '--'), """
@@ -180,11 +184,11 @@ u.equal prefixBlock("""
 
 # ---------------------------------------------------------------------------
 
-u.equal escapeStr("   XXX\n"),  "˳˳˳XXX▼"
-u.equal escapeStr("\t ABC\n"),  "→˳ABC▼"
-u.equal escapeStr("X\nX\nX\n"), "X▼X▼X▼"
-u.equal escapeStr("XXX\n\t\t"), "XXX▼→→"
-u.equal escapeStr("XXX\n  "),   "XXX▼˳˳"
+equal escapeStr("   XXX\n"),  "˳˳˳XXX▼"
+equal escapeStr("\t ABC\n"),  "→˳ABC▼"
+equal escapeStr("X\nX\nX\n"), "X▼X▼X▼"
+equal escapeStr("XXX\n\t\t"), "XXX▼→→"
+equal escapeStr("XXX\n  "),   "XXX▼˳˳"
 
 (() =>
 	t = new UnitTester()
@@ -203,14 +207,14 @@ hEsc = {
 	"\"": "\\\""
 	}
 
-u.equal escapeStr("\thas quote: \"\nnext line", hEsc),
+equal escapeStr("\thas quote: \"\nnext line", hEsc),
 	"\\thas quote: \\\"\\nnext line"
 
 # ---------------------------------------------------------------------------
 
-u.equal OL(undef), "undef"
-u.equal OL("\t\tabc\nxyz"), "'→→abc▼xyz'"
-u.equal OL({a:1, b:'xyz'}), '{"a":1,"b":"xyz"}'
+equal OL(undef), "undef"
+equal OL("\t\tabc\nxyz"), "'→→abc▼xyz'"
+equal OL({a:1, b:'xyz'}), '{"a":1,"b":"xyz"}'
 
 hProc = {
 	code:   (block) -> return "#{block};"
@@ -218,18 +222,18 @@ hProc = {
 	Script: (block) -> return elem('script', undef, block, "\t")
 	}
 
-u.equal OL(hProc), '{"code":"[Function: code]","html":"[Function: html]","Script":"[Function: Script]"}'
+equal OL(hProc), '{"code":"[Function: code]","html":"[Function: html]","Script":"[Function: Script]"}'
 
 # ---------------------------------------------------------------------------
 
-u.equal OLS(['abc', 3]), "'abc',3"
-u.equal OLS([]), ""
-u.equal OLS([undef, {a:1}]), 'undef,{"a":1}'
+equal OLS(['abc', 3]), "'abc',3"
+equal OLS([]), ""
+equal OLS([undef, {a:1}]), 'undef,{"a":1}'
 
 # ---------------------------------------------------------------------------
 
-u.truthy oneof('a', 'b', 'a', 'c')
-u.falsy  oneof('a', 'b', 'c')
+truthy oneof('a', 'b', 'a', 'c')
+falsy  oneof('a', 'b', 'c')
 
 # ---------------------------------------------------------------------------
 #        jsTypes:
@@ -249,33 +253,33 @@ u.falsy  oneof('a', 'b', 'c')
 	s = 'simple'
 	s2 = new String('abc')
 
-	u.falsy isString(undef)
-	u.falsy isString(h)
-	u.falsy isString(l)
-	u.falsy isString(o)
-	u.falsy isString(n)
-	u.falsy isString(n2)
+	falsy isString(undef)
+	falsy isString(h)
+	falsy isString(l)
+	falsy isString(o)
+	falsy isString(n)
+	falsy isString(n2)
 
-	u.truthy isString(s)
-	u.truthy isString(s2)
+	truthy isString(s)
+	truthy isString(s2)
 
-	u.truthy isNonEmptyString('abc')
-	u.truthy isNonEmptyString('abc def')
-	u.falsy  isNonEmptyString('')
-	u.falsy  isNonEmptyString('  ')
+	truthy isNonEmptyString('abc')
+	truthy isNonEmptyString('abc def')
+	falsy  isNonEmptyString('')
+	falsy  isNonEmptyString('  ')
 
-	u.truthy isIdentifier('abc')
-	u.truthy isIdentifier('_Abc')
-	u.falsy  isIdentifier('abc def')
-	u.falsy  isIdentifier('abc-def')
-	u.falsy  isIdentifier('class.method')
+	truthy isIdentifier('abc')
+	truthy isIdentifier('_Abc')
+	falsy  isIdentifier('abc def')
+	falsy  isIdentifier('abc-def')
+	falsy  isIdentifier('class.method')
 
-	u.truthy isFunctionName('abc')
-	u.truthy isFunctionName('_Abc')
-	u.falsy  isFunctionName('abc def')
-	u.falsy  isFunctionName('abc-def')
-	u.falsy  isFunctionName('D()')
-	u.truthy isFunctionName('class.method')
+	truthy isFunctionName('abc')
+	truthy isFunctionName('_Abc')
+	falsy  isFunctionName('abc def')
+	falsy  isFunctionName('abc-def')
+	falsy  isFunctionName('D()')
+	truthy isFunctionName('class.method')
 
 	generatorFunc = () ->
 		yield 1
@@ -283,110 +287,110 @@ u.falsy  oneof('a', 'b', 'c')
 		yield 3
 		return
 
-	u.truthy isIterable(generatorFunc())
+	truthy isIterable(generatorFunc())
 
-	u.falsy  isNumber(undef)
-	u.falsy  isNumber(null)
-	u.truthy isNumber(NaN)
-	u.falsy  isNumber(h)
-	u.falsy  isNumber(l)
-	u.falsy  isNumber(o)
-	u.truthy isNumber(n)
-	u.truthy isNumber(n2)
-	u.falsy  isNumber(s)
-	u.falsy  isNumber(s2)
+	falsy  isNumber(undef)
+	falsy  isNumber(null)
+	truthy isNumber(NaN)
+	falsy  isNumber(h)
+	falsy  isNumber(l)
+	falsy  isNumber(o)
+	truthy isNumber(n)
+	truthy isNumber(n2)
+	falsy  isNumber(s)
+	falsy  isNumber(s2)
 
-	u.truthy isNumber(42.0, {min: 42.0})
-	u.falsy  isNumber(42.0, {min: 42.1})
-	u.truthy isNumber(42.0, {max: 42.0})
-	u.falsy  isNumber(42.0, {max: 41.9})
+	truthy isNumber(42.0, {min: 42.0})
+	falsy  isNumber(42.0, {min: 42.1})
+	truthy isNumber(42.0, {max: 42.0})
+	falsy  isNumber(42.0, {max: 41.9})
 
-	u.truthy isInteger(42)
-	u.truthy isInteger(new Number(42))
-	u.falsy  isInteger('abc')
-	u.falsy  isInteger({})
-	u.falsy  isInteger([])
-	u.truthy isInteger(42, {min:  0})
-	u.falsy  isInteger(42, {min: 50})
-	u.truthy isInteger(42, {max: 50})
-	u.falsy  isInteger(42, {max:  0})
+	truthy isInteger(42)
+	truthy isInteger(new Number(42))
+	falsy  isInteger('abc')
+	falsy  isInteger({})
+	falsy  isInteger([])
+	truthy isInteger(42, {min:  0})
+	falsy  isInteger(42, {min: 50})
+	truthy isInteger(42, {max: 50})
+	falsy  isInteger(42, {max:  0})
 
-	u.truthy isHash(h)
-	u.falsy  isHash(l)
-	u.falsy  isHash(o)
-	u.falsy  isHash(n)
-	u.falsy  isHash(n2)
-	u.falsy  isHash(s)
-	u.falsy  isHash(s2)
+	truthy isHash(h)
+	falsy  isHash(l)
+	falsy  isHash(o)
+	falsy  isHash(n)
+	falsy  isHash(n2)
+	falsy  isHash(s)
+	falsy  isHash(s2)
 
-	u.falsy  isArray(h)
-	u.truthy isArray(l)
-	u.falsy  isArray(o)
-	u.falsy  isArray(n)
-	u.falsy  isArray(n2)
-	u.falsy  isArray(s)
-	u.falsy  isArray(s2)
+	falsy  isArray(h)
+	truthy isArray(l)
+	falsy  isArray(o)
+	falsy  isArray(n)
+	falsy  isArray(n2)
+	falsy  isArray(s)
+	falsy  isArray(s2)
 
-	u.truthy isBoolean(true)
-	u.truthy isBoolean(false)
-	u.falsy  isBoolean(42)
-	u.falsy  isBoolean("true")
+	truthy isBoolean(true)
+	truthy isBoolean(false)
+	falsy  isBoolean(42)
+	falsy  isBoolean("true")
 
-	u.truthy isClass(NewClass)
-	u.falsy  isClass(o)
+	truthy isClass(NewClass)
+	falsy  isClass(o)
 
-	u.truthy isConstructor(NewClass)
-	u.falsy  isConstructor(o)
+	truthy isConstructor(NewClass)
+	falsy  isConstructor(o)
 
-	u.truthy isFunction(() -> 42)
-	u.truthy isFunction(() => 42)
-	u.falsy  isFunction(undef)
-	u.falsy  isFunction(null)
-	u.falsy  isFunction(42)
-	u.falsy  isFunction(n)
+	truthy isFunction(() -> 42)
+	truthy isFunction(() => 42)
+	falsy  isFunction(undef)
+	falsy  isFunction(null)
+	falsy  isFunction(42)
+	falsy  isFunction(n)
 
-	u.truthy isRegExp(/^abc$/)
-	u.truthy isRegExp(///^ \s* where \s+ areyou $///)
-	u.falsy  isRegExp(42)
-	u.falsy  isRegExp('abc')
-	u.falsy  isRegExp([1,'a'])
-	u.falsy  isRegExp({a:1, b:'ccc'})
-	u.falsy  isRegExp(undef)
-	u.truthy isRegExp(/\.coffee/)
+	truthy isRegExp(/^abc$/)
+	truthy isRegExp(///^ \s* where \s+ areyou $///)
+	falsy  isRegExp(42)
+	falsy  isRegExp('abc')
+	falsy  isRegExp([1,'a'])
+	falsy  isRegExp({a:1, b:'ccc'})
+	falsy  isRegExp(undef)
+	truthy isRegExp(/\.coffee/)
 
-	u.falsy  isObject(h)
-	u.falsy  isObject(l)
-	u.truthy isObject(o)
-	u.truthy isObject(o, ['name','doIt'])
-	u.truthy isObject(o, "name doIt")
-	u.falsy  isObject(o, ['name','doIt','missing'])
-	u.falsy  isObject(o, "name doIt missing")
-	u.falsy  isObject(n)
-	u.falsy  isObject(n2)
-	u.falsy  isObject(s)
-	u.falsy  isObject(s2)
-	u.truthy isObject(o, "name doIt")
-	u.truthy isObject(o, "name doIt meth")
-	u.truthy isObject(o, "name &doIt &meth")
-	u.falsy  isObject(o, "&name")
+	falsy  isObject(h)
+	falsy  isObject(l)
+	truthy isObject(o)
+	truthy isObject(o, ['name','doIt'])
+	truthy isObject(o, "name doIt")
+	falsy  isObject(o, ['name','doIt','missing'])
+	falsy  isObject(o, "name doIt missing")
+	falsy  isObject(n)
+	falsy  isObject(n2)
+	falsy  isObject(s)
+	falsy  isObject(s2)
+	truthy isObject(o, "name doIt")
+	truthy isObject(o, "name doIt meth")
+	truthy isObject(o, "name &doIt &meth")
+	falsy  isObject(o, "&name")
 
-	u.equal jsType(undef), [undef, undef]
-	u.equal jsType(null),  [undef, 'null']
-	u.equal jsType(s), ['string', undef]
-	u.equal jsType(''), ['string', 'empty']
-	u.equal jsType("\t\t"), ['string', 'empty']
-	u.equal jsType("  "), ['string', 'empty']
-	u.equal jsType(h), ['hash', undef]
-	u.equal jsType({}), ['hash', 'empty']
-	u.equal jsType(3.14159), ['number', undef]
-	u.equal jsType(42), ['number', 'integer']
-	u.equal jsType(true), ['boolean', undef]
-	u.equal jsType(false), ['boolean', undef]
-	u.equal jsType(h), ['hash', undef]
-	u.equal jsType({}), ['hash', 'empty']
-	u.equal jsType(l), ['array', undef]
-	u.equal jsType([]), ['array', 'empty']
-	u.equal jsType(/abc/), ['regexp', undef]
+	equal jsType(undef), [undef, undef]
+	equal jsType(null),  [undef, 'null']
+	equal jsType(s), ['string', undef]
+	equal jsType(''), ['string', 'empty']
+	equal jsType("\t\t"), ['string', 'empty']
+	equal jsType("  "), ['string', 'empty']
+	equal jsType(h), ['hash', undef]
+	equal jsType({}), ['hash', 'empty']
+	equal jsType(3.14159), ['number', undef]
+	equal jsType(42), ['number', 'integer']
+	equal jsType(true), ['boolean', undef]
+	equal jsType(false), ['boolean', undef]
+	equal jsType(h), ['hash', undef]
+	equal jsType({}), ['hash', 'empty']
+	equal jsType(l), ['array', undef]
+	equal jsType([]), ['array', 'empty']
+	equal jsType(/abc/), ['regexp', undef]
 
 	func1 = (x) ->
 		return
@@ -395,33 +399,33 @@ u.falsy  oneof('a', 'b', 'c')
 		return
 
 	# --- NOTE: regular functions can't be distinguished from constructors
-	u.equal(jsType(func1), ['class', undef])
-	u.equal jsType(() -> 42), ['class', undef]
+	equal(jsType(func1), ['class', undef])
+	equal jsType(() -> 42), ['class', undef]
 
-	u.equal jsType(func2), ['function', 'func2']
-	u.equal jsType(() => 42), ['function', undef]
-	u.equal jsType(NewClass), ['class', undef]
-	u.equal jsType(o), ['object', undef]
+	equal jsType(func2), ['function', 'func2']
+	equal jsType(() => 42), ['function', undef]
+	equal jsType(NewClass), ['class', undef]
+	equal jsType(o), ['object', undef]
 	)()
 
 # ---------------------------------------------------------------------------
 
-u.equal blockToArray(undef), []
-u.equal blockToArray(''), []
-u.equal blockToArray('a'), ['a']
-u.equal blockToArray("a\nb"), ['a','b']
-u.equal blockToArray("a\r\nb"), ['a','b']
-u.equal blockToArray("abc\nxyz"), [
+equal blockToArray(undef), []
+equal blockToArray(''), []
+equal blockToArray('a'), ['a']
+equal blockToArray("a\nb"), ['a','b']
+equal blockToArray("a\r\nb"), ['a','b']
+equal blockToArray("abc\nxyz"), [
 	'abc'
 	'xyz'
 	]
 
-u.equal blockToArray("abc\nxyz"), [
+equal blockToArray("abc\nxyz"), [
 	'abc'
 	'xyz'
 	]
 
-u.equal blockToArray("abc\n\nxyz"), [
+equal blockToArray("abc\n\nxyz"), [
 	'abc'
 	''
 	'xyz'
@@ -429,64 +433,64 @@ u.equal blockToArray("abc\n\nxyz"), [
 
 # ---------------------------------------------------------------------------
 
-u.equal toArray("abc\ndef"), ['abc','def']
-u.equal toArray(['a','b']), ['a','b']
+equal toArray("abc\ndef"), ['abc','def']
+equal toArray(['a','b']), ['a','b']
 
-u.equal toArray(["a\nb","c\nd"]), ['a','b','c','d']
-
-# ---------------------------------------------------------------------------
-
-u.equal arrayToBlock(undef), ''
-u.equal arrayToBlock([]), ''
-u.equal arrayToBlock([undef]), ''
-u.equal arrayToBlock(['a  ','b\t\t']), "a\nb"
-u.equal arrayToBlock(['a','b','c']), "a\nb\nc"
-u.equal arrayToBlock(['a',undef,'b','c']), "a\nb\nc"
-u.equal arrayToBlock([undef,'a','b','c',undef]), "a\nb\nc"
+equal toArray(["a\nb","c\nd"]), ['a','b','c','d']
 
 # ---------------------------------------------------------------------------
 
-u.equal toBlock(['abc','def']), "abc\ndef"
-u.equal toBlock("abc\ndef"), "abc\ndef"
+equal arrayToBlock(undef), ''
+equal arrayToBlock([]), ''
+equal arrayToBlock([undef]), ''
+equal arrayToBlock(['a  ','b\t\t']), "a\nb"
+equal arrayToBlock(['a','b','c']), "a\nb\nc"
+equal arrayToBlock(['a',undef,'b','c']), "a\nb\nc"
+equal arrayToBlock([undef,'a','b','c',undef]), "a\nb\nc"
 
 # ---------------------------------------------------------------------------
 
-u.equal rtrim("abc"), "abc"
-u.equal rtrim("  abc"), "  abc"
-u.equal rtrim("abc  "), "abc"
-u.equal rtrim("  abc  "), "  abc"
+equal toBlock(['abc','def']), "abc\ndef"
+equal toBlock("abc\ndef"), "abc\ndef"
 
 # ---------------------------------------------------------------------------
 
-u.equal words(''), []
-u.equal words('  \t\t'), []
-u.equal words('a b c'), ['a', 'b', 'c']
-u.equal words('  a   b   c  '), ['a', 'b', 'c']
-u.equal words('a b', 'c d'), ['a', 'b', 'c', 'd']
-u.equal words(' my word ', ' is  word  '), ['my', 'word', 'is', 'word']
-
-u.truthy hasChar('abc', 'b')
-u.falsy  hasChar('abc', 'x')
-u.falsy  hasChar("\t\t", ' ')
+equal rtrim("abc"), "abc"
+equal rtrim("  abc"), "  abc"
+equal rtrim("abc  "), "abc"
+equal rtrim("  abc  "), "  abc"
 
 # ---------------------------------------------------------------------------
 
-u.equal quoted('abc'), "'abc'"
-u.equal quoted('"abc"'), "'\"abc\"'"
-u.equal quoted("'abc'"), "\"'abc'\""
-u.equal quoted("'\"abc\"'"), "<'\"abc\"'>"
-u.equal quoted("'\"<abc>\"'"), "<'\"<abc>\"'>"
+equal words(''), []
+equal words('  \t\t'), []
+equal words('a b c'), ['a', 'b', 'c']
+equal words('  a   b   c  '), ['a', 'b', 'c']
+equal words('a b', 'c d'), ['a', 'b', 'c', 'd']
+equal words(' my word ', ' is  word  '), ['my', 'word', 'is', 'word']
+
+truthy hasChar('abc', 'b')
+falsy  hasChar('abc', 'x')
+falsy  hasChar("\t\t", ' ')
 
 # ---------------------------------------------------------------------------
 
-u.equal getOptions(), {}
-u.equal getOptions(undef, {x:1}), {x:1}
-u.equal getOptions({x:1}, {x:3,y:4}), {x:1,y:4}
-u.equal getOptions('asText'), {asText: true}
-u.equal getOptions('!binary'), {binary: false}
-u.equal getOptions('label=this'), {label: 'this'}
-u.equal getOptions('width=42'), {width: 42}
-u.equal getOptions('asText !binary label=this'), {
+equal quoted('abc'), "'abc'"
+equal quoted('"abc"'), "'\"abc\"'"
+equal quoted("'abc'"), "\"'abc'\""
+equal quoted("'\"abc\"'"), "<'\"abc\"'>"
+equal quoted("'\"<abc>\"'"), "<'\"<abc>\"'>"
+
+# ---------------------------------------------------------------------------
+
+equal getOptions(), {}
+equal getOptions(undef, {x:1}), {x:1}
+equal getOptions({x:1}, {x:3,y:4}), {x:1,y:4}
+equal getOptions('asText'), {asText: true}
+equal getOptions('!binary'), {binary: false}
+equal getOptions('label=this'), {label: 'this'}
+equal getOptions('width=42'), {width: 42}
+equal getOptions('asText !binary label=this'), {
 	asText: true
 	binary: false
 	label: 'this'
@@ -494,79 +498,79 @@ u.equal getOptions('asText !binary label=this'), {
 
 # ---------------------------------------------------------------------------
 
-u.equal range(3), [0,1,2]
-u.equal rev_range(3), [2,1,0]
+equal range(3), [0,1,2]
+equal rev_range(3), [2,1,0]
 
 # ---------------------------------------------------------------------------
 
-u.truthy isHashComment('#')
-u.truthy isHashComment('# a comment')
-u.truthy isHashComment('#\ta comment')
-u.falsy  isHashComment('#comment')
-u.falsy  isHashComment('')
-u.falsy  isHashComment('a comment')
+truthy isHashComment('#')
+truthy isHashComment('# a comment')
+truthy isHashComment('#\ta comment')
+falsy  isHashComment('#comment')
+falsy  isHashComment('')
+falsy  isHashComment('a comment')
 
 # ---------------------------------------------------------------------------
 
-u.truthy isEmpty('')
-u.truthy isEmpty('  \t\t')
-u.truthy isEmpty([])
-u.truthy isEmpty({})
+truthy isEmpty('')
+truthy isEmpty('  \t\t')
+truthy isEmpty([])
+truthy isEmpty({})
 
-u.truthy nonEmpty('a')
-u.truthy nonEmpty('.')
-u.truthy nonEmpty([2])
-u.truthy nonEmpty({width: 2})
+truthy nonEmpty('a')
+truthy nonEmpty('.')
+truthy nonEmpty([2])
+truthy nonEmpty({width: 2})
 
-u.truthy isNonEmptyString('abc')
-u.falsy  isNonEmptyString(undef)
-u.falsy  isNonEmptyString('')
-u.falsy  isNonEmptyString('   ')
-u.falsy  isNonEmptyString("\t\t\t")
-u.falsy  isNonEmptyString(5)
-
-# ---------------------------------------------------------------------------
-
-u.truthy oneof('a', 'a', 'b', 'c')
-u.truthy oneof('b', 'a', 'b', 'c')
-u.truthy oneof('c', 'a', 'b', 'c')
-u.falsy  oneof('d', 'a', 'b', 'c')
-u.falsy  oneof('x')
+truthy isNonEmptyString('abc')
+falsy  isNonEmptyString(undef)
+falsy  isNonEmptyString('')
+falsy  isNonEmptyString('   ')
+falsy  isNonEmptyString("\t\t\t")
+falsy  isNonEmptyString(5)
 
 # ---------------------------------------------------------------------------
 
-u.equal uniq([1,2,2,3,3]), [1,2,3]
-u.equal uniq(['a','b','b','c','c']),['a','b','c']
+truthy oneof('a', 'a', 'b', 'c')
+truthy oneof('b', 'a', 'b', 'c')
+truthy oneof('c', 'a', 'b', 'c')
+falsy  oneof('d', 'a', 'b', 'c')
+falsy  oneof('x')
 
 # ---------------------------------------------------------------------------
 
-u.equal rtrim("abc"), "abc"
-u.equal rtrim("  abc"), "  abc"
-u.equal rtrim("abc  "), "abc"
-u.equal rtrim("  abc  "), "  abc"
+equal uniq([1,2,2,3,3]), [1,2,3]
+equal uniq(['a','b','b','c','c']),['a','b','c']
 
 # ---------------------------------------------------------------------------
 
-u.equal words('a b c'), ['a', 'b', 'c']
-u.equal words('  a   b   c  '), ['a', 'b', 'c']
+equal rtrim("abc"), "abc"
+equal rtrim("  abc"), "  abc"
+equal rtrim("abc  "), "abc"
+equal rtrim("  abc  "), "  abc"
 
 # ---------------------------------------------------------------------------
 
-u.equal escapeStr("\t\tXXX\n"), "→→XXX▼"
+equal words('a b c'), ['a', 'b', 'c']
+equal words('  a   b   c  '), ['a', 'b', 'c']
+
+# ---------------------------------------------------------------------------
+
+equal escapeStr("\t\tXXX\n"), "→→XXX▼"
 hEsc = {
 	"\n": "\\n"
 	"\t": "\\t"
 	"\"": "\\\""
 	}
-u.equal escapeStr("\thas quote: \"\nnext line", hEsc), \
+equal escapeStr("\thas quote: \"\nnext line", hEsc), \
 	"\\thas quote: \\\"\\nnext line"
 
 # ---------------------------------------------------------------------------
 
-u.equal rtrunc('/user/lib/.env', 5), '/user/lib'
-u.equal ltrunc('abcdefg', 3), 'defg'
+equal rtrunc('/user/lib/.env', 5), '/user/lib'
+equal ltrunc('abcdefg', 3), 'defg'
 
-u.equal CWS("""
+equal CWS("""
 		abc
 		def
 				ghi
@@ -574,39 +578,39 @@ u.equal CWS("""
 
 # ---------------------------------------------------------------------------
 
-u.truthy isArrayOfStrings([])
-u.truthy isArrayOfStrings(['a','b','c'])
-u.truthy isArrayOfStrings(['a',undef, null, 'b'])
+truthy isArrayOfStrings([])
+truthy isArrayOfStrings(['a','b','c'])
+truthy isArrayOfStrings(['a',undef, null, 'b'])
 
 # ---------------------------------------------------------------------------
 
-u.truthy isArrayOfArrays([])
-u.truthy isArrayOfArrays([[], []])
-u.truthy isArrayOfArrays([[1,2], []])
-u.truthy isArrayOfArrays([[1,2,[1,2,3]], []])
-u.truthy isArrayOfArrays([[1,2], undef, null, []])
+truthy isArrayOfArrays([])
+truthy isArrayOfArrays([[], []])
+truthy isArrayOfArrays([[1,2], []])
+truthy isArrayOfArrays([[1,2,[1,2,3]], []])
+truthy isArrayOfArrays([[1,2], undef, null, []])
 
-u.falsy isArrayOfArrays({})
-u.falsy isArrayOfArrays([1,2,3])
-u.falsy isArrayOfArrays([[1,2,[3,4]], 4])
-u.falsy isArrayOfArrays([[1,2,[3,4]], [], {a:1,b:2}])
+falsy isArrayOfArrays({})
+falsy isArrayOfArrays([1,2,3])
+falsy isArrayOfArrays([[1,2,[3,4]], 4])
+falsy isArrayOfArrays([[1,2,[3,4]], [], {a:1,b:2}])
 
-u.truthy isArrayOfArrays([[1,2],[3,4],[4,5]], 2)
-u.falsy  isArrayOfArrays([[1,2],[3],[4,5]], 2)
-u.falsy  isArrayOfArrays([[1,2],[3,4,5],[4,5]], 2)
+truthy isArrayOfArrays([[1,2],[3,4],[4,5]], 2)
+falsy  isArrayOfArrays([[1,2],[3],[4,5]], 2)
+falsy  isArrayOfArrays([[1,2],[3,4,5],[4,5]], 2)
 
 # ---------------------------------------------------------------------------
 
-u.truthy isArrayOfHashes([])
-u.truthy isArrayOfHashes([{}, {}])
-u.truthy isArrayOfHashes([{a:1, b:2}, {}])
-u.truthy isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, {}])
-u.truthy isArrayOfHashes([{a:1, b:2}, undef, null, {}])
+truthy isArrayOfHashes([])
+truthy isArrayOfHashes([{}, {}])
+truthy isArrayOfHashes([{a:1, b:2}, {}])
+truthy isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, {}])
+truthy isArrayOfHashes([{a:1, b:2}, undef, null, {}])
 
-u.falsy isArrayOfHashes({})
-u.falsy isArrayOfHashes([1,2,3])
-u.falsy isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, 4])
-u.falsy isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, {}, [1,2]])
+falsy isArrayOfHashes({})
+falsy isArrayOfHashes([1,2,3])
+falsy isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, 4])
+falsy isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, {}, [1,2]])
 
 # ---------------------------------------------------------------------------
 
@@ -625,79 +629,79 @@ u.falsy isArrayOfHashes([{a:1, b:2, c: [1,2,3]}, {}, [1,2]])
 	s = 'u'
 	s2 = new String('abc')
 
-	u.truthy isHash(h)
-	u.falsy isHash(l)
-	u.falsy isHash(o)
-	u.falsy isHash(n)
-	u.falsy isHash(n2)
-	u.falsy isHash(s)
-	u.falsy isHash(s2)
+	truthy isHash(h)
+	falsy isHash(l)
+	falsy isHash(o)
+	falsy isHash(n)
+	falsy isHash(n2)
+	falsy isHash(s)
+	falsy isHash(s2)
 
-	u.falsy isArray(h)
-	u.truthy isArray(l)
-	u.falsy isArray(o)
-	u.falsy isArray(n)
-	u.falsy isArray(n2)
-	u.falsy isArray(s)
-	u.falsy isArray(s2)
+	falsy isArray(h)
+	truthy isArray(l)
+	falsy isArray(o)
+	falsy isArray(n)
+	falsy isArray(n2)
+	falsy isArray(s)
+	falsy isArray(s2)
 
-	u.falsy isString(undef)
-	u.falsy isString(h)
-	u.falsy isString(l)
-	u.falsy isString(o)
-	u.falsy isString(n)
-	u.falsy isString(n2)
-	u.truthy isString(s)
-	u.truthy isString(s2)
+	falsy isString(undef)
+	falsy isString(h)
+	falsy isString(l)
+	falsy isString(o)
+	falsy isString(n)
+	falsy isString(n2)
+	truthy isString(s)
+	truthy isString(s2)
 
-	u.falsy isObject(h)
-	u.falsy isObject(l)
-	u.truthy isObject(o)
-	u.truthy isObject(o, ['name','doIt'])
-	u.falsy isObject(o, ['name','doIt','missing'])
-	u.falsy isObject(n)
-	u.falsy isObject(n2)
-	u.falsy isObject(s)
-	u.falsy isObject(s2)
+	falsy isObject(h)
+	falsy isObject(l)
+	truthy isObject(o)
+	truthy isObject(o, ['name','doIt'])
+	falsy isObject(o, ['name','doIt','missing'])
+	falsy isObject(n)
+	falsy isObject(n2)
+	falsy isObject(s)
+	falsy isObject(s2)
 
-	u.falsy isNumber(h)
-	u.falsy isNumber(l)
-	u.falsy isNumber(o)
-	u.truthy isNumber(n)
-	u.truthy isNumber(n2)
-	u.falsy isNumber(s)
-	u.falsy isNumber(s2)
+	falsy isNumber(h)
+	falsy isNumber(l)
+	falsy isNumber(o)
+	truthy isNumber(n)
+	truthy isNumber(n2)
+	falsy isNumber(s)
+	falsy isNumber(s2)
 
-	u.truthy isNumber(42.0, {min: 42.0})
-	u.falsy isNumber(42.0, {min: 42.1})
-	u.truthy isNumber(42.0, {max: 42.0})
-	u.falsy isNumber(42.0, {max: 41.9})
+	truthy isNumber(42.0, {min: 42.0})
+	falsy isNumber(42.0, {min: 42.1})
+	truthy isNumber(42.0, {max: 42.0})
+	falsy isNumber(42.0, {max: 41.9})
 	)()
 
 # ---------------------------------------------------------------------------
 
-u.truthy isFunction(() -> pass)
-u.falsy isFunction(23)
+truthy isFunction(() -> pass)
+falsy isFunction(23)
 
-u.truthy isInteger(42)
-u.truthy isInteger(new Number(42))
-u.falsy isInteger('abc')
-u.falsy isInteger({})
-u.falsy isInteger([])
-u.truthy isInteger(42, {min:  0})
-u.falsy isInteger(42, {min: 50})
-u.truthy isInteger(42, {max: 50})
-u.falsy isInteger(42, {max:  0})
-
-# ---------------------------------------------------------------------------
-
-u.equal OL(undef), "undef"
-u.equal OL("\t\tabc\nxyz"), "'→→abc▼xyz'"
-u.equal OL({a:1, b:'xyz'}), '{"a":1,"b":"xyz"}'
+truthy isInteger(42)
+truthy isInteger(new Number(42))
+falsy isInteger('abc')
+falsy isInteger({})
+falsy isInteger([])
+truthy isInteger(42, {min:  0})
+falsy isInteger(42, {min: 50})
+truthy isInteger(42, {max: 50})
+falsy isInteger(42, {max:  0})
 
 # ---------------------------------------------------------------------------
 
-u.equal CWS("""
+equal OL(undef), "undef"
+equal OL("\t\tabc\nxyz"), "'→→abc▼xyz'"
+equal OL({a:1, b:'xyz'}), '{"a":1,"b":"xyz"}'
+
+# ---------------------------------------------------------------------------
+
+equal CWS("""
 		a u
 		error message
 		"""), "a u error message"
@@ -705,47 +709,47 @@ u.equal CWS("""
 # ---------------------------------------------------------------------------
 # test isRegExp()
 
-u.truthy isRegExp(/^abc$/)
-u.truthy isRegExp(///^
+truthy isRegExp(/^abc$/)
+truthy isRegExp(///^
 		\s*
 		where
 		\s+
 		areyou
 		$///)
-u.falsy isRegExp(42)
-u.falsy isRegExp('abc')
-u.falsy isRegExp([1,'a'])
-u.falsy isRegExp({a:1, b:'ccc'})
-u.falsy isRegExp(undef)
+falsy isRegExp(42)
+falsy isRegExp('abc')
+falsy isRegExp([1,'a'])
+falsy isRegExp({a:1, b:'ccc'})
+falsy isRegExp(undef)
 
-u.truthy isRegExp(/\.coffee/)
+truthy isRegExp(/\.coffee/)
 
 # ---------------------------------------------------------------------------
 
-u.equal extractMatches("..3 and 4 plus 5", /\d+/g, parseInt),
+equal extractMatches("..3 and 4 plus 5", /\d+/g, parseInt),
 	[3, 4, 5]
-u.equal extractMatches("And This Is A String", /A/g), ['A','A']
+equal extractMatches("And This Is A String", /A/g), ['A','A']
 
 # ---------------------------------------------------------------------------
 
-u.truthy notdefined(undef)
-u.truthy notdefined(null)
-u.truthy defined('')
-u.truthy defined(5)
-u.truthy defined([])
-u.truthy defined({})
+truthy notdefined(undef)
+truthy notdefined(null)
+truthy defined('')
+truthy defined(5)
+truthy defined([])
+truthy defined({})
 
-u.falsy defined(undef)
-u.falsy defined(null)
-u.falsy notdefined('')
-u.falsy notdefined(5)
-u.falsy notdefined([])
-u.falsy notdefined({})
+falsy defined(undef)
+falsy defined(null)
+falsy notdefined('')
+falsy notdefined(5)
+falsy notdefined([])
+falsy notdefined({})
 
 # ---------------------------------------------------------------------------
 
-u.truthy isIterable([])
-u.truthy isIterable(['a','b'])
+truthy isIterable([])
+truthy isIterable(['a','b'])
 
 gen = () ->
 	yield 1
@@ -753,7 +757,7 @@ gen = () ->
 	yield 3
 	return
 
-u.truthy isIterable(gen())
+truthy isIterable(gen())
 
 # ---------------------------------------------------------------------------
 
@@ -762,16 +766,16 @@ u.truthy isIterable(gen())
 		constructor: (str) ->
 			@mystr = str
 
-	u.equal className(MyClass), 'MyClass'
+	equal className(MyClass), 'MyClass'
 
 	)()
 
 # ---------------------------------------------------------------------------
 
-u.equal getOptions('a b c'), {'a':true, 'b':true, 'c':true}
-u.equal getOptions('abc'), {'abc':true}
-u.equal getOptions({'a':true, 'b':false, 'c':42}), {'a':true, 'b':false, 'c':42}
-u.equal getOptions(), {}
+equal getOptions('a b c'), {'a':true, 'b':true, 'c':true}
+equal getOptions('abc'), {'abc':true}
+equal getOptions({'a':true, 'b':false, 'c':42}), {'a':true, 'b':false, 'c':42}
+equal getOptions(), {}
 
 # ---------------------------------------------------------------------------
 # --- test forEachLine
@@ -786,7 +790,7 @@ u.equal getOptions(), {}
 	forEachLine block, (line) =>
 		lResult.push line.toUpperCase()
 		return false
-	u.equal lResult, ['ABC','DEF', 'GHI']
+	equal lResult, ['ABC','DEF', 'GHI']
 	)()
 
 (() =>
@@ -802,7 +806,7 @@ u.equal getOptions(), {}
 		lResult.push line.toUpperCase()
 		return false
 
-	u.equal lResult, ['ABC','DEF']
+	equal lResult, ['ABC','DEF']
 	)()
 
 (() =>
@@ -811,7 +815,7 @@ u.equal getOptions(), {}
 	forEachLine item, (line) =>
 		lResult.push line.toUpperCase()
 		return false
-	u.equal lResult, ['ABC','DEF', 'GHI']
+	equal lResult, ['ABC','DEF', 'GHI']
 	)()
 
 (() =>
@@ -823,7 +827,7 @@ u.equal getOptions(), {}
 		lResult.push line.toUpperCase()
 		return false
 
-	u.equal lResult, ['ABC','DEF']
+	equal lResult, ['ABC','DEF']
 	)()
 
 (() =>
@@ -835,7 +839,7 @@ u.equal getOptions(), {}
 		lResult.push "#{hInfo.lineNum} #{line.toUpperCase()} #{hInfo.nextLine}"
 		return false
 
-	u.equal lResult, ['1 ABC def','2 DEF ghi']
+	equal lResult, ['1 ABC def','2 DEF ghi']
 	)()
 
 # ---------------------------------------------------------------------------
@@ -849,7 +853,7 @@ u.equal getOptions(), {}
 		"""
 	newblock = mapEachLine block, (line) =>
 		return line.toUpperCase()
-	u.equal newblock, """
+	equal newblock, """
 		ABC
 		DEF
 		GHI
@@ -867,7 +871,7 @@ u.equal getOptions(), {}
 			return undef
 		else
 			return line.toUpperCase()
-	u.equal newblock, """
+	equal newblock, """
 		ABC
 		GHI
 		"""
@@ -877,7 +881,7 @@ u.equal getOptions(), {}
 	item = ['abc','def','ghi']
 	newblock = mapEachLine item, (line) =>
 		return line.toUpperCase()
-	u.equal newblock, [
+	equal newblock, [
 		'ABC'
 		'DEF'
 		'GHI'
@@ -891,7 +895,7 @@ u.equal getOptions(), {}
 			return undef
 		else
 			return line.toUpperCase()
-	u.equal newblock, [
+	equal newblock, [
 		'ABC'
 		'GHI'
 		]
@@ -906,7 +910,7 @@ u.equal getOptions(), {}
 			return "#{hInfo.lineNum} #{line.toUpperCase()} #{hInfo.nextLine}"
 		else
 			return "#{hInfo.lineNum} #{line.toUpperCase()}"
-	u.equal newblock, [
+	equal newblock, [
 		'1 ABC def'
 		'3 GHI'
 		]
@@ -932,7 +936,7 @@ u.equal getOptions(), {}
 		type: 'Program',
 		}
 
-	u.equal removeKeys(hAST, ['start','end']), {
+	equal removeKeys(hAST, ['start','end']), {
 		body: [
 			{
 				declarations: Array [{}],
@@ -963,7 +967,7 @@ u.equal getOptions(), {}
 		type: 'Program',
 		}
 
-	u.equal removeKeys(hAST, ['start','end']), {
+	equal removeKeys(hAST, ['start','end']), {
 		body: [
 			{
 				declarations: Array [{}],
@@ -1003,16 +1007,16 @@ u.equal getOptions(), {}
 				return value
 		}
 
-	u.equal hToDo.task, 'go shopping'
-	u.equal h.task, 'GO SHOPPING'
+	equal hToDo.task, 'go shopping'
+	equal h.task, 'GO SHOPPING'
 
 	h.task = 'do something'
-	u.equal hToDo.task, 'do something'
-	u.equal h.task, 'DO SOMETHING'
+	equal hToDo.task, 'do something'
+	equal h.task, 'DO SOMETHING'
 
 	h.task = 'nothing'
-	u.equal hToDo.task, 'do something'
-	u.equal h.task, 'DO SOMETHING'
+	equal hToDo.task, 'do something'
+	equal h.task, 'DO SOMETHING'
 
 	)()
 
@@ -1033,7 +1037,7 @@ u.equal getOptions(), {}
 		await sleep 5
 		return lLines.join(',')
 
-	u.equal await run1(), 'abc,def,ghi'
+	equal await run1(), 'abc,def,ghi'
 	)()
 
 (() =>
@@ -1050,57 +1054,57 @@ u.equal getOptions(), {}
 		await sleep 5
 		return lLines.join(',')
 
-	u.equal await run2(), 'def,ghi'
+	equal await run2(), 'def,ghi'
 	)()
 
 # ---------------------------------------------------------------------------
 # test eachCharInString()
 
-u.truthy eachCharInString 'ABC', (ch) => ch == ch.toUpperCase()
-u.falsy  eachCharInString 'abc', (ch) => ch == ch.toUpperCase()
-u.falsy  eachCharInString 'AbC', (ch) => ch == ch.toUpperCase()
+truthy eachCharInString 'ABC', (ch) => ch == ch.toUpperCase()
+falsy  eachCharInString 'abc', (ch) => ch == ch.toUpperCase()
+falsy  eachCharInString 'AbC', (ch) => ch == ch.toUpperCase()
 
 # ---------------------------------------------------------------------------
 # test runCmd()
 
-u.equal runCmd("echo abc"), "abc\r\n"
+equal runCmd("echo abc"), "abc\r\n"
 
 # ---------------------------------------------------------------------------
 # test choose()
 
 lItems = ['apple','orange','pear']
-u.truthy lItems.includes(choose(lItems))
-u.truthy lItems.includes(choose(lItems))
-u.truthy lItems.includes(choose(lItems))
+truthy lItems.includes(choose(lItems))
+truthy lItems.includes(choose(lItems))
+truthy lItems.includes(choose(lItems))
 
 # ---------------------------------------------------------------------------
 # test shuffle()
 
 lShuffled = deepCopy(lItems)
 shuffle(lShuffled)
-u.truthy lShuffled.includes('apple')
-u.truthy lShuffled.includes('orange')
-u.truthy lShuffled.includes('pear')
-u.truthy lShuffled.length == lItems.length
+truthy lShuffled.includes('apple')
+truthy lShuffled.includes('orange')
+truthy lShuffled.includes('pear')
+truthy lShuffled.length == lItems.length
 
 # ---------------------------------------------------------------------------
 # test some date functions
 
 dateStr = '2023-01-01 05:00:00'
-u.equal timestamp(dateStr), "1/1/2023 5:00:00 AM"
-u.equal msSinceEpoch(dateStr), 1672567200000
-u.equal formatDate(dateStr), "Jan 1, 2023"
+equal timestamp(dateStr), "1/1/2023 5:00:00 AM"
+equal msSinceEpoch(dateStr), 1672567200000
+equal formatDate(dateStr), "Jan 1, 2023"
 
 
 # ---------------------------------------------------------------------------
 # test pad()
 
-u.equal pad(23, 5), "   23"
-u.equal pad(23, 5, 'justify=left'), '23   '
-u.equal pad('abc', 6), 'abc   '
-u.equal pad('abc', 6, 'justify=center'), ' abc  '
-u.equal pad(true, 3), 'true'
-u.equal pad(false, 3, 'truncate'), 'fal'
+equal pad(23, 5), "   23"
+equal pad(23, 5, 'justify=left'), '23   '
+equal pad('abc', 6), 'abc   '
+equal pad('abc', 6, 'justify=center'), ' abc  '
+equal pad(true, 3), 'true'
+equal pad(false, 3, 'truncate'), 'fal'
 
 # ---------------------------------------------------------------------------
 # test keys(), hasKey(), hasAllKeys(), hasAnyKey(), subkeys()
@@ -1125,18 +1129,18 @@ u.equal pad(false, 3, 'truncate'), 'fal'
 			}
 		}
 
-	u.equal keys(h), ['2023-Nov','2023-Dec']
-	u.truthy hasKey(h, '2023-Nov')
-	u.falsy hasKey(h, '2023-Oct')
-	u.equal subkeys(h), ['Dining','Hardware','Insurance']
+	equal keys(h), ['2023-Nov','2023-Dec']
+	truthy hasKey(h, '2023-Nov')
+	falsy hasKey(h, '2023-Oct')
+	equal subkeys(h), ['Dining','Hardware','Insurance']
 
-	u.truthy hasAllKeys(h, '2023-Nov', '2023-Dec')
-	u.truthy hasAllKeys(h, '2023-Nov')
-	u.falsy hasAllKeys(h, '2023-Oct', '2023-Nov', '2023-Dec')
+	truthy hasAllKeys(h, '2023-Nov', '2023-Dec')
+	truthy hasAllKeys(h, '2023-Nov')
+	falsy hasAllKeys(h, '2023-Oct', '2023-Nov', '2023-Dec')
 
-	u.truthy hasAnyKey(h, '2023-Oct', '2023-Nov', '2023-Dec')
-	u.truthy hasAnyKey(h, '2023-Oct', '2023-Nov')
-	u.falsy hasAnyKey(h, '2023-Jan', '2023-Feb', '2023-Mar')
+	truthy hasAnyKey(h, '2023-Oct', '2023-Nov', '2023-Dec')
+	truthy hasAnyKey(h, '2023-Oct', '2023-Nov')
+	falsy hasAnyKey(h, '2023-Jan', '2023-Feb', '2023-Mar')
 	)()
 
 # ---------------------------------------------------------------------------
@@ -1163,7 +1167,7 @@ u.equal pad(false, 3, 'truncate'), 'fal'
 		}
 
 	val1 = extractKey(h, 'Nov')
-	u.equal val1, {
+	equal val1, {
 		Dining: {
 			amt: 200
 			}
@@ -1172,7 +1176,7 @@ u.equal pad(false, 3, 'truncate'), 'fal'
 			}
 		}
 
-	u.equal h, {
+	equal h, {
 		Dec: {
 			Dining: {
 				amt: 300
@@ -1189,14 +1193,14 @@ u.equal pad(false, 3, 'truncate'), 'fal'
 		}
 
 	val2 = extractKey(h2, 'fName')
-	u.equal val2, 'John'
-	u.equal h2, {lName: 'Deighan'}
+	equal val2, 'John'
+	equal h2, {lName: 'Deighan'}
 
 	)()
 
 # ---------------------------------------------------------------------------
 
-u.equal keys({a:1, b:2},{c:3, b:5}), ['a','b','c']
+equal keys({a:1, b:2},{c:3, b:5}), ['a','b','c']
 
 (() =>
 	hJan = {
@@ -1213,7 +1217,7 @@ u.equal keys({a:1, b:2},{c:3, b:5}), ['a','b','c']
 		Gas: 200
 		Starbucks: 125
 		}
-	u.equal keys(hJan, hFeb, hMar), [
+	equal keys(hJan, hFeb, hMar), [
 		'Gas'
 		'Dining'
 		'Insurance'
@@ -1228,7 +1232,7 @@ u.equal keys({a:1, b:2},{c:3, b:5}), ['a','b','c']
 	lWords = ['bridge', 'highway', 'garbage']
 	result = forEachItem lWords, (item, h) =>
 		return item
-	u.equal result, lWords
+	equal result, lWords
 	)()
 
 (() =>
@@ -1238,14 +1242,14 @@ u.equal keys({a:1, b:2},{c:3, b:5}), ['a','b','c']
 			return undef
 		else
 			return item
-	u.equal result, ['bridge', 'garbage']
+	equal result, ['bridge', 'garbage']
 	)()
 
 (() =>
 	lWords = ['bridge', 'highway', 'garbage']
 	result = forEachItem lWords, (item, h) =>
 		return item.toUpperCase()
-	u.equal result, ['BRIDGE', 'HIGHWAY', 'GARBAGE']
+	equal result, ['BRIDGE', 'HIGHWAY', 'GARBAGE']
 	)()
 
 (() =>
@@ -1254,7 +1258,7 @@ u.equal keys({a:1, b:2},{c:3, b:5}), ['a','b','c']
 		if (item == 'garbage')
 			throw 'stop'
 		return item
-	u.equal result, ['bridge', 'highway']
+	equal result, ['bridge', 'highway']
 	)()
 
 (() =>
@@ -1263,12 +1267,12 @@ u.equal keys({a:1, b:2},{c:3, b:5}), ['a','b','c']
 		if (h._index == 2)
 			throw 'stop'
 		return item
-	u.equal result, ['bridge', 'highway']
+	equal result, ['bridge', 'highway']
 	)()
 
 (() =>
 	lWords = ['bridge', 'highway', 'garbage']
-	u.throws () =>
+	throws () =>
 		result = forEachItem lWords, (item, h) =>
 			throw new Error("unknown error")
 	)()
@@ -1288,56 +1292,96 @@ u.equal keys({a:1, b:2},{c:3, b:5}), ['a','b','c']
 			return undef
 
 	result = forEachItem countGenerator(), callback, {label: 'X'}
-	u.equal result, ['X 3', 'X 4']
+	equal result, ['X 3', 'X 4']
 	)()
 
 # ---------------------------------------------------------------------------
 
 (() =>
 	obj = addToHash {}, [2024, 'Mar', 'Eat Out', 'Starbucks'], 23
-	u.equal obj, {
+	equal obj, {
 		'2024': { Mar: { 'Eat Out': { Starbucks: 23 } } }
 		}
-	u.equal obj[2024]['Mar']['Eat Out']['Starbucks'], 23
+	equal obj[2024]['Mar']['Eat Out']['Starbucks'], 23
 	)()
 
 (() =>
 	obj = {}
 	addToHash obj, 'Mar', 23
-	u.equal obj, {Mar: 23}
+	equal obj, {Mar: 23}
 	)()
 
 (() =>
 	obj = {}
 	addToHash obj, 2, 23
-	u.equal obj, {'2': 23}
+	equal obj, {'2': 23}
 	)()
 
 # ---------------------------------------------------------------------------
 # --- test chomp()
 
-u.equal chomp('abc'), 'abc'
-u.equal chomp('abc\n'), 'abc'
-u.equal chomp('abc\r\n'), 'abc'
+equal chomp('abc'), 'abc'
+equal chomp('abc\n'), 'abc'
+equal chomp('abc\r\n'), 'abc'
 
 # ---------------------------------------------------------------------------
 # --- test flattenToHash()
 
 (() =>
-	u.equal flattenToHash({a:1, b:2}), {a:1, b:2}
-	u.equal flattenToHash([{a:1}, {b:2}]), {a:1,b:2}
-	u.equal flattenToHash([{a:1}, [{b:2}]]), {a:1,b:2}
-	u.equal flattenToHash([[{a:1}], {b:2}]), {a:1,b:2}
-	u.equal flattenToHash([[{a:1,c:3}], {b:2,d:4}]), {a:1,b:2,c:3,d:4}
+	equal flattenToHash({a:1, b:2}), {a:1, b:2}
+	equal flattenToHash([{a:1}, {b:2}]), {a:1,b:2}
+	equal flattenToHash([{a:1}, [{b:2}]]), {a:1,b:2}
+	equal flattenToHash([[{a:1}], {b:2}]), {a:1,b:2}
+	equal flattenToHash([[{a:1,c:3}], {b:2,d:4}]), {a:1,b:2,c:3,d:4}
 	lItems = [
 		{a:1, b:2}
 		[{c:3}, {d:4}, [{e:5}]]
 		]
-	u.equal flattenToHash(lItems), {
+	equal flattenToHash(lItems), {
 		a:1
 		b:2
 		c:3
 		d:4
 		e:5
 		}
+	)()
+
+# ---------------------------------------------------------------------------
+# --- test sortArrayOfHashes()
+
+(() =>
+	equal sortArrayOfHashes([
+		{a:1}
+		{a:3}
+		{a:2}
+		], 'a'), [
+		{a:1}
+		{a:2}
+		{a:3}
+		]
+
+	equal sortArrayOfHashes([
+		{name: 'John', age: 71}
+		{name: 'Arathi', age: 35}
+		{name: 'Lewis', age: 33}
+		{name: 'Ben', age: 39}
+		], 'name'), [
+		{name: 'Arathi', age: 35}
+		{name: 'Ben', age: 39}
+		{name: 'John', age: 71}
+		{name: 'Lewis', age: 33}
+		]
+
+	equal sortArrayOfHashes([
+		{name: 'John', age: 71}
+		{name: 'Arathi', age: 35}
+		{name: 'Lewis', age: 33}
+		{name: 'Ben', age: 39}
+		], 'age'), [
+		{name: 'Lewis', age: 33}
+		{name: 'Arathi', age: 35}
+		{name: 'Ben', age: 39}
+		{name: 'John', age: 71}
+		]
+
 	)()

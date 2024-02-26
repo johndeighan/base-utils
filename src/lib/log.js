@@ -135,9 +135,9 @@ export var getAllLogs = () => {
 export var LOG = (str = "", prefix = "") => {
   if (internalDebugging) {
     if (isEmpty(prefix)) {
-      console.log(`CALL LOG(${OL(str)})`);
+      console.log(`IN LOG(${OL(str)})`);
     } else {
-      console.log(`CALL LOG(${OL(str)}), prefix=${OL(prefix)}`);
+      console.log(`IN LOG(${OL(str)}), prefix=${OL(prefix)}`);
     }
   }
   PUTSTR(`${prefix}${str}`);
@@ -149,10 +149,12 @@ export var LOG = (str = "", prefix = "") => {
 export var PUTSTR = (str) => {
   var caller, doEcho, fileName, filePath;
   if (internalDebugging) {
-    console.log(`CALL PUTSTR(${OL(str)})`);
+    console.log(`IN PUTSTR(${OL(str)})`);
     if (defined(putstr)) {
-      if (putstr !== console.log) {
-        console.log("   - use custom logger");
+      if (putstr === console.log) {
+        console.log("   - putstr is console.log");
+      } else {
+        console.log("   - putstr is custom logger");
       }
     } else {
       console.log("   - putstr not defined");
@@ -166,9 +168,14 @@ export var PUTSTR = (str) => {
     fileName = parsePath(filePath).fileName;
     doEcho = logs.getKey(filePath, 'doEcho');
     if (internalDebugging) {
-      //			console.log "   filePath = #{OL(filePath)}, doEcho = #{OL(doEcho)}"
+      console.log(`   - filePath = ${OL(filePath)}, doEcho = ${OL(doEcho)}`);
       console.log(`   - from ${fileName}`);
     }
+  } else {
+    if (internalDebugging) {
+      console.log(`   - getMyOutsideCaller() failed, writing '${str}'`);
+    }
+    console.log(str);
   }
   logs.log(filePath, str);
   if (doEcho) {

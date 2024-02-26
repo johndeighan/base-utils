@@ -24,7 +24,14 @@ import {
 } from '@jdeighan/base-utils/stack';
 
 import {
-  utest
+  UnitTester,
+  equal,
+  like,
+  notequal,
+  truthy,
+  falsy,
+  throws,
+  succeeds
 } from '@jdeighan/base-utils/utest';
 
 echoLogsByDefault(false);
@@ -33,34 +40,34 @@ echoLogsByDefault(false);
 TEST = (stack, curFunc, strActive, strNonActive, logging, level = undef, logLevel = undef) => {
   var i, j, len, len1, name, ref, ref1;
   if (defined(curFunc)) {
-    utest.equal(stack.curFuncName, curFunc);
+    equal(stack.curFuncName, curFunc);
   } else {
-    utest.equal(stack.curFuncName, '_MAIN_');
+    equal(stack.curFuncName, '_MAIN_');
   }
   if (defined(strActive)) {
     ref = words(strActive);
     for (i = 0, len = ref.length; i < len; i++) {
       name = ref[i];
-      utest.truthy(stack.isActive(name));
+      truthy(stack.isActive(name));
     }
   }
   if (defined(strNonActive)) {
     ref1 = words(strNonActive);
     for (j = 0, len1 = ref1.length; j < len1; j++) {
       name = ref1[j];
-      utest.falsy(stack.isActive(name));
+      falsy(stack.isActive(name));
     }
   }
   if (logging) {
-    utest.truthy(stack.isLogging());
+    truthy(stack.isLogging());
   } else {
-    utest.falsy(stack.isLogging());
+    falsy(stack.isLogging());
   }
   if (defined(level)) {
-    utest.equal(stack.level, level);
+    equal(stack.level, level);
   }
   if (defined(logLevel)) {
-    utest.equal(stack.logLevel, logLevel);
+    equal(stack.logLevel, logLevel);
   }
 };
 
@@ -78,13 +85,13 @@ TEST(stack, 'func', "func", "func2", false);
 
 stack.returnFrom('func');
 
-utest.truthy(stack.isEmpty());
+truthy(stack.isEmpty());
 
-utest.equal(getStackLog(), `ENTER 'func'
+equal(getStackLog(), `ENTER 'func'
 RETURN FROM 'func'`);
 
 // ---------------------------------------------------------------------------
-utest.throws(function() {
+throws(function() {
   suppressExceptionLogging(true);
   clearAllLogs();
   stack = new CallStack();
@@ -112,9 +119,9 @@ stack.returnFrom('func');
 //              -----   ------  --------       ---------
 TEST(stack, undef, undef, 'func func2', false);
 
-utest.truthy(stack.isEmpty());
+truthy(stack.isEmpty());
 
-utest.equal(getStackLog(), `ENTER 'func'
+equal(getStackLog(), `ENTER 'func'
 RETURN FROM 'func'`);
 
 // ---------------------------------------------------------------------------
@@ -148,12 +155,12 @@ stack.returnFrom('func');
 //              -----   ------  --------     ---------
 TEST(stack, undef, undef, 'func func2', false);
 
-utest.equal(getStackLog(), `ENTER 'func'
+equal(getStackLog(), `ENTER 'func'
 	ENTER 'func2'
 	RETURN FROM 'func2'
 RETURN FROM 'func'`);
 
-utest.truthy(stack.isEmpty());
+truthy(stack.isEmpty());
 
 // ---------------------------------------------------------------------------
 // --- Test yield / resume
@@ -203,7 +210,7 @@ stack.returnFrom('func');
 //              -----   ------  --------      ---------
 TEST(stack, undef, undef, 'func gen', false, 0, 0);
 
-utest.truthy(stack.isEmpty());
+truthy(stack.isEmpty());
 
 // ---------------------------------------------------------------------------
 // --- Test multiple generators
@@ -253,7 +260,7 @@ stack.returnFrom('func');
 //              -----   ------  --------      ---------
 TEST(stack, undef, undef, 'func gen', false, 0, 0);
 
-utest.truthy(stack.isEmpty());
+truthy(stack.isEmpty());
 
 // ---------------------------------------------------------------------------
 // test stack log
@@ -282,7 +289,7 @@ stack.returnFrom('func2', 'def');
 
 stack.returnFrom('func1');
 
-utest.equal(getStackLog(), `RESET STACK
+equal(getStackLog(), `RESET STACK
 ENTER 'func1' 13
 	ENTER 'func2' 'abc',{"mean":42}
 	YIELD FROM 'func2' 99

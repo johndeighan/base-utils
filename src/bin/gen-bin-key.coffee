@@ -6,8 +6,8 @@ import {undef, isEmpty, nonEmpty} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 # import {LOG} from '@jdeighan/base-utils/log'
 import {
-	isFile, isDir, mkpath, rmFileSync,
-	slurp, forEachFileInDir, slurpJSON, barfJSON,
+	isFile, isDir, mkpath, rmFileSync, withExt,
+	slurp, allFilesIn, slurpJSON, barfJSON,
 	} from '@jdeighan/base-utils/fs'
 
 dir = process.cwd()
@@ -37,24 +37,18 @@ LOG "dir #{binDir} exists"
 #       - error if JS file doesn't start with a shebang line
 
 hBin = {}
-forEachFileInDir binDir, (fname) =>
-	if lMatches = fname.match(/^(.*)\.coffee$/)
-		[_, stub] = lMatches
-		jsFileName = "#{stub}.js"
-		jsPath = mkpath(dir, 'src', 'bin', jsFileName)
-		coffeeFileName = "#{stub}.coffee"
-		coffeePath = mkpath(dir, 'src', 'bin', coffeeFileName)
-		LOG "FOUND #{fname}"
+for hFile from allFilesIn('*.coffee', {cwd: binDir})
+	{fileName, filePath, stub} = hFile
+	jsFileName = withExt(fileName, '.js')
+	jsPath = withExt(filePath, '.js')
+	assert isFile(jsPath), "Missing file #{jsFileName}"
+	jsCode = slurp jsPath
+	assert jsCode.startsWith("#!/usr/bin/env node"), "Missing shebang"
 
-		# --- Check that corresponding *.js file exists
-		assert isFile(jsPath), "Missing file #{jsPath}"
+	LOG "FOUND #{fileName}"
 
-		# --- Check that *.js file has shebang line
-		jsCode = slurp jsPath
-		assert jsCode.startsWith("#!/usr/bin/env node"), "Missing shebang"
-
-		hBin[stub] = "./src/bin/#{jsFileName}"
-		LOG "   #{stub} => #{hBin[stub]}"
+	hBin[stub] = "./src/bin/#{jsFileName}"
+	LOG "   #{stub} => #{hBin[stub]}"
 
 # 4. Add sub-keys to key 'bin' in package.json (create if not exists)
 if isEmpty(hBin)

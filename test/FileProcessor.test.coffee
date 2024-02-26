@@ -13,7 +13,10 @@ import {
 import {
 	line2hWord, hWord2line,
 	} from './utils.js'   # relative to this dir?
-import {utest} from '@jdeighan/base-utils/utest'
+import {
+	UnitTester,
+	equal, like, notequal, truthy, falsy, throws, succeeds,
+	} from '@jdeighan/base-utils/utest'
 
 # ---------------------------------------------------------------------------
 # --- Build array of paths to files matching a glob pattern
@@ -29,49 +32,69 @@ import {utest} from '@jdeighan/base-utils/utest'
 (() =>
 	# --- There are 2 *.zh files in `./test/fp-test`
 
-	fp = new FileProcessor './test/fp-test', '*.zh'
-	fp.handleFile = (filePath) ->
+	fp = new FileProcessor './test/fp-test/*.zh'
+	fp.handleFile = (hFile) ->
 		return {}
 	fp.readAll()
 
 	lUserData = fp.getUserData()
-	utest.equal lUserData.length, 2
+	equal lUserData.length, 2
+	)()
+
+# --- We can also pass option 'cwd' in hGlobOptions
+
+(() =>
+	# --- There are 2 *.zh files in `./test/fp-test`
+
+	fp = new FileProcessor '*.zh', {
+		hGlobOptions: {cwd: './test/fp-test'}
+		}
+	fp.handleFile = (hFile) ->
+		return {}
+	fp.readAll()
+
+	lUserData = fp.getUserData()
+	equal lUserData.length, 2
 	)()
 
 (() =>
 	# --- There are 3 *.txt files in `./test/fp-test`
 
-	fp = new FileProcessor './test/fp-test', '*.txt'
-	fp.handleFile = (filePath) ->
+	fp = new FileProcessor './test/fp-test/*.txt'
+	fp.handleFile = (hFile) ->
 		return {}
 	fp.readAll()
 
 	lUserData = fp.getUserData()
-	utest.equal lUserData.length, 3
+	equal lUserData.length, 3
 	)()
 
 (() =>
 	# --- There are 26 total files in `./test/words`
 
-	fp = new FileProcessor './test/words', '*'
-	fp.handleFile = (filePath) ->
-		return {}
+	fp = new FileProcessor './test/words/*'
+	fp.handleFile = (hFile) ->
+		{type} = hFile
+		if (type == 'file')
+			return {}
+		else
+			return undef
 	fp.readAll()
 
 	lUserData = fp.getUserData()
-	utest.equal lUserData.length, 26
+	equal lUserData.length, 26
 	)()
 
 (() =>
 	# --- There are 25 *.zh files in `./test/words`
 
-	fp = new FileProcessor './test/words', '*.zh'
-	fp.handleFile = (filePath) ->
+	fp = new FileProcessor './test/words/*.zh'
+	fp.handleFile = (hFile) ->
 		return {}
 	fp.readAll()
 
 	lUserData = fp.getUserData()
-	utest.equal lUserData.length, 25
+	equal lUserData.length, 25
 	)()
 
 # ---------------------------------------------------------------------------
@@ -84,15 +107,17 @@ import {utest} from '@jdeighan/base-utils/utest'
 #        rtrim() will trim trailing whitespace, including \n
 
 (() =>
-	fp = new FileProcessor './test/fp-test', '*.zh'
-	fp.handleFile = (filePath) ->
-		return {zh: rtrim(slurp(filePath))}
+	fp = new FileProcessor './test/fp-test/*.zh'
+	fp.handleFile = (hFile) ->
+		return {
+			zh: rtrim(slurp(hFile.filePath))
+			}
 	fp.readAll()
 
 	lUserData = fp.getSortedUserData()
-	utest.equal lUserData.length, 2
-	utest.like lUserData[0], {zh: '你好'}
-	utest.like lUserData[1], {zh: '再见'}
+	equal lUserData.length, 2
+	like lUserData[0], {zh: '你好'}
+	like lUserData[1], {zh: '再见'}
 	)()
 
 # ---------------------------------------------------------------------------
@@ -103,9 +128,9 @@ import {utest} from '@jdeighan/base-utils/utest'
 #        value of @numWords, but return undef
 
 (() =>
-	fp = new FileProcessor './test/words', '*.zh'
-	fp.handleFile = (filePath) ->
-		content = rtrim(slurp(filePath))
+	fp = new FileProcessor './test/words/*.zh'
+	fp.handleFile = (hFile) ->
+		content = rtrim(slurp(hFile.filePath))
 		count = toArray(content).length
 		if defined(@numWords)
 			@numWords += count
@@ -114,7 +139,7 @@ import {utest} from '@jdeighan/base-utils/utest'
 		return undef
 	fp.readAll()
 
-	utest.equal fp.numWords, 2048
+	equal fp.numWords, 2048
 	)()
 
 # ---------------------------------------------------------------------------
@@ -122,9 +147,9 @@ import {utest} from '@jdeighan/base-utils/utest'
 #     by overriding transformFile() to pass integers to handleFile()
 
 (() =>
-	fp = new FileProcessor './test/words', '*.zh'
-	fp.transformFile = (filePath) ->
-		content = rtrim(slurp(filePath))
+	fp = new FileProcessor './test/words/*.zh'
+	fp.transformFile = (hFile) ->
+		content = rtrim(slurp(hFile.filePath))
 		return toArray(content).length
 
 	fp.handleFile = (count) ->
@@ -135,7 +160,7 @@ import {utest} from '@jdeighan/base-utils/utest'
 		return undef
 	fp.readAll()
 
-	utest.equal fp.numWords, 2048
+	equal fp.numWords, 2048
 	)()
 
 # ---------------------------------------------------------------------------
@@ -147,7 +172,7 @@ import {utest} from '@jdeighan/base-utils/utest'
 #        value of @numWords, but return undef
 
 (() =>
-	fp = new LineProcessor './test/words', '*.zh'
+	fp = new LineProcessor './test/words/*.zh'
 	fp.handleLine = (line) ->
 		if defined(@numWords)
 			@numWords += 1
@@ -156,7 +181,7 @@ import {utest} from '@jdeighan/base-utils/utest'
 		return undef     # write nothing out
 	fp.readAll()
 
-	utest.equal fp.numWords, 2048
+	equal fp.numWords, 2048
 	)()
 
 # ---------------------------------------------------------------------------
@@ -164,7 +189,7 @@ import {utest} from '@jdeighan/base-utils/utest'
 #        just the Chinese words in `*.zh` files
 
 (() =>
-	fp = new LineProcessor './test/words', '*.zh'
+	fp = new LineProcessor './test/words/*.zh'
 	fp.handleLine = (line) ->
 		if defined(@numWords)
 			@numWords += 1
@@ -178,11 +203,11 @@ import {utest} from '@jdeighan/base-utils/utest'
 	fp.readAll()
 	fp.writeAll()
 
-	utest.equal fp.numWords, 2048
-	utest.equal dirContents('./test/words/temp').length, 25
-	utest.equal dirContents('./test/words/temp', '*.zh').length, 25
-	utest.equal dirContents('./test/words/temp', '*', 'filesOnly').length, 25
-	utest.equal dirContents('./test/words/temp', '*', 'dirsOnly').length, 0
+	equal fp.numWords, 2048
+	equal dirContents('./test/words/temp').length, 25
+	equal dirContents('./test/words/temp', '*.zh').length, 25
+	equal dirContents('./test/words/temp', '*', 'filesOnly').length, 25
+	equal dirContents('./test/words/temp', '*', 'dirsOnly').length, 0
 	)()
 
 # ---------------------------------------------------------------------------
@@ -191,7 +216,7 @@ import {utest} from '@jdeighan/base-utils/utest'
 #        the number incremented by 5
 
 (() =>
-	fp = new LineProcessor './test/words', '*.zh'
+	fp = new LineProcessor './test/words/*.zh'
 	fp.handleLine = (line) ->
 		return {hWord: line2hWord(line)}
 	fp.writeFileTo = (hUserData) ->
@@ -203,13 +228,13 @@ import {utest} from '@jdeighan/base-utils/utest'
 	fp.readAll()
 	fp.writeAll()
 
-	utest.truthy isDir('./test/words/temp2')
-	utest.truthy slurp('./test/words/adjectives.zh').startsWith('11 ')
-	utest.truthy slurp('./test/words/temp2/adjectives.zh').startsWith('16 ')
-	utest.equal dirContents('./test/words/temp2').length, 25
-	utest.equal dirContents('./test/words/temp2', '*.zh').length, 25
-	utest.equal dirContents('./test/words/temp2', '*', 'filesOnly').length, 25
-	utest.equal dirContents('./test/words/temp2', '*', 'dirsOnly').length, 0
+	truthy isDir('./test/words/temp2')
+	truthy slurp('./test/words/adjectives.zh').startsWith('11 ')
+	truthy slurp('./test/words/temp2/adjectives.zh').startsWith('16 ')
+	equal dirContents('./test/words/temp2').length, 25
+	equal dirContents('./test/words/temp2', '*.zh').length, 25
+	equal dirContents('./test/words/temp2', '*', 'filesOnly').length, 25
+	equal dirContents('./test/words/temp2', '*', 'dirsOnly').length, 0
 
 	)()
 
@@ -221,7 +246,7 @@ import {utest} from '@jdeighan/base-utils/utest'
 #        return its first arg
 
 (() =>
-	fp = new LineProcessor './test/words', '*.zh'
+	fp = new LineProcessor './test/words/*.zh'
 	fp.transformLine = (line) =>
 		return {hWord: line2hWord(line)}
 	fp.handleLine = (h) ->
@@ -235,12 +260,12 @@ import {utest} from '@jdeighan/base-utils/utest'
 	fp.readAll()
 	fp.writeAll()
 
-	utest.truthy isDir('./test/words/temp2')
-	utest.truthy slurp('./test/words/adjectives.zh').startsWith('11 ')
-	utest.truthy slurp('./test/words/temp2/adjectives.zh').startsWith('16 ')
-	utest.equal dirContents('./test/words/temp2').length, 25
-	utest.equal dirContents('./test/words/temp2', '*.zh').length, 25
-	utest.equal dirContents('./test/words/temp2', '*', 'filesOnly').length, 25
-	utest.equal dirContents('./test/words/temp2', '*', 'dirsOnly').length, 0
+	truthy isDir('./test/words/temp2')
+	truthy slurp('./test/words/adjectives.zh').startsWith('11 ')
+	truthy slurp('./test/words/temp2/adjectives.zh').startsWith('16 ')
+	equal dirContents('./test/words/temp2').length, 25
+	equal dirContents('./test/words/temp2', '*.zh').length, 25
+	equal dirContents('./test/words/temp2', '*', 'filesOnly').length, 25
+	equal dirContents('./test/words/temp2', '*', 'dirsOnly').length, 0
 
 	)()

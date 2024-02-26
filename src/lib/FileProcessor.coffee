@@ -3,15 +3,16 @@
 import {globSync as glob} from 'glob'
 
 import {
-	undef, defined, notdefined, getOptions, add_s,
+	undef, defined, notdefined, getOptions, add_s, isEmpty,
 	isString, isHash, toJSON, jsType, OL,
 	hasKey, hasAnyKey, addNewKey, toBlock, toArray,
+	sortedArrayOfHashes,
 	} from '@jdeighan/base-utils'
 import {toTAML} from '@jdeighan/base-utils/taml'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	mkpath, mkDir, pathType, parsePath, subPath,
-	allLinesIn, slurp, barf, isFile,
+	allLinesIn, slurp, barf, isFile, allFilesIn,
 	} from '@jdeighan/base-utils/fs'
 import {
 	dbgEnter, dbgReturn, dbg,
@@ -22,35 +23,24 @@ import {indented} from '@jdeighan/base-utils/indent'
 
 export class FileProcessor
 
-	constructor: (@path, @pattern='*', hOptions={}) ->
-		# --- path can be a file or directory
-		#     if it's a file, then pattern and hGlobOptions are ignored
+	constructor: (@pattern=undef, hOptions={}) ->
+		# --- pattern is a glob pattern
+		#     if pattern is undef, use process.cwd() + "/*"
 		# --- Valid options
 		#        allowOverwrite - allow overwrite of original files
 		#        hGlobOptions - options to pass to glob()
+		#        eager - include content of files in hFile
 		# --- Valid glob options:
 		#        ignore - glob pattern for files to ignore
 		#        dot - include dot files/directories (default: false)
+		#        cwd - change working directory
 
-		dbgEnter 'FileProcessor', @path, @pattern, hOptions
-		assert isString(@path), "path not a string"
+		dbgEnter 'FileProcessor', @pattern, hOptions
 		@hOptions = getOptions hOptions, {
 			allowOverwrite: false
-			hGlobOptions: getOptions hOptions.hGlobOptions, {
-				absolute: true
-				cwd: @path
-				dot: false
-				}
+			eager: false
+			hGlobOptions: {}
 			}
-
-		# --- determine type of path
-		@path = mkpath @path       # --- convert to full path
-		@pathType = pathType @path
-		dbg "path #{@path} is a #{@pathType}"
-		if (@pathType == 'dir')
-			@hGlobOptions = hOptions.hGlobOptions
-		else if (@pathType != 'file')
-			croak "invalid path '#{@path}'"
 
 		@lUserData = []  # --- filled in by readAll()
 		dbgReturn 'FileProcessor'
@@ -65,15 +55,7 @@ export class FileProcessor
 
 	getSortedUserData: () ->
 
-		compareFunc = (a, b) =>
-			if (a.filePath < b.filePath)
-				return -1
-			else if (a.filePath > b.filePath)
-				return 1
-			else
-				return 0
-
-		return @lUserData.toSorted(compareFunc)
+		return sortedArrayOfHashes(@lUserData, 'filePath')
 
 	# ..........................................................
 
@@ -110,49 +92,27 @@ export class FileProcessor
 
 	# ..........................................................
 
-	transformFile: (path) ->
-
-		return path
-
-	# ..........................................................
-
 	readAll: () ->
 
 		dbgEnter 'readAll'
-		dbg "pathType = #{@pathType}"
 		numFiles = 0
-		switch @pathType
 
-			when 'file'
-				hFile = parsePath(@path)
-				if @filterFile @path
-					dbg "[#{numFiles}] #{hFile.fileName} - Handle"
-					h = @handleFile @transformFile(@path)
-					if defined(h)
-						assert isHash(h), "handleFile() returned non-hash"
-						addNewKey h, 'filePath', hFile.filePath
-						@lUserData.push h
-					numFiles += 1
-				else
-					dbg "[#{numFiles}] #{hFile.fileName} - Skip"
-
-			when 'dir'
-				dbg "pattern = '#{@pattern}'"
-				dbg 'hGlobOptions', @hGlobOptions
-				for filePath in glob(@pattern, @hGlobOptions)
-					if isFile(filePath)
-						dbg "filePath = '#{filePath}'"
-						hFile = parsePath filePath
-						if @filterFile filePath
-							dbg "[#{numFiles}] #{filePath} - Handle"
-							h = @handleFile @transformFile(filePath)
-							if defined(h)
-								assert isHash(h), "handleFile() returned non-hash"
-								addNewKey h, 'filePath', filePath
-								@lUserData.push h
-							numFiles += 1
-						else
-							dbg "[#{numFiles}] #{hFile.fileName} - Skip"
+		hOptions = {
+			hGlobOptions: @hOptions.hGlobOptions
+			eager: @hOptions.eager
+			}
+		for hFile from allFilesIn(@pattern, hOptions)
+			{filePath} = hFile
+			if @filterFile hFile
+				dbg "[#{numFiles}] #{filePath} - Handle"
+				h = @handleFile @transformFile(hFile)
+				if defined(h)
+					assert isHash(h), "handleFile() returned non-hash"
+					addNewKey h, 'filePath', filePath
+					@lUserData.push h
+				numFiles += 1
+			else
+				dbg "[#{numFiles}] #{hFile.fileName} - Skip"
 
 		dbg "#{numFiles} file#{add_s(numFiles)} processed"
 		dbgReturn 'readAll', @lUserData
@@ -160,18 +120,24 @@ export class FileProcessor
 
 	# ..........................................................
 
-	filterFile: (filePath) ->
+	transformFile: (hFile) ->
 
-		dbgEnter 'filterFile', filePath
+		return hFile
+
+	# ..........................................................
+
+	filterFile: (hFile) ->
+
+		dbgEnter 'filterFile', hFile
 		dbgReturn 'filterFile'
 		return true    # by default, handle all files in dir
 
 	# ..........................................................
 
-	handleFile: (filePath) ->
+	handleFile: (hFile) ->
 		# --- does nothing, returns nothing
 
-		dbgEnter 'handleFile', filePath
+		dbgEnter 'handleFile', hFile
 		dbgReturn 'handleFile'
 		return
 
@@ -227,9 +193,10 @@ export class LineProcessor extends FileProcessor
 
 	# ..........................................................
 
-	handleFile: (filePath) ->
+	handleFile: (hFile) ->
 
-		dbgEnter 'handleFile', filePath
+		dbgEnter 'handleFile', hFile
+		{filePath} = hFile
 		assert isString(filePath), "not a string"
 		lRecipe = []   # --- array of hashes
 		lineNum = 1

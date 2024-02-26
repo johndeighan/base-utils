@@ -36,7 +36,14 @@ import {
 } from '@jdeighan/base-utils/log';
 
 import {
-  utest
+  UnitTester,
+  equal,
+  like,
+  notequal,
+  truthy,
+  falsy,
+  throws,
+  succeeds
 } from '@jdeighan/base-utils/utest';
 
 echoLogsByDefault(false);
@@ -44,44 +51,44 @@ echoLogsByDefault(false);
 fiveSpaces = ' '.repeat(5);
 
 // ---------------------------------------------------------------------------
-utest.equal(orderedStringify(['a', 42, [1, 2]]), `---
+equal(orderedStringify(['a', 42, [1, 2]]), `---
 - a
 - 42
 - - 1
   - 2`);
 
 // ---------------------------------------------------------------------------
-utest.equal(logWidth, 42);
+equal(logWidth, 42);
 
 setLogWidth(5);
 
-utest.equal(logWidth, 5);
+equal(logWidth, 5);
 
-utest.equal(sep_dash, '-----');
+equal(sep_dash, '-----');
 
 resetLogWidth();
 
 setLogWidth(5);
 
-utest.equal(logWidth, 5);
+equal(logWidth, 5);
 
-utest.equal(sep_eq, '=====');
+equal(sep_eq, '=====');
 
 resetLogWidth();
 
 // ---------------------------------------------------------------------------
-utest.equal(getPrefix(0), '');
+equal(getPrefix(0), '');
 
-utest.equal(getPrefix(1), spaces(4));
+equal(getPrefix(1), spaces(4));
 
-utest.equal(getPrefix(2), spaces(8));
+equal(getPrefix(2), spaces(8));
 
 // ---------------------------------------------------------------------------
 clearAllLogs('noecho');
 
 LOG("abc");
 
-utest.equal(getMyLogs(), `abc`);
+equal(getMyLogs(), `abc`);
 
 clearAllLogs('noecho');
 
@@ -89,7 +96,7 @@ LOG("abc");
 
 LOG("def");
 
-utest.equal(getMyLogs(), `abc
+equal(getMyLogs(), `abc
 def`);
 
 // NOTE: Because logs are destined for the console,
@@ -103,7 +110,7 @@ LOG("def", getPrefix(1));
 
 LOG("ghi", getPrefix(2));
 
-utest.equal(getMyLogs(), `abc
+equal(getMyLogs(), `abc
 ${spaces(4)}def
 ${spaces(4)}${spaces(4)}ghi`);
 
@@ -112,50 +119,50 @@ clearAllLogs('noecho');
 
 LOGVALUE('x', undef);
 
-utest.equal(getMyLogs(), `x = undef`);
+equal(getMyLogs(), `x = undef`);
 
 clearAllLogs('noecho');
 
 LOGVALUE('x', null);
 
-utest.equal(getMyLogs(), `x = null`);
+equal(getMyLogs(), `x = null`);
 
 clearAllLogs('noecho');
 
 LOGVALUE('x', 'abc');
 
-utest.equal(getMyLogs(), `x = 'abc'`);
+equal(getMyLogs(), `x = 'abc'`);
 
 clearAllLogs('noecho');
 
 LOGVALUE('x', 'abc def');
 
-utest.equal(getMyLogs(), `x = 'abc˳def'`);
+equal(getMyLogs(), `x = 'abc˳def'`);
 
 clearAllLogs('noecho');
 
 LOGVALUE('x', '"abc"');
 
-utest.equal(getMyLogs(), `x = '"abc"'`);
+equal(getMyLogs(), `x = '"abc"'`);
 
 clearAllLogs('noecho');
 
 LOGVALUE('x', "'abc'");
 
-utest.equal(getMyLogs(), `x = "'abc'"`);
+equal(getMyLogs(), `x = "'abc'"`);
 
 clearAllLogs('noecho');
 
 LOGVALUE('x', "'\"abc\"'");
 
-utest.equal(getMyLogs(), `x = <'"abc"'>`);
+equal(getMyLogs(), `x = <'"abc"'>`);
 
 // --- long string
 clearAllLogs('noecho');
 
 LOGVALUE('x', 'a'.repeat(80));
 
-utest.equal(getMyLogs(), `x = \"\"\"
+equal(getMyLogs(), `x = \"\"\"
 	${'a'.repeat(80)}
 	\"\"\"`);
 
@@ -164,7 +171,7 @@ clearAllLogs('noecho');
 
 LOGVALUE('x', 'abc\ndef');
 
-utest.equal(getMyLogs(), `x = 'abc▼def'`);
+equal(getMyLogs(), `x = 'abc▼def'`);
 
 // --- hash (OL doesn't fit)
 clearAllLogs('noecho');
@@ -178,7 +185,7 @@ LOGVALUE('h', {
 
 resetLogWidth();
 
-utest.equal(getMyLogs(), `h =
+equal(getMyLogs(), `h =
 	---
 	abc: 99
 	xyz: 42`);
@@ -191,7 +198,7 @@ LOGVALUE('h', {
   abc: 99
 });
 
-utest.equal(getMyLogs(), `h = {"xyz":42,"abc":99}`);
+equal(getMyLogs(), `h = {"xyz":42,"abc":99}`);
 
 // --- array  (OL doesn't fit)
 clearAllLogs('noecho');
@@ -202,7 +209,7 @@ LOGVALUE('l', ['xyz', 42, false, undef]);
 
 resetLogWidth();
 
-utest.equal(getMyLogs(), `l =
+equal(getMyLogs(), `l =
 	---
 	- xyz
 	- 42
@@ -214,7 +221,7 @@ clearAllLogs('noecho');
 
 LOGVALUE('l', ['xyz', 42, false, undef]);
 
-utest.equal(getMyLogs(), `l = ["xyz",42,false,null]`);
+equal(getMyLogs(), `l = ["xyz",42,false,null]`);
 
 // --- object
 Node1 = class Node1 {
@@ -232,7 +239,7 @@ clearAllLogs('noecho');
 
 LOGVALUE('Node1', node1);
 
-utest.equal(getMyLogs(), `Node1 =
+equal(getMyLogs(), `Node1 =
 	---
 	level: 2
 	name: node1
@@ -264,7 +271,7 @@ clearAllLogs('noecho');
 
 LOGVALUE('Node2', node2);
 
-utest.equal(getMyLogs(), `Node2 =
+equal(getMyLogs(), `Node2 =
 	HERE IT IS
 	str is abc
 	name is node2
@@ -287,7 +294,7 @@ hProc = {
 
 LOGVALUE('hProc', hProc);
 
-utest.equal(getMyLogs(), `hProc =
+equal(getMyLogs(), `hProc =
 	---
 	Script: "[Function: Script]"
 	code: "[Function: code]"
@@ -301,7 +308,7 @@ LOGTAML('lItems', ['xyz', 42, false, undef]);
 
 resetLogWidth();
 
-utest.equal(getMyLogs(), `lItems = <<<
+equal(getMyLogs(), `lItems = <<<
 ${spaces(3)}---
 ${spaces(3)}- xyz
 ${spaces(3)}- 42
@@ -316,7 +323,7 @@ LOGJSON('lItems', ['xyz', 42, false, undef]);
 
 resetLogWidth();
 
-utest.equal(getMyLogs(), `lItems =
+equal(getMyLogs(), `lItems =
 [
 ${spaces(3)}"xyz",
 ${spaces(3)}42,

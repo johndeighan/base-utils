@@ -20,6 +20,7 @@ import {
   defined,
   notdefined,
   nonEmpty,
+  words,
   toBlock,
   toArray,
   getOptions,
@@ -35,7 +36,8 @@ import {
   toJSON,
   OL,
   forEachItem,
-  jsType
+  jsType,
+  hasKey
 } from '@jdeighan/base-utils';
 
 import {
@@ -60,7 +62,8 @@ import {
   subPath,
   fileDirPath,
   mkDirsForFile,
-  getFileStats
+  getFileStats,
+  lStatFields
 } from '@jdeighan/base-utils/ll-fs';
 
 import {
@@ -76,7 +79,9 @@ import {
 import {
   dbgEnter,
   dbgReturn,
-  dbg
+  dbg,
+  dbgYield,
+  dbgResume
 } from '@jdeighan/base-utils/debug';
 
 import {
@@ -172,53 +177,98 @@ export var getTextFileContents = (filePath) => {
 };
 
 // ---------------------------------------------------------------------------
-export var allFilesIn = function*(dir, hOptions = {}) {
-  var eager, ent, hContents, hFile, i, len, path, recursive, ref, regexp;
+// --- yield hFile with keys:
+//        path, filePath
+//        type
+//        root
+//        dir
+//        base, fileName
+//        name, stub
+//        ext
+//        purpose
+//     ...plus stat fields
+export var globFiles = function*(pattern = '*', hGlobOptions = {}) {
+  var base, dir, ent, ext, filePath, hFile, i, j, key, lMatches, len, len1, name, purpose, ref, root, type;
+  dbgEnter('globFiles', pattern, hGlobOptions);
+  hGlobOptions = getOptions(hGlobOptions, {
+    withFileTypes: true,
+    stat: true
+  });
+  dbg('pattern', pattern);
+  dbg('hGlobOptions', hGlobOptions);
+  ref = glob(pattern, hGlobOptions);
+  for (i = 0, len = ref.length; i < len; i++) {
+    ent = ref[i];
+    filePath = mkpath(ent.fullpath());
+    ({root, dir, base, name, ext} = pathLib.parse(filePath));
+    if (lMatches = name.match(/\.([A-Za-z_]+)$/)) {
+      purpose = lMatches[1];
+    } else {
+      purpose = undef;
+    }
+    if (ent.isDirectory()) {
+      type = 'dir';
+    } else if (ent.isFile()) {
+      type = 'file';
+    } else {
+      type = 'unknown';
+    }
+    hFile = {
+      path: filePath,
+      filePath,
+      type,
+      root,
+      dir,
+      base,
+      fileName: base,
+      name,
+      stub: name,
+      ext,
+      purpose
+    };
+    for (j = 0, len1 = lStatFields.length; j < len1; j++) {
+      key = lStatFields[j];
+      hFile[key] = ent[key];
+    }
+    dbgYield('globFiles', hFile);
+    yield hFile;
+    dbgResume('globFiles');
+  }
+  dbgReturn('globFiles');
+};
+
+// ---------------------------------------------------------------------------
+export var allFilesIn = function*(pattern = '*', hOptions = {}) {
+  var eager, hContents, hFile, hGlobOptions, ref;
   // --- yields hFile with keys:
   //        path, filePath,
   //        type, root, dir, base, fileName,
   //        name, stub, ext, purpose
   //        (if eager) metadata, lLines
-  // --- dir must be a directory
   // --- Valid options:
-  //        recursive - descend into subdirectories
+  //        hGlobOptions - options to pass to glob
   //        eager - read the file and add keys metadata, contents
-  //        regexp - only if fileName matches regexp
-  dbgEnter('allFilesIn', dir, hOptions);
-  ({recursive, eager, regexp} = getOptions(hOptions, {
-    recursive: true,
-    eager: false,
-    regexp: undef
+  // --- Valid glob options:
+  //        ignore - glob pattern for files to ignore
+  //        dot - include dot files/directories (default: false)
+  //        cwd - change working directory
+  dbgEnter('allFilesIn', pattern, hOptions);
+  ({hGlobOptions, eager} = getOptions(hOptions, {
+    hGlobOptions: {},
+    eager: false
   }));
-  dir = mkpath(dir);
-  assert(isDir(dir), `Not a directory: ${dir}`);
-  hOptions = {
-    withFileTypes: true,
-    recursive
-  };
-  ref = fs.readdirSync(dir, hOptions);
-  for (i = 0, len = ref.length; i < len; i++) {
-    ent = ref[i];
-    dbg("ENT:", ent);
-    if (ent.isFile()) {
-      path = mkpath(ent.path, ent.name);
-      dbg(`PATH = ${path}`);
-      hFile = parsePath(path);
-      assert(isHash(hFile), `hFile = ${OL(hFile)}`);
-      if (eager) {
-        hContents = getTextFileContents(path);
-        Object.assign(hFile, hContents);
-      }
-      dbg('hFile', hFile);
-      if (defined(regexp)) {
-        assert(isRegExp(regexp), "Not a regular expression");
-        if (hFile.fileName.match(regexp)) {
-          yield hFile;
-        }
-      } else {
-        yield hFile;
-      }
+  dbg(`pattern = ${OL(pattern)}`);
+  dbg(`hGlobOptions = ${OL(hGlobOptions)}`);
+  dbg(`eager = ${OL(eager)}`);
+  ref = globFiles(pattern, hGlobOptions);
+  for (hFile of ref) {
+    if (eager) {
+      hContents = getTextFileContents(hFile.path);
+      Object.assign(hFile, hContents);
     }
+    dbgYield('allFilesIn', hFile);
+    yield hFile;
+    dbgResume('allFilesIn');
   }
   dbgReturn('allFilesIn');
 };
@@ -248,22 +298,6 @@ export var dirContents = function(dirPath, pattern = '*', hOptions = {}) {
     });
   } else {
     return lPaths;
-  }
-};
-
-// ---------------------------------------------------------------------------
-export var forEachFileInDir = (dir, func, hContext = {}) => {
-  var ent, i, len, ref;
-  ref = fs.readdirSync(dir, {
-    withFileTypes: true
-  });
-  // --- callback will get parms (filePath, hContext)
-  //     DOES NOT RECURSE INTO SUBDIRECTORIES
-  for (i = 0, len = ref.length; i < len; i++) {
-    ent = ref[i];
-    if (ent.isFile()) {
-      func(ent.name, dir, hContext);
-    }
   }
 };
 

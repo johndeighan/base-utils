@@ -32,13 +32,13 @@
 }
 
 cmdArgs
-	= ws? argList ws?     { return hOptions; }
+	= ws? argList? ws?     { return hOptions; }
 
 argList
 	= arg (ws arg)*
 
 arg
-	= '-' lChars:[A-Za-z]+ value:('=' @stringVal)?
+	= '-' lChars:[A-Za-z]+ value:(@'=' @stringVal)?
 	{
 		// LOG(`arg: lChars = '${lChars}', value = '${value}'`);
 		if (isEmpty(value)) {
@@ -47,7 +47,7 @@ arg
 				}
 			}
 		else {
-			addOption(lChars.join(''), value);
+			addOption(lChars.join(''), value[1]);
 			}
 		}
 	/ val:stringVal   { addNonOption(val); }

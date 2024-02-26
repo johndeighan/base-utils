@@ -21,7 +21,14 @@ import {
 } from '@jdeighan/base-utils/source-map';
 
 import {
-  utest
+  UnitTester,
+  equal,
+  like,
+  notequal,
+  succeeds,
+  throws,
+  truthy,
+  falsy
 } from '@jdeighan/base-utils/utest';
 
 jsPath = mkpath("./test/source-map/base-utils.test.js");
@@ -30,20 +37,20 @@ mapPath = jsPath + '.map';
 
 hMap = getMap(mapPath);
 
-utest.truthy(hasKey(hMap, 'sourceRoot'));
+truthy(hasKey(hMap, 'sourceRoot'));
 
-utest.truthy(hasKey(hMap, 'sources'));
+truthy(hasKey(hMap, 'sources'));
 
 hResult = mapSourcePos(jsPath, 10, 0);
 
-utest.equal(hResult.line, 6);
+equal(hResult.line, 6);
 
-utest.equal(mapLineNum(jsPath, 10), 6);
+equal(mapLineNum(jsPath, 10), 6);
 
-utest.equal(mapLineNum(jsPath, 89), 27);
+equal(mapLineNum(jsPath, 89), 27);
 
-utest.equal(mapLineNum(jsPath, 99), 28);
+equal(mapLineNum(jsPath, 99), 28);
 
-utest.equal(mapLineNum(jsPath, 1361), 697);
+equal(mapLineNum(jsPath, 1361), 697);
 
 //# sourceMappingURL=source-map.test.js.map

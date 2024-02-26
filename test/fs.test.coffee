@@ -1,8 +1,12 @@
 # fs.test.coffee
 
-import {u} from '@jdeighan/base-utils/utest'
+import {
+	UnitTester,
+	equal, like, notequal, truthy, falsy, throws, succeeds,
+	} from '@jdeighan/base-utils/utest'
 import {
 	undef, fromJSON, toJSON, LOG, chomp, jsType,
+	words, hslice, sortArrayOfHashes,
 	} from '@jdeighan/base-utils'
 import {setDebugging} from '@jdeighan/base-utils/debug'
 import {
@@ -11,7 +15,7 @@ import {
 	slurp, slurpJSON, slurpTAML, slurpPkgJSON,
 	barf, barfJSON, barfTAML, barfPkgJSON,
 	parsePath, getTextFileContents, allFilesIn,
-	allLinesIn, forEachFileInDir, forEachLineInFile,
+	allLinesIn, forEachLineInFile,
 	dirContents, FileWriter,
 	} from '@jdeighan/base-utils/fs'
 
@@ -28,7 +32,7 @@ testPath = mkpath(projDir, 'test', 'readline.txt')
 (() =>
 	path = './test/readline3.txt'
 	lLines = Array.from allLinesIn(path)
-	u.equal lLines, [
+	equal lLines, [
 		'ghi'
 		'jkl'
 		''
@@ -39,7 +43,7 @@ testPath = mkpath(projDir, 'test', 'readline.txt')
 
 # ---------------------------------------------------------------------------
 
-u.like parsePath(import.meta.url), {
+like parsePath(import.meta.url), {
 	type: 'file'
 	root: 'c:/'
 	base: 'fs.test.js'
@@ -50,7 +54,7 @@ u.like parsePath(import.meta.url), {
 	purpose: 'test'
 	}
 
-u.like parsePath(projDir), {
+like parsePath(projDir), {
 	path: projDir
 	type: 'dir'
 	root: 'c:/'
@@ -63,7 +67,7 @@ u.like parsePath(projDir), {
 	purpose: undef
 	}
 
-u.like parsePath(dir), {
+like parsePath(dir), {
 	path: dir
 	type: 'dir'
 	root: 'c:/'
@@ -76,7 +80,7 @@ u.like parsePath(dir), {
 	purpose: undef
 	}
 
-u.like parsePath(subdir), {
+like parsePath(subdir), {
 	path: subdir
 	type: 'dir'
 	root: 'c:/'
@@ -89,7 +93,7 @@ u.like parsePath(subdir), {
 	purpose: undef
 	}
 
-u.like parsePath(file), {
+like parsePath(file), {
 	path: file
 	type: 'file'
 	root: 'c:/'
@@ -102,7 +106,7 @@ u.like parsePath(file), {
 	purpose: 'test'
 	}
 
-u.like parsePath(testPath), {
+like parsePath(testPath), {
 	path: testPath
 	type: 'file'
 	root: 'c:/'
@@ -117,18 +121,18 @@ u.like parsePath(testPath), {
 
 # ---------------------------------------------------------------------------
 
-u.equal slurp(testPath, {maxLines: 2}), """
+equal slurp(testPath, {maxLines: 2}), """
 	abc
 	def
 	"""
 
-u.equal slurp(testPath, {maxLines: 3}), """
+equal slurp(testPath, {maxLines: 3}), """
 	abc
 	def
 	ghi
 	"""
 
-u.equal slurp(testPath, {maxLines: 1000}), """
+equal slurp(testPath, {maxLines: 1000}), """
 	abc
 	def
 	ghi
@@ -136,7 +140,7 @@ u.equal slurp(testPath, {maxLines: 1000}), """
 	mno
 	"""
 
-u.equal slurp(testPath, 'maxLines=3'), """
+equal slurp(testPath, 'maxLines=3'), """
 	abc
 	def
 	ghi
@@ -148,7 +152,7 @@ u.equal slurp(testPath, 'maxLines=3'), """
 (() =>
 	path = "./test/test/file3.txt"
 	h = getTextFileContents(path)
-	u.equal h, {
+	equal h, {
 		metadata: {fName: 'John', lName: 'Deighan'}
 		lLines: ['', 'This is a test']
 		}
@@ -159,14 +163,73 @@ u.equal slurp(testPath, 'maxLines=3'), """
 
 (() =>
 	lFiles = []
-	for hFileInfo from allFilesIn('./test/test', 'eager')
-		lFiles.push hFileInfo
+	for hFile from allFilesIn('./test/test/*', 'eager')
+		{ext} = hFile
+		if (ext != '.map') && (ext != '.js')
+			lFiles.push hFile
+	sortArrayOfHashes lFiles, 'fileName'
 
-	u.like lFiles, [
-		{fileName: 'file1.txt', metadata: undef, lLines: ['Hello']}
-		{fileName: 'file1.zh',  metadata: undef, lLines: ['你好']}
-		{fileName: 'file2.txt', metadata: undef, lLines: ['Goodbye']}
-		{fileName: 'file2.zh',  metadata: undef, lLines: ['再见']}
+	like lFiles, [
+		{
+			fileName: 'file1.txt',
+			metadata: undef,
+			lLines: ['Hello']
+			}
+		{
+			fileName: 'file1.zh',
+			metadata: undef,
+			lLines: ['你好']
+			}
+		{
+			fileName: 'file2.txt',
+			metadata: undef,
+			lLines: ['Goodbye']
+			}
+		{
+			fileName: 'file2.zh',
+			metadata: undef,
+			lLines: ['再见']
+			}
+		{
+			fileName: 'file3.txt'
+			metadata: {
+				fName: 'John'
+				lName: 'Deighan'
+				}
+			lLines: ['', 'This is a test']
+			}
+		{
+			fileName: 'test.coffee',
+			metadata: undef,
+			lLines: [ 'console.log "Hello"' ]
+			}
+		]
+
+	)()
+
+# ---------------------------------------------------------------------------
+# --- test allFilesIn with pattern
+
+(() =>
+	lFiles = []
+	hOptions = {
+		eager: true
+		}
+	for hFile from allFilesIn('./test/test/*.txt', hOptions)
+		lFiles.push hFile
+	sortArrayOfHashes lFiles, 'fileName'
+
+	like lFiles, [
+		{
+			fileName: 'file1.txt',
+			metadata: undef,
+			lLines: ['Hello']
+			}
+		{
+			fileName: 'file2.txt',
+			metadata: undef,
+			lLines: ['Goodbye']
+			}
 		{
 			fileName: 'file3.txt'
 			metadata: {
@@ -180,20 +243,31 @@ u.equal slurp(testPath, 'maxLines=3'), """
 	)()
 
 # ---------------------------------------------------------------------------
-# --- test allFilesIn with regexp
+# --- test allFilesIn with pattern and cwd
 
 (() =>
 	lFiles = []
 	hOptions = {
 		eager: true
-		regexp: /\.txt$/
+		hGlobOptions: {
+			cwd: './test/test'
+			}
 		}
-	for hFileInfo from allFilesIn('./test/test', hOptions)
-		lFiles.push hFileInfo
+	for hFile from allFilesIn('*.txt', hOptions)
+		lFiles.push hFile
+	sortArrayOfHashes lFiles, 'fileName'
 
-	u.like lFiles, [
-		{fileName: 'file1.txt', metadata: undef, lLines: ['Hello']}
-		{fileName: 'file2.txt', metadata: undef, lLines: ['Goodbye']}
+	like lFiles, [
+		{
+			fileName: 'file1.txt',
+			metadata: undef,
+			lLines: ['Hello']
+			}
+		{
+			fileName: 'file2.txt',
+			metadata: undef,
+			lLines: ['Goodbye']
+			}
 		{
 			fileName: 'file3.txt'
 			metadata: {
@@ -225,18 +299,18 @@ u.equal slurp(testPath, 'maxLines=3'), """
 			return undef
 
 	result = forEachLineInFile testPath, callback, {label: '-->'}
-	u.equal result, ['--> def', '--> jkl']
+	equal result, ['--> def', '--> jkl']
 	)()
 
 # ---------------------------------------------------------------------------
 # --- test dirContents()
 
 smDir = './test/source-map'
-u.equal dirContents(smDir, '*.coffee').length, 1
-u.equal dirContents(smDir, '*.js').length, 2
-u.equal dirContents(smDir, '*').length, 6
-u.equal dirContents(smDir, '*', 'filesOnly').length, 4
-u.equal dirContents(smDir, '*', 'dirsOnly').length, 2
+equal dirContents(smDir, '*.coffee').length, 1
+equal dirContents(smDir, '*.js').length, 2
+equal dirContents(smDir, '*').length, 6
+equal dirContents(smDir, '*', 'filesOnly').length, 4
+equal dirContents(smDir, '*', 'dirsOnly').length, 2
 
 # ---------------------------------------------------------------------------
 
@@ -248,7 +322,7 @@ u.equal dirContents(smDir, '*', 'dirsOnly').length, 2
 	for line from allLinesIn(filePath4)
 		lLines.push line
 
-	u.equal lLines, ['ghi', 'jkl', '', 'mno', 'pqr']
+	equal lLines, ['ghi', 'jkl', '', 'mno', 'pqr']
 	)()
 
 # ---------------------------------------------------------------------------
@@ -266,7 +340,7 @@ u.equal dirContents(smDir, '*', 'dirsOnly').length, 2
 	filePath3 = './test/readline3.txt'
 	lLines = forEachLineInFile filePath3, func, {prefix: '> '}
 
-	u.equal lLines, ['> GHI', '> JKL', '> MNO', '> PQR']
+	equal lLines, ['> GHI', '> JKL', '> MNO', '> PQR']
 	)()
 
 # ---------------------------------------------------------------------------
@@ -284,7 +358,7 @@ u.equal dirContents(smDir, '*', 'dirsOnly').length, 2
 	filePath4 = './test/readline4.txt'
 	lLines = forEachLineInFile filePath4, func, {prefix: '> '}
 
-	u.equal lLines, ['> GHI', '> JKL', '> MNO', '> PQR']
+	equal lLines, ['> GHI', '> JKL', '> MNO', '> PQR']
 	)()
 
 # ---------------------------------------------------------------------------
@@ -301,7 +375,7 @@ u.equal dirContents(smDir, '*', 'dirsOnly').length, 2
 	filePath4 = './test/readline4.txt'
 	lLines = forEachLineInFile filePath4, func, {prefix: '> '}
 
-	u.equal lLines, ['> GHI', '> JKL']
+	equal lLines, ['> GHI', '> JKL']
 	)()
 
 # ---------------------------------------------------------------------------
@@ -316,10 +390,10 @@ u.equal dirContents(smDir, '*', 'dirsOnly').length, 2
 	writer.writeln "line 2"
 	writer.close()
 
-	u.truthy isFile(path)
+	truthy isFile(path)
 
 	text = slurp path
-	u.equal text, "line 1\nline 2\n"
+	equal text, "line 1\nline 2\n"
 	)()
 
 # ---------------------------------------------------------------------------
@@ -334,10 +408,10 @@ u.equal dirContents(smDir, '*', 'dirsOnly').length, 2
 	writer.writeln "line 2"
 	writer.close()
 
-	u.truthy isFile(path)
+	truthy isFile(path)
 
 	text = slurp path
-	u.equal chomp(text), """
+	equal chomp(text), """
 		line 1
 		line 2
 		"""
@@ -355,10 +429,10 @@ u.equal dirContents(smDir, '*', 'dirsOnly').length, 2
 	writer.writeln "line 2", " - more text"
 	writer.close()
 
-	u.truthy isFile(path)
+	truthy isFile(path)
 
 	text = slurp path
-	u.equal text, "line 1 - some text\nline 2 - more text\n"
+	equal text, "line 1 - some text\nline 2 - more text\n"
 	)()
 
 # ---------------------------------------------------------------------------
@@ -373,8 +447,8 @@ u.equal dirContents(smDir, '*', 'dirsOnly').length, 2
 	await writer.writeln "line 2"
 	await writer.close()
 
-	u.truthy isFile(path)
+	truthy isFile(path)
 
 	text = slurp path
-	u.equal text, "line 1\nline 2\n"
+	equal text, "line 1\nline 2\n"
 	)()

@@ -17,7 +17,10 @@ import {
 	dbgEnter, dbgReturn, dbgYield, dbgResume, dbg,
 	clearDebugLog, getDebugLog, stdLogString,
 	} from '@jdeighan/base-utils/debug'
-import {utest} from '@jdeighan/base-utils/utest'
+import {
+	UnitTester,
+	equal, like, notequal, truthy, falsy, throws, succeeds,
+	} from '@jdeighan/base-utils/utest'
 
 echoLogsByDefault false
 setDebugging false, 'noecho'
@@ -110,7 +113,7 @@ stdLogString 2, """
 	- abc
 	- def
 	"""
-utest.equal getDebugLog(), """
+equal getDebugLog(), """
 	│   │   ---
 	│   │   - abc
 	│   │   - def
@@ -137,9 +140,9 @@ TEST = (debugWhat, func, expectedDbg, expectedLog) ->
 	dbgStr = getDebugLog()
 	logStr = getMyLogs()
 
-	utest.equal dbgStr, expectedDbg
-	utest.equal logStr, expectedLog
-	utest.truthy debugStack.isEmpty()
+	equal dbgStr, expectedDbg
+	equal logStr, expectedLog
+	truthy debugStack.isEmpty()
 	return
 
 # ---------------------------------------------------------------------------

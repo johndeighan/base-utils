@@ -1,10 +1,10 @@
-# NamedLogs.test.coffee
+# named-logs.test.coffee
 
 import {
 	undef, defined, notdefined, pass, escapeStr,
 	} from '@jdeighan/base-utils'
 import {NamedLogs} from '@jdeighan/base-utils/named-logs'
-import {utest} from '@jdeighan/base-utils/utest'
+import {equal, truthy, falsy} from '@jdeighan/base-utils/utest'
 
 # ---------------------------------------------------------------------------
 
@@ -14,7 +14,7 @@ import {utest} from '@jdeighan/base-utils/utest'
 	logs.log 'A', 'first log'
 	logs.log 'A', 'second log'
 
-	utest.equal logs.getLogs('A'), """
+	equal logs.getLogs('A'), """
 		first log
 		second log
 		"""
@@ -28,10 +28,10 @@ import {utest} from '@jdeighan/base-utils/utest'
 	logs.log 'A', 'first log'
 	logs.log 'B', 'second log'
 
-	utest.equal logs.getLogs('A'), """
+	equal logs.getLogs('A'), """
 		first log
 		"""
-	utest.equal logs.getLogs('B'), """
+	equal logs.getLogs('B'), """
 		second log
 		"""
 	)()
@@ -47,8 +47,8 @@ import {utest} from '@jdeighan/base-utils/utest'
 	logs.log 'B', 'second log'
 	logs.clear 'A'
 
-	utest.equal logs.getLogs('A'), ''
-	utest.equal logs.getLogs('B'), """
+	equal logs.getLogs('A'), ''
+	equal logs.getLogs('B'), """
 		first log
 		second log
 		"""
@@ -65,8 +65,8 @@ import {utest} from '@jdeighan/base-utils/utest'
 	logs.log 'B', 'second log'
 	logs.clearAllLogs()
 
-	utest.equal logs.getLogs('A'), ''
-	utest.equal logs.getLogs('B'), ''
+	equal logs.getLogs('A'), ''
+	equal logs.getLogs('B'), ''
 	)()
 
 # ---------------------------------------------------------------------------
@@ -81,8 +81,8 @@ import {utest} from '@jdeighan/base-utils/utest'
 	logs.setKey 'A', 'doEcho', true
 	logs.setKey 'B', 'doEcho', false
 
-	utest.truthy logs.getKey('A', 'doEcho')
-	utest.falsy logs.getKey('B', 'doEcho')
+	truthy logs.getKey('A', 'doEcho')
+	falsy logs.getKey('B', 'doEcho')
 	)()
 
 # ---------------------------------------------------------------------------
@@ -95,8 +95,8 @@ import {utest} from '@jdeighan/base-utils/utest'
 	logs.log 'B', 'first log'
 	logs.log 'B', 'second log'
 
-	utest.truthy logs.getKey('A', 'doEcho')
-	utest.truthy logs.getKey('B', 'doEcho')
+	truthy logs.getKey('A', 'doEcho')
+	truthy logs.getKey('B', 'doEcho')
 	)()
 
 # ---------------------------------------------------------------------------
@@ -110,8 +110,8 @@ import {utest} from '@jdeighan/base-utils/utest'
 	logs.log 'B', 'second log'
 	logs.setKey 'B', 'doEcho', false
 
-	utest.truthy logs.getKey('A', 'doEcho')
-	utest.falsy logs.getKey('B', 'doEcho')
+	truthy logs.getKey('A', 'doEcho')
+	falsy logs.getKey('B', 'doEcho')
 	)()
 
 # ---------------------------------------------------------------------------
@@ -124,7 +124,7 @@ import {utest} from '@jdeighan/base-utils/utest'
 	logs.log 'B', 'first log'
 	logs.log 'B', 'second log'
 
-	utest.equal logs.getAllLogs(), """
+	equal logs.getAllLogs(), """
 		first log
 		second log
 		first log
@@ -142,7 +142,7 @@ import {utest} from '@jdeighan/base-utils/utest'
 	logs.log 'B', 'first log'
 	logs.log 'B', 'second log'
 
-	utest.equal logs.getLogs(undef), """
+	equal logs.getLogs(undef), """
 		first log
 		second log
 		"""
@@ -163,11 +163,11 @@ import {utest} from '@jdeighan/base-utils/utest'
 	func = (str) =>
 		str.match(/log/)
 
-	utest.equal logs.getLogs(undef, func), """
+	equal logs.getLogs(undef, func), """
 		first log
 		second log
 		"""
-	utest.equal logs.getLogs('B', func), """
+	equal logs.getLogs('B', func), """
 		first log
 		second log
 		"""

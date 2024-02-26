@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 ;
-var LOG, binDir, dir, hBin, hJson, key, pkgJsonPath, value;
+var LOG, binDir, dir, fileName, filePath, hBin, hFile, hJson, jsCode, jsFileName, jsPath, key, pkgJsonPath, ref, stub, value;
 
 import {
   // gen-bin-key.coffee
@@ -20,8 +20,9 @@ import {
   isDir,
   mkpath,
   rmFileSync,
+  withExt,
   slurp,
-  forEachFileInDir,
+  allFilesIn,
   slurpJSON,
   barfJSON
 } from '@jdeighan/base-utils/fs';
@@ -57,24 +58,20 @@ LOG(`dir ${binDir} exists`);
 //       - error if JS file doesn't start with a shebang line
 hBin = {};
 
-forEachFileInDir(binDir, (fname) => {
-  var _, coffeeFileName, coffeePath, jsCode, jsFileName, jsPath, lMatches, stub;
-  if (lMatches = fname.match(/^(.*)\.coffee$/)) {
-    [_, stub] = lMatches;
-    jsFileName = `${stub}.js`;
-    jsPath = mkpath(dir, 'src', 'bin', jsFileName);
-    coffeeFileName = `${stub}.coffee`;
-    coffeePath = mkpath(dir, 'src', 'bin', coffeeFileName);
-    LOG(`FOUND ${fname}`);
-    // --- Check that corresponding *.js file exists
-    assert(isFile(jsPath), `Missing file ${jsPath}`);
-    // --- Check that *.js file has shebang line
-    jsCode = slurp(jsPath);
-    assert(jsCode.startsWith("#!/usr/bin/env node"), "Missing shebang");
-    hBin[stub] = `./src/bin/${jsFileName}`;
-    return LOG(`   ${stub} => ${hBin[stub]}`);
-  }
+ref = allFilesIn('*.coffee', {
+  cwd: binDir
 });
+for (hFile of ref) {
+  ({fileName, filePath, stub} = hFile);
+  jsFileName = withExt(fileName, '.js');
+  jsPath = withExt(filePath, '.js');
+  assert(isFile(jsPath), `Missing file ${jsFileName}`);
+  jsCode = slurp(jsPath);
+  assert(jsCode.startsWith("#!/usr/bin/env node"), "Missing shebang");
+  LOG(`FOUND ${fileName}`);
+  hBin[stub] = `./src/bin/${jsFileName}`;
+  LOG(`   ${stub} => ${hBin[stub]}`);
+}
 
 // 4. Add sub-keys to key 'bin' in package.json (create if not exists)
 if (isEmpty(hBin)) {

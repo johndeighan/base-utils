@@ -3,17 +3,17 @@
 import {
 	assert, croak, suppressExceptionLogging,
 	} from '@jdeighan/base-utils/exceptions'
-import {utest} from '@jdeighan/base-utils/utest'
+import {throws, succeeds} from '@jdeighan/base-utils/utest'
 
 # ---------------------------------------------------------------------------
 
-utest.throws () ->
+throws () ->
 	suppressExceptionLogging true
 	croak("BAD")
 
-utest.throws () ->
+throws () ->
 	suppressExceptionLogging true
 	assert(2+2 != 4, 'EXCEPTION')
 
-utest.succeeds () ->
+succeeds () ->
 	assert(2+2 == 4)

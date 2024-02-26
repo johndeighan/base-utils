@@ -16,14 +16,14 @@
 		"./nice": "./src/lib/nice.js",
 		"./log": "./src/lib/log.js",
 		"./indent": "./src/lib/indent.js",
-		"./cmd-args": "./src/lib/cmd-args.js",
 		"./stack": "./src/lib/stack.js",
 		"./debug": "./src/lib/debug.js",
 		"./state-machine": "./src/lib/state-machine.js",
 		"./fs": "./src/lib/fs.js",
 		"./FileProcessor": "./src/lib/FileProcessor.js",
 		"./TextTable": "./src/lib/TextTable.js",
-		"./cmd-args-grammar": "./src/grammar/cmd-args.js",
+		"./cmd-args": "./src/lib/cmd-args.js",
+		"./parse-cmd-args": "./src/lib/parse-cmd-args.js",
 		"./package.json": "./package.json"
 	},
 	"bin": {

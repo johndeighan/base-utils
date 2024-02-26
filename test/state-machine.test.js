@@ -12,7 +12,14 @@ import {
 } from '@jdeighan/base-utils/exceptions';
 
 import {
-  utest
+  UnitTester,
+  equal,
+  like,
+  notequal,
+  truthy,
+  falsy,
+  throws,
+  succeeds
 } from '@jdeighan/base-utils/utest';
 
 import {
@@ -28,23 +35,23 @@ suppressExceptionLogging();
     flag: true,
     str: 'a string'
   });
-  utest.truthy(mach.inState('init'));
-  utest.falsy(mach.inState('not'));
-  utest.equal(mach.state, 'init');
-  utest.succeeds(() => {
+  truthy(mach.inState('init'));
+  falsy(mach.inState('not'));
+  equal(mach.state, 'init');
+  succeeds(() => {
     return mach.expectState('init', 'not');
   });
-  utest.throws(() => {
+  throws(() => {
     return mach.expectState('xxx', 'not');
   });
-  utest.succeeds(() => {
+  succeeds(() => {
     return mach.expectDefined('flag', 'str');
   });
-  utest.throws(() => {
+  throws(() => {
     return mach.expectDefined('flag', 'str', 'notdef');
   });
-  utest.equal(mach.getVar('flag'), true);
-  return utest.equal(mach.getVar('str'), 'a string');
+  equal(mach.getVar('flag'), true);
+  return equal(mach.getVar('str'), 'a string');
 })();
 
 // ---------------------------------------------------------------------------
@@ -79,16 +86,16 @@ suppressExceptionLogging();
   mach3 = new SimpleStateMachine();
   mach3.FIRST();
   mach3.SECOND();
-  utest.truthy(mach1.inState('init'));
-  utest.truthy(mach2.inState('middle'));
-  utest.truthy(mach3.inState('final'));
-  utest.throws(() => {
+  truthy(mach1.inState('init'));
+  truthy(mach2.inState('middle'));
+  truthy(mach3.inState('final'));
+  throws(() => {
     return mach1.SECOND();
   });
-  utest.succeeds(() => {
+  succeeds(() => {
     return mach1.FIRST();
   });
-  return utest.throws(() => {
+  return throws(() => {
     return mach1.setState('some state');
   });
 })();

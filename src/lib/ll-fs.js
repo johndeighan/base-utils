@@ -15,9 +15,12 @@ import {
   LOG,
   isString,
   getOptions,
+  words,
   assert,
-  croak
+  croak // low level versions
 } from '@jdeighan/base-utils';
+
+export var lStatFields = words('dev ino mode nlink uid gid rdev size blksize blocks', 'atimeMs mtimeMs ctimeMs birthtimeMs', 'atime mtime ctime birthtime');
 
 // ---------------------------------------------------------------------------
 export var fileDirPath = (filePath) => {
@@ -280,10 +283,11 @@ export var pathType = (fullPath) => {
 
 // ---------------------------------------------------------------------------
 export var parsePath = (path, shouldNotExist) => {
-  var base, dir, ext, lMatches, name, purpose, root, type;
+  var base, dir, ext, hFile, lMatches, name, purpose, root, type;
   // --- NOTE: path may be a file URL, e.g. import.meta.url
   //           path may be a relative path
   assert(isString(path), `path is type ${typeof path}`);
+  // --- check for deprecated args
   assert(notdefined(shouldNotExist), "multiple arguments!");
   if (path.match(/^file\:\/\//)) {
     path = normalize(urlLib.fileURLToPath(path));
@@ -298,7 +302,7 @@ export var parsePath = (path, shouldNotExist) => {
   } else {
     purpose = undef;
   }
-  return {
+  hFile = {
     path,
     filePath: path,
     type,
@@ -311,6 +315,8 @@ export var parsePath = (path, shouldNotExist) => {
     ext,
     purpose
   };
+  Object.assign(hFile, getFileStats(path));
+  return hFile;
 };
 
 // ---------------------------------------------------------------------------

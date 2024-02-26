@@ -1,13 +1,19 @@
 // nice.test.coffee
-var func2;
+var func2, u;
 
 import {
   undef
 } from '@jdeighan/base-utils';
 
 import {
-  utest,
-  u
+  UnitTester,
+  equal,
+  like,
+  notequal,
+  truthy,
+  falsy,
+  throws,
+  succeeds
 } from '@jdeighan/base-utils/utest';
 
 import {
@@ -18,26 +24,28 @@ import {
 // ---------------------------------------------------------------------------
 
 // --- whitespace is always made explicit
-utest.equal(formatString("a word"), "'a˳word'");
+equal(formatString("a word"), "'a˳word'");
 
-utest.equal(formatString("\t\tword"), "'→→word'");
+equal(formatString("\t\tword"), "'→→word'");
 
-utest.equal(formatString("first\nsecond"), "'first▼second'");
+equal(formatString("first\nsecond"), "'first▼second'");
 
-utest.equal(formatString("first\r\nsecond\r\n"), "'first◄▼second◄▼'");
+equal(formatString("first\r\nsecond\r\n"), "'first◄▼second◄▼'");
 
 // --- strings are surrounded by quote marks that
 //     don't clash with internal characters
-utest.equal(formatString("abc"), "'abc'");
+equal(formatString("abc"), "'abc'");
 
-utest.equal(formatString("mary's lamb"), '"mary\'s˳lamb"');
+equal(formatString("mary's lamb"), '"mary\'s˳lamb"');
 
-utest.equal(formatString("mary's \"stuff\""), '«mary\'s˳"stuff"»');
+equal(formatString("mary's \"stuff\""), '«mary\'s˳"stuff"»');
 
 // ---------------------------------------------------------------------------
 // --- repeat formatString() tests using toNICE()
 
 // --- transform value using toNICE() automatically
+u = new UnitTester();
+
 u.transformValue = (str) => {
   return toNICE(str);
 };

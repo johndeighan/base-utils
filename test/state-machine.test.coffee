@@ -4,7 +4,10 @@ import {
 	undef, defined, notdefined, pass, escapeStr,
 	} from '@jdeighan/base-utils'
 import {suppressExceptionLogging} from '@jdeighan/base-utils/exceptions'
-import {utest} from '@jdeighan/base-utils/utest'
+import {
+	UnitTester,
+	equal, like, notequal, truthy, falsy, throws, succeeds,
+	} from '@jdeighan/base-utils/utest'
 import {StateMachine} from '@jdeighan/base-utils/state-machine'
 
 suppressExceptionLogging()
@@ -14,15 +17,15 @@ suppressExceptionLogging()
 (() ->
 	mach = new StateMachine('init', {flag: true, str: 'a string'})
 
-	utest.truthy mach.inState('init')
-	utest.falsy  mach.inState('not')
-	utest.equal  mach.state, 'init'
-	utest.succeeds () => mach.expectState('init','not')
-	utest.throws () => mach.expectState('xxx','not')
-	utest.succeeds () => mach.expectDefined('flag','str')
-	utest.throws () => mach.expectDefined('flag','str','notdef')
-	utest.equal mach.getVar('flag'), true
-	utest.equal mach.getVar('str'), 'a string'
+	truthy mach.inState('init')
+	falsy  mach.inState('not')
+	equal  mach.state, 'init'
+	succeeds () => mach.expectState('init','not')
+	throws () => mach.expectState('xxx','not')
+	succeeds () => mach.expectDefined('flag','str')
+	throws () => mach.expectDefined('flag','str','notdef')
+	equal mach.getVar('flag'), true
+	equal mach.getVar('str'), 'a string'
 	)()
 
 # ---------------------------------------------------------------------------
@@ -56,11 +59,11 @@ suppressExceptionLogging()
 	mach3.FIRST()
 	mach3.SECOND()
 
-	utest.truthy mach1.inState('init')
-	utest.truthy mach2.inState('middle')
-	utest.truthy mach3.inState('final')
+	truthy mach1.inState('init')
+	truthy mach2.inState('middle')
+	truthy mach3.inState('final')
 
-	utest.throws () => mach1.SECOND()
-	utest.succeeds () => mach1.FIRST()
-	utest.throws () => mach1.setState('some state')
+	throws () => mach1.SECOND()
+	succeeds () => mach1.FIRST()
+	throws () => mach1.setState('some state')
 	)()

@@ -19,7 +19,7 @@ export class Node
 	constructor: (@id, @funcName, @lArgs, @caller, @doLog=false) ->
 
 		assert isInteger(@id), "id not an integer"
-		assert isFunctionName(@funcName), "not a function name"
+		assert isFunctionName(@funcName), "not a function name: #{OL(@funcName)}"
 		assert isArray(@lArgs), "not an array"
 		assert notdefined(@caller) || (@caller instanceof Node),
 			"Bad caller"

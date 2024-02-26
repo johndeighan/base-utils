@@ -1,4 +1,4 @@
-  // NamedLogs.test.coffee
+  // named-logs.test.coffee
 import {
   undef,
   defined,
@@ -12,7 +12,9 @@ import {
 } from '@jdeighan/base-utils/named-logs';
 
 import {
-  utest
+  equal,
+  truthy,
+  falsy
 } from '@jdeighan/base-utils/utest';
 
 // ---------------------------------------------------------------------------
@@ -21,7 +23,7 @@ import {
   logs = new NamedLogs();
   logs.log('A', 'first log');
   logs.log('A', 'second log');
-  return utest.equal(logs.getLogs('A'), `first log
+  return equal(logs.getLogs('A'), `first log
 second log`);
 })();
 
@@ -31,8 +33,8 @@ second log`);
   logs = new NamedLogs();
   logs.log('A', 'first log');
   logs.log('B', 'second log');
-  utest.equal(logs.getLogs('A'), `first log`);
-  return utest.equal(logs.getLogs('B'), `second log`);
+  equal(logs.getLogs('A'), `first log`);
+  return equal(logs.getLogs('B'), `second log`);
 })();
 
 // ---------------------------------------------------------------------------
@@ -44,8 +46,8 @@ second log`);
   logs.log('B', 'first log');
   logs.log('B', 'second log');
   logs.clear('A');
-  utest.equal(logs.getLogs('A'), '');
-  return utest.equal(logs.getLogs('B'), `first log
+  equal(logs.getLogs('A'), '');
+  return equal(logs.getLogs('B'), `first log
 second log`);
 })();
 
@@ -58,8 +60,8 @@ second log`);
   logs.log('B', 'first log');
   logs.log('B', 'second log');
   logs.clearAllLogs();
-  utest.equal(logs.getLogs('A'), '');
-  return utest.equal(logs.getLogs('B'), '');
+  equal(logs.getLogs('A'), '');
+  return equal(logs.getLogs('B'), '');
 })();
 
 // ---------------------------------------------------------------------------
@@ -72,8 +74,8 @@ second log`);
   logs.log('B', 'second log');
   logs.setKey('A', 'doEcho', true);
   logs.setKey('B', 'doEcho', false);
-  utest.truthy(logs.getKey('A', 'doEcho'));
-  return utest.falsy(logs.getKey('B', 'doEcho'));
+  truthy(logs.getKey('A', 'doEcho'));
+  return falsy(logs.getKey('B', 'doEcho'));
 })();
 
 // ---------------------------------------------------------------------------
@@ -86,8 +88,8 @@ second log`);
   logs.log('A', 'second log');
   logs.log('B', 'first log');
   logs.log('B', 'second log');
-  utest.truthy(logs.getKey('A', 'doEcho'));
-  return utest.truthy(logs.getKey('B', 'doEcho'));
+  truthy(logs.getKey('A', 'doEcho'));
+  return truthy(logs.getKey('B', 'doEcho'));
 })();
 
 // ---------------------------------------------------------------------------
@@ -101,8 +103,8 @@ second log`);
   logs.log('B', 'first log');
   logs.log('B', 'second log');
   logs.setKey('B', 'doEcho', false);
-  utest.truthy(logs.getKey('A', 'doEcho'));
-  return utest.falsy(logs.getKey('B', 'doEcho'));
+  truthy(logs.getKey('A', 'doEcho'));
+  return falsy(logs.getKey('B', 'doEcho'));
 })();
 
 // ---------------------------------------------------------------------------
@@ -113,7 +115,7 @@ second log`);
   logs.log('A', 'second log');
   logs.log('B', 'first log');
   logs.log('B', 'second log');
-  return utest.equal(logs.getAllLogs(), `first log
+  return equal(logs.getAllLogs(), `first log
 second log
 first log
 second log`);
@@ -128,7 +130,7 @@ second log`);
   logs.log(undef, 'second log');
   logs.log('B', 'first log');
   logs.log('B', 'second log');
-  return utest.equal(logs.getLogs(undef), `first log
+  return equal(logs.getLogs(undef), `first log
 second log`);
 })();
 
@@ -146,9 +148,9 @@ second log`);
   func = (str) => {
     return str.match(/log/);
   };
-  utest.equal(logs.getLogs(undef, func), `first log
+  equal(logs.getLogs(undef, func), `first log
 second log`);
-  return utest.equal(logs.getLogs('B', func), `first log
+  return equal(logs.getLogs('B', func), `first log
 second log`);
 })();
 

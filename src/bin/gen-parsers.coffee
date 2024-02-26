@@ -7,17 +7,17 @@ import {
 	} from '@jdeighan/base-utils'
 import {allFilesIn, withExt} from '@jdeighan/base-utils/fs'
 
+DEBUG = false
+
 # ---------------------------------------------------------------------------
 
-LOG "Generate parser files"
 hOptions = {
-	recursive: true
-	eager: false
-	regexp: /\.peggy$/
+	pattern: '**/*.peggy'
 	}
-for hFile from allFilesIn('./src/grammar', hOptions)
+for hFile from allFilesIn('./src/**/*.peggy')
 	{fileName, filePath} = hFile
 	newName = withExt(fileName, '.js')
 	newPath = withExt(filePath, '.js')
 	execCmd "peggy -m --format es #{filePath}"
-	LOG "#{fileName} => #{newName}"
+	if DEBUG
+		LOG "#{filePath} => #{newName}"

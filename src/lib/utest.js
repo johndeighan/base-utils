@@ -1,4 +1,6 @@
 // utest.coffee
+var u_private;
+
 import test from 'ava';
 
 import {
@@ -198,6 +200,7 @@ export var UnitTester = class UnitTester {
       ok = true;
     } catch (error) {
       err = error;
+      console.error(err);
       ok = false;
     }
     return test(`line ${lineNum}`, (t) => {
@@ -210,5 +213,35 @@ export var UnitTester = class UnitTester {
 export var utest = new UnitTester();
 
 export var u = new UnitTester();
+
+u_private = new UnitTester();
+
+export var equal = (arg1, arg2) => {
+  return u_private.equal(arg1, arg2);
+};
+
+export var like = (arg1, arg2) => {
+  return u_private.like(arg1, arg2);
+};
+
+export var notequal = (arg1, arg2) => {
+  return u_private.notequal(arg1, arg2);
+};
+
+export var truthy = (arg) => {
+  return u_private.truthy(arg);
+};
+
+export var falsy = (arg) => {
+  return u_private.falsy(arg);
+};
+
+export var throws = (func) => {
+  return u_private.throws(func);
+};
+
+export var succeeds = (func) => {
+  return u_private.succeeds(func);
+};
 
 //# sourceMappingURL=utest.js.map

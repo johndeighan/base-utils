@@ -8,22 +8,24 @@ import {globSync as glob} from 'glob'
 import {open} from 'node:fs/promises'
 
 import {
-	undef, defined, notdefined, nonEmpty,
+	undef, defined, notdefined, nonEmpty, words,
 	toBlock, toArray, getOptions, isNonEmptyString,
 	isString, isNumber, isInteger,
 	isHash, isArray, isIterable, isRegExp,
-	fromJSON, toJSON, OL, forEachItem, jsType,
+	fromJSON, toJSON, OL, forEachItem, jsType, hasKey,
 	} from '@jdeighan/base-utils'
 import {
 	fileExt, workingDir, myself, mydir, mkpath, withExt,
 	mkDir, clearDir, touch, isFile, isDir, rename,
 	pathType, rmFile, rmDir, parsePath,
 	parentDir, parallelPath, subPath,
-	fileDirPath, mkDirsForFile, getFileStats,
+	fileDirPath, mkDirsForFile, getFileStats, lStatFields,
 	} from '@jdeighan/base-utils/ll-fs'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
-import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
+import {
+	dbgEnter, dbgReturn, dbg, dbgYield, dbgResume,
+	} from '@jdeighan/base-utils/debug'
 import {toTAML, fromTAML} from '@jdeighan/base-utils/taml'
 
 export {
@@ -100,45 +102,100 @@ export getTextFileContents = (filePath) =>
 	return hResult
 
 # ---------------------------------------------------------------------------
+# --- yield hFile with keys:
+#        path, filePath
+#        type
+#        root
+#        dir
+#        base, fileName
+#        name, stub
+#        ext
+#        purpose
+#     ...plus stat fields
 
-export allFilesIn = (dir, hOptions={}) ->
+export globFiles = (pattern='*', hGlobOptions={}) ->
+
+	dbgEnter 'globFiles', pattern, hGlobOptions
+
+	hGlobOptions = getOptions hGlobOptions, {
+		withFileTypes: true
+		stat: true
+		}
+
+	dbg 'pattern', pattern
+	dbg 'hGlobOptions', hGlobOptions
+
+	for ent in glob(pattern, hGlobOptions)
+		filePath = mkpath(ent.fullpath())
+		{root, dir, base, name, ext} = pathLib.parse(filePath)
+		if lMatches = name.match(///
+				\.
+				([A-Za-z_]+)
+				$///)
+			purpose = lMatches[1]
+		else
+			purpose = undef
+		if ent.isDirectory()
+			type = 'dir'
+		else if ent.isFile()
+			type = 'file'
+		else
+			type = 'unknown'
+		hFile = {
+			path: filePath
+			filePath
+			type
+			root
+			dir
+			base
+			fileName: base
+			name
+			stub: name
+			ext
+			purpose
+			}
+		for key in lStatFields
+			hFile[key] = ent[key]
+		dbgYield 'globFiles', hFile
+		yield hFile
+		dbgResume 'globFiles'
+
+	dbgReturn 'globFiles'
+	return
+
+# ---------------------------------------------------------------------------
+
+export allFilesIn = (pattern='*', hOptions={}) ->
 	# --- yields hFile with keys:
 	#        path, filePath,
 	#        type, root, dir, base, fileName,
 	#        name, stub, ext, purpose
 	#        (if eager) metadata, lLines
-	# --- dir must be a directory
 	# --- Valid options:
-	#        recursive - descend into subdirectories
+	#        hGlobOptions - options to pass to glob
 	#        eager - read the file and add keys metadata, contents
-	#        regexp - only if fileName matches regexp
+	# --- Valid glob options:
+	#        ignore - glob pattern for files to ignore
+	#        dot - include dot files/directories (default: false)
+	#        cwd - change working directory
 
-	dbgEnter 'allFilesIn', dir, hOptions
-	{recursive, eager, regexp} = getOptions(hOptions, {
-		recursive: true
+	dbgEnter 'allFilesIn', pattern, hOptions
+	{hGlobOptions, eager} = getOptions(hOptions, {
+		hGlobOptions: {}
 		eager: false
-		regexp: undef
 		})
-	dir = mkpath dir
-	assert isDir(dir), "Not a directory: #{dir}"
-	hOptions = {withFileTypes: true, recursive}
-	for ent in fs.readdirSync(dir, hOptions)
-		dbg "ENT:", ent
-		if ent.isFile()
-			path = mkpath(ent.path, ent.name)
-			dbg "PATH = #{path}"
-			hFile = parsePath(path)
-			assert isHash(hFile), "hFile = #{OL(hFile)}"
-			if eager
-				hContents = getTextFileContents(path)
-				Object.assign hFile, hContents
-			dbg 'hFile', hFile
-			if defined(regexp)
-				assert isRegExp(regexp), "Not a regular expression"
-				if hFile.fileName.match(regexp)
-					yield hFile
-			else
-				yield hFile
+
+	dbg "pattern = #{OL(pattern)}"
+	dbg "hGlobOptions = #{OL(hGlobOptions)}"
+	dbg "eager = #{OL(eager)}"
+
+	for hFile from globFiles(pattern, hGlobOptions)
+		if eager
+			hContents = getTextFileContents(hFile.path)
+			Object.assign hFile, hContents
+		dbgYield 'allFilesIn', hFile
+		yield hFile
+		dbgResume 'allFilesIn'
 	dbgReturn 'allFilesIn'
 	return
 
@@ -162,17 +219,6 @@ export dirContents = (dirPath, pattern='*', hOptions={}) ->
 		return lPaths.filter((path) => isDir(path))
 	else
 		return lPaths
-
-# ---------------------------------------------------------------------------
-
-export forEachFileInDir = (dir, func, hContext={}) =>
-	# --- callback will get parms (filePath, hContext)
-	#     DOES NOT RECURSE INTO SUBDIRECTORIES
-
-	for ent in fs.readdirSync(dir, {withFileTypes: true})
-		if ent.isFile()
-			func(ent.name, dir, hContext)
-	return
 
 # ---------------------------------------------------------------------------
 #   slurp - read a file into a string

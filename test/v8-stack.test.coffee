@@ -11,7 +11,10 @@ import {
 	getV8Stack, debugV8Stack, getV8StackStr,
 	} from '@jdeighan/base-utils/v8-stack'
 import {getBoth} from './v8-module.js'
-import {utest} from '@jdeighan/base-utils/utest'
+import {
+	UnitTester,
+	equal, like, notequal, succeeds, throws, truthy, falsy,
+	} from '@jdeighan/base-utils/utest'
 
 # ---------------------------------------------------------------------------
 
@@ -31,12 +34,12 @@ import {utest} from '@jdeighan/base-utils/utest'
 		return
 
 	main()
-	utest.like stack1, [
+	like stack1, [
 		{
 			functionName: 'func1'
 			}
 		]
-	utest.like stack2, [
+	like stack2, [
 		{
 			functionName: 'func2'
 			}
@@ -61,11 +64,11 @@ import {utest} from '@jdeighan/base-utils/utest'
 		return
 
 	main()
-	utest.like caller1, {
+	like caller1, {
 		functionName: 'main'
 		fileName: 'v8-stack.test.js'
 		}
-	utest.like caller2, {
+	like caller2, {
 		functionName: 'main'
 		fileName: 'v8-stack.test.js'
 		}
@@ -91,7 +94,7 @@ import {utest} from '@jdeighan/base-utils/utest'
 
 	main()
 
-	utest.like hCaller, {
+	like hCaller, {
 		type: 'function'
 		functionName: 'main'
 		fileName: 'v8-stack.test.js'
@@ -117,22 +120,22 @@ import {utest} from '@jdeighan/base-utils/utest'
 		return
 
 	main()
-	utest.like lCallers1[0], {
+	like lCallers1[0], {
 		type: 'function'
 		functionName: 'secondFunc'
 		fileName: 'v8-module.js'
 		}
-	utest.like lCallers1[1], {
+	like lCallers1[1], {
 		type: 'function'
 		functionName: 'func1'
 		fileName: 'v8-stack.test.js'
 		}
-	utest.like lCallers2[0], {
+	like lCallers2[0], {
 		type: 'function'
 		functionName: 'secondFunc'
 		fileName: 'v8-module.js'
 		}
-	utest.like lCallers2[1], {
+	like lCallers2[1], {
 		type: 'function'
 		functionName: 'func2'
 		fileName: 'v8-stack.test.js'
@@ -150,10 +153,10 @@ import {utest} from '@jdeighan/base-utils/utest'
 		stackStr = await getV8StackStr()
 		return stackStr
 
-	utest.equal await func1(), """
-		function at v8-stack.test.js:150:23
-		function at v8-stack.test.js:147:19
-		script at v8-stack.test.js:162:29
+	equal await func1(), """
+		function at v8-stack.test.js:153:23
+		function at v8-stack.test.js:150:19
+		script at v8-stack.test.js:169:23
 		"""
 
 	)()
@@ -169,8 +172,8 @@ import {utest} from '@jdeighan/base-utils/utest'
 		x = 2 * 2
 		return x
 
-	utest.equal await func1(), """
-		function at v8-stack.test.js:166:19
-		script at v8-stack.test.js:179:29
+	equal await func1(), """
+		function at v8-stack.test.js:169:19
+		script at v8-stack.test.js:186:23
 		"""
 	)()

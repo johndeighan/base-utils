@@ -343,7 +343,7 @@ export dbgYield = (lArgs...) =>
 	if (nArgs==1)
 		return dbgYieldFrom(funcName)
 
-	assert isFunctionName(funcName), "not a function name"
+	assert isFunctionName(funcName), "not a function name: #{OL(funcName)}"
 	doLog = logAll || debugStack.isLogging()
 	if internalDebugging
 		console.log "dbgYield #{OL(funcName)} #{OL(val)}"
@@ -360,7 +360,7 @@ export dbgYield = (lArgs...) =>
 
 dbgYieldFrom = (funcName) =>
 
-	assert isFunctionName(funcName), "not a function name"
+	assert isFunctionName(funcName), "not a function name: #{OL(funcName)}"
 	doLog = logAll || debugStack.isLogging()
 	if internalDebugging
 		console.log "dbgYieldFrom #{OL(funcName)}"
@@ -442,6 +442,7 @@ export dbgString = (str) =>
 	if doLog
 		level = debugStack.logLevel
 		if ! logString level, str
+			console.log "   - using stdLogString"
 			stdLogString level, str
 
 	return true

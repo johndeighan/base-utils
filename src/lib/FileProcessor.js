@@ -9,6 +9,7 @@ import {
   notdefined,
   getOptions,
   add_s,
+  isEmpty,
   isString,
   isHash,
   toJSON,
@@ -18,7 +19,8 @@ import {
   hasAnyKey,
   addNewKey,
   toBlock,
-  toArray
+  toArray,
+  sortedArrayOfHashes
 } from '@jdeighan/base-utils';
 
 import {
@@ -39,7 +41,8 @@ import {
   allLinesIn,
   slurp,
   barf,
-  isFile
+  isFile,
+  allFilesIn
 } from '@jdeighan/base-utils/fs';
 
 import {
@@ -54,36 +57,24 @@ import {
 
 // ---------------------------------------------------------------------------
 export var FileProcessor = class FileProcessor {
-  constructor(path1, pattern = '*', hOptions = {}) {
-    this.path = path1;
+  constructor(pattern = undef, hOptions = {}) {
     this.pattern = pattern;
-    // --- path can be a file or directory
-    //     if it's a file, then pattern and hGlobOptions are ignored
+    // --- pattern is a glob pattern
+    //     if pattern is undef, use process.cwd() + "/*"
     // --- Valid options
     //        allowOverwrite - allow overwrite of original files
     //        hGlobOptions - options to pass to glob()
+    //        eager - include content of files in hFile
     // --- Valid glob options:
     //        ignore - glob pattern for files to ignore
     //        dot - include dot files/directories (default: false)
-    dbgEnter('FileProcessor', this.path, this.pattern, hOptions);
-    assert(isString(this.path), "path not a string");
+    //        cwd - change working directory
+    dbgEnter('FileProcessor', this.pattern, hOptions);
     this.hOptions = getOptions(hOptions, {
       allowOverwrite: false,
-      hGlobOptions: getOptions(hOptions.hGlobOptions, {
-        absolute: true,
-        cwd: this.path,
-        dot: false
-      })
+      eager: false,
+      hGlobOptions: {}
     });
-    // --- determine type of path
-    this.path = mkpath(this.path); // --- convert to full path
-    this.pathType = pathType(this.path);
-    dbg(`path ${this.path} is a ${this.pathType}`);
-    if (this.pathType === 'dir') {
-      this.hGlobOptions = hOptions.hGlobOptions;
-    } else if (this.pathType !== 'file') {
-      croak(`invalid path '${this.path}'`);
-    }
     this.lUserData = []; // --- filled in by readAll()
     dbgReturn('FileProcessor');
   }
@@ -95,17 +86,7 @@ export var FileProcessor = class FileProcessor {
 
   // ..........................................................
   getSortedUserData() {
-    var compareFunc;
-    compareFunc = (a, b) => {
-      if (a.filePath < b.filePath) {
-        return -1;
-      } else if (a.filePath > b.filePath) {
-        return 1;
-      } else {
-        return 0;
-      }
-    };
-    return this.lUserData.toSorted(compareFunc);
+    return sortedArrayOfHashes(this.lUserData, 'filePath');
   }
 
   // ..........................................................
@@ -147,55 +128,29 @@ export var FileProcessor = class FileProcessor {
   }
 
   // ..........................................................
-  transformFile(path) {
-    return path;
-  }
-
-  // ..........................................................
   readAll() {
-    var filePath, h, hFile, i, len, numFiles, ref;
+    var filePath, h, hFile, hOptions, numFiles, ref;
     dbgEnter('readAll');
-    dbg(`pathType = ${this.pathType}`);
     numFiles = 0;
-    switch (this.pathType) {
-      case 'file':
-        hFile = parsePath(this.path);
-        if (this.filterFile(this.path)) {
-          dbg(`[${numFiles}] ${hFile.fileName} - Handle`);
-          h = this.handleFile(this.transformFile(this.path));
-          if (defined(h)) {
-            assert(isHash(h), "handleFile() returned non-hash");
-            addNewKey(h, 'filePath', hFile.filePath);
-            this.lUserData.push(h);
-          }
-          numFiles += 1;
-        } else {
-          dbg(`[${numFiles}] ${hFile.fileName} - Skip`);
+    hOptions = {
+      hGlobOptions: this.hOptions.hGlobOptions,
+      eager: this.hOptions.eager
+    };
+    ref = allFilesIn(this.pattern, hOptions);
+    for (hFile of ref) {
+      ({filePath} = hFile);
+      if (this.filterFile(hFile)) {
+        dbg(`[${numFiles}] ${filePath} - Handle`);
+        h = this.handleFile(this.transformFile(hFile));
+        if (defined(h)) {
+          assert(isHash(h), "handleFile() returned non-hash");
+          addNewKey(h, 'filePath', filePath);
+          this.lUserData.push(h);
         }
-        break;
-      case 'dir':
-        dbg(`pattern = '${this.pattern}'`);
-        dbg('hGlobOptions', this.hGlobOptions);
-        ref = glob(this.pattern, this.hGlobOptions);
-        for (i = 0, len = ref.length; i < len; i++) {
-          filePath = ref[i];
-          if (isFile(filePath)) {
-            dbg(`filePath = '${filePath}'`);
-            hFile = parsePath(filePath);
-            if (this.filterFile(filePath)) {
-              dbg(`[${numFiles}] ${filePath} - Handle`);
-              h = this.handleFile(this.transformFile(filePath));
-              if (defined(h)) {
-                assert(isHash(h), "handleFile() returned non-hash");
-                addNewKey(h, 'filePath', filePath);
-                this.lUserData.push(h);
-              }
-              numFiles += 1;
-            } else {
-              dbg(`[${numFiles}] ${hFile.fileName} - Skip`);
-            }
-          }
-        }
+        numFiles += 1;
+      } else {
+        dbg(`[${numFiles}] ${hFile.fileName} - Skip`);
+      }
     }
     dbg(`${numFiles} file${add_s(numFiles)} processed`);
     dbgReturn('readAll', this.lUserData);
@@ -203,17 +158,22 @@ export var FileProcessor = class FileProcessor {
   }
 
   // ..........................................................
-  filterFile(filePath) {
-    dbgEnter('filterFile', filePath);
+  transformFile(hFile) {
+    return hFile;
+  }
+
+  // ..........................................................
+  filterFile(hFile) {
+    dbgEnter('filterFile', hFile);
     dbgReturn('filterFile');
     return true; // by default, handle all files in dir
   }
 
   
     // ..........................................................
-  handleFile(filePath) {
+  handleFile(hFile) {
     // --- does nothing, returns nothing
-    dbgEnter('handleFile', filePath);
+    dbgEnter('handleFile', hFile);
     dbgReturn('handleFile');
   }
 
@@ -266,9 +226,10 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
   }
 
   // ..........................................................
-  handleFile(filePath) {
-    var addToRecipe, fileChanged, item, lRecipe, line, lineNum, ref, result;
-    dbgEnter('handleFile', filePath);
+  handleFile(hFile) {
+    var addToRecipe, fileChanged, filePath, item, lRecipe, line, lineNum, ref, result;
+    dbgEnter('handleFile', hFile);
+    ({filePath} = hFile);
     assert(isString(filePath), "not a string");
     lRecipe = []; // --- array of hashes
     lineNum = 1;

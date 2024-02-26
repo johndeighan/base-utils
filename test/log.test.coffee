@@ -12,14 +12,17 @@ import {
 	LOG, LOGVALUE, LOGTAML, LOGJSON,
 	clearAllLogs, getMyLogs, echoLogsByDefault,
 	} from '@jdeighan/base-utils/log'
-import {utest} from '@jdeighan/base-utils/utest'
+import {
+	UnitTester,
+	equal, like, notequal, truthy, falsy, throws, succeeds,
+	} from '@jdeighan/base-utils/utest'
 
 echoLogsByDefault false
 fiveSpaces = ' '.repeat(5)
 
 # ---------------------------------------------------------------------------
 
-utest.equal orderedStringify(['a', 42, [1,2]]), """
+equal orderedStringify(['a', 42, [1,2]]), """
 	---
 	- a
 	- 42
@@ -29,36 +32,36 @@ utest.equal orderedStringify(['a', 42, [1,2]]), """
 
 # ---------------------------------------------------------------------------
 
-utest.equal logWidth, 42
+equal logWidth, 42
 
 setLogWidth 5
-utest.equal logWidth, 5
-utest.equal sep_dash, '-----'
+equal logWidth, 5
+equal sep_dash, '-----'
 resetLogWidth()
 
 setLogWidth 5
-utest.equal logWidth, 5
-utest.equal sep_eq, '====='
+equal logWidth, 5
+equal sep_eq, '====='
 resetLogWidth()
 
 # ---------------------------------------------------------------------------
 
-utest.equal getPrefix(0), ''
-utest.equal getPrefix(1), spaces(4)
-utest.equal getPrefix(2), spaces(8)
+equal getPrefix(0), ''
+equal getPrefix(1), spaces(4)
+equal getPrefix(2), spaces(8)
 
 # ---------------------------------------------------------------------------
 
 clearAllLogs('noecho')
 LOG "abc"
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	abc
 	"""
 
 clearAllLogs('noecho')
 LOG "abc"
 LOG "def"
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	abc
 	def
 	"""
@@ -71,7 +74,7 @@ clearAllLogs('noecho')
 LOG "abc"
 LOG "def", getPrefix(1)
 LOG "ghi", getPrefix(2)
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	abc
 	#{spaces(4)}def
 	#{spaces(4)}#{spaces(4)}ghi
@@ -81,43 +84,43 @@ utest.equal getMyLogs(), """
 
 clearAllLogs('noecho')
 LOGVALUE 'x', undef
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	x = undef
 	"""
 
 clearAllLogs('noecho')
 LOGVALUE 'x', null
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	x = null
 	"""
 
 clearAllLogs('noecho')
 LOGVALUE 'x', 'abc'
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	x = 'abc'
 	"""
 
 clearAllLogs('noecho')
 LOGVALUE 'x', 'abc def'
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	x = 'abc˳def'
 	"""
 
 clearAllLogs('noecho')
 LOGVALUE 'x', '"abc"'
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	x = '"abc"'
 	"""
 
 clearAllLogs('noecho')
 LOGVALUE 'x', "'abc'"
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	x = "'abc'"
 	"""
 
 clearAllLogs('noecho')
 LOGVALUE 'x', "'\"abc\"'"
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	x = <'"abc"'>
 	"""
 
@@ -125,7 +128,7 @@ utest.equal getMyLogs(), """
 
 clearAllLogs('noecho')
 LOGVALUE 'x', 'a'.repeat(80)
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	x = \"\"\"
 		#{'a'.repeat(80)}
 		\"\"\"
@@ -135,7 +138,7 @@ utest.equal getMyLogs(), """
 
 clearAllLogs('noecho')
 LOGVALUE 'x', 'abc\ndef'
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	x = 'abc▼def'
 	"""
 
@@ -145,7 +148,7 @@ clearAllLogs('noecho')
 setLogWidth 5
 LOGVALUE 'h', {xyz: 42, abc: 99}
 resetLogWidth()
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	h =
 		---
 		abc: 99
@@ -156,7 +159,7 @@ utest.equal getMyLogs(), """
 
 clearAllLogs('noecho')
 LOGVALUE 'h', {xyz: 42, abc: 99}
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	h = {"xyz":42,"abc":99}
 	"""
 
@@ -166,7 +169,7 @@ clearAllLogs('noecho')
 setLogWidth 5
 LOGVALUE 'l', ['xyz', 42, false, undef]
 resetLogWidth()
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	l =
 		---
 		- xyz
@@ -179,7 +182,7 @@ utest.equal getMyLogs(), """
 
 clearAllLogs('noecho')
 LOGVALUE 'l', ['xyz', 42, false, undef]
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	l = ["xyz",42,false,null]
 	"""
 
@@ -192,7 +195,7 @@ node1 = new Node1('abc', 2)
 
 clearAllLogs('noecho')
 LOGVALUE 'Node1', node1
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	Node1 =
 		---
 		level: 2
@@ -221,7 +224,7 @@ node2 = new Node2('abc', 2)
 
 clearAllLogs('noecho')
 LOGVALUE 'Node2', node2
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	Node2 =
 		HERE IT IS
 		str is abc
@@ -240,7 +243,7 @@ hProc = {
 
 LOGVALUE 'hProc', hProc
 
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	hProc =
 		---
 		Script: "[Function: Script]"
@@ -252,7 +255,7 @@ clearAllLogs('noecho')
 setLogWidth 5
 LOGTAML 'lItems', ['xyz', 42, false, undef]
 resetLogWidth()
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	lItems = <<<
 	#{spaces(3)}---
 	#{spaces(3)}- xyz
@@ -265,7 +268,7 @@ clearAllLogs('noecho')
 setLogWidth 5
 LOGJSON 'lItems', ['xyz', 42, false, undef]
 resetLogWidth()
-utest.equal getMyLogs(), """
+equal getMyLogs(), """
 	lItems =
 	[
 	#{spaces(3)}"xyz",

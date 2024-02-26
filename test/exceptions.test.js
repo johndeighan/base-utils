@@ -6,21 +6,22 @@ import {
 } from '@jdeighan/base-utils/exceptions';
 
 import {
-  utest
+  throws,
+  succeeds
 } from '@jdeighan/base-utils/utest';
 
 // ---------------------------------------------------------------------------
-utest.throws(function() {
+throws(function() {
   suppressExceptionLogging(true);
   return croak("BAD");
 });
 
-utest.throws(function() {
+throws(function() {
   suppressExceptionLogging(true);
   return assert(2 + 2 !== 4, 'EXCEPTION');
 });
 
-utest.succeeds(function() {
+succeeds(function() {
   return assert(2 + 2 === 4);
 });
 

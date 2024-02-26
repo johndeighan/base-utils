@@ -43,7 +43,14 @@ import {
 } from '@jdeighan/base-utils/debug';
 
 import {
-  utest
+  UnitTester,
+  equal,
+  like,
+  notequal,
+  truthy,
+  falsy,
+  throws,
+  succeeds
 } from '@jdeighan/base-utils/utest';
 
 echoLogsByDefault(false);
@@ -141,7 +148,7 @@ stdLogString(2, `---
 - abc
 - def`);
 
-utest.equal(getDebugLog(), `│   │   ---
+equal(getDebugLog(), `│   │   ---
 │   │   - abc
 │   │   - def`);
 
@@ -160,9 +167,9 @@ TEST = function(debugWhat, func, expectedDbg, expectedLog) {
   func();
   dbgStr = getDebugLog();
   logStr = getMyLogs();
-  utest.equal(dbgStr, expectedDbg);
-  utest.equal(logStr, expectedLog);
-  utest.truthy(debugStack.isEmpty());
+  equal(dbgStr, expectedDbg);
+  equal(logStr, expectedLog);
+  truthy(debugStack.isEmpty());
 };
 
 // ---------------------------------------------------------------------------

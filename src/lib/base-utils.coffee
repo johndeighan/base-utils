@@ -200,6 +200,15 @@ export subkeys = (obj) =>
 
 # ---------------------------------------------------------------------------
 
+export hslice = (h, lKeys) =>
+
+	hResult = {}
+	for key in lKeys
+		hResult[key] = h[key]
+	return hResult
+
+# ---------------------------------------------------------------------------
+
 export samelist = (lItems1, lItems2) =>
 
 	assert isArray(lItems1), "arg 1 not an array"
@@ -746,6 +755,42 @@ export isArrayOfHashes = (lItems) =>
 		if defined(item) && ! isHash(item)
 			return false
 	return true
+
+# ---------------------------------------------------------------------------
+
+export sortArrayOfHashes = (lHashes, key) =>
+
+	assert isArrayOfHashes(lHashes), "Not an array of hashes"
+
+	# --- NOTE: works whether values are strings or numbers
+	compareFunc = (a, b) =>
+		if a[key] < b[key]
+			return -1
+		else if a[key] > b[key]
+			return 1
+		else
+			return 0
+	lHashes.sort(compareFunc)
+
+	# --- NOTE: array is sorted in place, but sometimes
+	#           it's useful if we return a ref to it anyway
+	return lHashes
+
+# ---------------------------------------------------------------------------
+
+export sortedArrayOfHashes = (lHashes, key) =>
+
+	assert isArrayOfHashes(lHashes), "Not an array of hashes"
+
+	# --- NOTE: works whether values are strings or numbers
+	compareFunc = (a, b) =>
+		if a[key] < b[key]
+			return -1
+		else if a[key] > b[key]
+			return 1
+		else
+			return 0
+	return lHashes.toSorted(compareFunc)
 
 # ---------------------------------------------------------------------------
 

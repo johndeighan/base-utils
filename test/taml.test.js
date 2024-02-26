@@ -22,25 +22,32 @@ import {
 } from '@jdeighan/base-utils/taml';
 
 import {
-  utest
+  UnitTester,
+  equal,
+  like,
+  notequal,
+  succeeds,
+  throws,
+  truthy,
+  falsy
 } from '@jdeighan/base-utils/utest';
 
 // ---------------------------------------------------------------------------
-utest.equal(llSplit("a: 53"), ["a: ", "53"]);
+equal(llSplit("a: 53"), ["a: ", "53"]);
 
-utest.equal(llSplit("a: 53"), ["a: ", "53"]);
+equal(llSplit("a: 53"), ["a: ", "53"]);
 
-utest.equal(llSplit("a  :   53"), ["a: ", "53"]);
+equal(llSplit("a  :   53"), ["a: ", "53"]);
 
-utest.equal(llSplit("- abc"), ["- ", "abc"]);
+equal(llSplit("- abc"), ["- ", "abc"]);
 
-utest.equal(llSplit("-   abc"), ["- ", "abc"]);
+equal(llSplit("-   abc"), ["- ", "abc"]);
 
-utest.equal(llSplit("abc"), undef);
+equal(llSplit("abc"), undef);
 
-utest.equal(llSplit("24"), undef);
+equal(llSplit("24"), undef);
 
-utest.equal(llSplit("'abc'"), undef);
+equal(llSplit("'abc'"), undef);
 
 // ---------------------------------------------------------------------------
 // Leave these alone:
@@ -52,68 +59,68 @@ utest.equal(llSplit("'abc'"), undef);
 //    '<str>'
 //    true
 //    false
-utest.equal(fixValStr(''), '');
+equal(fixValStr(''), '');
 
-utest.equal(fixValStr('[]'), '[]');
+equal(fixValStr('[]'), '[]');
 
-utest.equal(fixValStr('{}'), '{}');
+equal(fixValStr('{}'), '{}');
 
-utest.equal(fixValStr('42'), '42');
+equal(fixValStr('42'), '42');
 
-utest.equal(fixValStr('"abc"'), '"abc"');
+equal(fixValStr('"abc"'), '"abc"');
 
-utest.equal(fixValStr("'abc'"), "'abc'");
+equal(fixValStr("'abc'"), "'abc'");
 
-utest.equal(fixValStr('true'), 'true');
+equal(fixValStr('true'), 'true');
 
-utest.equal(fixValStr('false'), 'false');
+equal(fixValStr('false'), 'false');
 
 // --- quote everything else
-utest.equal(fixValStr("abc"), "'abc'");
+equal(fixValStr("abc"), "'abc'");
 
-utest.equal(fixValStr("it's"), "'it''s'");
-
-// ---------------------------------------------------------------------------
-utest.equal(splitTaml('a: - abc'), ['a: ', '- ', "'abc'"]);
-
-utest.equal(splitTaml('-  a:   53'), ['- ', 'a: ', '53']);
-
-utest.equal(splitTaml('"abc"'), ['"abc"']);
-
-utest.equal(splitTaml('abc'), ["'abc'"]);
+equal(fixValStr("it's"), "'it''s'");
 
 // ---------------------------------------------------------------------------
-utest.equal(toTAML([]), '---\n[]');
+equal(splitTaml('a: - abc'), ['a: ', '- ', "'abc'"]);
 
-utest.equal(toTAML({}), '---\n{}');
+equal(splitTaml('-  a:   53'), ['- ', 'a: ', '53']);
 
-utest.equal(toTAML([1, 2]), '---\n- 1\n- 2');
+equal(splitTaml('"abc"'), ['"abc"']);
 
-utest.equal(toTAML(['1', '2']), `---
+equal(splitTaml('abc'), ["'abc'"]);
+
+// ---------------------------------------------------------------------------
+equal(toTAML([]), '---\n[]');
+
+equal(toTAML({}), '---\n{}');
+
+equal(toTAML([1, 2]), '---\n- 1\n- 2');
+
+equal(toTAML(['1', '2']), `---
 - "1"
 - "2"`);
 
-utest.equal(toTAML({
+equal(toTAML({
   a: 1,
   b: 2
 }), `---
 a: 1
 b: 2`);
 
-utest.equal(toTAML({
+equal(toTAML({
   a: 1,
   b: 2
 }, '!useDashes'), `a: 1
 b: 2`);
 
-utest.equal(toTAML({
+equal(toTAML({
   a: 1,
   b: 2
 }, 'indent=3'), `\t\t\t---
 \t\t\ta: 1
 \t\t\tb: 2`);
 
-utest.equal(toTAML({
+equal(toTAML({
   a: 1,
   b: 2
 }, 'indent=3 !useTabs'), `${spaces(6)}---
@@ -131,7 +138,7 @@ h = {
   ]
 };
 
-utest.equal(toTAML(h), '---\nh:\n\t- a: 1\n\t- b: 2');
+equal(toTAML(h), '---\nh:\n\t- a: 1\n\t- b: 2');
 
 // ---------------------------------------------------------------------------
 (() => {
@@ -143,7 +150,7 @@ utest.equal(toTAML(h), '---\nh:\n\t- a: 1\n\t- b: 2');
 	state: learning
 - index: 2
 	state: learning`;
-  return utest.equal(fromTAML(str), [
+  return equal(fromTAML(str), [
     {
       index: 0,
       state: 'learning'
@@ -169,7 +176,7 @@ utest.equal(toTAML(h), '---\nh:\n\t- a: 1\n\t- b: 2');
 -
 	label: Books
 	url: /books`;
-  return utest.equal(fromTAML(str), [
+  return equal(fromTAML(str), [
     {
       label: 'Help',
       url: '/help'
@@ -191,7 +198,7 @@ utest.equal(toTAML(h), '---\nh:\n\t- a: 1\n\t- b: 2');
 -
 	label: Books
 	url: /books`;
-  return utest.equal(fromTAML(str), [
+  return equal(fromTAML(str), [
     {
       label: 'Help',
       url: '/help'
@@ -214,7 +221,7 @@ WhileStatement:
 	lWalkTrees:
 		- test
 		- body`;
-  return utest.equal(fromTAML(str), {
+  return equal(fromTAML(str), {
     File: {
       lWalkTrees: ['program']
     },
@@ -231,7 +238,7 @@ WhileStatement:
 type: function
 funcName: main
 source: C:/Users/johnd/base-utils/test/v8-stack.test.js`;
-  return utest.equal(fromTAML(str), {
+  return equal(fromTAML(str), {
     type: 'function',
     funcName: 'main',
     source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'

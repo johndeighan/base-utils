@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "for-each-file.js",
+  "sourceRoot": "..\\..\\",
+  "sources": [
+    "src\\bin\\for-each-file.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAA;;AAAA,IAAA,GAAA,EAAA,MAAA,EAAA,KAAA,EAAA,GAAA,EAAA,QAAA,EAAA,QAAA,EAAA,QAAA,EAAA,KAAA,EAAA,QAAA,EAAA,OAAA,EAAA;;AAIA,OAAA;;EACC,KADD;EACQ,OADR;EACiB,UADjB;EAC6B,QAD7B;EACuC,GADvC;EAC4C,OAD5C;CAAA,MAAA;;AAGA,OAAA;EAAQ,MAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,YAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,UAAR;CAAA,MAAA,0BATA;;;;;AAeA,QAAA,GAAW,YAAA,CAAa;EACvB,OAAA,EAAS;IACR,CAAA,EAAG,CAAC,CAAD,EAAG,CAAH,CADK;IAER,CAAA,EAAG,SAFK;IAGR,GAAA,EAAK,QAHG;IAIR,GAAA,EAAK,QAJG;EAAA;AADc,CAAb;;AASX,OAAO,CAAC,GAAR,CAAY,2BAAZ;;AAEA,CAAA;EAAC,GAAD;EAAM,GAAA,EAAI,MAAV;EAAkB,CAAA,EAAE;AAApB,CAAA,GAA6B,QAA7B;;AACA,IAAG,KAAH;EACC,GAAA,CAAI,cAAJ,EADD;;;AAEA,MAAA,CAAO,QAAA,CAAS,MAAT,CAAP,EAAyB,0BAAzB;;AACA,IAAG,UAAA,CAAW,GAAX,CAAH;EACC,GAAA,GAAM,OAAO,CAAC,GAAR,CAAA,EADP;;;AAEA,OAAA,GAAU,QAAQ,CAAC,CAAC,CAAC,CAAD;;AAEpB,QAAA,GAAW;EACV,OADU;EAEV,KAAA,EAAO;AAFG;;AAKX;AAAA,KAAA,YAAA;EACC,CAAA,CAAC,QAAD,EAAW,QAAX,CAAA,GAAuB,KAAvB;EACA,GAAA,GAAM,MAAM,CAAC,UAAP,CAAkB,QAAlB,EAA4B,QAA5B;EACN,IAAG,KAAH;IACC,GAAA,CAAI,CAAA,KAAA,CAAA,CAAQ,GAAR,CAAA,CAAJ,EADD;GAAA,MAAA;IAGC,OAAA,CAAQ,GAAR,EAHD;;AAHD",
+  "sourcesContent": [
+    "`#!/usr/bin/env node\r\n`\r\n# for-each-file.coffee\r\n\r\nimport {\r\n\tundef, defined, notdefined, nonEmpty, LOG, execCmd,\r\n\t} from '@jdeighan/base-utils'\r\nimport {assert} from '@jdeighan/base-utils/exceptions'\r\nimport {parseCmdArgs} from '@jdeighan/base-utils/parse-cmd-args'\r\nimport {allFilesIn} from '@jdeighan/base-utils/fs'\r\n\r\n# ---------------------------------------------------------------------------\r\n# --- Usage:\r\n#    for-each-file *.coffee -cmd=\"coffee -cm <file>\"\r\n\r\nhCmdArgs = parseCmdArgs({\r\n\thExpect: {\r\n\t\t_: [0,1]\r\n\t\td: 'boolean'\r\n\t\tdir: 'string'    # dir to search in, def = current dir\r\n\t\tcmd: 'string'    # command to run (replace '<file>')\r\n\t\t}\r\n\t})\r\n\r\nconsole.log \"Running bin for-each-file\"\r\n\r\n{dir, cmd:cmdStr, d:debug} = hCmdArgs\r\nif debug\r\n\tLOG \"DEBUGGING ON\"\r\nassert nonEmpty(cmdStr), \"Missing or empty command\"\r\nif notdefined(dir)\r\n\tdir = process.cwd()\r\npattern = hCmdArgs._[0]    # might be undef\r\n\r\nhOptions = {\r\n\tpattern\r\n\teager: false\r\n\t}\r\n\r\nfor hFile from allFilesIn(dir, hOptions)\r\n\t{fileName, filePath} = hFile\r\n\tcmd = cmdStr.replaceAll('<file>', filePath)\r\n\tif debug\r\n\t\tLOG \"CMD: #{cmd}\"\r\n\telse\r\n\t\texecCmd cmd\r\n"
+  ]
+}

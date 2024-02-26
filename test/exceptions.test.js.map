@@ -6,8 +6,8 @@
     "test\\exceptions.test.coffee"
   ],
   "names": [],
-  "mappings": "AAAwB;AAExB,OAAA;EACC,MADD;EACS,KADT;EACgB,wBADhB;CAAA,MAAA;;AAGA,OAAA;EAAQ,KAAR;CAAA,MAAA,6BALwB;;;AASxB,KAAK,CAAC,MAAN,CAAa,QAAA,CAAA,CAAA;EACZ,wBAAA,CAAyB,IAAzB;SACA,KAAA,CAAM,KAAN;AAFY,CAAb;;AAIA,KAAK,CAAC,MAAN,CAAa,QAAA,CAAA,CAAA;EACZ,wBAAA,CAAyB,IAAzB;SACA,MAAA,CAAO,CAAA,GAAE,CAAF,KAAO,CAAd,EAAiB,WAAjB;AAFY,CAAb;;AAIA,KAAK,CAAC,QAAN,CAAe,QAAA,CAAA,CAAA;SACd,MAAA,CAAO,CAAA,GAAE,CAAF,KAAO,CAAd;AADc,CAAf",
+  "mappings": "AAAwB;AAExB,OAAA;EACC,MADD;EACS,KADT;EACgB,wBADhB;CAAA,MAAA;;AAGA,OAAA;EAAQ,MAAR;EAAgB,QAAhB;CAAA,MAAA,6BALwB;;;AASxB,MAAA,CAAO,QAAA,CAAA,CAAA;EACN,wBAAA,CAAyB,IAAzB;SACA,KAAA,CAAM,KAAN;AAFM,CAAP;;AAIA,MAAA,CAAO,QAAA,CAAA,CAAA;EACN,wBAAA,CAAyB,IAAzB;SACA,MAAA,CAAO,CAAA,GAAE,CAAF,KAAO,CAAd,EAAiB,WAAjB;AAFM,CAAP;;AAIA,QAAA,CAAS,QAAA,CAAA,CAAA;SACR,MAAA,CAAO,CAAA,GAAE,CAAF,KAAO,CAAd;AADQ,CAAT",
   "sourcesContent": [
-    "# exceptions.test.coffee\n\nimport {\n\tassert, croak, suppressExceptionLogging,\n\t} from '@jdeighan/base-utils/exceptions'\nimport {utest} from '@jdeighan/base-utils/utest'\n\n# ---------------------------------------------------------------------------\n\nutest.throws () ->\n\tsuppressExceptionLogging true\n\tcroak(\"BAD\")\n\nutest.throws () ->\n\tsuppressExceptionLogging true\n\tassert(2+2 != 4, 'EXCEPTION')\n\nutest.succeeds () ->\n\tassert(2+2 == 4)\n"
+    "# exceptions.test.coffee\n\nimport {\n\tassert, croak, suppressExceptionLogging,\n\t} from '@jdeighan/base-utils/exceptions'\nimport {throws, succeeds} from '@jdeighan/base-utils/utest'\n\n# ---------------------------------------------------------------------------\n\nthrows () ->\n\tsuppressExceptionLogging true\n\tcroak(\"BAD\")\n\nthrows () ->\n\tsuppressExceptionLogging true\n\tassert(2+2 != 4, 'EXCEPTION')\n\nsucceeds () ->\n\tassert(2+2 == 4)\n"
   ]
 }

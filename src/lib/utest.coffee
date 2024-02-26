@@ -167,9 +167,19 @@ export class UnitTester
 			func()
 			ok = true
 		catch err
+			console.error err
 			ok = false
 
 		test "line #{lineNum}", (t) => t.truthy(ok)
 
 export utest = new UnitTester()
 export u = new UnitTester()
+
+u_private = new UnitTester()
+export equal = (arg1, arg2) => return u_private.equal(arg1, arg2)
+export like = (arg1, arg2) => return u_private.like(arg1, arg2)
+export notequal = (arg1, arg2) => return u_private.notequal(arg1, arg2)
+export truthy = (arg) => return u_private.truthy(arg)
+export falsy = (arg) => return u_private.falsy(arg)
+export throws = (func) => return u_private.throws(func)
+export succeeds = (func) => return u_private.succeeds(func)

@@ -1,6 +1,8 @@
 Using `@jdeighan/base-utils`
 ============================
 
+[CHANGELOG](CHANGELOG.md)
+
 ```bash
 $ npm install @jdeighan/base-utils
 ```
