@@ -23,6 +23,7 @@
 		"./FileProcessor": "./src/lib/FileProcessor.js",
 		"./TextTable": "./src/lib/TextTable.js",
 		"./cmd-args": "./src/lib/cmd-args.js",
+		"./pll-parser": "./src/lib/pll-parser.js",
 		"./parse-cmd-args": "./src/lib/parse-cmd-args.js",
 		"./package.json": "./package.json"
 	},

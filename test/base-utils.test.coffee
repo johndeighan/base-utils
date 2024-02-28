@@ -2,29 +2,11 @@
 
 import {
 	UnitTester,
-	equal, notequal, succeeds, throws, truthy, falsy,
+	equal, like, notequal, succeeds, throws, truthy, falsy,
 	} from '@jdeighan/base-utils/utest'
-import {
-	undef, pass, defined, notdefined, alldefined, spaces,
-	keys, hasKey, extractKey, hasAllKeys, hasAnyKey, subkeys,
-	tabify, untabify, prefixBlock,
-	escapeStr, OL, OLS,  isHashComment, splitPrefix, hasPrefix,
-	isString, isNumber, isInteger, isHash, isArray, isBoolean,
-	isClass, isConstructor, removeKeys, extractMatches,
-	isFunction, isRegExp, isObject, jsType,
-	isEmpty, nonEmpty, isNonEmptyString, isIdentifier,
-	isFunctionName, isIterable, hashFromString,
-	blockToArray, arrayToBlock, toArray, toBlock,
-	rtrim, words, hasChar, quoted, getOptions, range, rev_range,
-	oneof, uniq, rtrunc, ltrunc, CWS, className,
-	isArrayOfStrings, isArrayOfHashes, isArrayOfArrays,
-	forEachLine, mapEachLine, getProxy, sleep, schedule,
-	eachCharInString, runCmd, hit, choose, shuffle,
-	deepCopy, timestamp, msSinceEpoch, formatDate, pad,
-	forEachItem, addToHash, chomp, flattenToHash,
-	sortArrayOfHashes,
-	} from '@jdeighan/base-utils'
 import {assert} from '@jdeighan/base-utils/exceptions'
+import * as util from '@jdeighan/base-utils'
+Object.assign(global, util)
 
 equal  undef, undefined
 succeeds () -> pass()
@@ -35,6 +17,11 @@ truthy notdefined(undefined)
 falsy  notdefined(12)
 succeeds () => pass()
 succeeds () => assert(12==12, "BAD")
+
+# ---------------------------------------------------------------------------
+
+truthy deepEqual({a:1, b:2}, {a:1, b:2})
+falsy  deepEqual({a:1, b:2}, {a:1, b:3})
 
 # ---------------------------------------------------------------------------
 

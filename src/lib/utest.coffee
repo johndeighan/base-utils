@@ -2,7 +2,9 @@
 
 import test from 'ava'
 
-import {defined, isInteger} from '@jdeighan/base-utils'
+import {
+	undef, defined, pass, isInteger, OL, LOG,
+	} from '@jdeighan/base-utils'
 import {
 	assert, croak, exReset, exGetLog,
 	} from '@jdeighan/base-utils/exceptions'
@@ -11,7 +13,7 @@ import {mapLineNum} from '@jdeighan/base-utils/source-map'
 import {getMyOutsideCaller} from '@jdeighan/base-utils/v8-stack'
 
 # ---------------------------------------------------------------------------
-# --- Available tests w/num required params (aside from line num)
+# --- Available tests w/num required params
 #        equal 2
 #        truthy 1
 #        falsy 1
@@ -36,53 +38,32 @@ export class UnitTester
 
 	# ........................................................................
 
-	getParms: (lParms, nExpected) =>
+	getLineNum: () =>
 
-		nParms = lParms.length
+		# --- We need to figure out the line number of the caller
+		{filePath, line, column} = getMyOutsideCaller()
 		if @debug
-			console.log "getParms(): #{nParms} parameters"
-		if (nParms == nExpected)
-			if @debug
-				console.log "   find correct line number"
+			LOG "getLineNum()"
+			LOG "   filePath = '#{filePath}'"
+			LOG "   line = #{line}, col = #{column}"
 
-			# --- We need to figure out the line number of the caller
-			{filePath, line, column} = getMyOutsideCaller()
-			if @debug
-				console.log "   filePath = '#{filePath}'"
-				console.log "   line = #{line}, col = #{column}"
+		assert isInteger(line), "getMyOutsideCaller() line = #{OL(line)}"
+		assert (fileExt(filePath) == '.js'),
+			"caller not a JS file: #{OL(filePath)}"
 
-			if ! isInteger(line)
-				console.log "getMyOutsideCaller() returned non-integer"
-				console.log {filePath, line, column}
-			assert fileExt(filePath) == '.js', "caller not a JS file", "fileExt(filePath) == '.js'"
-
-			# --- Attempt to use source map to get true line number
-			mapFile = "#{filePath}.map"
+		# --- Attempt to use source map to get true line number
+		mapFile = "#{filePath}.map"
+		if isFile(mapFile)
 			try
-				assert isFile(mapFile), "Missing map file for #{filePath}", "isFile(mapFile)"
 				mline = mapLineNum filePath, line, column, {debug: @debug}
 				if @debug
-					console.log "   mapped to #{mline}"
-				assert isInteger(mline), "not an integer: #{mline}", "isInteger(mline)"
-				return [@dedupLine(mline), lParms...]
+					LOG "   mapped to #{mline}"
+				assert isInteger(mline), "not an integer: #{mline}"
+				line = mline
 			catch err
-				return [@dedupLine(line), lParms...]
-		else if (nParms = nExpected + 1)
-			line = lParms[0]
-			assert isInteger(line), "not an integer #{line}", "isInteger(line)"
-			lParms[0] = @dedupLine(lParms[0])
-			return lParms
-		else
-			croak "Bad parameters to utest function"
-
-	# ..........................................................
-
-	dedupLine: (line) ->
-
-		assert isInteger(line), "#{line} is not an integer"
-		# --- patch line to avoid duplicates
+				pass()
 		while @hFound[line]
-			line += 10000
+			line += 1000
 		@hFound[line] = true
 		return line
 
@@ -101,51 +82,50 @@ export class UnitTester
 	# ..........................................................
 	# ..........................................................
 
-	equal: (lParms...) ->
+	equal: (val, expected) ->
 
-		[lineNum, val, expected] = @getParms lParms, 2
+		lineNum = @getLineNum()
 		test "line #{lineNum}", (t) =>
 			t.deepEqual(@transformValue(val), @transformExpected(expected))
 
 	# ..........................................................
 
-	notequal: (lParms...) ->
+	like: (val, expected) ->
 
-		[lineNum, val, expected] = @getParms lParms, 2
-		test "line #{lineNum}", (t) =>
-			t.notDeepEqual(@transformValue(val), @transformExpected(expected))
-
-	# ..........................................................
-
-	truthy: (lParms...) ->
-
-		[lineNum, bool] = @getParms lParms, 1
-		test "line #{lineNum}", (t) =>
-			t.truthy(@transformValue(bool))
-
-	# ..........................................................
-
-	falsy: (lParms...) ->
-
-		[lineNum, bool] = @getParms lParms, 1
-		test "line #{lineNum}", (t) =>
-			t.falsy(@transformValue(bool))
-
-	# ..........................................................
-
-	like: (lParms...) ->
-
-		[lineNum, val, expected] = @getParms lParms, 2
+		lineNum = @getLineNum()
 		test "line #{lineNum}", (t) =>
 			t.like(@transformValue(val), @transformExpected(expected))
 
 	# ..........................................................
 
-	throws: (lParams...) ->
+	notequal: (val, expected) ->
 
-		[lineNum, func] = @getParms lParams, 1
-		if (typeof func != 'function')
-			throw new Error("function expected")
+		lineNum = @getLineNum()
+		test "line #{lineNum}", (t) =>
+			t.notDeepEqual(@transformValue(val), @transformExpected(expected))
+
+	# ..........................................................
+
+	truthy: (bool) ->
+
+		lineNum = @getLineNum()
+		test "line #{lineNum}", (t) =>
+			t.truthy(@transformValue(bool))
+
+	# ..........................................................
+
+	falsy: (bool) ->
+
+		lineNum = @getLineNum()
+		test "line #{lineNum}", (t) =>
+			t.falsy(@transformValue(bool))
+
+	# ..........................................................
+
+	throws: (func) ->
+
+		lineNum = @getLineNum()
+		assert (typeof func == 'function'), "function expected"
 		try
 			exReset()   # suppress logging of errors
 			func()
@@ -158,11 +138,10 @@ export class UnitTester
 
 	# ..........................................................
 
-	succeeds: (lParams...) ->
+	succeeds: (func) ->
 
-		[lineNum, func] = @getParms lParams, 1
-		if (typeof func != 'function')
-			throw new Error("function expected")
+		lineNum = @getLineNum()
+		assert (typeof func == 'function'), "function expected"
 		try
 			func()
 			ok = true
@@ -172,10 +151,14 @@ export class UnitTester
 
 		test "line #{lineNum}", (t) => t.truthy(ok)
 
+# ---------------------------------------------------------------------------
+
 export utest = new UnitTester()
 export u = new UnitTester()
 
 u_private = new UnitTester()
+export transformValue = (func) => u_private.transformValue = func
+export transformExpected = (func) => u_private.transformExpected = func
 export equal = (arg1, arg2) => return u_private.equal(arg1, arg2)
 export like = (arg1, arg2) => return u_private.like(arg1, arg2)
 export notequal = (arg1, arg2) => return u_private.notequal(arg1, arg2)

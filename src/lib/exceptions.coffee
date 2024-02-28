@@ -9,14 +9,6 @@ import {
 
 doHaltOnError = false
 doLog = true
-debug = false
-
-# ---------------------------------------------------------------------------
-
-export doDebug = () =>
-
-	debug = true
-	return
 
 # ---------------------------------------------------------------------------
 # simple redirect to an array - useful in unit tests
@@ -62,14 +54,8 @@ EXLOG = (str) =>
 #   assert - mimic nodejs's assert
 #   return true so we can use it in boolean expressions
 
-export assert = (cond, msg, condStr=undef) =>
+export assert = (cond, msg) =>
 
-	if debug
-		boolStr = cond.toString()
-		if condStr
-			console.log "ASSERT: cond is #{condStr} (#{boolStr})"
-		else
-			console.log "ASSERT: cond is #{boolStr}"
 	if ! cond
 		lFrames = getV8Stack()
 
