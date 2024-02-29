@@ -239,7 +239,7 @@ export var globFiles = function*(pattern = '*', hGlobOptions = {}) {
 
 // ---------------------------------------------------------------------------
 export var allFilesIn = function*(pattern = '*', hOptions = {}) {
-  var eager, hContents, hFile, hGlobOptions, ref;
+  var eager, filePath, hContents, hFile, hGlobOptions, ref;
   // --- yields hFile with keys:
   //        path, filePath,
   //        type, root, dir, base, fileName,
@@ -264,13 +264,16 @@ export var allFilesIn = function*(pattern = '*', hOptions = {}) {
   dbg(`eager = ${OL(eager)}`);
   ref = globFiles(pattern, hGlobOptions);
   for (hFile of ref) {
-    if (eager) {
-      hContents = getTextFileContents(hFile.path);
-      Object.assign(hFile, hContents);
+    ({filePath} = hFile);
+    if (!filePath.includes('node_modules')) {
+      if (eager) {
+        hContents = getTextFileContents(hFile.path);
+        Object.assign(hFile, hContents);
+      }
+      dbgYield('allFilesIn', hFile);
+      yield hFile;
+      dbgResume('allFilesIn');
     }
-    dbgYield('allFilesIn', hFile);
-    yield hFile;
-    dbgResume('allFilesIn');
   }
   dbgReturn('allFilesIn');
 };

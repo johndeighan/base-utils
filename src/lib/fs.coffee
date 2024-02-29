@@ -192,12 +192,14 @@ export allFilesIn = (pattern='*', hOptions={}) ->
 	dbg "eager = #{OL(eager)}"
 
 	for hFile from globFiles(pattern, hGlobOptions)
-		if eager
-			hContents = getTextFileContents(hFile.path)
-			Object.assign hFile, hContents
-		dbgYield 'allFilesIn', hFile
-		yield hFile
-		dbgResume 'allFilesIn'
+		{filePath} = hFile
+		if ! filePath.includes('node_modules')
+			if eager
+				hContents = getTextFileContents(hFile.path)
+				Object.assign hFile, hContents
+			dbgYield 'allFilesIn', hFile
+			yield hFile
+			dbgResume 'allFilesIn'
 	dbgReturn 'allFilesIn'
 	return
 
