@@ -181,7 +181,9 @@ export allFilesIn = (pattern='*', hOptions={}) ->
 
 	dbgEnter 'allFilesIn', pattern, hOptions
 	{hGlobOptions, eager} = getOptions(hOptions, {
-		hGlobOptions: {}
+		hGlobOptions: {
+			ignore: "node_modules"
+			}
 		eager: false
 		})
 

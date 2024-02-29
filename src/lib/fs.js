@@ -254,7 +254,9 @@ export var allFilesIn = function*(pattern = '*', hOptions = {}) {
   //        cwd - change working directory
   dbgEnter('allFilesIn', pattern, hOptions);
   ({hGlobOptions, eager} = getOptions(hOptions, {
-    hGlobOptions: {},
+    hGlobOptions: {
+      ignore: "node_modules"
+    },
     eager: false
   }));
   dbg(`pattern = ${OL(pattern)}`);
