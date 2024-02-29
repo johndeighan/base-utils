@@ -51,7 +51,8 @@ import {
   allLinesIn,
   forEachLineInFile,
   dirContents,
-  FileWriter
+  FileWriter,
+  newerDestFileExists
 } from '@jdeighan/base-utils/fs';
 
 // --- should be root directory of @jdeighan/base-utils
@@ -483,6 +484,18 @@ line 2`);
   truthy(isFile(path));
   text = slurp(path);
   return equal(text, "line 1\nline 2\n");
+})();
+
+// ---------------------------------------------------------------------------
+(() => {
+  var coffeeFile, dummyFile, jsFile;
+  // --- test newerDestFileExists()
+  coffeeFile = "./src/lib/fs.coffee";
+  jsFile = "./src/lib/fs.js";
+  dummyFile = "./src/lib/dummy.js";
+  truthy(newerDestFileExists(coffeeFile, jsFile));
+  falsy(newerDestFileExists(jsFile, coffeeFile));
+  return falsy(newerDestFileExists(coffeeFile, dummyFile));
 })();
 
 //# sourceMappingURL=fs.test.js.map

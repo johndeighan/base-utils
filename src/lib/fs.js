@@ -238,6 +238,17 @@ export var globFiles = function*(pattern = '*', hGlobOptions = {}) {
 };
 
 // ---------------------------------------------------------------------------
+export var newerDestFileExists = (srcPath, destPath) => {
+  var destModTime, srcModTime;
+  if (!fs.existsSync(destPath)) {
+    return false;
+  }
+  srcModTime = fs.statSync(srcPath).mtimeMs;
+  destModTime = fs.statSync(destPath).mtimeMs;
+  return destModTime >= srcModTime;
+};
+
+// ---------------------------------------------------------------------------
 export var allFilesIn = function*(pattern = '*', hOptions = {}) {
   var eager, filePath, hContents, hFile, hGlobOptions, ref;
   // --- yields hFile with keys:

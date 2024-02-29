@@ -16,7 +16,7 @@ import {
 	barf, barfJSON, barfTAML, barfPkgJSON,
 	parsePath, getTextFileContents, allFilesIn,
 	allLinesIn, forEachLineInFile,
-	dirContents, FileWriter,
+	dirContents, FileWriter, newerDestFileExists,
 	} from '@jdeighan/base-utils/fs'
 
 # --- should be root directory of @jdeighan/base-utils
@@ -451,4 +451,18 @@ equal dirContents(smDir, '*', 'dirsOnly').length, 2
 
 	text = slurp path
 	equal text, "line 1\nline 2\n"
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() =>
+	# --- test newerDestFileExists()
+
+	coffeeFile = "./src/lib/fs.coffee"
+	jsFile = "./src/lib/fs.js"
+	dummyFile = "./src/lib/dummy.js"
+
+	truthy newerDestFileExists(coffeeFile, jsFile)
+	falsy newerDestFileExists(jsFile, coffeeFile)
+	falsy newerDestFileExists(coffeeFile, dummyFile)
 	)()

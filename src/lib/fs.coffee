@@ -165,6 +165,16 @@ export globFiles = (pattern='*', hGlobOptions={}) ->
 
 # ---------------------------------------------------------------------------
 
+export newerDestFileExists = (srcPath, destPath) =>
+
+	if ! fs.existsSync(destPath)
+		return false
+	srcModTime = fs.statSync(srcPath).mtimeMs
+	destModTime = fs.statSync(destPath).mtimeMs
+	return (destModTime >= srcModTime)
+
+# ---------------------------------------------------------------------------
+
 export allFilesIn = (pattern='*', hOptions={}) ->
 	# --- yields hFile with keys:
 	#        path, filePath,
