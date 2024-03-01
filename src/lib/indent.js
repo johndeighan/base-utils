@@ -6,11 +6,12 @@ import {
   toArray,
   toBlock,
   OL,
+  rtrim,
   isInteger,
   isString,
   isArray,
   isEmpty,
-  rtrim
+  isArrayOfStrings
 } from '@jdeighan/base-utils';
 
 import {
@@ -110,6 +111,7 @@ export var indentLevel = (line, oneIndent = undef) => {
 //   indentation - return appropriate indentation string for given level
 //   export only to allow unit testing
 export var indentation = (level, oneIndent = "\t") => {
+  assert(isInteger(level), `Not an integer: ${OL(level)}`);
   assert(level >= 0, "indentation(): negative level");
   return oneIndent.repeat(level);
 };
@@ -126,6 +128,10 @@ export var isUndented = (line) => {
 //            - returns the same type as input, i.e. array or string
 export var indented = (input, level = 1, oneIndent = "\t") => {
   var i, lLines, len, line, ref, toAdd;
+  // --- input must be either a string or array of strings
+  assert(isString(input) || isArrayOfStrings(input), `invalid input: ${OL(input)}`);
+  // --- oneIndent must be a string
+  assert(isString(oneIndent), `Not a string: ${OL(oneIndent)}`);
   // --- level can be a string, in which case it is
   //     pre-pended to each line of input
   if (isString(level)) {

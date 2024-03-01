@@ -1,8 +1,8 @@
 # indent.coffee
 
 import {
-	undef, defined, notdefined, toArray, toBlock,
-	OL, isInteger, isString, isArray, isEmpty, rtrim,
+	undef, defined, notdefined, toArray, toBlock, OL, rtrim,
+	isInteger, isString, isArray, isEmpty, isArrayOfStrings,
 	} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 
@@ -97,6 +97,7 @@ export indentLevel = (line, oneIndent=undef) =>
 
 export indentation = (level, oneIndent="\t") =>
 
+	assert isInteger(level), "Not an integer: #{OL(level)}"
 	assert (level >= 0), "indentation(): negative level"
 	return oneIndent.repeat(level)
 
@@ -113,6 +114,13 @@ export isUndented = (line) =>
 #            - returns the same type as input, i.e. array or string
 
 export indented = (input, level=1, oneIndent="\t") =>
+
+	# --- input must be either a string or array of strings
+	assert isString(input) || isArrayOfStrings(input),
+			"invalid input: #{OL(input)}"
+
+	# --- oneIndent must be a string
+	assert isString(oneIndent), "Not a string: #{OL(oneIndent)}"
 
 	# --- level can be a string, in which case it is
 	#     pre-pended to each line of input
