@@ -332,6 +332,7 @@ export var slurp = (filePath, hOptions) => {
     assert(isInteger(maxLines), "maxLines must be an integer");
   }
   filePath = mkpath(filePath);
+  assert(isFile(filePath), `Not a file: ${OL(filePath)}`);
   if (defined(maxLines)) {
     dbg(`maxLines = ${maxLines}`);
     lLines = [];
