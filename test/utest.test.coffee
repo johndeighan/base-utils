@@ -15,6 +15,8 @@ u.truthy 42
 u.falsy false
 u.throws () => throw new Error("bad")
 u.succeeds () => return 'me'
+u.like "abc\n", "abc"         # strings are right trimmed
+u.like "abc\n", "abc   "
 
 # ---------------------------------------------------------------------------
 
@@ -25,6 +27,8 @@ truthy 42
 falsy false
 throws () => throw new Error("bad")
 succeeds () => return 'me'
+like "abc\n", "abc"           # strings are right trimmed
+like "abc\n", "abc   "
 
 # ---------------------------------------------------------------------------
 

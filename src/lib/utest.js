@@ -5,9 +5,11 @@ import {
   undef,
   defined,
   pass,
-  isInteger,
   OL,
-  LOG
+  LOG,
+  isString,
+  isInteger,
+  rtrim
 } from '@jdeighan/base-utils';
 
 import {
@@ -105,8 +107,10 @@ export var UnitTester = class UnitTester {
   equal(val, expected) {
     var lineNum;
     lineNum = this.getLineNum();
+    val = this.transformValue(val);
+    expected = this.transformExpected(expected);
     return test(`line ${lineNum}`, (t) => {
-      return t.deepEqual(this.transformValue(val), this.transformExpected(expected));
+      return t.deepEqual(val, expected);
     });
   }
 
@@ -114,9 +118,17 @@ export var UnitTester = class UnitTester {
   like(val, expected) {
     var lineNum;
     lineNum = this.getLineNum();
-    return test(`line ${lineNum}`, (t) => {
-      return t.like(this.transformValue(val), this.transformExpected(expected));
-    });
+    val = this.transformValue(val);
+    expected = this.transformExpected(expected);
+    if (isString(val) && isString(expected)) {
+      return test(`line ${lineNum}`, (t) => {
+        return t.deepEqual(rtrim(val), rtrim(expected));
+      });
+    } else {
+      return test(`line ${lineNum}`, (t) => {
+        return t.like(val, expected);
+      });
+    }
   }
 
   // ..........................................................

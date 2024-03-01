@@ -3,7 +3,8 @@
 import test from 'ava'
 
 import {
-	undef, defined, pass, isInteger, OL, LOG,
+	undef, defined, pass, OL, LOG,
+	isString, isInteger, rtrim,
 	} from '@jdeighan/base-utils'
 import {
 	assert, croak, exReset, exGetLog,
@@ -85,16 +86,24 @@ export class UnitTester
 	equal: (val, expected) ->
 
 		lineNum = @getLineNum()
+		val = @transformValue(val)
+		expected = @transformExpected(expected)
 		test "line #{lineNum}", (t) =>
-			t.deepEqual(@transformValue(val), @transformExpected(expected))
+			t.deepEqual(val, expected)
 
 	# ..........................................................
 
 	like: (val, expected) ->
 
 		lineNum = @getLineNum()
-		test "line #{lineNum}", (t) =>
-			t.like(@transformValue(val), @transformExpected(expected))
+		val = @transformValue(val)
+		expected = @transformExpected(expected)
+		if isString(val) && isString(expected)
+			test "line #{lineNum}", (t) =>
+				t.deepEqual(rtrim(val), rtrim(expected))
+		else
+			test "line #{lineNum}", (t) =>
+				t.like(val, expected)
 
 	# ..........................................................
 

@@ -46,6 +46,10 @@ u.succeeds(() => {
   return 'me';
 });
 
+u.like("abc\n", "abc"); // strings are right trimmed
+
+u.like("abc\n", "abc   ");
+
 // ---------------------------------------------------------------------------
 equal(2 + 2, 4);
 
@@ -71,6 +75,10 @@ throws(() => {
 succeeds(() => {
   return 'me';
 });
+
+like("abc\n", "abc"); // strings are right trimmed
+
+like("abc\n", "abc   ");
 
 // ---------------------------------------------------------------------------
 (() => {
