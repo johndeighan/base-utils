@@ -153,16 +153,13 @@ export class UnitTester
 
 # ---------------------------------------------------------------------------
 
-export utest = new UnitTester()
 export u = new UnitTester()
-
-u_private = new UnitTester()
-export transformValue = (func) => u_private.transformValue = func
-export transformExpected = (func) => u_private.transformExpected = func
-export equal = (arg1, arg2) => return u_private.equal(arg1, arg2)
-export like = (arg1, arg2) => return u_private.like(arg1, arg2)
-export notequal = (arg1, arg2) => return u_private.notequal(arg1, arg2)
-export truthy = (arg) => return u_private.truthy(arg)
-export falsy = (arg) => return u_private.falsy(arg)
-export throws = (func) => return u_private.throws(func)
-export succeeds = (func) => return u_private.succeeds(func)
+export transformValue = (func) => u.transformValue = func
+export transformExpected = (func) => u.transformExpected = func
+export equal = (arg1, arg2) => return u.equal(arg1, arg2)
+export like = (arg1, arg2) => return u.like(arg1, arg2)
+export notequal = (arg1, arg2) => return u.notequal(arg1, arg2)
+export truthy = (arg) => return u.truthy(arg)
+export falsy = (arg) => return u.falsy(arg)
+export throws = (func) => return u.throws(func)
+export succeeds = (func) => return u.succeeds(func)

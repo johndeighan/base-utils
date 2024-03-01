@@ -1,5 +1,5 @@
 // ll-fs.test.coffee
-var dir, dir2, file2, newpath, newpath2, newpath3, newpath4, path, subdir;
+var curdir, dir, dir2, file2, newpath, newpath2, newpath3, newpath4, path, subdir;
 
 import {
   undef,
@@ -40,6 +40,9 @@ import {
 dir = mydir(import.meta.url);
 
 subdir = mkpath(dir, 'test');
+
+curdir = mkpath(process.cwd()); // will have '/'
+
 
 // ---------------------------------------------------------------------------
 equal(mkpath('C:\\test\\me'), 'c:/test/me');
@@ -83,6 +86,21 @@ throws(function() {
 });
 
 equal(pathType(':::::'), 'missing');
+
+// --- parsePath() works even if the file doesn't exist
+like(parsePath("dummyfile.txt"), {
+  fileName: 'dummyfile.txt',
+  base: 'dummyfile.txt',
+  dir: curdir,
+  ext: '.txt',
+  filePath: `${curdir}/dummyfile.txt`,
+  path: `${curdir}/dummyfile.txt`,
+  name: 'dummyfile',
+  purpose: undef,
+  root: 'c:/',
+  stub: 'dummyfile',
+  type: 'missing'
+});
 
 // --- Test creating dir, then deleting dir
 dir2 = mkpath(subdir, 'test2');

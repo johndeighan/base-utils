@@ -1,6 +1,4 @@
 // utest.coffee
-var u_private;
-
 import test from 'ava';
 
 import {
@@ -188,46 +186,42 @@ export var UnitTester = class UnitTester {
 };
 
 // ---------------------------------------------------------------------------
-export var utest = new UnitTester();
-
 export var u = new UnitTester();
 
-u_private = new UnitTester();
-
 export var transformValue = (func) => {
-  return u_private.transformValue = func;
+  return u.transformValue = func;
 };
 
 export var transformExpected = (func) => {
-  return u_private.transformExpected = func;
+  return u.transformExpected = func;
 };
 
 export var equal = (arg1, arg2) => {
-  return u_private.equal(arg1, arg2);
+  return u.equal(arg1, arg2);
 };
 
 export var like = (arg1, arg2) => {
-  return u_private.like(arg1, arg2);
+  return u.like(arg1, arg2);
 };
 
 export var notequal = (arg1, arg2) => {
-  return u_private.notequal(arg1, arg2);
+  return u.notequal(arg1, arg2);
 };
 
 export var truthy = (arg) => {
-  return u_private.truthy(arg);
+  return u.truthy(arg);
 };
 
 export var falsy = (arg) => {
-  return u_private.falsy(arg);
+  return u.falsy(arg);
 };
 
 export var throws = (func) => {
-  return u_private.throws(func);
+  return u.throws(func);
 };
 
 export var succeeds = (func) => {
-  return u_private.succeeds(func);
+  return u.succeeds(func);
 };
 
 //# sourceMappingURL=utest.js.map

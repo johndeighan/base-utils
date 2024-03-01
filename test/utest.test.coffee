@@ -1,21 +1,20 @@
-# utest.test.coffee
+# u.test.coffee
 
 import {isString, OL} from '@jdeighan/base-utils'
 import {assert} from '@jdeighan/base-utils/exceptions'
 import {
-	utest, UnitTester,
-	equal, like, notequal, truthy, falsy, throws, succeeds,
+	u, UnitTester, equal, like, notequal, truthy, falsy, throws, succeeds,
 	} from '@jdeighan/base-utils/utest'
 
 # ---------------------------------------------------------------------------
 
-utest.equal 2+2, 4
-utest.like {a:1, b:2, c:3}, {a:1, c:3}
-utest.notequal 2+2, 5
-utest.truthy 42
-utest.falsy false
-utest.throws () => throw new Error("bad")
-utest.succeeds () => return 'me'
+u.equal 2+2, 4
+u.like {a:1, b:2, c:3}, {a:1, c:3}
+u.notequal 2+2, 5
+u.truthy 42
+u.falsy false
+u.throws () => throw new Error("bad")
+u.succeeds () => return 'me'
 
 # ---------------------------------------------------------------------------
 

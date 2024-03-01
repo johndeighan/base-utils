@@ -259,14 +259,11 @@ export pathType = (fullPath) =>
 
 # ---------------------------------------------------------------------------
 
-export parsePath = (path, shouldNotExist) =>
+export parsePath = (path) =>
 	# --- NOTE: path may be a file URL, e.g. import.meta.url
 	#           path may be a relative path
 
 	assert isString(path), "path is type #{typeof path}"
-
-	# --- check for deprecated args
-	assert notdefined(shouldNotExist), "multiple arguments!"
 
 	if path.match(/^file\:\/\//)
 		path = normalize urlLib.fileURLToPath(path)
@@ -296,7 +293,8 @@ export parsePath = (path, shouldNotExist) =>
 		ext
 		purpose
 		}
-	Object.assign hFile, getFileStats(path)
+	if isFile(path)
+		Object.assign hFile, getFileStats(path)
 	return hFile
 
 # ---------------------------------------------------------------------------

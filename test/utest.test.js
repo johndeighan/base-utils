@@ -1,4 +1,4 @@
-  // utest.test.coffee
+  // u.test.coffee
 import {
   isString,
   OL
@@ -9,7 +9,7 @@ import {
 } from '@jdeighan/base-utils/exceptions';
 
 import {
-  utest,
+  u,
   UnitTester,
   equal,
   like,
@@ -21,9 +21,9 @@ import {
 } from '@jdeighan/base-utils/utest';
 
 // ---------------------------------------------------------------------------
-utest.equal(2 + 2, 4);
+u.equal(2 + 2, 4);
 
-utest.like({
+u.like({
   a: 1,
   b: 2,
   c: 3
@@ -32,17 +32,17 @@ utest.like({
   c: 3
 });
 
-utest.notequal(2 + 2, 5);
+u.notequal(2 + 2, 5);
 
-utest.truthy(42);
+u.truthy(42);
 
-utest.falsy(false);
+u.falsy(false);
 
-utest.throws(() => {
+u.throws(() => {
   throw new Error("bad");
 });
 
-utest.succeeds(() => {
+u.succeeds(() => {
   return 'me';
 });
 

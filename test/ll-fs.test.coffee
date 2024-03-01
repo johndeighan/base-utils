@@ -13,6 +13,7 @@ import {
 
 dir = mydir(import.meta.url)
 subdir = mkpath(dir, 'test')
+curdir = mkpath(process.cwd())   # will have '/'
 
 # ---------------------------------------------------------------------------
 
@@ -45,6 +46,21 @@ falsy  isFile(mkpath(dir, 'test', 'file1'))
 
 throws () -> pathType(42)
 equal pathType(':::::'), 'missing'
+
+# --- parsePath() works even if the file doesn't exist
+like parsePath("dummyfile.txt"), {
+	fileName: 'dummyfile.txt'
+	base: 'dummyfile.txt'
+	dir: curdir
+	ext: '.txt'
+	filePath: "#{curdir}/dummyfile.txt"
+	path: "#{curdir}/dummyfile.txt"
+	name: 'dummyfile'
+	purpose: undef
+	root: 'c:/'
+	stub: 'dummyfile'
+	type: 'missing'
+	}
 
 # --- Test creating dir, then deleting dir
 dir2 = mkpath(subdir, 'test2')
