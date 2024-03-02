@@ -19,7 +19,7 @@ import {
   isFile,
   isDir,
   mkpath,
-  rmFileSync,
+  rmFile,
   withExt,
   slurp,
   allFilesIn,
