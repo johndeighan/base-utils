@@ -249,7 +249,7 @@ export var newerDestFileExists = (srcPath, destPath) => {
 };
 
 // ---------------------------------------------------------------------------
-export var allFilesIn = function*(pattern = '*', hOptions = {}) {
+export var allFilesMatching = function*(pattern = '*', hOptions = {}) {
   var eager, filePath, hContents, hFile, hGlobOptions, ref;
   // --- yields hFile with keys:
   //        path, filePath,
@@ -263,7 +263,7 @@ export var allFilesIn = function*(pattern = '*', hOptions = {}) {
   //        ignore - glob pattern for files to ignore
   //        dot - include dot files/directories (default: false)
   //        cwd - change working directory
-  dbgEnter('allFilesIn', pattern, hOptions);
+  dbgEnter('allFilesMatching', pattern, hOptions);
   ({hGlobOptions, eager} = getOptions(hOptions, {
     hGlobOptions: {
       ignore: "node_modules"
@@ -281,12 +281,12 @@ export var allFilesIn = function*(pattern = '*', hOptions = {}) {
         hContents = getTextFileContents(hFile.path);
         Object.assign(hFile, hContents);
       }
-      dbgYield('allFilesIn', hFile);
+      dbgYield('allFilesMatching', hFile);
       yield hFile;
-      dbgResume('allFilesIn');
+      dbgResume('allFilesMatching');
     }
   }
-  dbgReturn('allFilesIn');
+  dbgReturn('allFilesMatching');
 };
 
 // ---------------------------------------------------------------------------

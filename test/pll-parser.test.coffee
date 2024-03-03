@@ -7,7 +7,7 @@ import {
 import {assert} from '@jdeighan/base-utils/exceptions'
 import {setDebugging} from '@jdeighan/base-utils/debug'
 import {
-	mkpath, allFilesIn, globFiles,
+	mkpath, allFilesMatching, globFiles,
 	} from '@jdeighan/base-utils/fs'
 import {parse} from '@jdeighan/base-utils/pll-parser'
 import {

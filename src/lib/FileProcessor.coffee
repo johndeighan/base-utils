@@ -12,7 +12,7 @@ import {toTAML} from '@jdeighan/base-utils/taml'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
 	mkpath, mkDir, pathType, parsePath, subPath,
-	allLinesIn, slurp, barf, isFile, allFilesIn,
+	allLinesIn, slurp, barf, isFile, allFilesMatching,
 	} from '@jdeighan/base-utils/fs'
 import {
 	dbgEnter, dbgReturn, dbg,
@@ -101,7 +101,7 @@ export class FileProcessor
 			hGlobOptions: @hOptions.hGlobOptions
 			eager: @hOptions.eager
 			}
-		for hFile from allFilesIn(@pattern, hOptions)
+		for hFile from allFilesMatching(@pattern, hOptions)
 			{filePath} = hFile
 			if @filterFile hFile
 				dbg "[#{numFiles}] #{filePath} - Handle"

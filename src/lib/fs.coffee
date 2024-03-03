@@ -175,7 +175,7 @@ export newerDestFileExists = (srcPath, destPath) =>
 
 # ---------------------------------------------------------------------------
 
-export allFilesIn = (pattern='*', hOptions={}) ->
+export allFilesMatching = (pattern='*', hOptions={}) ->
 	# --- yields hFile with keys:
 	#        path, filePath,
 	#        type, root, dir, base, fileName,
@@ -189,7 +189,7 @@ export allFilesIn = (pattern='*', hOptions={}) ->
 	#        dot - include dot files/directories (default: false)
 	#        cwd - change working directory
 
-	dbgEnter 'allFilesIn', pattern, hOptions
+	dbgEnter 'allFilesMatching', pattern, hOptions
 	{hGlobOptions, eager} = getOptions(hOptions, {
 		hGlobOptions: {
 			ignore: "node_modules"
@@ -207,10 +207,10 @@ export allFilesIn = (pattern='*', hOptions={}) ->
 			if eager
 				hContents = getTextFileContents(hFile.path)
 				Object.assign hFile, hContents
-			dbgYield 'allFilesIn', hFile
+			dbgYield 'allFilesMatching', hFile
 			yield hFile
-			dbgResume 'allFilesIn'
-	dbgReturn 'allFilesIn'
+			dbgResume 'allFilesMatching'
+	dbgReturn 'allFilesMatching'
 	return
 
 # ---------------------------------------------------------------------------

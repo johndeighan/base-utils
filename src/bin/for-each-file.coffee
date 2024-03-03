@@ -3,14 +3,17 @@
 # for-each-file.coffee
 
 import {
-	undef, defined, notdefined, nonEmpty, LOG, execCmd,
+	undef, defined, notdefined, nonEmpty, LOG, OL, execCmd,
 	} from '@jdeighan/base-utils'
+import {setDebugging} from '@jdeighan/base-utils/debug'
 import {assert} from '@jdeighan/base-utils/exceptions'
 import {parseCmdArgs} from '@jdeighan/base-utils/parse-cmd-args'
-import {allFilesIn} from '@jdeighan/base-utils/fs'
+import {allFilesMatching} from '@jdeighan/base-utils/fs'
 
 debug = false
 cmdStr = undef
+dir = undef
+setDebugging 'allFilesMatching'
 
 # ---------------------------------------------------------------------------
 
@@ -28,6 +31,24 @@ handleFile = (filePath) =>
 	return
 
 # ---------------------------------------------------------------------------
+
+handleGlob = (glob) =>
+
+	if debug
+		LOG "GLOB: #{OL(glob)}"
+	hOptions = {
+		pattern: glob
+		eager: false
+		}
+
+	for hFile from allFilesMatching(dir, hOptions)
+		{filePath} = hFile
+		if debug
+			LOG "   GLOB FILE: #{OL(filePath)}"
+		handleFile(hFile.filePath)
+	return
+
+# ---------------------------------------------------------------------------
 # --- Usage:
 #    for-each-file *.coffee -cmd="coffee -cm <file>"
 
@@ -41,7 +62,7 @@ hCmdArgs = parseCmdArgs({
 		}
 	})
 
-# --- NOTE: debug and cmdStr are global vars
+# --- NOTE: debug, cmdStr and dir are global vars
 {_:lFiles, d:debug, dir, glob, cmd:cmdStr} = hCmdArgs
 
 LOG "Running for-each-file"
@@ -53,17 +74,17 @@ if notdefined(dir)
 	dir = process.cwd()
 
 # --- First, cycle through all non-options files
+#     NOTE: any filename that contains '*' or '?'
+#           is treated as a glob
 
-for filePath in lFiles
-	handleFile(filePath)
+if defined(lFiles)
+	for name in lFiles
+		if name.includes('*') || name.includes('?')
+			handleGlob(name)
+		else
+			handleFile(name)
 
 # --- Next, use glob if defined
 
 if defined(glob)
-	hOptions = {
-		pattern: glob
-		eager: false
-		}
-
-	for hFile from allFilesIn(dir, hOptions)
-		handleFile(hFile.filePath)
+	handleGlob(glob)

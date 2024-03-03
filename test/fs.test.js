@@ -47,7 +47,7 @@ import {
   barfPkgJSON,
   parsePath,
   getTextFileContents,
-  allFilesIn,
+  allFilesMatching,
   allLinesIn,
   forEachLineInFile,
   dirContents,
@@ -192,11 +192,11 @@ ghi`);
 })();
 
 // ---------------------------------------------------------------------------
-// --- test allFilesIn
+// --- test allFilesMatching
 (() => {
   var ext, hFile, lFiles, ref;
   lFiles = [];
-  ref = allFilesIn('./test/test/*', 'eager');
+  ref = allFilesMatching('./test/test/*', 'eager');
   for (hFile of ref) {
     ({ext} = hFile);
     if ((ext !== '.map') && (ext !== '.js')) {
@@ -243,14 +243,14 @@ ghi`);
 })();
 
 // ---------------------------------------------------------------------------
-// --- test allFilesIn with pattern
+// --- test allFilesMatching with pattern
 (() => {
   var hFile, hOptions, lFiles, ref;
   lFiles = [];
   hOptions = {
     eager: true
   };
-  ref = allFilesIn('./test/test/*.txt', hOptions);
+  ref = allFilesMatching('./test/test/*.txt', hOptions);
   for (hFile of ref) {
     lFiles.push(hFile);
   }
@@ -279,7 +279,7 @@ ghi`);
 })();
 
 // ---------------------------------------------------------------------------
-// --- test allFilesIn with pattern and cwd
+// --- test allFilesMatching with pattern and cwd
 (() => {
   var hFile, hOptions, lFiles, ref;
   lFiles = [];
@@ -289,7 +289,7 @@ ghi`);
       cwd: './test/test'
     }
   };
-  ref = allFilesIn('*.txt', hOptions);
+  ref = allFilesMatching('*.txt', hOptions);
   for (hFile of ref) {
     lFiles.push(hFile);
   }

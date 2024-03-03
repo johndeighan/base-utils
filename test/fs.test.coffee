@@ -14,7 +14,7 @@ import {
 	getPkgJsonDir, getPkgJsonPath,
 	slurp, slurpJSON, slurpTAML, slurpPkgJSON,
 	barf, barfJSON, barfTAML, barfPkgJSON,
-	parsePath, getTextFileContents, allFilesIn,
+	parsePath, getTextFileContents, allFilesMatching,
 	allLinesIn, forEachLineInFile,
 	dirContents, FileWriter, newerDestFileExists,
 	} from '@jdeighan/base-utils/fs'
@@ -159,11 +159,11 @@ equal slurp(testPath, 'maxLines=3'), """
 	)()
 
 # ---------------------------------------------------------------------------
-# --- test allFilesIn
+# --- test allFilesMatching
 
 (() =>
 	lFiles = []
-	for hFile from allFilesIn('./test/test/*', 'eager')
+	for hFile from allFilesMatching('./test/test/*', 'eager')
 		{ext} = hFile
 		if (ext != '.map') && (ext != '.js')
 			lFiles.push hFile
@@ -208,14 +208,14 @@ equal slurp(testPath, 'maxLines=3'), """
 	)()
 
 # ---------------------------------------------------------------------------
-# --- test allFilesIn with pattern
+# --- test allFilesMatching with pattern
 
 (() =>
 	lFiles = []
 	hOptions = {
 		eager: true
 		}
-	for hFile from allFilesIn('./test/test/*.txt', hOptions)
+	for hFile from allFilesMatching('./test/test/*.txt', hOptions)
 		lFiles.push hFile
 	sortArrayOfHashes lFiles, 'fileName'
 
@@ -243,7 +243,7 @@ equal slurp(testPath, 'maxLines=3'), """
 	)()
 
 # ---------------------------------------------------------------------------
-# --- test allFilesIn with pattern and cwd
+# --- test allFilesMatching with pattern and cwd
 
 (() =>
 	lFiles = []
@@ -253,7 +253,7 @@ equal slurp(testPath, 'maxLines=3'), """
 			cwd: './test/test'
 			}
 		}
-	for hFile from allFilesIn('*.txt', hOptions)
+	for hFile from allFilesMatching('*.txt', hOptions)
 		lFiles.push hFile
 	sortArrayOfHashes lFiles, 'fileName'
 

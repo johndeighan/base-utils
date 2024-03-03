@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 ;
-var cmdStr, debug, dir, filePath, glob, hCmdArgs, hFile, hOptions, handleFile, i, lFiles, len, ref;
+var cmdStr, debug, dir, glob, hCmdArgs, handleFile, handleGlob, i, lFiles, len, name;
 
 import {
   // for-each-file.coffee
@@ -9,8 +9,13 @@ import {
   notdefined,
   nonEmpty,
   LOG,
+  OL,
   execCmd
 } from '@jdeighan/base-utils';
+
+import {
+  setDebugging
+} from '@jdeighan/base-utils/debug';
 
 import {
   assert
@@ -21,12 +26,16 @@ import {
 } from '@jdeighan/base-utils/parse-cmd-args';
 
 import {
-  allFilesIn
+  allFilesMatching
 } from '@jdeighan/base-utils/fs';
 
 debug = false;
 
 cmdStr = undef;
+
+dir = undef;
+
+setDebugging('allFilesMatching');
 
 // ---------------------------------------------------------------------------
 handleFile = (filePath) => {
@@ -45,6 +54,26 @@ handleFile = (filePath) => {
 };
 
 // ---------------------------------------------------------------------------
+handleGlob = (glob) => {
+  var filePath, hFile, hOptions, ref;
+  if (debug) {
+    LOG(`GLOB: ${OL(glob)}`);
+  }
+  hOptions = {
+    pattern: glob,
+    eager: false
+  };
+  ref = allFilesMatching(dir, hOptions);
+  for (hFile of ref) {
+    ({filePath} = hFile);
+    if (debug) {
+      LOG(`   GLOB FILE: ${OL(filePath)}`);
+    }
+    handleFile(hFile.filePath);
+  }
+};
+
+// ---------------------------------------------------------------------------
 // --- Usage:
 //    for-each-file *.coffee -cmd="coffee -cm <file>"
 hCmdArgs = parseCmdArgs({
@@ -58,7 +87,7 @@ hCmdArgs = parseCmdArgs({
 });
 
 ({
-  // --- NOTE: debug and cmdStr are global vars
+  // --- NOTE: debug, cmdStr and dir are global vars
   _: lFiles,
   d: debug,
   dir,
@@ -78,21 +107,22 @@ if (notdefined(dir)) {
 }
 
 // --- First, cycle through all non-options files
-for (i = 0, len = lFiles.length; i < len; i++) {
-  filePath = lFiles[i];
-  handleFile(filePath);
+//     NOTE: any filename that contains '*' or '?'
+//           is treated as a glob
+if (defined(lFiles)) {
+  for (i = 0, len = lFiles.length; i < len; i++) {
+    name = lFiles[i];
+    if (name.includes('*') || name.includes('?')) {
+      handleGlob(name);
+    } else {
+      handleFile(name);
+    }
+  }
 }
 
 // --- Next, use glob if defined
 if (defined(glob)) {
-  hOptions = {
-    pattern: glob,
-    eager: false
-  };
-  ref = allFilesIn(dir, hOptions);
-  for (hFile of ref) {
-    handleFile(hFile.filePath);
-  }
+  handleGlob(glob);
 }
 
 //# sourceMappingURL=for-each-file.js.map

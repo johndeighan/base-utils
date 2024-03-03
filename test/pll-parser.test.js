@@ -19,7 +19,7 @@ import {
 
 import {
   mkpath,
-  allFilesIn,
+  allFilesMatching,
   globFiles
 } from '@jdeighan/base-utils/fs';
 

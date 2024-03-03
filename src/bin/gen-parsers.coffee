@@ -5,7 +5,7 @@
 import {
 	undef, defined, notdefined, LOG, execCmd,
 	} from '@jdeighan/base-utils'
-import {allFilesIn, withExt} from '@jdeighan/base-utils/fs'
+import {allFilesMatching, withExt} from '@jdeighan/base-utils/fs'
 
 DEBUG = false
 
@@ -21,7 +21,7 @@ oldcode = () =>
 	hOptions = {
 		pattern: '**/*.peggy'
 		}
-	for hFile from allFilesIn('./src/**/*.peggy')
+	for hFile from allFilesMatching('./src/**/*.peggy')
 		{fileName, filePath} = hFile
 		newName = withExt(fileName, '.js')
 		newPath = withExt(filePath, '.js')

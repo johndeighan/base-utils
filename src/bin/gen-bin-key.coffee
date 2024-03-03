@@ -7,7 +7,7 @@ import {assert, croak} from '@jdeighan/base-utils/exceptions'
 # import {LOG} from '@jdeighan/base-utils/log'
 import {
 	isFile, isDir, mkpath, rmFile, withExt,
-	slurp, allFilesIn, slurpJSON, barfJSON,
+	slurp, allFilesMatching, slurpJSON, barfJSON,
 	} from '@jdeighan/base-utils/fs'
 
 dir = process.cwd()
@@ -37,7 +37,7 @@ LOG "dir #{binDir} exists"
 #       - error if JS file doesn't start with a shebang line
 
 hBin = {}
-for hFile from allFilesIn('*.coffee', {cwd: binDir})
+for hFile from allFilesMatching('*.coffee', {cwd: binDir})
 	{fileName, filePath, stub} = hFile
 	jsFileName = withExt(fileName, '.js')
 	jsPath = withExt(filePath, '.js')

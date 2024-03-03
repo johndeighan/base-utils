@@ -12,7 +12,7 @@ import {
 } from '@jdeighan/base-utils';
 
 import {
-  allFilesIn,
+  allFilesMatching,
   withExt
 } from '@jdeighan/base-utils/fs';
 
@@ -29,7 +29,7 @@ oldcode = () => {
   hOptions = {
     pattern: '**/*.peggy'
   };
-  ref = allFilesIn('./src/**/*.peggy');
+  ref = allFilesMatching('./src/**/*.peggy');
   results = [];
   for (hFile of ref) {
     ({fileName, filePath} = hFile);

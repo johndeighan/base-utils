@@ -42,7 +42,7 @@ import {
   slurp,
   barf,
   isFile,
-  allFilesIn
+  allFilesMatching
 } from '@jdeighan/base-utils/fs';
 
 import {
@@ -136,7 +136,7 @@ export var FileProcessor = class FileProcessor {
       hGlobOptions: this.hOptions.hGlobOptions,
       eager: this.hOptions.eager
     };
-    ref = allFilesIn(this.pattern, hOptions);
+    ref = allFilesMatching(this.pattern, hOptions);
     for (hFile of ref) {
       ({filePath} = hFile);
       if (this.filterFile(hFile)) {

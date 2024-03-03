@@ -22,7 +22,7 @@ import {
   rmFile,
   withExt,
   slurp,
-  allFilesIn,
+  allFilesMatching,
   slurpJSON,
   barfJSON
 } from '@jdeighan/base-utils/fs';
@@ -58,7 +58,7 @@ LOG(`dir ${binDir} exists`);
 //       - error if JS file doesn't start with a shebang line
 hBin = {};
 
-ref = allFilesIn('*.coffee', {
+ref = allFilesMatching('*.coffee', {
   cwd: binDir
 });
 for (hFile of ref) {
