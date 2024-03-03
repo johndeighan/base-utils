@@ -39,9 +39,10 @@ handleGlob = (glob) =>
 	hOptions = {
 		pattern: glob
 		eager: false
+		cwd: dir
 		}
 
-	for hFile from allFilesMatching(dir, hOptions)
+	for hFile from allFilesMatching(glob, hOptions)
 		{filePath} = hFile
 		if debug
 			LOG "   GLOB FILE: #{OL(filePath)}"

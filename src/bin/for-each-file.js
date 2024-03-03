@@ -61,9 +61,10 @@ handleGlob = (glob) => {
   }
   hOptions = {
     pattern: glob,
-    eager: false
+    eager: false,
+    cwd: dir
   };
-  ref = allFilesMatching(dir, hOptions);
+  ref = allFilesMatching(glob, hOptions);
   for (hFile of ref) {
     ({filePath} = hFile);
     if (debug) {
