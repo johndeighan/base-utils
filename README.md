@@ -20,17 +20,28 @@ use these libraries. My projects always include both the CoffeeScript
 and JavaScript versions of the libraries and, in fact, you'll see that
 I always import the JavaScript files in my libraries.
 
-The `/utest` module provides an object named `u` that has methods:
-	`equal` - tests for deep equality
-	`notequal` - tests for deep inequality
-	`truthy` - tests if a value is truthy
-	`falsy` - tests if a value is falsy
-	`like` - tests if a hash has a key/value, but allows additional ones
-	`throws` - when passed a function, tests that it throws an exception
-	`succeeds` - when passed a function, tests that it doesn't throw an exception
+The `/utest` module provides the following functions:
 
-it also exports a class named `UnitTester`. The `u` object is a
-UnitTester instance.
+	`equal(x,y)`
+		- tests for deep equality
+	`like(x,y)`
+		- tests if a hash has a key/value, but allows additional ones.
+			when comparing lists of hashes,
+			applies this test to the hashes in the list
+	`notequal(x,y)`
+		- tests for deep inequality
+	`truthy(x)`
+		- tests if a value is truthy
+	`falsy(x)`
+		- tests if a value is falsy
+	`throws(() => code)`
+		- when passed a function, tests that it throws an exception
+	`succeeds(() => code)`
+		- when passed a function, tests that it doesn't throw an exception
+
+it also exports a class named `UnitTester` and an object named `u`.
+The `u` object is a UnitTester instance. In fact, the `u` object
+is the object used by the functions above.
 
 So, for example, here are a few unit tests from the `base-utils` library:
 
@@ -43,7 +54,7 @@ u.notequal {a:1, b:2}, {a:1, b:3}
 ```
 
 You might note that the tests are not named. The unit tester can determine
-on which line the tests exists and will report that whether a test succeeds
+on which line the tests exist and will report that whether a test succeeds
 or fails, thus allowing you to locate it quickly.
 
 In addition, you can override methods `transformValue()` and/or
@@ -54,15 +65,15 @@ just to test the same function.
 
 As an example, there is a function named `escapeStr()` that will take a
 string and change TAB characters to `→`, space characters to `˳`,
-and newline characters to `®`. You might want to test a bunch of input
-strings like this:
+newline characters to `▼` and carriage return characters to `◄`.
+You might want to test a bunch of input strings like this:
 
 ```coffee
-u.equal escapeStr("   XXX\n"),  "˳˳˳XXX®"
-u.equal escapeStr("\t ABC\n"),  "→˳ABC®"
-u.equal escapeStr("X\nX\nX\n"), "X®X®X®"
-u.equal escapeStr("XXX\n\t\t"), "XXX®→→"
-u.equal escapeStr("XXX\n  "),   "XXX®˳˳"
+equal escapeStr("   XXX\n"),  "˳˳˳XXX▼"
+equal escapeStr("\t ABC\n"),  "→˳ABC▼"
+equal escapeStr("X\nX\nX\n"), "X▼X▼X▼"
+equal escapeStr("XXX\n\t\t"), "XXX▼→→"
+equal escapeStr("XXX\n  "),   "XXX▼˳˳"
 ```
 
 But you could also define a `transformValue()` method, then simplify
@@ -73,11 +84,11 @@ the tests, e.g.:
 	t = new UnitTester()
 	t.transformValue = (str) => escapeStr(str)
 
-	t.equal "   XXX\n",  "˳˳˳XXX®"
-	t.equal "\t ABC\n",  "→˳ABC®"
-	t.equal "X\nX\nX\n", "X®X®X®"
-	t.equal "XXX\n\t\t", "XXX®→→"
-	t.equal "XXX\n  ",   "XXX®˳˳"
+	equal "   XXX\n",  "˳˳˳XXX▼"
+	equal "\t ABC\n",  "→˳ABC▼"
+	equal "X\nX\nX\n", "X▼X▼X▼"
+	equal "XXX\n\t\t", "XXX▼→→"
+	equal "XXX\n  ",   "XXX▼˳˳"
 	)()
 ```
 
@@ -89,7 +100,7 @@ NOTE:
 	from the rest of the code, you needn't worry about name
 	clashes with variables that you might create later on.
 
-2. In calls to the `equal()` and `like()` methods, the 1st
+2. In calls to the `equal()` and `like()` functions, the 1st
 	argument is the **value**, and therefore transformed by
 	the function passed to the `transformValue()` method, and
 	the 2nd argument is the **expected** value and therefore
@@ -124,7 +135,10 @@ his project includes these libraries:
 
 This project includes these binaries:
 
+- [for-each-file](docs/for-each-file.md)
 - [gen-bin-key](docs/gen-bin-key.md)
+- [gen-parsers](docs/gen-parsers.md)
+- [get-imports-from](docs/get-imports-from.md)
 
 Building this project
 =====================

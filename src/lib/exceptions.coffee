@@ -1,7 +1,7 @@
 # exceptions.coffee
 
 import {
-	undef, defined, notdefined, isEmpty,
+	undef, defined, notdefined, isEmpty, isString,
 	} from '@jdeighan/base-utils'
 import {
 	getV8Stack, nodeStr,
@@ -43,22 +43,32 @@ export haltOnError = (flag=true) =>
 
 # ---------------------------------------------------------------------------
 
-EXLOG = (str) =>
+EXLOG = (obj) =>
 
 	if lExceptionLog
-		lExceptionLog.push str
+		if isString(obj)
+			lExceptionLog.push obj
+		else
+			lExceptionLog.push JSON.stringify(obj)
 	else if doLog
-		console.log str
+		console.log obj
 
 # ---------------------------------------------------------------------------
 #   assert - mimic nodejs's assert
 #   return true so we can use it in boolean expressions
 
-export assert = (cond, msg) =>
+export assert = (cond, msg, obj=undef, label=undef) =>
 
 	if ! cond
-		lFrames = getV8Stack()
 
+		if defined(obj)
+			EXLOG '-------------------------'
+			if defined(label)
+				EXLOG label
+			EXLOG obj
+			EXLOG '-------------------------'
+
+		lFrames = getV8Stack()
 		EXLOG '-------------------------'
 		EXLOG 'JavaScript CALL STACK:'
 		for node in lFrames

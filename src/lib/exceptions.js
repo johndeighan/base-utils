@@ -5,7 +5,8 @@ import {
   undef,
   defined,
   notdefined,
-  isEmpty
+  isEmpty,
+  isString
 } from '@jdeighan/base-utils';
 
 import {
@@ -50,20 +51,32 @@ export var haltOnError = (flag = true) => {
 };
 
 // ---------------------------------------------------------------------------
-EXLOG = (str) => {
+EXLOG = (obj) => {
   if (lExceptionLog) {
-    return lExceptionLog.push(str);
+    if (isString(obj)) {
+      return lExceptionLog.push(obj);
+    } else {
+      return lExceptionLog.push(JSON.stringify(obj));
+    }
   } else if (doLog) {
-    return console.log(str);
+    return console.log(obj);
   }
 };
 
 // ---------------------------------------------------------------------------
 //   assert - mimic nodejs's assert
 //   return true so we can use it in boolean expressions
-export var assert = (cond, msg) => {
+export var assert = (cond, msg, obj = undef, label = undef) => {
   var i, lFrames, len, node;
   if (!cond) {
+    if (defined(obj)) {
+      EXLOG('-------------------------');
+      if (defined(label)) {
+        EXLOG(label);
+      }
+      EXLOG(obj);
+      EXLOG('-------------------------');
+    }
     lFrames = getV8Stack();
     EXLOG('-------------------------');
     EXLOG('JavaScript CALL STACK:');

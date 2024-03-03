@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 ;
-var cmd, cmdStr, debug, dir, fileName, filePath, hCmdArgs, hFile, hOptions, pattern, ref;
+var cmdStr, debug, dir, filePath, glob, hCmdArgs, hFile, hOptions, handleFile, i, lFiles, len, ref;
 
 import {
   // for-each-file.coffee
@@ -24,51 +24,74 @@ import {
   allFilesIn
 } from '@jdeighan/base-utils/fs';
 
+debug = false;
+
+cmdStr = undef;
+
+// ---------------------------------------------------------------------------
+handleFile = (filePath) => {
+  var cmd;
+  if (debug) {
+    if (defined(cmdStr)) {
+      cmd = cmdStr.replaceAll('<file>', filePath);
+      LOG(`CMD: ${cmd}`);
+    } else {
+      LOG(`FILE: ${filePath}`);
+    }
+  } else {
+    cmd = cmdStr.replaceAll('<file>', filePath);
+    execCmd(cmd);
+  }
+};
+
 // ---------------------------------------------------------------------------
 // --- Usage:
 //    for-each-file *.coffee -cmd="coffee -cm <file>"
 hCmdArgs = parseCmdArgs({
   hExpect: {
-    _: [0, 1],
-    d: 'boolean',
+    _: [0, Number.MAX_VALUE],
+    d: 'boolean', // debug mode - don't exec, just print
     dir: 'string', // dir to search in, def = current dir
+    glob: 'string',
     cmd: 'string' // command to run (replace '<file>')
   }
 });
 
-console.log("Running bin for-each-file");
-
 ({
+  // --- NOTE: debug and cmdStr are global vars
+  _: lFiles,
+  d: debug,
   dir,
-  cmd: cmdStr,
-  d: debug
+  glob,
+  cmd: cmdStr
 } = hCmdArgs);
+
+LOG("Running for-each-file");
 
 if (debug) {
   LOG("DEBUGGING ON");
+  LOG('hCmdArgs', hCmdArgs);
 }
-
-assert(nonEmpty(cmdStr), "Missing or empty command");
 
 if (notdefined(dir)) {
   dir = process.cwd();
 }
 
-pattern = hCmdArgs._[0];
+// --- First, cycle through all non-options files
+for (i = 0, len = lFiles.length; i < len; i++) {
+  filePath = lFiles[i];
+  handleFile(filePath);
+}
 
-hOptions = {
-  pattern,
-  eager: false
-};
-
-ref = allFilesIn(dir, hOptions);
-for (hFile of ref) {
-  ({fileName, filePath} = hFile);
-  cmd = cmdStr.replaceAll('<file>', filePath);
-  if (debug) {
-    LOG(`CMD: ${cmd}`);
-  } else {
-    execCmd(cmd);
+// --- Next, use glob if defined
+if (defined(glob)) {
+  hOptions = {
+    pattern: glob,
+    eager: false
+  };
+  ref = allFilesIn(dir, hOptions);
+  for (hFile of ref) {
+    handleFile(hFile.filePath);
   }
 }
 

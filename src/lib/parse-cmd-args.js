@@ -125,8 +125,8 @@ export var parseCmdArgs = (hOptions = {}) => {
   } else {
     numNonOptions = 0;
   }
-  assert(numNonOptions >= minNonOptions, `${numNonOptions} non options < min ${min}`);
-  assert(numNonOptions <= maxNonOptions, `${numNonOptions} non options > max ${max}`);
+  assert(numNonOptions >= minNonOptions, `${numNonOptions} non options < min ${min}`, hResult, 'hResult');
+  assert(numNonOptions <= maxNonOptions, `${numNonOptions} non options > max ${max}`, hResult, 'hResult');
   for (name in hResult) {
     if (!hasProp.call(hResult, name)) continue;
     value = hResult[name];

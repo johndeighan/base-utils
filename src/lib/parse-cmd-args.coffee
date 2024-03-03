@@ -97,10 +97,13 @@ export parseCmdArgs = (hOptions={}) =>
 		numNonOptions = hResult._.length
 	else
 		numNonOptions = 0
+
 	assert numNonOptions >= minNonOptions,
-			"#{numNonOptions} non options < min #{min}"
+			"#{numNonOptions} non options < min #{min}",
+			hResult, 'hResult'
 	assert numNonOptions <= maxNonOptions,
-			"#{numNonOptions} non options > max #{max}"
+			"#{numNonOptions} non options > max #{max}",
+			hResult, 'hResult'
 
 	for own name,value of hResult
 		dbg "FOUND #{name} = #{OL(value)}"
