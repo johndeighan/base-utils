@@ -3,8 +3,8 @@
 import test from 'ava'
 
 import {
-	undef, defined, pass, OL, LOG,
-	isString, isInteger, rtrim,
+	undef, defined, pass, OL, LOG, jsType, rtrim,
+	isString, isInteger, isRegExp,
 	} from '@jdeighan/base-utils'
 import {
 	assert, croak, exReset, exGetLog,
@@ -18,6 +18,8 @@ import {getMyOutsideCaller} from '@jdeighan/base-utils/v8-stack'
 #        equal 2
 #        truthy 1
 #        falsy 1
+#        includes 2
+#        matches 2
 #        like 2
 #        throws 1 (a function)
 #        succeeds 1 (a function)
@@ -90,6 +92,7 @@ export class UnitTester
 		expected = @transformExpected(expected)
 		test "line #{lineNum}", (t) =>
 			t.deepEqual(val, expected)
+		return
 
 	# ..........................................................
 
@@ -99,19 +102,25 @@ export class UnitTester
 		val = @transformValue(val)
 		expected = @transformExpected(expected)
 		if isString(val) && isString(expected)
+			val = rtrim(val).replaceAll("\r", "")
+			expected = rtrim(expected).replaceAll("\r", "")
 			test "line #{lineNum}", (t) =>
-				t.deepEqual(rtrim(val), rtrim(expected))
+				t.deepEqual(val, expected)
 		else
 			test "line #{lineNum}", (t) =>
 				t.like(val, expected)
+		return
 
 	# ..........................................................
 
 	notequal: (val, expected) ->
 
 		lineNum = @getLineNum()
+		val = @transformValue(val)
+		expected = @transformExpected(expected)
 		test "line #{lineNum}", (t) =>
-			t.notDeepEqual(@transformValue(val), @transformExpected(expected))
+			t.notDeepEqual(val, expected)
+		return
 
 	# ..........................................................
 
@@ -119,7 +128,8 @@ export class UnitTester
 
 		lineNum = @getLineNum()
 		test "line #{lineNum}", (t) =>
-			t.truthy(@transformValue(bool))
+			t.truthy(bool)
+		return
 
 	# ..........................................................
 
@@ -127,7 +137,37 @@ export class UnitTester
 
 		lineNum = @getLineNum()
 		test "line #{lineNum}", (t) =>
-			t.falsy(@transformValue(bool))
+			t.falsy(bool)
+		return
+
+	# ..........................................................
+
+	includes: (val, expected) ->
+
+		lineNum = @getLineNum()
+		val = @transformValue(val)
+		expected = @transformExpected(expected)
+		switch jsType(val)[0]
+			when 'string'
+				test "line #{lineNum}", (t) =>
+					t.truthy(val.includes(expected))
+			when 'array'
+				test "line #{lineNum}", (t) =>
+					t.truthy(val.includes(expected))
+			else
+				croak "Bad arg to includes: #{OL(val)}"
+		return
+
+	# ..........................................................
+
+	matches: (val, regexp) ->
+
+		assert isString(val), "Not a string: #{OL(val)}"
+		assert isRegExp(regexp), "Not a regular expression: #{OL(regexp)}"
+		lineNum = @getLineNum()
+		test "line #{lineNum}", (t) =>
+			t.truthy(defined(val.match(regexp)))
+		return
 
 	# ..........................................................
 
@@ -144,6 +184,7 @@ export class UnitTester
 		log = exGetLog()   # we really don't care about log
 
 		test "line #{lineNum}", (t) => t.falsy(ok)
+		return
 
 	# ..........................................................
 
@@ -159,6 +200,7 @@ export class UnitTester
 			ok = false
 
 		test "line #{lineNum}", (t) => t.truthy(ok)
+		return
 
 # ---------------------------------------------------------------------------
 
@@ -170,5 +212,7 @@ export like = (arg1, arg2) => return u.like(arg1, arg2)
 export notequal = (arg1, arg2) => return u.notequal(arg1, arg2)
 export truthy = (arg) => return u.truthy(arg)
 export falsy = (arg) => return u.falsy(arg)
+export includes = (arg1, arg2) => return u.includes(arg1, arg2)
+export matches = (str, regexp) => return u.matches(str, regexp)
 export throws = (func) => return u.throws(func)
 export succeeds = (func) => return u.succeeds(func)

@@ -7,9 +7,11 @@ import {
   pass,
   OL,
   LOG,
+  jsType,
+  rtrim,
   isString,
   isInteger,
-  rtrim
+  isRegExp
 } from '@jdeighan/base-utils';
 
 import {
@@ -38,6 +40,8 @@ import {
 //        equal 2
 //        truthy 1
 //        falsy 1
+//        includes 2
+//        matches 2
 //        like 2
 //        throws 1 (a function)
 //        succeeds 1 (a function)
@@ -109,7 +113,7 @@ export var UnitTester = class UnitTester {
     lineNum = this.getLineNum();
     val = this.transformValue(val);
     expected = this.transformExpected(expected);
-    return test(`line ${lineNum}`, (t) => {
+    test(`line ${lineNum}`, (t) => {
       return t.deepEqual(val, expected);
     });
   }
@@ -121,11 +125,13 @@ export var UnitTester = class UnitTester {
     val = this.transformValue(val);
     expected = this.transformExpected(expected);
     if (isString(val) && isString(expected)) {
-      return test(`line ${lineNum}`, (t) => {
-        return t.deepEqual(rtrim(val), rtrim(expected));
+      val = rtrim(val).replaceAll("\r", "");
+      expected = rtrim(expected).replaceAll("\r", "");
+      test(`line ${lineNum}`, (t) => {
+        return t.deepEqual(val, expected);
       });
     } else {
-      return test(`line ${lineNum}`, (t) => {
+      test(`line ${lineNum}`, (t) => {
         return t.like(val, expected);
       });
     }
@@ -135,8 +141,10 @@ export var UnitTester = class UnitTester {
   notequal(val, expected) {
     var lineNum;
     lineNum = this.getLineNum();
-    return test(`line ${lineNum}`, (t) => {
-      return t.notDeepEqual(this.transformValue(val), this.transformExpected(expected));
+    val = this.transformValue(val);
+    expected = this.transformExpected(expected);
+    test(`line ${lineNum}`, (t) => {
+      return t.notDeepEqual(val, expected);
     });
   }
 
@@ -144,8 +152,8 @@ export var UnitTester = class UnitTester {
   truthy(bool) {
     var lineNum;
     lineNum = this.getLineNum();
-    return test(`line ${lineNum}`, (t) => {
-      return t.truthy(this.transformValue(bool));
+    test(`line ${lineNum}`, (t) => {
+      return t.truthy(bool);
     });
   }
 
@@ -153,8 +161,41 @@ export var UnitTester = class UnitTester {
   falsy(bool) {
     var lineNum;
     lineNum = this.getLineNum();
-    return test(`line ${lineNum}`, (t) => {
-      return t.falsy(this.transformValue(bool));
+    test(`line ${lineNum}`, (t) => {
+      return t.falsy(bool);
+    });
+  }
+
+  // ..........................................................
+  includes(val, expected) {
+    var lineNum;
+    lineNum = this.getLineNum();
+    val = this.transformValue(val);
+    expected = this.transformExpected(expected);
+    switch (jsType(val)[0]) {
+      case 'string':
+        test(`line ${lineNum}`, (t) => {
+          return t.truthy(val.includes(expected));
+        });
+        break;
+      case 'array':
+        test(`line ${lineNum}`, (t) => {
+          return t.truthy(val.includes(expected));
+        });
+        break;
+      default:
+        croak(`Bad arg to includes: ${OL(val)}`);
+    }
+  }
+
+  // ..........................................................
+  matches(val, regexp) {
+    var lineNum;
+    assert(isString(val), `Not a string: ${OL(val)}`);
+    assert(isRegExp(regexp), `Not a regular expression: ${OL(regexp)}`);
+    lineNum = this.getLineNum();
+    test(`line ${lineNum}`, (t) => {
+      return t.truthy(defined(val.match(regexp)));
     });
   }
 
@@ -172,7 +213,7 @@ export var UnitTester = class UnitTester {
       ok = false;
     }
     log = exGetLog(); // we really don't care about log
-    return test(`line ${lineNum}`, (t) => {
+    test(`line ${lineNum}`, (t) => {
       return t.falsy(ok);
     });
   }
@@ -190,7 +231,7 @@ export var UnitTester = class UnitTester {
       console.error(err);
       ok = false;
     }
-    return test(`line ${lineNum}`, (t) => {
+    test(`line ${lineNum}`, (t) => {
       return t.truthy(ok);
     });
   }
@@ -226,6 +267,14 @@ export var truthy = (arg) => {
 
 export var falsy = (arg) => {
   return u.falsy(arg);
+};
+
+export var includes = (arg1, arg2) => {
+  return u.includes(arg1, arg2);
+};
+
+export var matches = (str, regexp) => {
+  return u.matches(str, regexp);
 };
 
 export var throws = (func) => {

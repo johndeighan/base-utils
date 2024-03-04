@@ -1,4 +1,4 @@
-  // u.test.coffee
+  // utest.test.coffee
 import {
   isString,
   OL
@@ -16,6 +16,8 @@ import {
   notequal,
   truthy,
   falsy,
+  includes,
+  matches,
   throws,
   succeeds
 } from '@jdeighan/base-utils/utest';
@@ -37,6 +39,12 @@ u.notequal(2 + 2, 5);
 u.truthy(42);
 
 u.falsy(false);
+
+u.includes("this is a long sentence", "long");
+
+u.includes(['a', 'b', 'c'], 'b');
+
+u.matches("another 42 lines", /\d+/);
 
 u.throws(() => {
   throw new Error("bad");
@@ -67,6 +75,12 @@ notequal(2 + 2, 5);
 truthy(42);
 
 falsy(false);
+
+includes("this is a long sentence", "long");
+
+includes(['a', 'b', 'c'], 'b');
+
+matches("another 42 lines", /\d+/);
 
 throws(() => {
   throw new Error("bad");

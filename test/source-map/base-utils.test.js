@@ -74,7 +74,7 @@ import {
   sleep,
   schedule,
   eachCharInString,
-  runCmd,
+  execCmd,
   hit,
   choose,
   shuffle,
@@ -1726,10 +1726,10 @@ utest.falsy(1025, eachCharInString('AbC', (ch) => {
 }));
 
 // ---------------------------------------------------------------------------
-// test runCmd()
-utest.equal(1030, runCmd("echo abc"), "abc\r\n");
+// test execCmd()
+utest.equal(1030, execCmd("echo abc"), "abc\r\n");
 
-utest.equal(1031, runCmd("noSuchCmd"), undef);
+utest.equal(1031, execCmd("noSuchCmd"), undef);
 
 // ---------------------------------------------------------------------------
 // test choose()

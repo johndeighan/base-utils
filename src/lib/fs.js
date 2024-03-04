@@ -250,7 +250,7 @@ export var newerDestFileExists = (srcPath, destPath) => {
 
 // ---------------------------------------------------------------------------
 export var allFilesMatching = function*(pattern = '*', hOptions = {}) {
-  var eager, filePath, hContents, hFile, hGlobOptions, ref;
+  var eager, filePath, hContents, hFile, hGlobOptions, numFiles, ref;
   // --- yields hFile with keys:
   //        path, filePath,
   //        type, root, dir, base, fileName,
@@ -273,6 +273,7 @@ export var allFilesMatching = function*(pattern = '*', hOptions = {}) {
   dbg(`pattern = ${OL(pattern)}`);
   dbg(`hGlobOptions = ${OL(hGlobOptions)}`);
   dbg(`eager = ${OL(eager)}`);
+  numFiles = 0;
   ref = globFiles(pattern, hGlobOptions);
   for (hFile of ref) {
     ({filePath} = hFile);
@@ -283,9 +284,11 @@ export var allFilesMatching = function*(pattern = '*', hOptions = {}) {
       }
       dbgYield('allFilesMatching', hFile);
       yield hFile;
+      numFiles += 1;
       dbgResume('allFilesMatching');
     }
   }
+  dbg(`${numFiles} files matched`);
   dbgReturn('allFilesMatching');
 };
 

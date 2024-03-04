@@ -1,10 +1,10 @@
   // base-utils.coffee
-var hTimers, myHandler, myReplacer,
+var hExecOptions, hTimers, myHandler, myReplacer,
   hasProp = {}.hasOwnProperty;
 
 import {
   execSync
-} from 'child_process';
+} from 'node:child_process';
 
 import assertLib from 'node:assert';
 
@@ -286,17 +286,18 @@ export var toJSON = (hJson, hOptions = {}) => {
 };
 
 // ---------------------------------------------------------------------------
-export var runCmd = (cmd) => {
-  var result;
-  result = execSync(cmd, {
-    stdio: 'pipe',
-    windowsHide: true,
-    encoding: 'utf8'
-  });
-  return result || "<STDOUT>";
+hExecOptions = {
+  encoding: 'utf8',
+  windowsHide: true
 };
 
-export var execCmd = runCmd;
+export var execCmd = (cmd, hOptions = hExecOptions) => {
+  var result;
+  // --- may throw an exception
+  result = execSync(cmd, hOptions);
+  assert(isString(result), `result = ${OL(result)}`);
+  return result;
+};
 
 // ---------------------------------------------------------------------------
 export var deepEqual = (a, b) => {

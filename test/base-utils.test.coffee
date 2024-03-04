@@ -1052,11 +1052,6 @@ falsy  eachCharInString 'abc', (ch) => ch == ch.toUpperCase()
 falsy  eachCharInString 'AbC', (ch) => ch == ch.toUpperCase()
 
 # ---------------------------------------------------------------------------
-# test runCmd()
-
-equal runCmd("echo abc"), "abc\r\n"
-
-# ---------------------------------------------------------------------------
 # test choose()
 
 lItems = ['apple','orange','pear']
@@ -1371,4 +1366,12 @@ equal chomp('abc\r\n'), 'abc'
 		{name: 'John', age: 71}
 		]
 
+	)()
+
+# ---------------------------------------------------------------------------
+# --- test execCmd()
+
+(() =>
+	like execCmd("echo abc"), "abc"
+	like execCmd('echo my word'), 'my word'
 	)()

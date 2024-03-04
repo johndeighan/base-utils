@@ -6,14 +6,15 @@ import {
 	undef, defined, notdefined, nonEmpty, LOG, OL, execCmd,
 	} from '@jdeighan/base-utils'
 import {setDebugging} from '@jdeighan/base-utils/debug'
-import {assert} from '@jdeighan/base-utils/exceptions'
+import {
+	assert, croak,
+	} from '@jdeighan/base-utils/exceptions'
 import {parseCmdArgs} from '@jdeighan/base-utils/parse-cmd-args'
 import {allFilesMatching} from '@jdeighan/base-utils/fs'
 
 debug = false
 cmdStr = undef
 dir = undef
-setDebugging 'allFilesMatching'
 
 # ---------------------------------------------------------------------------
 
@@ -66,13 +67,17 @@ hCmdArgs = parseCmdArgs({
 # --- NOTE: debug, cmdStr and dir are global vars
 {_:lFiles, d:debug, dir, glob, cmd:cmdStr} = hCmdArgs
 
-LOG "Running for-each-file"
 if debug
-	LOG "DEBUGGING ON"
+	LOG "DEBUGGING ON in for-each-file"
 	LOG 'hCmdArgs', hCmdArgs
+	setDebugging 'allFilesMatching'
+else if notdefined(cmdStr)
+	croak "-cmd option required unless debugging"
 
 if notdefined(dir)
 	dir = process.cwd()
+	if debug
+		LOG "No dir provided, cur = #{OL(dir)}"
 
 # --- First, cycle through all non-options files
 #     NOTE: any filename that contains '*' or '?'
@@ -81,6 +86,8 @@ if notdefined(dir)
 if defined(lFiles)
 	for name in lFiles
 		if name.includes('*') || name.includes('?')
+			if debug
+				LOG "Glob as non-option: #{OL(name)}"
 			handleGlob(name)
 		else
 			handleFile(name)
@@ -88,4 +95,5 @@ if defined(lFiles)
 # --- Next, use glob if defined
 
 if defined(glob)
+	LOG "Glob option: #{OL(glob)}"
 	handleGlob(glob)

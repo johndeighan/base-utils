@@ -1,6 +1,6 @@
 # base-utils.coffee
 
-import {execSync} from 'child_process'
+import {execSync} from 'node:child_process'
 import assertLib from 'node:assert'
 
 # --- ABSOLUTELY NO IMPORTS FROM OUR LIBS !!!!!
@@ -247,16 +247,18 @@ export toJSON = (hJson, hOptions={}) =>
 
 # ---------------------------------------------------------------------------
 
-export runCmd = (cmd) =>
+hExecOptions = {
+	encoding: 'utf8'
+	windowsHide: true
+	}
 
-	result = execSync cmd, {
-		stdio: 'pipe'
-		windowsHide: true
-		encoding: 'utf8'
-		}
-	return result || "<STDOUT>"
+export execCmd = (cmd, hOptions=hExecOptions) =>
+	# --- may throw an exception
 
-export execCmd = runCmd
+	result = execSync cmd, hOptions
+
+	assert isString(result), "result = #{OL(result)}"
+	return result
 
 # ---------------------------------------------------------------------------
 

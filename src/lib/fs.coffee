@@ -201,6 +201,7 @@ export allFilesMatching = (pattern='*', hOptions={}) ->
 	dbg "hGlobOptions = #{OL(hGlobOptions)}"
 	dbg "eager = #{OL(eager)}"
 
+	numFiles = 0
 	for hFile from globFiles(pattern, hGlobOptions)
 		{filePath} = hFile
 		if ! filePath.includes('node_modules')
@@ -209,7 +210,9 @@ export allFilesMatching = (pattern='*', hOptions={}) ->
 				Object.assign hFile, hContents
 			dbgYield 'allFilesMatching', hFile
 			yield hFile
+			numFiles += 1
 			dbgResume 'allFilesMatching'
+	dbg "#{numFiles} files matched"
 	dbgReturn 'allFilesMatching'
 	return
 

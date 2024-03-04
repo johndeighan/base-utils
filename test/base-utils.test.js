@@ -1333,10 +1333,6 @@ falsy(eachCharInString('AbC', (ch) => {
 }));
 
 // ---------------------------------------------------------------------------
-// test runCmd()
-equal(runCmd("echo abc"), "abc\r\n");
-
-// ---------------------------------------------------------------------------
 // test choose()
 lItems = ['apple', 'orange', 'pear'];
 
@@ -1815,6 +1811,13 @@ equal(chomp('abc\r\n'), 'abc');
       age: 71
     }
   ]);
+})();
+
+// ---------------------------------------------------------------------------
+// --- test execCmd()
+(() => {
+  like(execCmd("echo abc"), "abc");
+  return like(execCmd('echo my word'), 'my word');
 })();
 
 //# sourceMappingURL=base-utils.test.js.map
