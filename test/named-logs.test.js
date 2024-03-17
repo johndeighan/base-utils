@@ -1,4 +1,4 @@
-  // named-logs.test.coffee
+// named-logs.test.coffee
 import {
   undef,
   defined,
@@ -153,5 +153,3 @@ second log`);
   return equal(logs.getLogs('B', func), `first log
 second log`);
 })();
-
-//# sourceMappingURL=named-logs.test.js.map

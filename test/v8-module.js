@@ -41,5 +41,3 @@ thirdFunc = function(type) {
       return croak(`Unknown type: ${type}`);
   }
 };
-
-//# sourceMappingURL=v8-module.js.map

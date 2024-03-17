@@ -1,4 +1,4 @@
-  // exceptions.test.coffee
+// exceptions.test.coffee
 import {
   assert,
   croak,
@@ -24,5 +24,3 @@ throws(function() {
 succeeds(function() {
   return assert(2 + 2 === 4);
 });
-
-//# sourceMappingURL=exceptions.test.js.map

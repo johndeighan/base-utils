@@ -35,5 +35,3 @@ equal(getPrefix(2, 'withArrow'), un('│˳˳˳└─>˳'));
 equal(getPrefix(2, 'noLastVbar'), un('│˳˳˳˳˳˳˳'));
 
 equal(getPrefix(2), un('˳˳˳˳˳˳˳˳'));
-
-//# sourceMappingURL=prefix.test.js.map

@@ -1,15 +1,124 @@
   // base-utils.coffee
-var hExecOptions, hTimers, myHandler, myReplacer,
+var exec, hTimers, myHandler, myReplacer,
   hasProp = {}.hasOwnProperty;
 
+import fs from 'fs';
+
 import {
+  exec as execCB,
   execSync
 } from 'node:child_process';
+
+import {
+  promisify
+} from 'node:util';
+
+exec = promisify(execCB);
 
 import assertLib from 'node:assert';
 
 // --- ABSOLUTELY NO IMPORTS FROM OUR LIBS !!!!!
 export const undef = void 0;
+
+// ---------------------------------------------------------------------------
+// low-level version of assert()
+export var assert = (cond, msg) => {
+  if (!cond) {
+    throw new Error(msg);
+  }
+  return true;
+};
+
+// ---------------------------------------------------------------------------
+// low-level version of croak()
+export var croak = (msg) => {
+  throw new Error(msg);
+  return true;
+};
+
+// ---------------------------------------------------------------------------
+export var execCmd = (cmd, ...lParts) => {
+  var cmdLine, result;
+  // --- may throw an exception
+  cmdLine = buildCmdLine(cmd, ...lParts);
+  result = execSync(cmdLine, {
+    encoding: 'utf8',
+    windowsHide: true
+  });
+  assert(isString(result), `result = ${OL(result)}`);
+  return result;
+};
+
+// ---------------------------------------------------------------------------
+export var execCmdAsync = async(cmd, ...lParts) => {
+  var cmdLine;
+  // --- may throw an exception
+  cmdLine = buildCmdLine(cmd, ...lParts);
+  return (await exec(cmdLine, {
+    encoding: 'utf8',
+    windowsHide: true
+  }));
+};
+
+// ---------------------------------------------------------------------------
+// --- lParts may contain hashes (options) or arrays (non-options)
+export var buildCmdLine = (cmd, ...lParts) => {
+  var item, j, k, key, lAllParts, lFlags, lNonOptions, lOptions, len1, len2, obj, value;
+  lOptions = [];
+  lFlags = []; // array of letters
+  lNonOptions = [];
+  for (j = 0, len1 = lParts.length; j < len1; j++) {
+    obj = lParts[j];
+    if (isHash(obj)) {
+      for (key in obj) {
+        if (!hasProp.call(obj, key)) continue;
+        value = obj[key];
+        switch (jsType(value)[0]) {
+          case 'string':
+            if (value.includes(' ')) {
+              lOptions.push(`-${key}=\"${value}\"`);
+            } else {
+              lOptions.push(`-${key}=${value}`);
+            }
+            break;
+          case 'boolean':
+            if (value) {
+              if (key.length === 1) {
+                lFlags.push(key);
+              } else {
+                lOptions.push(`-${key}=true`);
+              }
+            } else {
+              lOptions.push(`-${key}=false`);
+            }
+            break;
+          case 'number':
+            lOptions.push(`-${key}=${value}`);
+            break;
+          default:
+            croak(`Bad option: ${OL(value)}`);
+        }
+      }
+    } else if (isArray(obj)) {
+      for (k = 0, len2 = obj.length; k < len2; k++) {
+        item = obj[k];
+        if (item.includes(' ')) {
+          lNonOptions.push(`\"${item}\"`);
+        } else {
+          lNonOptions.push(item);
+        }
+      }
+    } else {
+      croak("arg not an array or hash");
+    }
+  }
+  if (lFlags.length > 0) {
+    lOptions.push(`-${lFlags.join('')}`);
+  }
+  // --- join the parts
+  lAllParts = [cmd, ...lOptions, ...lNonOptions];
+  return lAllParts.join(' ');
+};
 
 // ---------------------------------------------------------------------------
 export var LOG = (...lItems) => {
@@ -32,22 +141,6 @@ export var LOG = (...lItems) => {
   if (lSimpleItems.length > 0) {
     console.log(...lSimpleItems);
   }
-};
-
-// ---------------------------------------------------------------------------
-// low-level version of assert()
-export var assert = (cond, msg) => {
-  if (!cond) {
-    throw new Error(msg);
-  }
-  return true;
-};
-
-// ---------------------------------------------------------------------------
-// low-level version of croak()
-export var croak = (msg) => {
-  throw new Error(msg);
-  return true;
 };
 
 // ---------------------------------------------------------------------------
@@ -286,20 +379,6 @@ export var toJSON = (hJson, hOptions = {}) => {
 };
 
 // ---------------------------------------------------------------------------
-hExecOptions = {
-  encoding: 'utf8',
-  windowsHide: true
-};
-
-export var execCmd = (cmd, hOptions = hExecOptions) => {
-  var result;
-  // --- may throw an exception
-  result = execSync(cmd, hOptions);
-  assert(isString(result), `result = ${OL(result)}`);
-  return result;
-};
-
-// ---------------------------------------------------------------------------
 export var deepEqual = (a, b) => {
   var error;
   try {
@@ -510,6 +589,8 @@ export var OL = (obj) => {
   if (defined(obj)) {
     if (isString(obj)) {
       return quoted(obj, 'escape');
+    } else if (isRegExp(obj)) {
+      return obj.toString();
     } else {
       return JSON.stringify(obj, myReplacer);
     }
@@ -655,6 +736,8 @@ export var jsType = (x) => {
     return [undef, 'null'];
   } else if (x === undef) {
     return [undef, undef];
+  } else if (isPromise(x)) {
+    return ['promise', undef];
   }
   switch (typeof x) {
     case 'number':
@@ -1001,6 +1084,11 @@ export var removeKeys = (item, lKeys) => {
       }
   }
   return item;
+};
+
+// ---------------------------------------------------------------------------
+export var isPromise = (x) => {
+  return (typeof x === 'object') && (typeof x.then === 'function');
 };
 
 // ---------------------------------------------------------------------------
@@ -1652,6 +1740,51 @@ export var flattenToHash = (x) => {
     }
   }
   return hResult;
+};
+
+// ---------------------------------------------------------------------------
+// --- These used to be in ll-fs.coffee, but
+//     don't require imports from other libs
+export var fileExt = (path) => {
+  var lMatches;
+  assert(isString(path), "fileExt(): path not a string");
+  if (lMatches = path.match(/\.[A-Za-z0-9_]+$/)) {
+    return lMatches[0];
+  } else {
+    return '';
+  }
+};
+
+// ---------------------------------------------------------------------------
+//   withExt - change file extention in a file name
+export var withExt = (path, newExt) => {
+  var _, lMatches, pre;
+  assert(newExt, "withExt(): No newExt provided");
+  if (newExt.indexOf('.') !== 0) {
+    newExt = '.' + newExt;
+  }
+  if (lMatches = path.match(/^(.*)\.[^\.]+$/)) {
+    [_, pre] = lMatches;
+    return pre + newExt;
+  }
+  return croak(`Bad path: '${path}'`);
+};
+
+// ---------------------------------------------------------------------------
+export var newerDestFilesExist = (srcPath, ...lDestPaths) => {
+  var destModTime, destPath, j, len1, srcModTime;
+  for (j = 0, len1 = lDestPaths.length; j < len1; j++) {
+    destPath = lDestPaths[j];
+    if (!fs.existsSync(destPath)) {
+      return false;
+    }
+    srcModTime = fs.statSync(srcPath).mtimeMs;
+    destModTime = fs.statSync(destPath).mtimeMs;
+    if (destModTime < srcModTime) {
+      return false;
+    }
+  }
+  return true;
 };
 
 //# sourceMappingURL=base-utils.js.map

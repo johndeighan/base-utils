@@ -1,4 +1,4 @@
-  // v8-stack.test.coffee
+// v8-stack.test.coffee
 import {
   assert,
   croak
@@ -186,5 +186,3 @@ script at v8-stack.test.js:169:23`);
   return equal((await func1()), `function at v8-stack.test.js:169:19
 script at v8-stack.test.js:186:23`);
 })();
-
-//# sourceMappingURL=v8-stack.test.js.map

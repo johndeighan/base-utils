@@ -2,7 +2,7 @@
 	import {
 		isEmpty, nonEmpty, hasKey, addNewKey, LOG,
 		} from '@jdeighan/base-utils';
-	import {assert} from '@jdeighan/base-utils/exceptions'
+	import {assert} from '@jdeighan/base-utils/exceptions';
 	let hOptions = {};
 
 	// .........................................................

@@ -7,8 +7,13 @@ import fs from 'fs'
 import {
 	pass, undef, defined, notdefined, LOG,
 	isString, getOptions, words,
+	fileExt, withExt, newerDestFilesExist,
 	assert, croak,                  # low level versions
 	} from '@jdeighan/base-utils'
+
+export {
+	fileExt, withExt, newerDestFilesExist,
+	}
 
 export lStatFields = words(
 	'dev ino mode nlink uid gid rdev size blksize blocks',
@@ -16,6 +21,11 @@ export lStatFields = words(
 	'atime mtime ctime birthtime',
 	)
 
+# ---------------------------------------------------------------------------
+# All file/directory operations should operate from memory
+#    and can therefore be synchronous
+# Relies on the fact that modern OS's keep directory
+#    information in memory
 # ---------------------------------------------------------------------------
 
 export fileDirPath = (filePath) =>
@@ -41,30 +51,6 @@ export mkDirsForFile = (filePath) =>
 		if ! isDir(dir)
 			mkDir(dir)
 	return
-
-# ---------------------------------------------------------------------------
-
-export fileExt = (path) =>
-
-	assert isString(path), "fileExt(): path not a string"
-	if lMatches = path.match(/\.[A-Za-z0-9_]+$/)
-		return lMatches[0]
-	else
-		return ''
-
-# ---------------------------------------------------------------------------
-#   withExt - change file extention in a file name
-
-export withExt = (path, newExt) =>
-
-	assert newExt, "withExt(): No newExt provided"
-	if newExt.indexOf('.') != 0
-		newExt = '.' + newExt
-
-	if lMatches = path.match(/^(.*)\.[^\.]+$/)
-		[_, pre] = lMatches
-		return pre + newExt
-	croak "Bad path: '#{path}'"
 
 # ---------------------------------------------------------------------------
 #     convert \ to /
@@ -109,6 +95,13 @@ export mkpath = (lParts...) =>
 
 	fullPath = pathLib.resolve lParts...
 	return normalize fullPath
+
+# ---------------------------------------------------------------------------
+
+export relpath = (lParts...) =>
+
+	fullPath = pathLib.resolve lParts...
+	return normalize pathLib.relative('', fullPath)
 
 # ---------------------------------------------------------------------------
 # --- returned hash has keys:

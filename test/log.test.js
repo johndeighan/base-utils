@@ -330,5 +330,3 @@ ${spaces(3)}42,
 ${spaces(3)}false,
 ${spaces(3)}null
 ]`);
-
-//# sourceMappingURL=log.test.js.map

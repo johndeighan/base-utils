@@ -10,6 +10,7 @@ import {
 import {UnitTester} from '@jdeighan/base-utils/utest'
 
 # ---------------------------------------------------------------------------
+# --- test parseCmdArgs() without hExpect
 
 (() =>
 	u = new UnitTester()
@@ -27,6 +28,32 @@ import {UnitTester} from '@jdeighan/base-utils/utest'
 		_: ['why','not']
 		}
 
+	u.equal '-glob=**/*.coffee', {
+		glob: '**/*.coffee'
+		}
+
+	u.equal '-glob="**/*.coffee"', {
+		glob: '**/*.coffee'
+		}
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() =>
+	u = new UnitTester()
+	u.transformValue = (argStr) =>
+		return parseCmdArgs({
+			argStr
+			hExpect: {glob: 'string'}
+			})
+
+	u.equal '-glob=**/*.coffee', {
+		glob: '**/*.coffee'
+		}
+
+	u.equal '-glob="**/*.coffee"', {
+		glob: '**/*.coffee'
+		}
 	)()
 
 # ---------------------------------------------------------------------------
@@ -77,6 +104,13 @@ import {UnitTester} from '@jdeighan/base-utils/utest'
 			}
 		})
 
+	u.succeeds () => parseCmdArgs({
+		hExpect: {
+			_: [0, 3]                  # --- OK
+			debug: /^full|list|json$/  # --- regexp OK
+			}
+		})
+
 	)()
 
 # ---------------------------------------------------------------------------
@@ -88,6 +122,7 @@ import {UnitTester} from '@jdeighan/base-utils/utest'
 		vv: 'boolean'
 		v: 'boolean'
 		name: 'string'
+		debug: ///^ full | list | json $///s   # --- a regexp
 		i: 'integer'
 		n: 'number'
 		_: [1, 3]
@@ -196,6 +231,30 @@ import {UnitTester} from '@jdeighan/base-utils/utest'
 	# --- test numeric options
 	u.throws () => parseCmdArgs({
 		argStr: 'slip -n=abc'
+		hExpect
+		})
+
+	# --- test regexp
+	u.succeeds () => parseCmdArgs({
+		argStr: 'nonoption -debug=json'
+		hExpect
+		})
+
+	# --- test regexp
+	u.succeeds () => parseCmdArgs({
+		argStr: 'nonoption -debug=full'
+		hExpect
+		})
+
+	# --- test regexp
+	u.throws () => parseCmdArgs({
+		argStr: 'nonoption -debug=abc'
+		hExpect
+		})
+
+	# --- test regexp
+	u.throws () => parseCmdArgs({
+		argStr: 'nonoption -debug=" full"'
 		hExpect
 		})
 

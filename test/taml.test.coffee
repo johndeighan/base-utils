@@ -3,6 +3,7 @@
 import {
 	undef, defined, notdefined, pass, escapeStr, OL, spaces,
 	} from '@jdeighan/base-utils'
+import {mkpath} from '@jdeighan/base-utils/ll-fs'
 import {
 	isTAML, toTAML, fromTAML,
 	llSplit, splitTaml, tamlFix, fixValStr,
@@ -11,6 +12,8 @@ import {
 	UnitTester,
 	equal, like, notequal, succeeds, throws, truthy, falsy,
 	} from '@jdeighan/base-utils/utest'
+
+curdir = mkpath(process.cwd())   # will have '/'
 
 # ---------------------------------------------------------------------------
 
@@ -189,12 +192,12 @@ equal toTAML(h), '---\nh:\n\t- a: 1\n\t- b: 2'
 		---
 		type: function
 		funcName: main
-		source: C:/Users/johnd/base-utils/test/v8-stack.test.js
+		source: #{curdir}/test/v8-stack.test.js
 		"""
 
 	equal fromTAML(str), {
 		type: 'function'
 		funcName: 'main'
-		source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
+		source: "#{curdir}/test/v8-stack.test.js"
 		}
 	)()

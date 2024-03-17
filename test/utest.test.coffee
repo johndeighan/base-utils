@@ -2,10 +2,8 @@
 
 import {isString, OL} from '@jdeighan/base-utils'
 import {assert} from '@jdeighan/base-utils/exceptions'
-import {
-	u, UnitTester, equal, like, notequal, truthy, falsy,
-	includes, matches, throws, succeeds,
-	} from '@jdeighan/base-utils/utest'
+import * as util from '@jdeighan/base-utils/utest'
+Object.assign(global, util)
 
 # ---------------------------------------------------------------------------
 
@@ -47,3 +45,33 @@ like "abc\n", "abc   "
 
 	utest2.equal 'abc', 'ABC'
 	)()
+
+# ---------------------------------------------------------------------------
+# --- test samelines
+
+samelines """
+	abc
+	def
+	""", """
+	def
+	abc
+	"""
+
+samelines """
+	abc
+
+	def
+	""", """
+	def
+	abc
+	"""
+
+samelines """
+	abc
+	def
+	""", """
+	def
+
+	abc
+	"""
+

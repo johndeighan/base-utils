@@ -15,6 +15,7 @@ import {
   isArray,
   isNumber,
   isInteger,
+  isRegExp,
   isString,
   isBoolean
 } from '@jdeighan/base-utils';
@@ -69,11 +70,12 @@ export var argStrFromArgv = () => {
 //           _: [<int>, <int>]  # min, max
 //           }
 //        <type> can be:
-//           boolean
-//           string
-//           number
-//           integer
-//           json
+//           a regular expression # --- implies value is a string
+//           'boolean'
+//           'string'
+//           'number'
+//           'integer'
+//           'json'
 export var parseCmdArgs = (hOptions = {}) => {
   var argStr, hExpect, hResult, key, max, maxNonOptions, min, minNonOptions, name, numNonOptions, type, value;
   dbgEnter('parseCmdArgs', hOptions);
@@ -109,7 +111,7 @@ export var parseCmdArgs = (hOptions = {}) => {
           }
         }
       } else {
-        assert(lTypes.includes(value), `Bad type for ${key}`);
+        assert(lTypes.includes(value) || isRegExp(value), `Bad type for ${key}: ${OL(value)}`);
       }
     }
   }
@@ -141,10 +143,12 @@ export var parseCmdArgs = (hOptions = {}) => {
       assert(isString(value), `value = ${OL(value)}`);
       if (defined(hExpect)) {
         type = hExpect[name];
-        if (defined(type)) {
-          hResult[name] = getVal(name, type, value);
+        assert(defined(type), `Unexpected option: ${OL(name)}`);
+        if (isRegExp(type)) {
+          assert(value.match(type), `Bad value for option -${name}: ${OL(value)}`);
+          hResult[name] = value;
         } else {
-          croak(`Unexpected option: ${OL(name)}`);
+          hResult[name] = getVal(name, type, value);
         }
       }
     }

@@ -1,4 +1,4 @@
-  // TextTable.test.coffee
+// TextTable.test.coffee
 import {
   undef
 } from '@jdeighan/base-utils';
@@ -517,5 +517,3 @@ other    1000.00  40.00
 =======================
          1170.00 140.00`);
 })();
-
-//# sourceMappingURL=TextTable.test.js.map

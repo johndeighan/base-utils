@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "peggy.js",
+  "sourceRoot": "..\\..\\",
+  "sources": [
+    "src\\lib\\peggy.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAc;AAAA,IAAA,QAAA,EAAA;;AAEd,OAAO,KAAP,MAAA;;AACA,CAAA,CAAC,QAAD,CAAA,GAAa,KAAb;;AAEA,OAAA;EAAQ,KAAR;EAAe,EAAf;CAAA,MAAA;;AACA,OAAA;EAAQ,MAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,MAAR;CAAA,MAAA;;AAEA,aAAA,GAAgB;EACf,iBAAA,EAAmB,CAAC,GAAD,CADJ;EAEf,MAAA,EAAQ,IAFO;EAGf,MAAA,EAAQ;AAHO,EATF;;;AAiBd,OAAA,IAAO,OAAA,GAAU,CAAC,SAAD,EAAY,MAAZ,CAAA,GAAA;AAEjB,MAAA,GAAA,EAAA,CAAA,EAAA;EAAC,MAAA,CAAO,MAAA,CAAO,MAAP,CAAP,EAAuB,CAAA,YAAA,CAAA,CAAe,EAAA,CAAG,MAAH,CAAf,CAAA,CAAvB;AACA;IACC,aAAa,CAAC,aAAd,GAA8B;IAC9B,OAAA,GAAU,QAAA,CAAS,SAAT,EAAoB,aAApB;IACV,CAAA,GAAI,OAAO,CAAC,qBAAR,CAAA;AACJ,WAAO,CAAC,CAAC,CAAC,IAAH,EAAS,CAAC,CAAC,GAAG,CAAC,QAAN,CAAA,CAAT,EAJR;GAKA,aAAA;IAAM;IACL,OAAO,CAAC,GAAR,CAAY,CAAA,OAAA,CAAA,CAAU,GAAG,CAAC,OAAd,CAAA,CAAZ;AACA,WAAO,CAAC,KAAD,EAAQ,KAAR,EAFR;;AARgB",
+  "sourcesContent": [
+    "# peggy.coffee\r\n\r\nimport peggy from 'peggy'\r\n{generate} = peggy\r\n\r\nimport {undef, OL} from '@jdeighan/base-utils'\r\nimport {assert} from '@jdeighan/base-utils/exceptions'\r\nimport {isFile} from '@jdeighan/base-utils/fs'\r\n\r\nhPeggyOptions = {\r\n\tallowedStartRules: ['*']\r\n\tformat: 'es'\r\n\toutput: 'source-and-map'\r\n\t}\r\n\r\n# ---------------------------------------------------------------------------\r\n\r\nexport peggify = (peggyCode, source) =>\r\n\r\n\tassert isFile(source), \"Not a file: #{OL(source)}\"\r\n\ttry\r\n\t\thPeggyOptions.grammarSource = source\r\n\t\tsrcNode = generate(peggyCode, hPeggyOptions)\r\n\t\th = srcNode.toStringWithSourceMap()\r\n\t\treturn [h.code, h.map.toString()]\r\n\tcatch err\r\n\t\tconsole.log \"ERROR: #{err.message}\"\r\n\t\treturn [undef, undef]\r\n"
+  ]
+}

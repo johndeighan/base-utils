@@ -11,7 +11,9 @@ import {
   rtrim,
   isString,
   isInteger,
-  isRegExp
+  isRegExp,
+  nonEmpty,
+  toArray
 } from '@jdeighan/base-utils';
 
 import {
@@ -52,7 +54,7 @@ export var UnitTester = class UnitTester {
     // ........................................................................
     this.doDebug = this.doDebug.bind(this);
     // ........................................................................
-    this.getLineNum = this.getLineNum.bind(this);
+    this.getTestName = this.getTestName.bind(this);
     this.debug = false;
     this.hFound = {}; // used line numbers
   }
@@ -61,12 +63,12 @@ export var UnitTester = class UnitTester {
     this.debug = true;
   }
 
-  getLineNum() {
+  getTestName() {
     var column, err, filePath, line, mapFile, mline;
     // --- We need to figure out the line number of the caller
     ({filePath, line, column} = getMyOutsideCaller());
     if (this.debug) {
-      LOG("getLineNum()");
+      LOG("getTestName()");
       LOG(`   filePath = '${filePath}'`);
       LOG(`   line = ${line}, col = ${column}`);
     }
@@ -93,7 +95,7 @@ export var UnitTester = class UnitTester {
       line += 1000;
     }
     this.hFound[line] = true;
-    return line;
+    return `line ${line}`;
   }
 
   // ........................................................................
@@ -109,77 +111,83 @@ export var UnitTester = class UnitTester {
   // ..........................................................
   // ..........................................................
   equal(val, expected) {
-    var lineNum;
-    lineNum = this.getLineNum();
     val = this.transformValue(val);
     expected = this.transformExpected(expected);
-    test(`line ${lineNum}`, (t) => {
+    test(this.getTestName(), (t) => {
       return t.deepEqual(val, expected);
     });
   }
 
   // ..........................................................
   like(val, expected) {
-    var lineNum;
-    lineNum = this.getLineNum();
     val = this.transformValue(val);
     expected = this.transformExpected(expected);
     if (isString(val) && isString(expected)) {
       val = rtrim(val).replaceAll("\r", "");
       expected = rtrim(expected).replaceAll("\r", "");
-      test(`line ${lineNum}`, (t) => {
+      test(this.getTestName(), (t) => {
         return t.deepEqual(val, expected);
       });
     } else {
-      test(`line ${lineNum}`, (t) => {
+      test(this.getTestName(), (t) => {
         return t.like(val, expected);
       });
     }
   }
 
   // ..........................................................
-  notequal(val, expected) {
-    var lineNum;
-    lineNum = this.getLineNum();
+  samelines(val, expected) {
+    var lExpLines, lValLines;
     val = this.transformValue(val);
     expected = this.transformExpected(expected);
-    test(`line ${lineNum}`, (t) => {
+    assert(isString(val), `not a string: ${OL(val)}`);
+    assert(isString(expected), `not a string: ${OL(expected)}`);
+    lValLines = toArray(val).filter((line) => {
+      return nonEmpty(line);
+    }).sort();
+    lExpLines = toArray(expected).filter((line) => {
+      return nonEmpty(line);
+    }).sort();
+    test(this.getTestName(), (t) => {
+      return t.deepEqual(lValLines, lExpLines);
+    });
+  }
+
+  // ..........................................................
+  notequal(val, expected) {
+    val = this.transformValue(val);
+    expected = this.transformExpected(expected);
+    test(this.getTestName(), (t) => {
       return t.notDeepEqual(val, expected);
     });
   }
 
   // ..........................................................
   truthy(bool) {
-    var lineNum;
-    lineNum = this.getLineNum();
-    test(`line ${lineNum}`, (t) => {
+    test(this.getTestName(), (t) => {
       return t.truthy(bool);
     });
   }
 
   // ..........................................................
   falsy(bool) {
-    var lineNum;
-    lineNum = this.getLineNum();
-    test(`line ${lineNum}`, (t) => {
+    test(this.getTestName(), (t) => {
       return t.falsy(bool);
     });
   }
 
   // ..........................................................
   includes(val, expected) {
-    var lineNum;
-    lineNum = this.getLineNum();
     val = this.transformValue(val);
     expected = this.transformExpected(expected);
     switch (jsType(val)[0]) {
       case 'string':
-        test(`line ${lineNum}`, (t) => {
+        test(this.getTestName(), (t) => {
           return t.truthy(val.includes(expected));
         });
         break;
       case 'array':
-        test(`line ${lineNum}`, (t) => {
+        test(this.getTestName(), (t) => {
           return t.truthy(val.includes(expected));
         });
         break;
@@ -190,19 +198,20 @@ export var UnitTester = class UnitTester {
 
   // ..........................................................
   matches(val, regexp) {
-    var lineNum;
     assert(isString(val), `Not a string: ${OL(val)}`);
-    assert(isRegExp(regexp), `Not a regular expression: ${OL(regexp)}`);
-    lineNum = this.getLineNum();
-    test(`line ${lineNum}`, (t) => {
+    // --- convert strings to regular expressions
+    if (isString(regexp)) {
+      regexp = new RegExp(regexp);
+    }
+    assert(isRegExp(regexp), `Not a string or regexp: ${OL(regexp)}`);
+    test(this.getTestName(), (t) => {
       return t.truthy(defined(val.match(regexp)));
     });
   }
 
   // ..........................................................
   throws(func) {
-    var err, lineNum, log, ok;
-    lineNum = this.getLineNum();
+    var err, log, ok;
     assert(typeof func === 'function', "function expected");
     try {
       exReset(); // suppress logging of errors
@@ -213,15 +222,14 @@ export var UnitTester = class UnitTester {
       ok = false;
     }
     log = exGetLog(); // we really don't care about log
-    test(`line ${lineNum}`, (t) => {
+    test(this.getTestName(), (t) => {
       return t.falsy(ok);
     });
   }
 
   // ..........................................................
   succeeds(func) {
-    var err, lineNum, ok;
-    lineNum = this.getLineNum();
+    var err, ok;
     assert(typeof func === 'function', "function expected");
     try {
       func();
@@ -231,7 +239,7 @@ export var UnitTester = class UnitTester {
       console.error(err);
       ok = false;
     }
-    test(`line ${lineNum}`, (t) => {
+    test(this.getTestName(), (t) => {
       return t.truthy(ok);
     });
   }
@@ -255,6 +263,10 @@ export var equal = (arg1, arg2) => {
 
 export var like = (arg1, arg2) => {
   return u.like(arg1, arg2);
+};
+
+export var samelines = (arg1, arg2) => {
+  return u.samelines(arg1, arg2);
 };
 
 export var notequal = (arg1, arg2) => {

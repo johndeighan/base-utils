@@ -1,4 +1,4 @@
-  // indent.test.coffee
+// indent.test.coffee
 import {
   undef,
   isInteger
@@ -213,5 +213,3 @@ callme(x)`;
 ...callme(x)
 post`);
 })();
-
-//# sourceMappingURL=indent.test.js.map

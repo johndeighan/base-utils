@@ -156,5 +156,3 @@ items:
 	- '→a'
 	- 2
 	- '→→b▼'`);
-
-//# sourceMappingURL=nice.test.js.map

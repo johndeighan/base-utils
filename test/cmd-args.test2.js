@@ -1,4 +1,4 @@
-  // cmd-args.test.coffee
+// cmd-args.test.coffee
 import {
   undef
 } from '@jdeighan/base-utils';
@@ -73,5 +73,3 @@ import {
     ]
   });
 })();
-
-//# sourceMappingURL=cmd-args.test2.js.map

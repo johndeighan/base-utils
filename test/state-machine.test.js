@@ -1,4 +1,4 @@
-  // state-machine.test.coffee
+// state-machine.test.coffee
 import {
   undef,
   defined,
@@ -99,5 +99,3 @@ suppressExceptionLogging();
     return mach1.setState('some state');
   });
 })();
-
-//# sourceMappingURL=state-machine.test.js.map

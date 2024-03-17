@@ -1,4 +1,6 @@
 // fs.coffee
+var fileFilter, lDirs;
+
 import pathLib from 'node:path';
 
 import urlLib from 'url';
@@ -46,7 +48,7 @@ import {
   myself,
   mydir,
   mkpath,
-  withExt,
+  relpath,
   mkDir,
   clearDir,
   touch,
@@ -57,13 +59,15 @@ import {
   rmFile,
   rmDir,
   parsePath,
+  withExt,
   parentDir,
   parallelPath,
   subPath,
   fileDirPath,
   mkDirsForFile,
   getFileStats,
-  lStatFields
+  lStatFields,
+  newerDestFilesExist
 } from '@jdeighan/base-utils/ll-fs';
 
 import {
@@ -89,13 +93,18 @@ import {
   fromTAML
 } from '@jdeighan/base-utils/taml';
 
+import {
+  isMetaDataStart,
+  convertMetaData
+} from '@jdeighan/base-utils/metadata';
+
 export {
   fileExt,
   workingDir,
   myself,
   mydir,
   mkpath,
-  withExt,
+  relpath,
   mkDir,
   clearDir,
   touch,
@@ -106,17 +115,76 @@ export {
   rmFile,
   rmDir,
   parsePath,
+  withExt,
   parentDir,
   parallelPath,
   subPath,
   fileDirPath,
   mkDirsForFile,
-  getFileStats
+  getFileStats,
+  newerDestFilesExist
+};
+
+lDirs = [];
+
+// ---------------------------------------------------------------------------
+export var pushCWD = (dir) => {
+  lDirs.push(process.cwd());
+  process.chdir(dir);
+};
+
+// ---------------------------------------------------------------------------
+export var popCWD = () => {
+  var dir;
+  assert(lDirs.length > 0, "directory stack is empty");
+  dir = lDirs.pop();
+  process.chdir(dir);
+};
+
+// ---------------------------------------------------------------------------
+export var isProjRoot = (hOptions = {}) => {
+  var strict;
+  ({strict} = getOptions(hOptions, {
+    strict: false
+  }));
+  if (!isFile("./package.json")) {
+    return false;
+  }
+  if (strict) {
+    if (!isFile("./package-lock.json")) {
+      return false;
+    }
+    if (!isDir("./node_modules")) {
+      return false;
+    }
+    if (!isDir("./.git")) {
+      return false;
+    }
+    if (!isFile("./.gitignore")) {
+      return false;
+    }
+    if (!isDir("./src")) {
+      return false;
+    }
+    if (!isDir("./src/lib")) {
+      return false;
+    }
+    if (!isDir("./src/bin")) {
+      return false;
+    }
+    if (!isDir("./test")) {
+      return false;
+    }
+    if (!isFile("./README.md")) {
+      return false;
+    }
+  }
+  return true;
 };
 
 // ---------------------------------------------------------------------------
 export var getPkgJsonDir = () => {
-  var dir, lDirs, path, pkgJsonDir, root;
+  var dir, path, pkgJsonDir, root;
   pkgJsonDir = undef;
   // --- First, get the directory this file is in
   dir = mydir(import.meta.url);
@@ -146,6 +214,7 @@ export var getTextFileContents = (filePath) => {
   var hResult, inMeta, lLines, lMetaLines, line, metadata, numLines, ref;
   // --- handles metadata if present
   dbgEnter('getTextFileContents', filePath);
+  assert(isFile(filePath), `Not a file: ${OL(filePath)}`);
   lMetaLines = undef;
   inMeta = false;
   lLines = [];
@@ -166,7 +235,7 @@ export var getTextFileContents = (filePath) => {
     }
     numLines += 1;
   }
-  if (defined(lMetaLines)) {
+  if (nonEmpty(lMetaLines)) {
     metadata = fromTAML(toBlock(lMetaLines));
   } else {
     metadata = undef;
@@ -214,8 +283,9 @@ export var globFiles = function*(pattern = '*', hGlobOptions = {}) {
       type = 'unknown';
     }
     hFile = {
-      path: filePath,
       filePath,
+      path: filePath,
+      relPath: relpath(filePath),
       type,
       root,
       dir,
@@ -238,19 +308,14 @@ export var globFiles = function*(pattern = '*', hGlobOptions = {}) {
 };
 
 // ---------------------------------------------------------------------------
-export var newerDestFileExists = (srcPath, destPath) => {
-  var destModTime, srcModTime;
-  if (!fs.existsSync(destPath)) {
-    return false;
-  }
-  srcModTime = fs.statSync(srcPath).mtimeMs;
-  destModTime = fs.statSync(destPath).mtimeMs;
-  return destModTime >= srcModTime;
+// --- return true to include file
+fileFilter = (filePath) => {
+  return isFile(filePath) && notdefined(filePath.match(/\bnode_modules\b/));
 };
 
 // ---------------------------------------------------------------------------
 export var allFilesMatching = function*(pattern = '*', hOptions = {}) {
-  var eager, filePath, hContents, hFile, hGlobOptions, numFiles, ref;
+  var eager, filePath, h, hContents, hGlobOptions, numFiles, ref;
   // --- yields hFile with keys:
   //        path, filePath,
   //        type, root, dir, base, fileName,
@@ -258,15 +323,23 @@ export var allFilesMatching = function*(pattern = '*', hOptions = {}) {
   //        (if eager) metadata, lLines
   // --- Valid options:
   //        hGlobOptions - options to pass to glob
-  //        eager - read the file and add keys metadata, contents
+  //        fileFilter - return path iff fileFilter(filePath) returns true
+  //        eager - read the file and add keys metadata, lLines
   // --- Valid glob options:
   //        ignore - glob pattern for files to ignore
   //        dot - include dot files/directories (default: false)
   //        cwd - change working directory
   dbgEnter('allFilesMatching', pattern, hOptions);
-  ({hGlobOptions, eager} = getOptions(hOptions, {
+  ({hGlobOptions, fileFilter, eager} = getOptions(hOptions, {
     hGlobOptions: {
       ignore: "node_modules"
+    },
+    fileFilter: (h) => {
+      var path;
+      ({
+        filePath: path
+      } = h);
+      return isFile(path) && !path.match(/\bnode_modules\b/);
     },
     eager: false
   }));
@@ -275,15 +348,16 @@ export var allFilesMatching = function*(pattern = '*', hOptions = {}) {
   dbg(`eager = ${OL(eager)}`);
   numFiles = 0;
   ref = globFiles(pattern, hGlobOptions);
-  for (hFile of ref) {
-    ({filePath} = hFile);
-    if (!filePath.includes('node_modules')) {
-      if (eager) {
-        hContents = getTextFileContents(hFile.path);
-        Object.assign(hFile, hContents);
-      }
-      dbgYield('allFilesMatching', hFile);
-      yield hFile;
+  for (h of ref) {
+    ({filePath} = h);
+    dbg(`GLOB: ${OL(filePath)}`);
+    if (eager && isFile(filePath)) {
+      hContents = getTextFileContents(filePath);
+      Object.assign(h, hContents);
+    }
+    if (fileFilter(h)) {
+      dbgYield('allFilesMatching', h);
+      yield h;
       numFiles += 1;
       dbgResume('allFilesMatching');
     }
@@ -373,7 +447,7 @@ export var slurpTAML = (filePath) => {
 export var slurpPkgJSON = () => {
   var pkgJsonPath;
   pkgJsonPath = getPkgJsonPath();
-  assert(isFile(pkgJsonPath), "Missing package.json at cur dir");
+  assert(isFile(pkgJsonPath), `Missing package.json at cur dir ${OL(process.cwd())}`);
   return slurpJSON(pkgJsonPath);
 };
 
@@ -404,15 +478,8 @@ export var barfTAML = (ds, ...lParts) => {
 
 // ---------------------------------------------------------------------------
 //   barfPkgJSON - write a string to a file
-export var barfPkgJSON = (hJson, ...lParts) => {
-  var pkgJsonPath;
-  if (lParts.length === 0) {
-    pkgJsonPath = getPkgJsonPath();
-  } else {
-    pkgJsonPath = mkpath(...lParts);
-    assert(isFile(pkgJsonPath), "Missing package.json at cur dir");
-  }
-  barfJSON(hJson, pkgJsonPath);
+export var barfPkgJSON = (hJson) => {
+  barfJSON(hJson, getPkgJsonPath());
 };
 
 // ---------------------------------------------------------------------------
@@ -425,7 +492,46 @@ export var allLinesIn = function*(filePath) {
 };
 
 // ---------------------------------------------------------------------------
-// --- reader.close() fails with error if EOF reached
+export var allLinesInEx = function*(filePath) {
+  var buffer, hMetaData, lMetaData, line, metaDataStart, nLines, reader;
+  dbgEnter('allLinesInEx', filePath);
+  reader = new NReadLines(filePath);
+  nLines = 0;
+  metaDataStart = undef; // if defined, we're in metadata
+  lMetaData = [];
+  while (buffer = reader.next()) {
+    line = buffer.toString().replaceAll('\r', '');
+    if (nLines === 0) {
+      if (isMetaDataStart(line)) {
+        dbg(`metadata: ${OL(line)}`);
+        metaDataStart = line;
+        lMetaData.push(line);
+      } else {
+        dbg("no metadata");
+      }
+    } else if (defined(metaDataStart)) {
+      if (line === metaDataStart) {
+        // --- end line for metadata
+        metaDataStart = undef;
+        hMetaData = convertMetaData(lMetaData, line);
+        dbgYield('allLinesInEx', hMetaData);
+        yield hMetaData;
+        dbgResume('allLinesInEx');
+      } else {
+        dbg(`metadata: ${OL(line)}`);
+        lMetaData.push(line);
+      }
+    } else {
+      dbgYield('allLinesInEx', line);
+      yield line;
+      dbgResume('allLinesInEx');
+    }
+    nLines += 1;
+  }
+  dbgReturn('allLinesInEx');
+};
+
+// ---------------------------------------------------------------------------
 export var forEachLineInFile = (filePath, func, hContext = {}) => {
   var linefunc;
   // --- func gets (line, hContext)

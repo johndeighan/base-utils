@@ -52,5 +52,3 @@ equal(mapLineNum(jsPath, 89), 27);
 equal(mapLineNum(jsPath, 99), 28);
 
 equal(mapLineNum(jsPath, 1361), 697);
-
-//# sourceMappingURL=source-map.test.js.map

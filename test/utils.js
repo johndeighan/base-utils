@@ -1,4 +1,4 @@
-  // utils.coffee
+// utils.coffee
 import {
   undef,
   defined,
@@ -242,5 +242,3 @@ export var getTestWords = function(hOptions = {}) {
   assert(totalCount > 5, "Bad test file");
   return lTestWords;
 };
-
-//# sourceMappingURL=utils.js.map

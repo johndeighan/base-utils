@@ -5,7 +5,7 @@ import {
 	equal, like, notequal, truthy, falsy, throws, succeeds,
 	} from '@jdeighan/base-utils/utest'
 import {
-	undef, fromJSON, toJSON, LOG, chomp, jsType,
+	undef, fromJSON, toJSON, LOG, OL, chomp, jsType,
 	words, hslice, sortArrayOfHashes,
 	} from '@jdeighan/base-utils'
 import {setDebugging} from '@jdeighan/base-utils/debug'
@@ -16,7 +16,7 @@ import {
 	barf, barfJSON, barfTAML, barfPkgJSON,
 	parsePath, getTextFileContents, allFilesMatching,
 	allLinesIn, forEachLineInFile,
-	dirContents, FileWriter, newerDestFileExists,
+	dirContents, FileWriter, newerDestFilesExist,
 	} from '@jdeighan/base-utils/fs'
 
 # --- should be root directory of @jdeighan/base-utils
@@ -456,13 +456,13 @@ equal dirContents(smDir, '*', 'dirsOnly').length, 2
 # ---------------------------------------------------------------------------
 
 (() =>
-	# --- test newerDestFileExists()
+	# --- test newerDestFilesExist()
 
 	coffeeFile = "./src/lib/fs.coffee"
 	jsFile = "./src/lib/fs.js"
 	dummyFile = "./src/lib/dummy.js"
 
-	truthy newerDestFileExists(coffeeFile, jsFile)
-	falsy newerDestFileExists(jsFile, coffeeFile)
-	falsy newerDestFileExists(coffeeFile, dummyFile)
+	truthy newerDestFilesExist(coffeeFile, jsFile)
+	falsy newerDestFilesExist(jsFile, coffeeFile)
+	falsy newerDestFilesExist(coffeeFile, dummyFile)
 	)()

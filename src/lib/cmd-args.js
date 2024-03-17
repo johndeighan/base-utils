@@ -7,7 +7,7 @@
 	import {
 		isEmpty, nonEmpty, hasKey, addNewKey, LOG,
 		} from '@jdeighan/base-utils';
-	import {assert} from '@jdeighan/base-utils/exceptions'
+	import {assert} from '@jdeighan/base-utils/exceptions';
 	let hOptions = {};
 
 	// .........................................................
@@ -200,7 +200,7 @@ function peg$parse(input, options) {
   var peg$FAILED = {};
   var peg$source = options.grammarSource;
 
-  var peg$startRuleFunctions = { cmdArgs: peg$parsecmdArgs };
+  var peg$startRuleFunctions = { cmdArgs: peg$parsecmdArgs, argList: peg$parseargList, arg: peg$parsearg, stringVal: peg$parsestringVal, ws: peg$parsews };
   var peg$startRuleFunction = peg$parsecmdArgs;
 
   var peg$c0 = "-";
@@ -771,7 +771,11 @@ function peg$parse(input, options) {
 }
 
 const peg$allowedStartRules = [
-  "cmdArgs"
+  "cmdArgs",
+  "argList",
+  "arg",
+  "stringVal",
+  "ws"
 ];
 
 export {
@@ -779,4 +783,3 @@ export {
   peg$SyntaxError as SyntaxError,
   peg$parse as parse
 };
-//# sourceMappingURL=cmd-args.js.map

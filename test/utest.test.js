@@ -1,4 +1,4 @@
-  // utest.test.coffee
+// utest.test.coffee
 import {
   isString,
   OL
@@ -8,19 +8,9 @@ import {
   assert
 } from '@jdeighan/base-utils/exceptions';
 
-import {
-  u,
-  UnitTester,
-  equal,
-  like,
-  notequal,
-  truthy,
-  falsy,
-  includes,
-  matches,
-  throws,
-  succeeds
-} from '@jdeighan/base-utils/utest';
+import * as util from '@jdeighan/base-utils/utest';
+
+Object.assign(global, util);
 
 // ---------------------------------------------------------------------------
 u.equal(2 + 2, 4);
@@ -105,4 +95,18 @@ like("abc\n", "abc   ");
   return utest2.equal('abc', 'ABC');
 })();
 
-//# sourceMappingURL=utest.test.js.map
+// ---------------------------------------------------------------------------
+// --- test samelines
+samelines(`abc
+def`, `def
+abc`);
+
+samelines(`abc
+
+def`, `def
+abc`);
+
+samelines(`abc
+def`, `def
+
+abc`);

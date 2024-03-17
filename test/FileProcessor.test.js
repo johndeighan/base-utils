@@ -1,4 +1,4 @@
-  // FileProcessor.test.coffee
+// FileProcessor.test.coffee
 import {
   undef,
   defined,
@@ -316,5 +316,3 @@ import {
   equal(dirContents('./test/words/temp2', '*', 'filesOnly').length, 25);
   return equal(dirContents('./test/words/temp2', '*', 'dirsOnly').length, 0);
 })();
-
-//# sourceMappingURL=FileProcessor.test.js.map

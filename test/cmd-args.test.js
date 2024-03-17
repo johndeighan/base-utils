@@ -1,103 +1,99 @@
 // cmd-args.test.coffee
-var u;
-
 import {
   LOG
 } from '@jdeighan/base-utils';
 
 import {
-  UnitTester
+  u,
+  equal,
+  throws
 } from '@jdeighan/base-utils/utest';
 
 import {
   parse
 } from '@jdeighan/base-utils/cmd-args';
 
-u = new UnitTester();
-
 u.transformValue = (str) => {
   return parse(str);
 };
 
 // ---------------------------------------------------------------------------
-u.equal('-a', {
+equal('-a', {
   a: true
 });
 
-u.equal('-X', {
+equal('-X', {
   X: true
 });
 
-u.equal('  -b', {
+equal('  -b', {
   b: true
 });
 
-u.equal('-c\t', {
+equal('-c\t', {
   c: true
 });
 
-u.equal('-ab=title', {
+equal('-ab=title', {
   ab: 'title'
 });
 
-u.equal('-label=Expenses', {
+equal('-label=Expenses', {
   label: 'Expenses'
 });
 
-u.equal('-title="My Budget"', {
+equal('-title="My Budget"', {
   title: 'My Budget'
 });
 
-u.equal('-a -b', {
+equal('-a -b', {
   a: true,
   b: true
 });
 
-u.equal('-ab', {
+equal('-ab', {
   a: true,
   b: true
 });
 
-u.equal("-a -title=works", {
+equal("-a -title=works", {
   a: true,
   title: "works"
 });
 
-u.equal("-a -m -title=works -n=5", {
+equal("-a -m -title=works -n=5", {
   a: true,
   m: true,
   title: "works",
   n: "5"
 });
 
-u.equal("-am -title=works -n=5", {
+equal("-am -title=works -n=5", {
   a: true,
   m: true,
   title: "works",
   n: "5"
 });
 
-u.equal("-am -title='it works' -n=5", {
+equal("-am -title='it works' -n=5", {
   a: true,
   m: true,
   title: "it works",
   n: "5"
 });
 
-u.equal("-am Willy Wonka", {
+equal("-am Willy Wonka", {
   a: true,
   m: true,
   _: ['Willy', 'Wonka']
 });
 
-u.equal("'do that' -am \"do this\"", {
+equal("'do that' -am \"do this\"", {
   a: true,
   m: true,
   _: ['do that', 'do this']
 });
 
-u.throws(() => {
+throws(() => {
   return parse('--');
 });
-
-//# sourceMappingURL=cmd-args.test.js.map

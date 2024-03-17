@@ -219,7 +219,7 @@ function peg$parse(input, options) {
   var peg$FAILED = {};
   var peg$source = options.grammarSource;
 
-  var peg$startRuleFunctions = { block: peg$parseblock };
+  var peg$startRuleFunctions = { block: peg$parseblock, line: peg$parseline, text: peg$parsetext, eol: peg$parseeol };
   var peg$startRuleFunction = peg$parseblock;
 
   var peg$c0 = "\t";
@@ -627,7 +627,10 @@ function peg$parse(input, options) {
 }
 
 const peg$allowedStartRules = [
-  "block"
+  "block",
+  "line",
+  "text",
+  "eol"
 ];
 
 export {
@@ -635,4 +638,3 @@ export {
   peg$SyntaxError as SyntaxError,
   peg$parse as parse
 };
-//# sourceMappingURL=pll-parser.js.map

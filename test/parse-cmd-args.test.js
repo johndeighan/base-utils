@@ -1,4 +1,4 @@
-  // parse-cmd-args.test.coffee
+// parse-cmd-args.test.coffee
 import {
   undef,
   defined,
@@ -19,6 +19,7 @@ import {
 } from '@jdeighan/base-utils/utest';
 
 // ---------------------------------------------------------------------------
+// --- test parseCmdArgs() without hExpect
 (() => {
   var u;
   u = new UnitTester();
@@ -30,9 +31,35 @@ import {
     b: true,
     _: ['why']
   });
-  return u.equal('-ab="a string" why not', {
+  u.equal('-ab="a string" why not', {
     ab: "a string",
     _: ['why', 'not']
+  });
+  u.equal('-glob=**/*.coffee', {
+    glob: '**/*.coffee'
+  });
+  return u.equal('-glob="**/*.coffee"', {
+    glob: '**/*.coffee'
+  });
+})();
+
+// ---------------------------------------------------------------------------
+(() => {
+  var u;
+  u = new UnitTester();
+  u.transformValue = (argStr) => {
+    return parseCmdArgs({
+      argStr,
+      hExpect: {
+        glob: 'string'
+      }
+    });
+  };
+  u.equal('-glob=**/*.coffee', {
+    glob: '**/*.coffee'
+  });
+  return u.equal('-glob="**/*.coffee"', {
+    glob: '**/*.coffee'
   });
 })();
 
@@ -92,13 +119,24 @@ import {
       }
     });
   });
-  return u.throws(() => {
+  u.throws(() => {
     return parseCmdArgs({
       hExpect: {
         _: [
           3,
           2 // --- min > max
         ]
+      }
+    });
+  });
+  return u.succeeds(() => {
+    return parseCmdArgs({
+      hExpect: {
+        _: [
+          0,
+          3 // --- OK
+        ],
+        debug: /^full|list|json$/ // --- regexp OK
       }
     });
   });
@@ -113,6 +151,7 @@ import {
     vv: 'boolean',
     v: 'boolean',
     name: 'string',
+    debug: /^full|list|json$/s, // --- a regexp
     i: 'integer',
     n: 'number',
     _: [1, 3]
@@ -211,9 +250,37 @@ import {
     });
   });
   // --- test numeric options
-  return u.throws(() => {
+  u.throws(() => {
     return parseCmdArgs({
       argStr: 'slip -n=abc',
+      hExpect
+    });
+  });
+  // --- test regexp
+  u.succeeds(() => {
+    return parseCmdArgs({
+      argStr: 'nonoption -debug=json',
+      hExpect
+    });
+  });
+  // --- test regexp
+  u.succeeds(() => {
+    return parseCmdArgs({
+      argStr: 'nonoption -debug=full',
+      hExpect
+    });
+  });
+  // --- test regexp
+  u.throws(() => {
+    return parseCmdArgs({
+      argStr: 'nonoption -debug=abc',
+      hExpect
+    });
+  });
+  // --- test regexp
+  return u.throws(() => {
+    return parseCmdArgs({
+      argStr: 'nonoption -debug=" full"',
       hExpect
     });
   });
@@ -287,5 +354,3 @@ import {
     }
   });
 })();
-
-//# sourceMappingURL=parse-cmd-args.test.js.map

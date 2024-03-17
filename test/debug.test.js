@@ -298,5 +298,3 @@ enter func2 15
 └─> return from MAIN`, `Hello
 Hi`);
 })();
-
-//# sourceMappingURL=debug.test.js.map

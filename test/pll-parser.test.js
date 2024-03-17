@@ -1,4 +1,4 @@
-  // pll-parser.test.coffee
+// pll-parser.test.coffee
 import {
   undef,
   defined,
@@ -129,5 +129,3 @@ line 4
 line 5 and more
 <<
 line 7`);
-
-//# sourceMappingURL=pll-parser.test.js.map

@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "coffee.js",
+  "sourceRoot": "..\\..\\",
+  "sources": [
+    "src\\lib\\coffee.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAe;AAAA,IAAA;;AAEf,OAAO,MAAP,MAAA;;AACA,OAAO,EAAP,MAAA;;AACA,OAAO,YAAP,MAAA;;AAEA,cAAA,GAAiB;EAChB,IAAA,EAAM,IADU;EAEhB,MAAA,EAAQ,KAFQ;EAGhB,SAAA,EAAW;AAHK,EANF;;;AAcf,OAAA,IAAO,IAAA,GAAO,QAAA,CAAC,UAAD,EAAa,QAAb,EAAuB,WAAS;IAAC,KAAA,EAAO;EAAR,CAAhC,CAAA;AAEd,MAAA,GAAA,EAAA;EAAC,MAAA,CAAO,EAAE,CAAC,UAAH,CAAc,QAAd,CAAP,EAAgC,CAAA,YAAA,CAAA,CAAe,QAAf,CAAA,CAAhC;AACA;IACC,cAAc,CAAC,QAAf,GAA0B;IAC1B,CAAA,GAAI,YAAY,CAAC,OAAb,CAAqB,UAArB,EAAiC,cAAjC;AACJ,WAAO,CAAC,CAAC,CAAC,EAAE,CAAC,IAAL,CAAA,CAAD,EAAc,CAAC,CAAC,WAAhB,EAHR;GAIA,aAAA;IAAM;IACL,OAAO,CAAC,GAAR,CAAY,CAAA,OAAA,CAAA,CAAU,GAAG,CAAC,OAAd,CAAA,CAAZ;AACA,WAAO,CAAC,MAAD,EAAY,MAAZ,EAFR;;AAPa",
+  "sourcesContent": [
+    "# coffee.coffee\r\n\r\nimport assert from 'node:assert'\r\nimport fs from 'fs'\r\nimport CoffeeScript from 'coffeescript'\r\n\r\nhCoffeeOptions = {\r\n\tbare: true\r\n\theader: false\r\n\tsourceMap: true\r\n\t}\r\n\r\n# ---------------------------------------------------------------------------\r\n\r\nexport brew = (coffeeCode, filePath, hOptions={quiet: false}) ->\r\n\r\n\tassert fs.existsSync(filePath), \"Not a file: #{filePath}\"\r\n\ttry\r\n\t\thCoffeeOptions.filename = filePath\r\n\t\th = CoffeeScript.compile(coffeeCode, hCoffeeOptions)\r\n\t\treturn [h.js.trim(), h.v3SourceMap]\r\n\tcatch err\r\n\t\tconsole.log \"ERROR: #{err.message}\"\r\n\t\treturn [undefined, undefined]\r\n"
+  ]
+}

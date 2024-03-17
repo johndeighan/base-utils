@@ -1369,6 +1369,31 @@ equal chomp('abc\r\n'), 'abc'
 	)()
 
 # ---------------------------------------------------------------------------
+# --- test buildCmdLine()
+
+(() =>
+	equal buildCmdLine('doit'), 'doit'
+	equal buildCmdLine('doit', {debug:true}),
+		'doit -debug=true'
+	equal buildCmdLine('doit', {glob:'*'}),
+		'doit -glob=*'
+	equal buildCmdLine('npx doit', {
+		glob: '*.coffee',
+		d: true,
+		f: true,
+		g: false
+		}),
+		'npx doit -glob=*.coffee -g=false -df'
+	equal buildCmdLine('npx doit', {
+		glob: '*.coffee',
+		d: true,
+		f: true,
+		g: false
+		}, ['willy', 'wonka', 'this is it']),
+		'npx doit -glob=*.coffee -g=false -df willy wonka "this is it"'
+	)()
+
+# ---------------------------------------------------------------------------
 # --- test execCmd()
 
 (() =>

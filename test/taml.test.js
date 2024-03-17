@@ -1,5 +1,5 @@
 // taml.test.coffee
-var h;
+var curdir, h;
 
 import {
   undef,
@@ -10,6 +10,10 @@ import {
   OL,
   spaces
 } from '@jdeighan/base-utils';
+
+import {
+  mkpath
+} from '@jdeighan/base-utils/ll-fs';
 
 import {
   isTAML,
@@ -31,6 +35,9 @@ import {
   truthy,
   falsy
 } from '@jdeighan/base-utils/utest';
+
+curdir = mkpath(process.cwd()); // will have '/'
+
 
 // ---------------------------------------------------------------------------
 equal(llSplit("a: 53"), ["a: ", "53"]);
@@ -237,12 +244,10 @@ WhileStatement:
   str = `---
 type: function
 funcName: main
-source: C:/Users/johnd/base-utils/test/v8-stack.test.js`;
+source: ${curdir}/test/v8-stack.test.js`;
   return equal(fromTAML(str), {
     type: 'function',
     funcName: 'main',
-    source: 'C:/Users/johnd/base-utils/test/v8-stack.test.js'
+    source: `${curdir}/test/v8-stack.test.js`
   });
 })();
-
-//# sourceMappingURL=taml.test.js.map

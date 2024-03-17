@@ -20,5 +20,3 @@ D = function*() {
   yield 1;
   return (yield 2);
 };
-
-//# sourceMappingURL=main.js.map

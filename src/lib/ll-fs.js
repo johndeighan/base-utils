@@ -16,12 +16,26 @@ import {
   isString,
   getOptions,
   words,
+  fileExt,
+  withExt,
+  newerDestFilesExist,
   assert,
   croak // low level versions
 } from '@jdeighan/base-utils';
 
+export {
+  fileExt,
+  withExt,
+  newerDestFilesExist
+};
+
 export var lStatFields = words('dev ino mode nlink uid gid rdev size blksize blocks', 'atimeMs mtimeMs ctimeMs birthtimeMs', 'atime mtime ctime birthtime');
 
+// ---------------------------------------------------------------------------
+// All file/directory operations should operate from memory
+//    and can therefore be synchronous
+// Relies on the fact that modern OS's keep directory
+//    information in memory
 // ---------------------------------------------------------------------------
 export var fileDirPath = (filePath) => {
   var dirStr, fullPath, hFile, lParts, rootLen;
@@ -48,32 +62,6 @@ export var mkDirsForFile = (filePath) => {
       mkDir(dir);
     }
   }
-};
-
-// ---------------------------------------------------------------------------
-export var fileExt = (path) => {
-  var lMatches;
-  assert(isString(path), "fileExt(): path not a string");
-  if (lMatches = path.match(/\.[A-Za-z0-9_]+$/)) {
-    return lMatches[0];
-  } else {
-    return '';
-  }
-};
-
-// ---------------------------------------------------------------------------
-//   withExt - change file extention in a file name
-export var withExt = (path, newExt) => {
-  var _, lMatches, pre;
-  assert(newExt, "withExt(): No newExt provided");
-  if (newExt.indexOf('.') !== 0) {
-    newExt = '.' + newExt;
-  }
-  if (lMatches = path.match(/^(.*)\.[^\.]+$/)) {
-    [_, pre] = lMatches;
-    return pre + newExt;
-  }
-  return croak(`Bad path: '${path}'`);
 };
 
 // ---------------------------------------------------------------------------
@@ -117,6 +105,13 @@ export var mkpath = (...lParts) => {
   var fullPath;
   fullPath = pathLib.resolve(...lParts);
   return normalize(fullPath);
+};
+
+// ---------------------------------------------------------------------------
+export var relpath = (...lParts) => {
+  var fullPath;
+  fullPath = pathLib.resolve(...lParts);
+  return normalize(pathLib.relative('', fullPath));
 };
 
 // ---------------------------------------------------------------------------

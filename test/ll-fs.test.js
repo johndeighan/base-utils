@@ -4,6 +4,7 @@ var curdir, dir, dir2, file2, newpath, newpath2, newpath3, newpath4, path, subdi
 import {
   undef,
   LOG,
+  OL,
   samelist
 } from '@jdeighan/base-utils';
 
@@ -22,6 +23,7 @@ import {
   myself,
   mydir,
   mkpath,
+  relpath,
   mkDir,
   touch,
   isFile,
@@ -115,10 +117,10 @@ truthy(isDir(dir2));
 
 equal(pathType(dir2), 'dir');
 
-if (dir === 'c:/User/johnd/base-utils/test') {
-  equal(parsePath(dir2), {
+if (dir === `${curdir}/test`) {
+  like(parsePath(dir2), {
     root: 'c:/',
-    dir: 'c:/Users/johnd/base-utils/test/test'
+    dir: `${curdir}/test/test`
   });
 }
 
@@ -139,15 +141,15 @@ truthy(isFile(file2));
 
 equal(pathType(file2), 'file');
 
-if (dir === 'c:/Users/johnd/base-utils/test') {
+if (dir === `${curdir}/test`) {
   like(parsePath(dir), {
     base: 'test',
-    dir: 'c:/Users/johnd/base-utils',
+    dir: curdir,
     ext: '',
     fileName: 'test',
-    filePath: 'c:/Users/johnd/base-utils/test',
+    filePath: `${curdir}/test`,
     name: 'test',
-    path: 'c:/Users/johnd/base-utils/test',
+    path: `${curdir}/test`,
     purpose: undef,
     root: 'c:/',
     stub: 'test',
@@ -155,12 +157,12 @@ if (dir === 'c:/Users/johnd/base-utils/test') {
   });
   like(parsePath(file2), {
     base: 'file99.test.txt',
-    dir: 'c:/Users/johnd/base-utils/test/test',
+    dir: `${curdir}/test/test`,
     ext: '.txt',
     fileName: 'file99.test.txt',
-    filePath: 'c:/Users/johnd/base-utils/test/test/file99.test.txt',
+    filePath: `${curdir}/test/test/file99.test.txt`,
     name: 'file99.test',
-    path: 'c:/Users/johnd/base-utils/test/test/file99.test.txt',
+    path: `${curdir}/test/test/file99.test.txt`,
     purpose: 'test',
     root: 'c:/',
     stub: 'file99.test',
@@ -204,25 +206,27 @@ falsy(isFile(file2));
 
 // ---------------------------------------------------------------------------
 // --- test parallelPath
-path = 'c:/Users/johnd/base-utils/src/lib/indent.coffee';
+path = `${curdir}/src/lib/indent.coffee`;
 
-newpath = 'c:/Users/johnd/base-utils/src/temp/indent.coffee';
+newpath = `${curdir}/src/temp/indent.coffee`;
 
 equal(parallelPath(path), newpath);
 
-// path   = 'c:/Users/johnd/base-utils/src/lib/indent.coffee'
-newpath2 = 'c:/Users/johnd/base-utils/src/dummy/indent.coffee';
+// path   = "#{curdir}/src/lib/indent.coffee"
+newpath2 = `${curdir}/src/dummy/indent.coffee`;
 
 equal(parallelPath(path, 'dummy'), newpath2);
 
-// path   = 'c:/Users/johnd/base-utils/src/lib/indent.coffee'
-newpath3 = 'c:/Users/johnd/base-utils/src/lib/temp/indent.coffee';
+// path   = "#{curdir}/src/lib/indent.coffee"
+newpath3 = `${curdir}/src/lib/temp/indent.coffee`;
 
 equal(subPath(path), newpath3);
 
-// path   = 'c:/Users/johnd/base-utils/src/lib/indent.coffee'
-newpath4 = 'c:/Users/johnd/base-utils/src/lib/dummy/indent.coffee';
+// path   = "#{curdir}/src/lib/indent.coffee"
+newpath4 = `${curdir}/src/lib/dummy/indent.coffee`;
 
 equal(subPath(path, 'dummy'), newpath4);
 
-//# sourceMappingURL=ll-fs.test.js.map
+// ---------------------------------------------------------------------------
+// --- test relpath
+equal(relpath(`${curdir}/test/test/file3.txt`), "test/test/file3.txt");

@@ -15,11 +15,12 @@ import {
 	fromJSON, toJSON, OL, forEachItem, jsType, hasKey,
 	} from '@jdeighan/base-utils'
 import {
-	fileExt, workingDir, myself, mydir, mkpath, withExt,
+	fileExt, workingDir, myself, mydir, mkpath, relpath,
 	mkDir, clearDir, touch, isFile, isDir, rename,
-	pathType, rmFile, rmDir, parsePath,
+	pathType, rmFile, rmDir, parsePath, withExt,
 	parentDir, parallelPath, subPath,
 	fileDirPath, mkDirsForFile, getFileStats, lStatFields,
+	newerDestFilesExist,
 	} from '@jdeighan/base-utils/ll-fs'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
@@ -27,14 +28,59 @@ import {
 	dbgEnter, dbgReturn, dbg, dbgYield, dbgResume,
 	} from '@jdeighan/base-utils/debug'
 import {toTAML, fromTAML} from '@jdeighan/base-utils/taml'
-
+import {
+	isMetaDataStart, convertMetaData,
+	} from '@jdeighan/base-utils/metadata'
 export {
-	fileExt, workingDir, myself, mydir, mkpath, withExt,
+	fileExt, workingDir, myself, mydir, mkpath, relpath,
 	mkDir, clearDir, touch, isFile, isDir, rename,
-	pathType, rmFile, rmDir, parsePath,
+	pathType, rmFile, rmDir, parsePath, withExt,
 	parentDir, parallelPath, subPath,
 	fileDirPath,  mkDirsForFile, getFileStats,
+	newerDestFilesExist,
 	}
+
+lDirs = []
+
+# ---------------------------------------------------------------------------
+
+export pushCWD = (dir) =>
+
+	lDirs.push process.cwd()
+	process.chdir(dir)
+	return
+
+# ---------------------------------------------------------------------------
+
+export popCWD = () =>
+
+	assert (lDirs.length > 0), "directory stack is empty"
+	dir = lDirs.pop()
+	process.chdir(dir)
+	return
+
+# ---------------------------------------------------------------------------
+
+export isProjRoot = (hOptions={}) =>
+
+	{strict} = getOptions hOptions, {
+		strict: false
+		}
+
+	# --- Current directory must have file 'package.json'
+	if !isFile("./package.json")
+		return false
+	if strict
+		if !isFile("./package-lock.json") then return false
+		if !isDir("./node_modules") then return false
+		if !isDir("./.git") then return false
+		if !isFile("./.gitignore") then return false
+		if !isDir("./src") then return false
+		if !isDir("./src/lib") then return false
+		if !isDir("./src/bin") then return false
+		if !isDir("./test") then return false
+		if !isFile("./README.md") then return false
+	return true
 
 # ---------------------------------------------------------------------------
 
@@ -71,6 +117,7 @@ export getTextFileContents = (filePath) =>
 	# --- handles metadata if present
 
 	dbgEnter 'getTextFileContents', filePath
+	assert isFile(filePath), "Not a file: #{OL(filePath)}"
 	lMetaLines = undef
 	inMeta = false
 
@@ -90,7 +137,7 @@ export getTextFileContents = (filePath) =>
 			lLines.push line
 		numLines += 1
 
-	if defined(lMetaLines)
+	if nonEmpty(lMetaLines)
 		metadata = fromTAML(toBlock(lMetaLines))
 	else
 		metadata = undef
@@ -142,8 +189,9 @@ export globFiles = (pattern='*', hGlobOptions={}) ->
 		else
 			type = 'unknown'
 		hFile = {
-			path: filePath
 			filePath
+			path: filePath
+			relPath: relpath(filePath)
 			type
 			root
 			dir
@@ -164,14 +212,11 @@ export globFiles = (pattern='*', hGlobOptions={}) ->
 	return
 
 # ---------------------------------------------------------------------------
+# --- return true to include file
 
-export newerDestFileExists = (srcPath, destPath) =>
+fileFilter = (filePath) =>
 
-	if ! fs.existsSync(destPath)
-		return false
-	srcModTime = fs.statSync(srcPath).mtimeMs
-	destModTime = fs.statSync(destPath).mtimeMs
-	return (destModTime >= srcModTime)
+	return isFile(filePath) && notdefined(filePath.match(/\bnode_modules\b/))
 
 # ---------------------------------------------------------------------------
 
@@ -183,17 +228,21 @@ export allFilesMatching = (pattern='*', hOptions={}) ->
 	#        (if eager) metadata, lLines
 	# --- Valid options:
 	#        hGlobOptions - options to pass to glob
-	#        eager - read the file and add keys metadata, contents
+	#        fileFilter - return path iff fileFilter(filePath) returns true
+	#        eager - read the file and add keys metadata, lLines
 	# --- Valid glob options:
 	#        ignore - glob pattern for files to ignore
 	#        dot - include dot files/directories (default: false)
 	#        cwd - change working directory
 
 	dbgEnter 'allFilesMatching', pattern, hOptions
-	{hGlobOptions, eager} = getOptions(hOptions, {
+	{hGlobOptions, fileFilter, eager} = getOptions(hOptions, {
 		hGlobOptions: {
 			ignore: "node_modules"
 			}
+		fileFilter: (h) =>
+			{filePath: path} = h
+			return isFile(path) && ! path.match(/\bnode_modules\b/)
 		eager: false
 		})
 
@@ -202,14 +251,15 @@ export allFilesMatching = (pattern='*', hOptions={}) ->
 	dbg "eager = #{OL(eager)}"
 
 	numFiles = 0
-	for hFile from globFiles(pattern, hGlobOptions)
-		{filePath} = hFile
-		if ! filePath.includes('node_modules')
-			if eager
-				hContents = getTextFileContents(hFile.path)
-				Object.assign hFile, hContents
-			dbgYield 'allFilesMatching', hFile
-			yield hFile
+	for h from globFiles(pattern, hGlobOptions)
+		{filePath} = h
+		dbg "GLOB: #{OL(filePath)}"
+		if eager && isFile(filePath)
+			hContents = getTextFileContents(filePath)
+			Object.assign h, hContents
+		if fileFilter(h)
+			dbgYield 'allFilesMatching', h
+			yield h
 			numFiles += 1
 			dbgResume 'allFilesMatching'
 	dbg "#{numFiles} files matched"
@@ -291,7 +341,8 @@ export slurpTAML = (filePath) =>
 export slurpPkgJSON = () =>
 
 	pkgJsonPath = getPkgJsonPath()
-	assert isFile(pkgJsonPath), "Missing package.json at cur dir"
+	assert isFile(pkgJsonPath),
+			"Missing package.json at cur dir #{OL(process.cwd())}"
 	return slurpJSON(pkgJsonPath)
 
 # ---------------------------------------------------------------------------
@@ -327,14 +378,9 @@ export barfTAML = (ds, lParts...) =>
 # ---------------------------------------------------------------------------
 #   barfPkgJSON - write a string to a file
 
-export barfPkgJSON = (hJson, lParts...) =>
+export barfPkgJSON = (hJson) =>
 
-	if (lParts.length == 0)
-		pkgJsonPath = getPkgJsonPath()
-	else
-		pkgJsonPath = mkpath(lParts...)
-		assert isFile(pkgJsonPath), "Missing package.json at cur dir"
-	barfJSON(hJson, pkgJsonPath)
+	barfJSON(hJson, getPkgJsonPath())
 	return
 
 # ---------------------------------------------------------------------------
@@ -344,7 +390,43 @@ export allLinesIn = (filePath) ->
 	reader = new NReadLines(filePath)
 	while buffer = reader.next()
 		yield buffer.toString().replaceAll('\r', '')
-	# --- reader.close() fails with error if EOF reached
+	return
+
+# ---------------------------------------------------------------------------
+
+export allLinesInEx = (filePath) ->
+
+	dbgEnter 'allLinesInEx', filePath
+	reader = new NReadLines(filePath)
+	nLines = 0
+	metaDataStart = undef   # if defined, we're in metadata
+	lMetaData = []
+	while buffer = reader.next()
+		line = buffer.toString().replaceAll('\r', '')
+		if (nLines == 0)
+			if isMetaDataStart(line)
+				dbg "metadata: #{OL(line)}"
+				metaDataStart = line
+				lMetaData.push line
+			else
+				dbg "no metadata"
+		else if defined(metaDataStart)
+			if (line == metaDataStart)
+				# --- end line for metadata
+				metaDataStart = undef
+				hMetaData = convertMetaData(lMetaData, line)
+				dbgYield 'allLinesInEx', hMetaData
+				yield hMetaData
+				dbgResume 'allLinesInEx'
+			else
+				dbg "metadata: #{OL(line)}"
+				lMetaData.push line
+		else
+			dbgYield 'allLinesInEx', line
+			yield line
+			dbgResume 'allLinesInEx'
+		nLines += 1
+	dbgReturn 'allLinesInEx'
 	return
 
 # ---------------------------------------------------------------------------

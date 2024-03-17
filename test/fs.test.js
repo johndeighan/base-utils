@@ -17,6 +17,7 @@ import {
   fromJSON,
   toJSON,
   LOG,
+  OL,
   chomp,
   jsType,
   words,
@@ -52,7 +53,7 @@ import {
   forEachLineInFile,
   dirContents,
   FileWriter,
-  newerDestFileExists
+  newerDestFilesExist
 } from '@jdeighan/base-utils/fs';
 
 // --- should be root directory of @jdeighan/base-utils
@@ -489,13 +490,11 @@ line 2`);
 // ---------------------------------------------------------------------------
 (() => {
   var coffeeFile, dummyFile, jsFile;
-  // --- test newerDestFileExists()
+  // --- test newerDestFilesExist()
   coffeeFile = "./src/lib/fs.coffee";
   jsFile = "./src/lib/fs.js";
   dummyFile = "./src/lib/dummy.js";
-  truthy(newerDestFileExists(coffeeFile, jsFile));
-  falsy(newerDestFileExists(jsFile, coffeeFile));
-  return falsy(newerDestFileExists(coffeeFile, dummyFile));
+  truthy(newerDestFilesExist(coffeeFile, jsFile));
+  falsy(newerDestFilesExist(jsFile, coffeeFile));
+  return falsy(newerDestFilesExist(coffeeFile, dummyFile));
 })();
-
-//# sourceMappingURL=fs.test.js.map

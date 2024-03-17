@@ -296,5 +296,3 @@ ENTER 'func1' 13
 	RESUME 'func2'
 	RETURN FROM 'func2' 'def'
 RETURN FROM 'func1'`);
-
-//# sourceMappingURL=stack.test.js.map

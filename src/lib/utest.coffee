@@ -4,7 +4,8 @@ import test from 'ava'
 
 import {
 	undef, defined, pass, OL, LOG, jsType, rtrim,
-	isString, isInteger, isRegExp,
+	isString, isInteger, isRegExp, nonEmpty,
+	toArray,
 	} from '@jdeighan/base-utils'
 import {
 	assert, croak, exReset, exGetLog,
@@ -41,12 +42,12 @@ export class UnitTester
 
 	# ........................................................................
 
-	getLineNum: () =>
+	getTestName: () =>
 
 		# --- We need to figure out the line number of the caller
 		{filePath, line, column} = getMyOutsideCaller()
 		if @debug
-			LOG "getLineNum()"
+			LOG "getTestName()"
 			LOG "   filePath = '#{filePath}'"
 			LOG "   line = #{line}, col = #{column}"
 
@@ -68,7 +69,8 @@ export class UnitTester
 		while @hFound[line]
 			line += 1000
 		@hFound[line] = true
-		return line
+
+		return "line #{line}"
 
 	# ........................................................................
 
@@ -87,10 +89,9 @@ export class UnitTester
 
 	equal: (val, expected) ->
 
-		lineNum = @getLineNum()
 		val = @transformValue(val)
 		expected = @transformExpected(expected)
-		test "line #{lineNum}", (t) =>
+		test @getTestName(), (t) =>
 			t.deepEqual(val, expected)
 		return
 
@@ -98,27 +99,41 @@ export class UnitTester
 
 	like: (val, expected) ->
 
-		lineNum = @getLineNum()
 		val = @transformValue(val)
 		expected = @transformExpected(expected)
 		if isString(val) && isString(expected)
 			val = rtrim(val).replaceAll("\r", "")
 			expected = rtrim(expected).replaceAll("\r", "")
-			test "line #{lineNum}", (t) =>
+			test @getTestName(), (t) =>
 				t.deepEqual(val, expected)
 		else
-			test "line #{lineNum}", (t) =>
+			test @getTestName(), (t) =>
 				t.like(val, expected)
+		return
+
+	# ..........................................................
+
+	samelines: (val, expected) ->
+
+		val = @transformValue(val)
+		expected = @transformExpected(expected)
+		assert isString(val), "not a string: #{OL(val)}"
+		assert isString(expected), "not a string: #{OL(expected)}"
+
+		lValLines = toArray(val).filter((line) => return nonEmpty(line)).sort()
+		lExpLines = toArray(expected).filter((line) => return nonEmpty(line)).sort()
+
+		test @getTestName(), (t) =>
+			t.deepEqual(lValLines, lExpLines)
 		return
 
 	# ..........................................................
 
 	notequal: (val, expected) ->
 
-		lineNum = @getLineNum()
 		val = @transformValue(val)
 		expected = @transformExpected(expected)
-		test "line #{lineNum}", (t) =>
+		test @getTestName(), (t) =>
 			t.notDeepEqual(val, expected)
 		return
 
@@ -126,8 +141,7 @@ export class UnitTester
 
 	truthy: (bool) ->
 
-		lineNum = @getLineNum()
-		test "line #{lineNum}", (t) =>
+		test @getTestName(), (t) =>
 			t.truthy(bool)
 		return
 
@@ -135,8 +149,7 @@ export class UnitTester
 
 	falsy: (bool) ->
 
-		lineNum = @getLineNum()
-		test "line #{lineNum}", (t) =>
+		test @getTestName(), (t) =>
 			t.falsy(bool)
 		return
 
@@ -144,15 +157,14 @@ export class UnitTester
 
 	includes: (val, expected) ->
 
-		lineNum = @getLineNum()
 		val = @transformValue(val)
 		expected = @transformExpected(expected)
 		switch jsType(val)[0]
 			when 'string'
-				test "line #{lineNum}", (t) =>
+				test @getTestName(), (t) =>
 					t.truthy(val.includes(expected))
 			when 'array'
-				test "line #{lineNum}", (t) =>
+				test @getTestName(), (t) =>
 					t.truthy(val.includes(expected))
 			else
 				croak "Bad arg to includes: #{OL(val)}"
@@ -163,9 +175,12 @@ export class UnitTester
 	matches: (val, regexp) ->
 
 		assert isString(val), "Not a string: #{OL(val)}"
-		assert isRegExp(regexp), "Not a regular expression: #{OL(regexp)}"
-		lineNum = @getLineNum()
-		test "line #{lineNum}", (t) =>
+
+		# --- convert strings to regular expressions
+		if isString(regexp)
+			regexp = new RegExp(regexp)
+		assert isRegExp(regexp), "Not a string or regexp: #{OL(regexp)}"
+		test @getTestName(), (t) =>
 			t.truthy(defined(val.match(regexp)))
 		return
 
@@ -173,7 +188,6 @@ export class UnitTester
 
 	throws: (func) ->
 
-		lineNum = @getLineNum()
 		assert (typeof func == 'function'), "function expected"
 		try
 			exReset()   # suppress logging of errors
@@ -183,14 +197,13 @@ export class UnitTester
 			ok = false
 		log = exGetLog()   # we really don't care about log
 
-		test "line #{lineNum}", (t) => t.falsy(ok)
+		test @getTestName(), (t) => t.falsy(ok)
 		return
 
 	# ..........................................................
 
 	succeeds: (func) ->
 
-		lineNum = @getLineNum()
 		assert (typeof func == 'function'), "function expected"
 		try
 			func()
@@ -199,7 +212,7 @@ export class UnitTester
 			console.error err
 			ok = false
 
-		test "line #{lineNum}", (t) => t.truthy(ok)
+		test @getTestName(), (t) => t.truthy(ok)
 		return
 
 # ---------------------------------------------------------------------------
@@ -209,6 +222,7 @@ export transformValue = (func) => u.transformValue = func
 export transformExpected = (func) => u.transformExpected = func
 export equal = (arg1, arg2) => return u.equal(arg1, arg2)
 export like = (arg1, arg2) => return u.like(arg1, arg2)
+export samelines = (arg1, arg2) => return u.samelines(arg1, arg2)
 export notequal = (arg1, arg2) => return u.notequal(arg1, arg2)
 export truthy = (arg) => return u.truthy(arg)
 export falsy = (arg) => return u.falsy(arg)

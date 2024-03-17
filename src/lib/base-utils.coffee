@@ -1,28 +1,14 @@
 # base-utils.coffee
 
-import {execSync} from 'node:child_process'
+import fs from 'fs'
+import {exec as execCB, execSync} from 'node:child_process'
+import {promisify} from 'node:util'
+exec = promisify(execCB)
 import assertLib from 'node:assert'
 
 # --- ABSOLUTELY NO IMPORTS FROM OUR LIBS !!!!!
 
 `export const undef = void 0`
-
-# ---------------------------------------------------------------------------
-
-export LOG = (lItems...) =>
-
-	lSimpleItems = []
-	for item in lItems
-		if isHash(item) || isArray(item)
-			if (lSimpleItems.length > 0)
-				console.log lSimpleItems...
-				lSimpleItems = []
-			console.dir item, {depth: null}
-		else
-			lSimpleItems.push item
-	if (lSimpleItems.length > 0)
-		console.log lSimpleItems...
-	return
 
 # ---------------------------------------------------------------------------
 # low-level version of assert()
@@ -40,6 +26,95 @@ export croak = (msg) =>
 
 	throw new Error(msg)
 	return true
+
+# ---------------------------------------------------------------------------
+
+export execCmd = (cmd, lParts...) =>
+	# --- may throw an exception
+
+	cmdLine = buildCmdLine(cmd, lParts...)
+	result = execSync cmdLine, {
+		encoding: 'utf8'
+		windowsHide: true
+		}
+
+	assert isString(result), "result = #{OL(result)}"
+	return result
+
+# ---------------------------------------------------------------------------
+
+export execCmdAsync = (cmd, lParts...) =>
+	# --- may throw an exception
+
+	cmdLine = buildCmdLine(cmd, lParts...)
+	return await exec cmdLine, {
+		encoding: 'utf8'
+		windowsHide: true
+		}
+
+# ---------------------------------------------------------------------------
+# --- lParts may contain hashes (options) or arrays (non-options)
+
+export buildCmdLine = (cmd, lParts...) =>
+
+	lOptions = []
+	lFlags = []      # array of letters
+	lNonOptions = []
+
+	for obj in lParts
+		if isHash(obj)
+			for own key,value of obj
+				switch jsType(value)[0]
+					when 'string'
+						if value.includes(' ')
+							lOptions.push "-#{key}=\"#{value}\""
+						else
+							lOptions.push "-#{key}=#{value}"
+					when 'boolean'
+						if value
+							if (key.length == 1)
+								lFlags.push key
+							else
+								lOptions.push "-#{key}=true"
+						else
+							lOptions.push "-#{key}=false"
+					when 'number'
+						lOptions.push "-#{key}=#{value}"
+					else
+						croak "Bad option: #{OL(value)}"
+
+		else if isArray(obj)
+			for item in obj
+				if item.includes(' ')
+					lNonOptions.push "\"#{item}\""
+				else
+					lNonOptions.push item
+		else
+			croak "arg not an array or hash"
+
+	if (lFlags.length > 0)
+		lOptions.push "-#{lFlags.join('')}"
+
+	# --- join the parts
+	lAllParts = [cmd, lOptions..., lNonOptions...]
+	return lAllParts.join(' ');
+
+# ---------------------------------------------------------------------------
+
+export LOG = (lItems...) =>
+
+	lSimpleItems = []
+	for item in lItems
+		if isHash(item) || isArray(item)
+			if (lSimpleItems.length > 0)
+				console.log lSimpleItems...
+				lSimpleItems = []
+			console.dir item, {depth: null}
+		else
+			lSimpleItems.push item
+	if (lSimpleItems.length > 0)
+		console.log lSimpleItems...
+	return
 
 # ---------------------------------------------------------------------------
 #   pass - do nothing
@@ -247,21 +322,6 @@ export toJSON = (hJson, hOptions={}) =>
 
 # ---------------------------------------------------------------------------
 
-hExecOptions = {
-	encoding: 'utf8'
-	windowsHide: true
-	}
-
-export execCmd = (cmd, hOptions=hExecOptions) =>
-	# --- may throw an exception
-
-	result = execSync cmd, hOptions
-
-	assert isString(result), "result = #{OL(result)}"
-	return result
-
-# ---------------------------------------------------------------------------
-
 export deepEqual = (a, b) =>
 
 	try
@@ -458,6 +518,8 @@ export OL = (obj) =>
 	if defined(obj)
 		if isString(obj)
 			return quoted(obj, 'escape')
+		else if isRegExp(obj)
+			return obj.toString()
 		else
 			return JSON.stringify(obj, myReplacer)
 	else if (obj == null)
@@ -577,6 +639,8 @@ export jsType = (x) =>
 		return [undef, 'null']
 	else if (x == undef)
 		return [undef, undef]
+	else if isPromise(x)
+		return ['promise', undef]
 
 	switch (typeof x)
 		when 'number'
@@ -878,6 +942,13 @@ export removeKeys = (item, lKeys) =>
 			for prop,value of item
 				removeKeys value, lKeys
 	return item
+
+# ---------------------------------------------------------------------------
+
+export isPromise = (x) =>
+
+	return (typeof x == 'object') \
+		&& (typeof x.then == 'function')
 
 # ---------------------------------------------------------------------------
 
@@ -1436,3 +1507,43 @@ export flattenToHash = (x) =>
 			else
 				croak "not a hash or array: #{OL(item)}"
 	return hResult
+
+# ---------------------------------------------------------------------------
+# --- These used to be in ll-fs.coffee, but
+#     don't require imports from other libs
+
+export fileExt = (path) =>
+
+	assert isString(path), "fileExt(): path not a string"
+	if lMatches = path.match(/\.[A-Za-z0-9_]+$/)
+		return lMatches[0]
+	else
+		return ''
+
+# ---------------------------------------------------------------------------
+#   withExt - change file extention in a file name
+
+export withExt = (path, newExt) =>
+
+	assert newExt, "withExt(): No newExt provided"
+	if newExt.indexOf('.') != 0
+		newExt = '.' + newExt
+
+	if lMatches = path.match(/^(.*)\.[^\.]+$/)
+		[_, pre] = lMatches
+		return pre + newExt
+	croak "Bad path: '#{path}'"
+
+# ---------------------------------------------------------------------------
+
+export newerDestFilesExist = (srcPath, lDestPaths...) =>
+
+	for destPath in lDestPaths
+		if ! fs.existsSync(destPath)
+			return false
+		srcModTime = fs.statSync(srcPath).mtimeMs
+		destModTime = fs.statSync(destPath).mtimeMs
+		if (destModTime < srcModTime)
+			return false
+	return true
+

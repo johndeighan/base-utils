@@ -3,7 +3,7 @@
 import {
 	undef, defined, notdefined, getOptions,
 	LOG, OL, hasKey, words,
-	isHash, isArray, isNumber, isInteger,
+	isHash, isArray, isNumber, isInteger, isRegExp,
 	isString, isBoolean,
 	} from '@jdeighan/base-utils'
 import {
@@ -50,11 +50,12 @@ export argStrFromArgv = () =>
 #           _: [<int>, <int>]  # min, max
 #           }
 #        <type> can be:
-#           boolean
-#           string
-#           number
-#           integer
-#           json
+#           a regular expression # --- implies value is a string
+#           'boolean'
+#           'string'
+#           'number'
+#           'integer'
+#           'json'
 
 export parseCmdArgs = (hOptions={}) =>
 
@@ -83,7 +84,8 @@ export parseCmdArgs = (hOptions={}) =>
 					if defined(min)
 						assert (min <= max), "min = #{OL(min)}, max = #{OL(max)}"
 			else
-				assert lTypes.includes(value), "Bad type for #{key}"
+				assert lTypes.includes(value) || isRegExp(value),
+						"Bad type for #{key}: #{OL(value)}"
 
 	if notdefined(argStr)
 		argStr = argStrFromArgv()
@@ -111,15 +113,19 @@ export parseCmdArgs = (hOptions={}) =>
 			continue
 		else if isBoolean(value)
 			if defined(hExpect)
-				assert (hExpect[name] == 'boolean'), "boolean #{name} not expected"
+				assert (hExpect[name] == 'boolean'),
+						"boolean #{name} not expected"
 		else
 			assert isString(value), "value = #{OL(value)}"
 			if defined(hExpect)
 				type = hExpect[name]
-				if defined(type)
-					hResult[name] = getVal(name, type, value)
+				assert defined(type), "Unexpected option: #{OL(name)}"
+				if isRegExp(type)
+					assert value.match(type),
+							"Bad value for option -#{name}: #{OL(value)}"
+					hResult[name] = value
 				else
-					croak "Unexpected option: #{OL(name)}"
+					hResult[name] = getVal(name, type, value)
 
 	dbgReturn 'parseCmdArgs', hResult
 	return hResult
