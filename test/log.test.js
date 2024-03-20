@@ -32,7 +32,7 @@ import {
   LOGJSON,
   clearAllLogs,
   getMyLogs,
-  echoLogsByDefault
+  echoLogs
 } from '@jdeighan/base-utils/log';
 
 import {
@@ -46,7 +46,7 @@ import {
   succeeds
 } from '@jdeighan/base-utils/utest';
 
-echoLogsByDefault(false);
+echoLogs(false);
 
 fiveSpaces = ' '.repeat(5);
 
@@ -155,7 +155,7 @@ clearAllLogs('noecho');
 
 LOGVALUE('x', "'\"abc\"'");
 
-equal(getMyLogs(), `x = <'"abc"'>`);
+equal(getMyLogs(), `x = «'"abc"'»`);
 
 // --- long string
 clearAllLogs('noecho');

@@ -16,12 +16,15 @@ import {
   defined,
   notdefined,
   nonEmpty,
-  LOG,
   OL,
   execCmd,
   isNonEmptyString,
   sortArrayOfHashes
 } from '@jdeighan/base-utils';
+
+import {
+  LOG
+} from '@jdeighan/base-utils/log';
 
 import {
   setDebugging,

@@ -3,13 +3,14 @@
 import {sprintf} from 'sprintf-js'
 import {
 	undef, defined, notdefined, getOptions, words, OL, range, hasKey,
-	pad, toBlock, LOG, isEmpty, nonEmpty, isNonEmptyString,
+	pad, toBlock, isEmpty, nonEmpty, isNonEmptyString,
 	jsType, isString, isNumber, isArray, isArrayOfStrings,
 	isFunction,
 	} from '@jdeighan/base-utils'
 import {
 	assert, croak,
 	} from '@jdeighan/base-utils/exceptions'
+import {LOG} from '@jdeighan/base-utils/log'
 import {
 	dbgEnter, dbgReturn, dbg, dbgCall,
 	} from '@jdeighan/base-utils/debug'

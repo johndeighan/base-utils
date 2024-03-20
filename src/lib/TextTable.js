@@ -16,7 +16,6 @@ import {
   hasKey,
   pad,
   toBlock,
-  LOG,
   isEmpty,
   nonEmpty,
   isNonEmptyString,
@@ -32,6 +31,10 @@ import {
   assert,
   croak
 } from '@jdeighan/base-utils/exceptions';
+
+import {
+  LOG
+} from '@jdeighan/base-utils/log';
 
 import {
   dbgEnter,

@@ -3,10 +3,13 @@ var curdir, dir, dir2, file2, newpath, newpath2, newpath3, newpath4, path, subdi
 
 import {
   undef,
-  LOG,
   OL,
   samelist
 } from '@jdeighan/base-utils';
+
+import {
+  LOG
+} from '@jdeighan/base-utils/log';
 
 import {
   UnitTester,

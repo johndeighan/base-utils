@@ -8,6 +8,7 @@ import {indented} from '@jdeighan/base-utils/indent'
 import {
 	dbgEnter, dbgReturn, dbg,
 	} from '@jdeighan/base-utils/debug'
+import {parse} from '@jdeighan/base-utils/object'
 
 # ---------------------------------------------------------------------------
 # --- There are 3 types of quotes:
@@ -96,4 +97,13 @@ export toNICE = (obj, hOptions={}) =>
 			result = "[Object]"
 
 	dbgReturn 'toNICE', result
+	return result
+
+# ---------------------------------------------------------------------------
+
+export fromNICE = (block) =>
+
+	dbgEnter 'fromNICE', block
+	result = parse(block)
+	dbgReturn 'fromNice', result
 	return result

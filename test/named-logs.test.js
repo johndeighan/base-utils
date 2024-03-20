@@ -72,49 +72,6 @@ second log`);
   logs.log('A', 'second log');
   logs.log('B', 'first log');
   logs.log('B', 'second log');
-  logs.setKey('A', 'doEcho', true);
-  logs.setKey('B', 'doEcho', false);
-  truthy(logs.getKey('A', 'doEcho'));
-  return falsy(logs.getKey('B', 'doEcho'));
-})();
-
-// ---------------------------------------------------------------------------
-(function() {
-  var logs;
-  logs = new NamedLogs({
-    doEcho: true
-  });
-  logs.log('A', 'first log');
-  logs.log('A', 'second log');
-  logs.log('B', 'first log');
-  logs.log('B', 'second log');
-  truthy(logs.getKey('A', 'doEcho'));
-  return truthy(logs.getKey('B', 'doEcho'));
-})();
-
-// ---------------------------------------------------------------------------
-(function() {
-  var logs;
-  logs = new NamedLogs({
-    doEcho: true
-  });
-  logs.log('A', 'first log');
-  logs.log('A', 'second log');
-  logs.log('B', 'first log');
-  logs.log('B', 'second log');
-  logs.setKey('B', 'doEcho', false);
-  truthy(logs.getKey('A', 'doEcho'));
-  return falsy(logs.getKey('B', 'doEcho'));
-})();
-
-// ---------------------------------------------------------------------------
-(function() {
-  var logs;
-  logs = new NamedLogs();
-  logs.log('A', 'first log');
-  logs.log('A', 'second log');
-  logs.log('B', 'first log');
-  logs.log('B', 'second log');
   return equal(logs.getAllLogs(), `first log
 second log
 first log

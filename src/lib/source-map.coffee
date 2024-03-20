@@ -8,9 +8,10 @@ import {
 	assert, croak,
 	isEmpty, nonEmpty, deepCopy,
 	getOptions, isInteger, isString, isHash,
+	fileExt,
 	} from '@jdeighan/base-utils'
 import {
-	isFile, fileExt, mkpath, parsePath,
+	isFile, mkpath, parsePath,
 	} from '@jdeighan/base-utils/ll-fs'
 
 # --- cache to hold previously fetched file contents

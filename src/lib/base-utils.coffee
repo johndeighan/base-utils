@@ -9,6 +9,15 @@ import assertLib from 'node:assert'
 # --- ABSOLUTELY NO IMPORTS FROM OUR LIBS !!!!!
 
 `export const undef = void 0`
+export lQuoteChars = ['«', '»']
+
+# ---------------------------------------------------------------------------
+
+export setQuoteChars = (start, end=undef) =>
+
+	lQuoteChars[0] = start
+	lQuoteChars[1] = end || start
+	return
 
 # ---------------------------------------------------------------------------
 # low-level version of assert()
@@ -98,23 +107,6 @@ export buildCmdLine = (cmd, lParts...) =>
 	# --- join the parts
 	lAllParts = [cmd, lOptions..., lNonOptions...]
 	return lAllParts.join(' ');
-
-# ---------------------------------------------------------------------------
-
-export LOG = (lItems...) =>
-
-	lSimpleItems = []
-	for item in lItems
-		if isHash(item) || isArray(item)
-			if (lSimpleItems.length > 0)
-				console.log lSimpleItems...
-				lSimpleItems = []
-			console.dir item, {depth: null}
-		else
-			lSimpleItems.push item
-	if (lSimpleItems.length > 0)
-		console.log lSimpleItems...
-	return
 
 # ---------------------------------------------------------------------------
 #   pass - do nothing
@@ -567,7 +559,7 @@ export quoted = (str, escape=undef) =>
 		return "'" + str + "'"
 	if ! hasChar(str, '"')
 		return '"' + str + '"'
-	return '<' + str + '>'
+	return lQuoteChars[0] + str + lQuoteChars[1]
 
 # ---------------------------------------------------------------------------
 #   escapeStr - escape newlines, carriage return, TAB chars, etc.
@@ -1157,18 +1149,6 @@ export warn = (msg) =>
 export uniq = (lItems) =>
 
 	return [...new Set(lItems)]
-
-# ---------------------------------------------------------------------------
-#   say - print to the console (for now)
-#         later, on a web page, call alert(str)
-
-export say = (x) =>
-
-	if isHash(x)
-		LOG JSON.stringify(x, Object.keys(h).sort(), 3)
-	else
-		LOG x
-	return
 
 # ---------------------------------------------------------------------------
 

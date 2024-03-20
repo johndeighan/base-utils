@@ -4,7 +4,6 @@ import {
 	UnitTester,
 	equal, like, notequal, succeeds, throws, truthy, falsy,
 	} from '@jdeighan/base-utils/utest'
-import {assert} from '@jdeighan/base-utils/exceptions'
 import * as util from '@jdeighan/base-utils'
 Object.assign(global, util)
 
@@ -16,7 +15,6 @@ falsy  defined(undefined)
 truthy notdefined(undefined)
 falsy  notdefined(12)
 succeeds () => pass()
-succeeds () => assert(12==12, "BAD")
 
 # ---------------------------------------------------------------------------
 
@@ -465,8 +463,8 @@ falsy  hasChar("\t\t", ' ')
 equal quoted('abc'), "'abc'"
 equal quoted('"abc"'), "'\"abc\"'"
 equal quoted("'abc'"), "\"'abc'\""
-equal quoted("'\"abc\"'"), "<'\"abc\"'>"
-equal quoted("'\"<abc>\"'"), "<'\"<abc>\"'>"
+equal quoted("'\"abc\"'"), "«'\"abc\"'»"
+equal quoted("'\"<abc>\"'"), "«'\"<abc>\"'»"
 
 # ---------------------------------------------------------------------------
 

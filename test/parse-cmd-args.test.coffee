@@ -1,8 +1,9 @@
 # parse-cmd-args.test.coffee
 
 import {
-	undef, defined, notdefined, LOG,
+	undef, defined, notdefined,
 	} from '@jdeighan/base-utils'
+import {LOG} from '@jdeighan/base-utils/log'
 import {setDebugging} from '@jdeighan/base-utils/debug'
 import {
 	parseCmdArgs,

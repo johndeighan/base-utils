@@ -28,6 +28,7 @@
 		"./metadata": "./src/lib/metadata.js",
 		"./peggy": "./src/lib/peggy.js",
 		"./coffee": "./src/lib/coffee.js",
+		"./object": "./src/lib/object.js",
 		"./package.json": "./package.json"
 	},
 	"scripts": {

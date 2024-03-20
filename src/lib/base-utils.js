@@ -20,6 +20,14 @@ import assertLib from 'node:assert';
 // --- ABSOLUTELY NO IMPORTS FROM OUR LIBS !!!!!
 export const undef = void 0;
 
+export var lQuoteChars = ['«', '»'];
+
+// ---------------------------------------------------------------------------
+export var setQuoteChars = (start, end = undef) => {
+  lQuoteChars[0] = start;
+  lQuoteChars[1] = end || start;
+};
+
 // ---------------------------------------------------------------------------
 // low-level version of assert()
 export var assert = (cond, msg) => {
@@ -118,29 +126,6 @@ export var buildCmdLine = (cmd, ...lParts) => {
   // --- join the parts
   lAllParts = [cmd, ...lOptions, ...lNonOptions];
   return lAllParts.join(' ');
-};
-
-// ---------------------------------------------------------------------------
-export var LOG = (...lItems) => {
-  var item, j, lSimpleItems, len1;
-  lSimpleItems = [];
-  for (j = 0, len1 = lItems.length; j < len1; j++) {
-    item = lItems[j];
-    if (isHash(item) || isArray(item)) {
-      if (lSimpleItems.length > 0) {
-        console.log(...lSimpleItems);
-        lSimpleItems = [];
-      }
-      console.dir(item, {
-        depth: null
-      });
-    } else {
-      lSimpleItems.push(item);
-    }
-  }
-  if (lSimpleItems.length > 0) {
-    console.log(...lSimpleItems);
-  }
 };
 
 // ---------------------------------------------------------------------------
@@ -645,7 +630,7 @@ export var quoted = (str, escape = undef) => {
   if (!hasChar(str, '"')) {
     return '"' + str + '"';
   }
-  return '<' + str + '>';
+  return lQuoteChars[0] + str + lQuoteChars[1];
 };
 
 // ---------------------------------------------------------------------------
@@ -1336,17 +1321,6 @@ export var warn = (msg) => {
 // ---------------------------------------------------------------------------
 export var uniq = (lItems) => {
   return [...new Set(lItems)];
-};
-
-// ---------------------------------------------------------------------------
-//   say - print to the console (for now)
-//         later, on a web page, call alert(str)
-export var say = (x) => {
-  if (isHash(x)) {
-    LOG(JSON.stringify(x, Object.keys(h).sort(), 3));
-  } else {
-    LOG(x);
-  }
 };
 
 // ---------------------------------------------------------------------------

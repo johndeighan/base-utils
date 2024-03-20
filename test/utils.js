@@ -4,7 +4,6 @@ import {
   defined,
   notdefined,
   getOptions,
-  LOG,
   CWS,
   shuffle,
   keys,
@@ -15,6 +14,10 @@ import {
   assert,
   croak
 } from '@jdeighan/base-utils/exceptions';
+
+import {
+  LOG
+} from '@jdeighan/base-utils/log';
 
 import {
   dbgEnter,

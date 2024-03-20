@@ -4,21 +4,29 @@ import assert from 'node:assert'
 import fs from 'fs'
 import CoffeeScript from 'coffeescript'
 
-hCoffeeOptions = {
-	bare: true
-	header: false
-	sourceMap: true
-	}
+import {undef, defined, getOptions} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
 
-export brew = (coffeeCode, filePath, hOptions={quiet: false}) ->
+export brew = (coffeeCode, filePath=undef) ->
 
-	assert fs.existsSync(filePath), "Not a file: #{filePath}"
-	try
-		hCoffeeOptions.filename = filePath
-		h = CoffeeScript.compile(coffeeCode, hCoffeeOptions)
-		return [h.js.trim(), h.v3SourceMap]
-	catch err
-		console.log "ERROR: #{err.message}"
-		return [undefined, undefined]
+	if defined(filePath)
+		assert fs.existsSync(filePath), "Not a file: #{filePath}"
+		h = CoffeeScript.compile(coffeeCode, {
+			bare: true
+			header: false
+			filename: filePath
+			sourceMap: true
+			filename: undef     # must be filled in
+			})
+		jsCode = h.js
+		assert defined(jsCode), "No JS code generated"
+		return [jsCode.trim(), h.v3SourceMap]
+	else
+		jsCode = CoffeeScript.compile(coffeeCode, {
+			bare: true
+			header: false
+			sourceMap: false
+			})
+		assert defined(jsCode), "No JS code generated"
+		return [jsCode.trim(), undef]

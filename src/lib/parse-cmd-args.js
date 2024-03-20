@@ -7,7 +7,6 @@ import {
   defined,
   notdefined,
   getOptions,
-  LOG,
   OL,
   hasKey,
   words,
@@ -19,6 +18,10 @@ import {
   isString,
   isBoolean
 } from '@jdeighan/base-utils';
+
+import {
+  LOG
+} from '@jdeighan/base-utils/log';
 
 import {
   dbgEnter,

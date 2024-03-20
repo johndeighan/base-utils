@@ -12,10 +12,6 @@ import {
   falsy
 } from '@jdeighan/base-utils/utest';
 
-import {
-  assert
-} from '@jdeighan/base-utils/exceptions';
-
 import * as util from '@jdeighan/base-utils';
 
 Object.assign(global, util);
@@ -38,10 +34,6 @@ falsy(notdefined(12));
 
 succeeds(() => {
   return pass();
-});
-
-succeeds(() => {
-  return assert(12 === 12, "BAD");
 });
 
 // ---------------------------------------------------------------------------
@@ -563,9 +555,9 @@ equal(quoted('"abc"'), "'\"abc\"'");
 
 equal(quoted("'abc'"), "\"'abc'\"");
 
-equal(quoted("'\"abc\"'"), "<'\"abc\"'>");
+equal(quoted("'\"abc\"'"), "«'\"abc\"'»");
 
-equal(quoted("'\"<abc>\"'"), "<'\"<abc>\"'>");
+equal(quoted("'\"<abc>\"'"), "«'\"<abc>\"'»");
 
 // ---------------------------------------------------------------------------
 equal(getOptions(), {});

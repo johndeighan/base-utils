@@ -19,6 +19,10 @@ import {
   dbg
 } from '@jdeighan/base-utils/debug';
 
+import {
+  parse
+} from '@jdeighan/base-utils/object';
+
 // ---------------------------------------------------------------------------
 // --- There are 3 types of quotes:
 //        " - double quotes
@@ -123,6 +127,15 @@ export var toNICE = (obj, hOptions = {}) => {
       result = "[Object]";
   }
   dbgReturn('toNICE', result);
+  return result;
+};
+
+// ---------------------------------------------------------------------------
+export var fromNICE = (block) => {
+  var result;
+  dbgEnter('fromNICE', block);
+  result = parse(block);
+  dbgReturn('fromNice', result);
   return result;
 };
 

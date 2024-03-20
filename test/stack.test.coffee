@@ -7,7 +7,7 @@ import {
 	undef, defined, notdefined, words,
 	} from '@jdeighan/base-utils'
 import {
-	clearAllLogs, echoLogsByDefault,
+	clearAllLogs, echoLogs,
 	} from '@jdeighan/base-utils/log'
 import {CallStack, getStackLog} from '@jdeighan/base-utils/stack'
 import {
@@ -15,7 +15,7 @@ import {
 	equal, like, notequal, truthy, falsy, throws, succeeds,
 	} from '@jdeighan/base-utils/utest'
 
-echoLogsByDefault false
+echoLogs false
 
 # ---------------------------------------------------------------------------
 

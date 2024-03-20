@@ -47,7 +47,7 @@ import {
   debugLogging,
   clearMyLogs,
   getMyLogs,
-  echoMyLogs
+  echoLogs
 } from '@jdeighan/base-utils/log';
 
 import {
@@ -154,7 +154,6 @@ export var resetDebugging = () => {
   logString = stdLogString;
   logValue = stdLogValue;
   clearMyLogs();
-  echoMyLogs(false);
 };
 
 // ---------------------------------------------------------------------------
@@ -180,12 +179,12 @@ export var setDebugging = (debugWhat = undef, hOptions = {}) => {
   // --- First, process any options
   hOptions = getOptions(hOptions);
   if (hOptions.noecho) {
-    echoMyLogs(false);
+    echoLogs(false);
     if (internalDebugging) {
       console.log("TURN OFF ECHO");
     }
   } else {
-    echoMyLogs(true);
+    echoLogs(true);
     if (internalDebugging) {
       console.log("TURN ON ECHO");
     }
@@ -561,7 +560,10 @@ export var stdLogEnter = (level, funcName, lArgs) => {
       LOG(`enter ${funcName}`, labelPre);
       for (i = j = 0, len = lArgs.length; j < len; i = ++j) {
         arg = lArgs[i];
-        LOGVALUE(`arg[${i}]`, arg, idPre, itemPre);
+        LOGVALUE(`arg[${i}]`, arg, {
+          prefix: idPre,
+          itemPrefix: itemPre
+        });
       }
     }
   }
@@ -594,7 +596,10 @@ stdLogReturnVal = (level, funcName, val) => {
   } else {
     pre = getPrefix(level, 'noLastVbar');
     LOG(`return from ${funcName}`, labelPre);
-    LOGVALUE("val", val, pre, pre);
+    LOGVALUE("val", val, {
+      prefix: pre,
+      itemPrefix: pre
+    });
   }
   return true;
 };
@@ -614,7 +619,10 @@ export var stdLogYield = (...lArgs) => {
   } else {
     pre = getPrefix(level, 'plain');
     LOG("yield", labelPre);
-    LOGVALUE(undef, val, pre, pre);
+    LOGVALUE(undef, val, {
+      prefix: pre,
+      itemPrefix: pre
+    });
   }
   return true;
 };
@@ -655,7 +663,9 @@ export var stdLogValue = (level, label, val) => {
   var labelPre;
   assert(isInteger(level), "level not an integer");
   labelPre = getPrefix(level, 'plain');
-  LOGVALUE(label, val, labelPre);
+  LOGVALUE(label, val, {
+    prefix: labelPre
+  });
   return true;
 };
 

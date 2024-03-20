@@ -8,9 +8,10 @@
 import {exec} from 'node:child_process'
 
 import {
-	undef, defined, notdefined, nonEmpty, LOG, OL, execCmd,
+	undef, defined, notdefined, nonEmpty, OL, execCmd,
 	isNonEmptyString, sortArrayOfHashes,
 	} from '@jdeighan/base-utils'
+import {LOG} from '@jdeighan/base-utils/log'
 import {
 	setDebugging, dbgEnter, dbgReturn, dbg,
 	} from '@jdeighan/base-utils/debug'

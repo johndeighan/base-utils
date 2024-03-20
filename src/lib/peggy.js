@@ -7,7 +7,8 @@ import peggy from 'peggy';
 
 import {
   undef,
-  OL
+  OL,
+  toBlock
 } from '@jdeighan/base-utils';
 
 import {
@@ -15,7 +16,11 @@ import {
 } from '@jdeighan/base-utils/exceptions';
 
 import {
-  isFile
+  isFile,
+  slurp,
+  barf,
+  withExt,
+  readTextFile
 } from '@jdeighan/base-utils/fs';
 
 hPeggyOptions = {
@@ -38,6 +43,15 @@ export var peggify = (peggyCode, source) => {
     console.log(`ERROR: ${err.message}`);
     return [undef, undef];
   }
+};
+
+// ---------------------------------------------------------------------------
+export var peggifyFile = (filePath) => {
+  var jsCode, lLines, metadata, sourceMap;
+  ({metadata, lLines} = readTextFile(filePath));
+  [jsCode, sourceMap] = peggify(toBlock(lLines), filePath);
+  barf(jsCode, withExt(filePath, '.js'));
+  barf(sourceMap, withExt(filePath, '.js.map'));
 };
 
 //# sourceMappingURL=peggy.js.map

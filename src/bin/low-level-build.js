@@ -8,12 +8,13 @@ import {
   notdefined,
   isEmpty,
   nonEmpty,
-  LOG,
   OL,
   hasKey,
   execCmd,
   toBlock,
-  add_s
+  add_s,
+  withExt,
+  newerDestFilesExist
 } from '@jdeighan/base-utils';
 
 import {
@@ -21,8 +22,10 @@ import {
 } from '@jdeighan/base-utils/exceptions';
 
 import {
-  withExt,
-  newerDestFilesExist,
+  LOG
+} from '@jdeighan/base-utils/log';
+
+import {
   allFilesMatching,
   slurp,
   barf,
@@ -88,7 +91,7 @@ for (hFile of ref) {
 
 ref1 = allFilesMatching('**/*.peggy', hOptions);
 // ---------------------------------------------------------------------------
-// 3. Search project for *.peggy files and compile them
+// 3. Search src folder for *.peggy files and compile them
 //    unless newer *.js and *.js.map files exist
 for (hFile of ref1) {
   ({filePath, relPath, metadata, lLines} = hFile);

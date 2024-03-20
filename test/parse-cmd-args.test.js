@@ -2,9 +2,12 @@
 import {
   undef,
   defined,
-  notdefined,
-  LOG
+  notdefined
 } from '@jdeighan/base-utils';
+
+import {
+  LOG
+} from '@jdeighan/base-utils/log';
 
 import {
   setDebugging

@@ -19,7 +19,7 @@ import {
   LOGSTRING,
   clearAllLogs,
   getMyLogs,
-  echoLogsByDefault
+  echoLogs
 } from '@jdeighan/base-utils/log';
 
 import {
@@ -53,7 +53,7 @@ import {
   succeeds
 } from '@jdeighan/base-utils/utest';
 
-echoLogsByDefault(false);
+echoLogs(false);
 
 setDebugging(false, 'noecho');
 

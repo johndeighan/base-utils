@@ -26,13 +26,14 @@ threeSpaces  = '   '
 #     ONLY called directly in PUTSTR, set in setLogger()
 putstr = undef
 
-logs = new NamedLogs({doEcho: true})
+logs = new NamedLogs()
+doEcho = true
 
 # ---------------------------------------------------------------------------
 
-export echoLogsByDefault = (flag=true) =>
+export echoLogs = (flag=true) =>
 
-	logs.hDefaultKeys.doEcho = flag
+	doEcho = flag
 	return
 
 # ---------------------------------------------------------------------------
@@ -42,16 +43,6 @@ export debugLogging = (flag=true) =>
 	internalDebugging = flag
 	if internalDebugging
 		console.log "internalDebugging = #{flag}"
-	return
-
-# ---------------------------------------------------------------------------
-
-export echoMyLogs = (flag=true) =>
-
-	# --- NOTE: hFrame can be undef - NamedLogs handles that OK
-	filePath = getMyOutsideCaller()?.filePath
-	if defined(filePath)
-		logs.setKey filePath, 'doEcho', flag
 	return
 
 # ---------------------------------------------------------------------------
@@ -119,7 +110,6 @@ export PUTSTR = (str) =>
 	if defined(caller)
 		filePath = caller.filePath
 		fileName = parsePath(filePath).fileName
-		doEcho = logs.getKey(filePath, 'doEcho')
 		if internalDebugging
 			console.log "   - filePath = #{OL(filePath)}, doEcho = #{OL(doEcho)}"
 			console.log "   - from #{fileName}"
@@ -257,9 +247,13 @@ export stringFits = (str) =>
 
 # ---------------------------------------------------------------------------
 
-export LOGVALUE = (label, value, prefix="", itemPrefix=undef) =>
+export LOGVALUE = (label, value, hOptions={}) =>
 	# --- Allow label to be empty, i.e. undef
 
+	{prefix, itemPrefix} = getOptions hOptions, {
+		prefix: ''
+		itemPrefix: undef
+		}
 	if internalDebugging
 		str1 = OL(label)
 		str2 = OL(value)

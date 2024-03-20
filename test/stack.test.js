@@ -15,7 +15,7 @@ import {
 
 import {
   clearAllLogs,
-  echoLogsByDefault
+  echoLogs
 } from '@jdeighan/base-utils/log';
 
 import {
@@ -34,7 +34,7 @@ import {
   succeeds
 } from '@jdeighan/base-utils/utest';
 
-echoLogsByDefault(false);
+echoLogs(false);
 
 // ---------------------------------------------------------------------------
 TEST = (stack, curFunc, strActive, strNonActive, logging, level = undef, logLevel = undef) => {

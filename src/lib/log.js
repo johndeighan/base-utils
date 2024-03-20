@@ -1,5 +1,5 @@
 // log.coffee
-var handleSimpleCase, internalDebugging, logs, putstr, threeSpaces;
+var doEcho, handleSimpleCase, internalDebugging, logs, putstr, threeSpaces;
 
 import {
   pass,
@@ -74,13 +74,13 @@ threeSpaces = '   ';
 //     ONLY called directly in PUTSTR, set in setLogger()
 putstr = undef;
 
-logs = new NamedLogs({
-  doEcho: true
-});
+logs = new NamedLogs();
+
+doEcho = true;
 
 // ---------------------------------------------------------------------------
-export var echoLogsByDefault = (flag = true) => {
-  logs.hDefaultKeys.doEcho = flag;
+export var echoLogs = (flag = true) => {
+  doEcho = flag;
 };
 
 // ---------------------------------------------------------------------------
@@ -88,16 +88,6 @@ export var debugLogging = (flag = true) => {
   internalDebugging = flag;
   if (internalDebugging) {
     console.log(`internalDebugging = ${flag}`);
-  }
-};
-
-// ---------------------------------------------------------------------------
-export var echoMyLogs = (flag = true) => {
-  var filePath, ref;
-  // --- NOTE: hFrame can be undef - NamedLogs handles that OK
-  filePath = (ref = getMyOutsideCaller()) != null ? ref.filePath : void 0;
-  if (defined(filePath)) {
-    logs.setKey(filePath, 'doEcho', flag);
   }
 };
 
@@ -147,7 +137,7 @@ export var LOG = (str = "", prefix = "") => {
 
 // ---------------------------------------------------------------------------
 export var PUTSTR = (str) => {
-  var caller, doEcho, fileName, filePath;
+  var caller, fileName, filePath;
   if (internalDebugging) {
     console.log(`IN PUTSTR(${OL(str)})`);
     if (defined(putstr)) {
@@ -166,7 +156,6 @@ export var PUTSTR = (str) => {
   if (defined(caller)) {
     filePath = caller.filePath;
     fileName = parsePath(filePath).fileName;
-    doEcho = logs.getKey(filePath, 'doEcho');
     if (internalDebugging) {
       console.log(`   - filePath = ${OL(filePath)}, doEcho = ${OL(doEcho)}`);
       console.log(`   - from ${fileName}`);
@@ -304,9 +293,13 @@ export var stringFits = (str) => {
 };
 
 // ---------------------------------------------------------------------------
-export var LOGVALUE = (label, value, prefix = "", itemPrefix = undef) => {
-  var escaped, i, j, labelStr, len, len1, line, ref, ref1, str, str1, str2, str3, subtype, type;
+export var LOGVALUE = (label, value, hOptions = {}) => {
+  var escaped, i, itemPrefix, j, labelStr, len, len1, line, prefix, ref, ref1, str, str1, str2, str3, subtype, type;
   // --- Allow label to be empty, i.e. undef
+  ({prefix, itemPrefix} = getOptions(hOptions, {
+    prefix: '',
+    itemPrefix: undef
+  }));
   if (internalDebugging) {
     str1 = OL(label);
     str2 = OL(value);

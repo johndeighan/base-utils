@@ -1,6 +1,6 @@
 {{
 	import {
-		isEmpty, nonEmpty, hasKey, addNewKey, LOG,
+		isEmpty, nonEmpty, hasKey, addNewKey,
 		} from '@jdeighan/base-utils';
 	import {assert} from '@jdeighan/base-utils/exceptions';
 	let hOptions = {};
@@ -40,7 +40,6 @@ argList
 arg
 	= '-' lChars:[A-Za-z]+ value:(@'=' @stringVal)?
 	{
-		// LOG(`arg: lChars = '${lChars}', value = '${value}'`);
 		if (isEmpty(value)) {
 			for (const ch of lChars) {
 				addOption(ch, true);

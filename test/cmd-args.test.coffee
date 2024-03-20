@@ -1,6 +1,5 @@
 # cmd-args.test.coffee
 
-import {LOG} from '@jdeighan/base-utils'
 import {u, equal, throws} from '@jdeighan/base-utils/utest'
 import {parse} from '@jdeighan/base-utils/cmd-args'
 

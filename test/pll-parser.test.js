@@ -2,7 +2,6 @@
 import {
   undef,
   defined,
-  LOG,
   OL,
   sortArrayOfHashes,
   isString,
@@ -12,6 +11,10 @@ import {
 import {
   assert
 } from '@jdeighan/base-utils/exceptions';
+
+import {
+  LOG
+} from '@jdeighan/base-utils/log';
 
 import {
   setDebugging

@@ -1,6 +1,7 @@
 # ll-fs.test.coffee
 
-import {undef, LOG, OL, samelist} from '@jdeighan/base-utils'
+import {undef, OL, samelist} from '@jdeighan/base-utils'
+import {LOG} from '@jdeighan/base-utils/log'
 import {
 	UnitTester,
 	equal, like, notequal, succeeds, throws, truthy, falsy,

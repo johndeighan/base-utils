@@ -1,8 +1,9 @@
 # for-each-file.test.coffee
 
 import {
-	undef, defined, notdefined, execCmd, LOG, OL,
+	undef, defined, notdefined, execCmd, OL,
 	} from '@jdeighan/base-utils'
+import {LOG} from '@jdeighan/base-utils/log'
 import {mkpath} from '@jdeighan/base-utils/fs'
 import {
 	equal, like, includes, matches, samelines, succeeds,

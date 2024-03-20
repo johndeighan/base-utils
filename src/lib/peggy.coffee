@@ -3,9 +3,13 @@
 import peggy from 'peggy'
 {generate} = peggy
 
-import {undef, OL} from '@jdeighan/base-utils'
+import {
+	undef, OL, toBlock,
+	} from '@jdeighan/base-utils'
 import {assert} from '@jdeighan/base-utils/exceptions'
-import {isFile} from '@jdeighan/base-utils/fs'
+import {
+	isFile, slurp, barf, withExt, readTextFile,
+	} from '@jdeighan/base-utils/fs'
 
 hPeggyOptions = {
 	allowedStartRules: ['*']
@@ -26,3 +30,13 @@ export peggify = (peggyCode, source) =>
 	catch err
 		console.log "ERROR: #{err.message}"
 		return [undef, undef]
+
+# ---------------------------------------------------------------------------
+
+export peggifyFile = (filePath) =>
+
+	{metadata, lLines} = readTextFile(filePath)
+	[jsCode, sourceMap] = peggify toBlock(lLines), filePath
+	barf jsCode, withExt(filePath, '.js')
+	barf sourceMap, withExt(filePath, '.js.map')
+	return

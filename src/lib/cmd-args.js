@@ -5,7 +5,7 @@
 
 
 	import {
-		isEmpty, nonEmpty, hasKey, addNewKey, LOG,
+		isEmpty, nonEmpty, hasKey, addNewKey,
 		} from '@jdeighan/base-utils';
 	import {assert} from '@jdeighan/base-utils/exceptions';
 	let hOptions = {};
@@ -229,7 +229,6 @@ function peg$parse(input, options) {
 
   var peg$f0 = function() { return hOptions; };
   var peg$f1 = function(lChars, value) {
-		// LOG(`arg: lChars = '${lChars}', value = '${value}'`);
 		if (isEmpty(value)) {
 			for (const ch of lChars) {
 				addOption(ch, true);

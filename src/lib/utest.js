@@ -6,14 +6,14 @@ import {
   defined,
   pass,
   OL,
-  LOG,
   jsType,
   rtrim,
   isString,
   isInteger,
   isRegExp,
   nonEmpty,
-  toArray
+  toArray,
+  fileExt
 } from '@jdeighan/base-utils';
 
 import {
@@ -25,8 +25,7 @@ import {
 
 import {
   isFile,
-  parsePath,
-  fileExt
+  parsePath
 } from '@jdeighan/base-utils/ll-fs';
 
 import {
@@ -45,7 +44,7 @@ import {
 //        includes 2
 //        matches 2
 //        like 2
-//        throws 1 (a function)
+//        fails 1 (a function)
 //        succeeds 1 (a function)
 // ---------------------------------------------------------------------------
 export var UnitTester = class UnitTester {
@@ -68,9 +67,9 @@ export var UnitTester = class UnitTester {
     // --- We need to figure out the line number of the caller
     ({filePath, line, column} = getMyOutsideCaller());
     if (this.debug) {
-      LOG("getTestName()");
-      LOG(`   filePath = '${filePath}'`);
-      LOG(`   line = ${line}, col = ${column}`);
+      console.log("getTestName()");
+      console.log(`   filePath = '${filePath}'`);
+      console.log(`   line = ${line}, col = ${column}`);
     }
     assert(isInteger(line), `getMyOutsideCaller() line = ${OL(line)}`);
     assert(fileExt(filePath) === '.js', `caller not a JS file: ${OL(filePath)}`);
@@ -82,7 +81,7 @@ export var UnitTester = class UnitTester {
           debug: this.debug
         });
         if (this.debug) {
-          LOG(`   mapped to ${mline}`);
+          console.log(`   mapped to ${mline}`);
         }
         assert(isInteger(mline), `not an integer: ${mline}`);
         line = mline;
@@ -210,7 +209,7 @@ export var UnitTester = class UnitTester {
   }
 
   // ..........................................................
-  throws(func) {
+  fails(func) {
     var err, log, ok;
     assert(typeof func === 'function', "function expected");
     try {
@@ -225,6 +224,10 @@ export var UnitTester = class UnitTester {
     test(this.getTestName(), (t) => {
       return t.falsy(ok);
     });
+  }
+
+  throws(func) {
+    return fails(func);
   }
 
   // ..........................................................
@@ -289,12 +292,16 @@ export var matches = (str, regexp) => {
   return u.matches(str, regexp);
 };
 
-export var throws = (func) => {
-  return u.throws(func);
-};
-
 export var succeeds = (func) => {
   return u.succeeds(func);
+};
+
+export var fails = (func) => {
+  return u.fails(func);
+};
+
+export var throws = (func) => {
+  return u.fails(func);
 };
 
 //# sourceMappingURL=utest.js.map

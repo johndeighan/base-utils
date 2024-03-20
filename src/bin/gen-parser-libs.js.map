@@ -6,8 +6,8 @@
     "src/bin/gen-parser-libs.coffee"
   ],
   "names": [],
-  "mappings": "AAAwB;AAAA,IAAA,QAAA,EAAA,QAAA,EAAA,KAAA,EAAA;;AAExB,OAAA;EACC,KADD;EACQ,OADR;EACiB,UADjB;EAC6B,GAD7B;EACkC,OADlC;CAAA,MAAA;;AAGA,OAAA;EAAQ,gBAAR;EAA0B,OAA1B;CAAA,MAAA;;AAIA;;AAAA,KAAA,YAAA;EACC,CAAA,CAAC,QAAD,EAAW,QAAX,CAAA,GAAuB,KAAvB;EACA,OAAA,CAAQ,CAAA,iDAAA,CAAA,CAAoD,QAApD,CAAA,CAAR;EACA,GAAA,CAAI,CAAA,CAAA,CAAG,QAAH,CAAA,IAAA,CAAA,CAAkB,OAAA,CAAQ,QAAR,EAAkB,KAAlB,CAAlB,CAAA,CAAJ;AAHD",
+  "mappings": "AAAwB;AAAA,IAAA,QAAA,EAAA,QAAA,EAAA,KAAA,EAAA;;AAExB,OAAA;EACC,KADD;EACQ,OADR;EACiB,UADjB;EAC6B,OAD7B;CAAA,MAAA;;AAGA,OAAA;EAAQ,GAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,gBAAR;EAA0B,OAA1B;CAAA,MAAA;;AAIA;;AAAA,KAAA,YAAA;EACC,CAAA,CAAC,QAAD,EAAW,QAAX,CAAA,GAAuB,KAAvB;EACA,OAAA,CAAQ,CAAA,iDAAA,CAAA,CAAoD,QAApD,CAAA,CAAR;EACA,GAAA,CAAI,CAAA,CAAA,CAAG,QAAH,CAAA,IAAA,CAAA,CAAkB,OAAA,CAAQ,QAAR,EAAkB,KAAlB,CAAlB,CAAA,CAAJ;AAHD",
   "sourcesContent": [
-    "# gen-parser-libs.coffee\n\nimport {\n\tundef, defined, notdefined, LOG, execCmd,\n\t} from '@jdeighan/base-utils'\nimport {allFilesMatching, withExt} from '@jdeighan/base-utils/fs'\n\n# ---------------------------------------------------------------------------\n\nfor hFile from allFilesMatching('./src/lib/*.peggy')\n\t{fileName, filePath} = hFile\n\texecCmd \"npx peggy -m --format es --allowed-start-rules * #{filePath}\"\n\tLOG \"#{fileName} => #{withExt(fileName, '.js')}\""
+    "# gen-parser-libs.coffee\n\nimport {\n\tundef, defined, notdefined, execCmd,\n\t} from '@jdeighan/base-utils'\nimport {LOG} from '@jdeighan/base-utils/log'\nimport {allFilesMatching, withExt} from '@jdeighan/base-utils/fs'\n\n# ---------------------------------------------------------------------------\n\nfor hFile from allFilesMatching('./src/lib/*.peggy')\n\t{fileName, filePath} = hFile\n\texecCmd \"npx peggy -m --format es --allowed-start-rules * #{filePath}\"\n\tLOG \"#{fileName} => #{withExt(fileName, '.js')}\""
   ]
 }

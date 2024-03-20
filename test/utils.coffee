@@ -1,10 +1,11 @@
 # utils.coffee
 
 import {
-	undef, defined, notdefined, getOptions, LOG, CWS,
+	undef, defined, notdefined, getOptions, CWS,
 	shuffle, keys, hasKey,
 	} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
+import {LOG} from '@jdeighan/base-utils/log'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 import {
 	mkpath, isFile,

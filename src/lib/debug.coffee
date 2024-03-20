@@ -12,7 +12,7 @@ import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {
 	LOG, LOGVALUE, stringFits, debugLogging,
-	clearMyLogs, getMyLogs, echoMyLogs,
+	clearMyLogs, getMyLogs, echoLogs,
 	} from '@jdeighan/base-utils/log'
 import {toTAML} from '@jdeighan/base-utils/taml'
 import {CallStack} from '@jdeighan/base-utils/stack'
@@ -110,7 +110,6 @@ export resetDebugging = () =>
 	logString = stdLogString
 	logValue  = stdLogValue
 	clearMyLogs()
-	echoMyLogs false
 	return
 
 # ---------------------------------------------------------------------------
@@ -138,11 +137,11 @@ export setDebugging = (debugWhat=undef, hOptions={}) =>
 	# --- First, process any options
 	hOptions = getOptions(hOptions)
 	if hOptions.noecho
-		echoMyLogs false
+		echoLogs false
 		if internalDebugging
 			console.log "TURN OFF ECHO"
 	else
-		echoMyLogs true
+		echoLogs true
 		if internalDebugging
 			console.log "TURN ON ECHO"
 	for key in words('enter returnFrom yield resume string value')
@@ -469,7 +468,10 @@ export stdLogEnter = (level, funcName, lArgs) =>
 			itemPre = getPrefix(level+2, 'noLastVbar')
 			LOG "enter #{funcName}", labelPre
 			for arg,i in lArgs
-				LOGVALUE "arg[#{i}]", arg, idPre, itemPre
+				LOGVALUE "arg[#{i}]", arg, {
+						prefix: idPre
+						itemPrefix: itemPre
+						}
 	return true
 
 # ---------------------------------------------------------------------------
@@ -500,7 +502,7 @@ stdLogReturnVal = (level, funcName, val) =>
 	else
 		pre = getPrefix(level, 'noLastVbar')
 		LOG "return from #{funcName}", labelPre
-		LOGVALUE "val", val, pre, pre
+		LOGVALUE "val", val, {prefix: pre, itemPrefix: pre}
 	return true
 
 # ---------------------------------------------------------------------------
@@ -518,7 +520,7 @@ export stdLogYield = (lArgs...) =>
 	else
 		pre = getPrefix(level, 'plain')
 		LOG "yield", labelPre
-		LOGVALUE undef, val, pre, pre
+		LOGVALUE undef, val, {prefix: pre, itemPrefix: pre}
 	return true
 
 # ---------------------------------------------------------------------------
@@ -557,7 +559,7 @@ export stdLogValue = (level, label, val) =>
 	assert isInteger(level), "level not an integer"
 
 	labelPre = getPrefix(level, 'plain')
-	LOGVALUE label, val, labelPre
+	LOGVALUE label, val, {prefix: labelPre}
 	return true
 
 # ---------------------------------------------------------------------------

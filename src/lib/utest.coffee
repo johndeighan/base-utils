@@ -3,14 +3,14 @@
 import test from 'ava'
 
 import {
-	undef, defined, pass, OL, LOG, jsType, rtrim,
+	undef, defined, pass, OL, jsType, rtrim,
 	isString, isInteger, isRegExp, nonEmpty,
-	toArray,
+	toArray, fileExt,
 	} from '@jdeighan/base-utils'
 import {
 	assert, croak, exReset, exGetLog,
 	} from '@jdeighan/base-utils/exceptions'
-import {isFile, parsePath, fileExt} from '@jdeighan/base-utils/ll-fs'
+import {isFile, parsePath} from '@jdeighan/base-utils/ll-fs'
 import {mapLineNum} from '@jdeighan/base-utils/source-map'
 import {getMyOutsideCaller} from '@jdeighan/base-utils/v8-stack'
 
@@ -22,7 +22,7 @@ import {getMyOutsideCaller} from '@jdeighan/base-utils/v8-stack'
 #        includes 2
 #        matches 2
 #        like 2
-#        throws 1 (a function)
+#        fails 1 (a function)
 #        succeeds 1 (a function)
 # ---------------------------------------------------------------------------
 
@@ -47,9 +47,9 @@ export class UnitTester
 		# --- We need to figure out the line number of the caller
 		{filePath, line, column} = getMyOutsideCaller()
 		if @debug
-			LOG "getTestName()"
-			LOG "   filePath = '#{filePath}'"
-			LOG "   line = #{line}, col = #{column}"
+			console.log "getTestName()"
+			console.log "   filePath = '#{filePath}'"
+			console.log "   line = #{line}, col = #{column}"
 
 		assert isInteger(line), "getMyOutsideCaller() line = #{OL(line)}"
 		assert (fileExt(filePath) == '.js'),
@@ -61,7 +61,7 @@ export class UnitTester
 			try
 				mline = mapLineNum filePath, line, column, {debug: @debug}
 				if @debug
-					LOG "   mapped to #{mline}"
+					console.log "   mapped to #{mline}"
 				assert isInteger(mline), "not an integer: #{mline}"
 				line = mline
 			catch err
@@ -186,7 +186,7 @@ export class UnitTester
 
 	# ..........................................................
 
-	throws: (func) ->
+	fails: (func) ->
 
 		assert (typeof func == 'function'), "function expected"
 		try
@@ -199,6 +199,10 @@ export class UnitTester
 
 		test @getTestName(), (t) => t.falsy(ok)
 		return
+
+	throws: (func) ->
+
+		return fails(func)
 
 	# ..........................................................
 
@@ -228,5 +232,6 @@ export truthy = (arg) => return u.truthy(arg)
 export falsy = (arg) => return u.falsy(arg)
 export includes = (arg1, arg2) => return u.includes(arg1, arg2)
 export matches = (str, regexp) => return u.matches(str, regexp)
-export throws = (func) => return u.throws(func)
 export succeeds = (func) => return u.succeeds(func)
+export fails = (func) => return u.fails(func)
+export throws = (func) => return u.fails(func)

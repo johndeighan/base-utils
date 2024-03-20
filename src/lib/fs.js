@@ -39,11 +39,13 @@ import {
   OL,
   forEachItem,
   jsType,
-  hasKey
+  hasKey,
+  fileExt,
+  withExt,
+  newerDestFilesExist
 } from '@jdeighan/base-utils';
 
 import {
-  fileExt,
   workingDir,
   myself,
   mydir,
@@ -59,15 +61,13 @@ import {
   rmFile,
   rmDir,
   parsePath,
-  withExt,
   parentDir,
   parallelPath,
   subPath,
   fileDirPath,
   mkDirsForFile,
   getFileStats,
-  lStatFields,
-  newerDestFilesExist
+  lStatFields
 } from '@jdeighan/base-utils/ll-fs';
 
 import {
@@ -210,24 +210,28 @@ export var getPkgJsonPath = () => {
 };
 
 // ---------------------------------------------------------------------------
-export var getTextFileContents = (filePath) => {
-  var hResult, inMeta, lLines, lMetaLines, line, metadata, numLines, ref;
+export var readTextFile = (filePath) => {
+  var hResult, lLines, lMetaLines, line, metadata, numLines, ref;
   // --- handles metadata if present
-  dbgEnter('getTextFileContents', filePath);
+  dbgEnter('readTextFile', filePath);
   assert(isFile(filePath), `Not a file: ${OL(filePath)}`);
   lMetaLines = undef;
-  inMeta = false;
+  metadata = undef;
   lLines = [];
   numLines = 0;
   ref = allLinesIn(filePath);
   for (line of ref) {
-    if ((numLines === 0) && (line === '---')) {
-      lMetaLines = ['---'];
-      inMeta = true;
-    } else if (inMeta) {
-      if (line === '---') {
-        inMeta = false;
+    dbg(`LINE: ${OL(line)}`);
+    if ((numLines === 0) && isMetaDataStart(line)) {
+      dbg(`   - start metadata with ${OL(line)}`);
+      lMetaLines = [line];
+    } else if (defined(lMetaLines)) {
+      if (line === lMetaLines[0]) {
+        dbg("   - end meta data");
+        metadata = convertMetaData(lMetaLines);
+        lMetaLines = undef;
       } else {
+        dbg(`META: ${OL(line)}`);
         lMetaLines.push(line);
       }
     } else {
@@ -235,13 +239,8 @@ export var getTextFileContents = (filePath) => {
     }
     numLines += 1;
   }
-  if (nonEmpty(lMetaLines)) {
-    metadata = fromTAML(toBlock(lMetaLines));
-  } else {
-    metadata = undef;
-  }
   hResult = {metadata, lLines};
-  dbgReturn('getTextFileContents', hResult);
+  dbgReturn('readTextFile', hResult);
   return hResult;
 };
 
@@ -352,7 +351,7 @@ export var allFilesMatching = function*(pattern = '*', hOptions = {}) {
     ({filePath} = h);
     dbg(`GLOB: ${OL(filePath)}`);
     if (eager && isFile(filePath)) {
-      hContents = getTextFileContents(filePath);
+      hContents = readTextFile(filePath);
       Object.assign(h, hContents);
     }
     if (fileFilter(h)) {

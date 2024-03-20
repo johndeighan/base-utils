@@ -1,26 +1,26 @@
 # named-logs.coffee
 
-import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {
-	undef, defined, notdefined, OL,
-	isString, isNonEmptyString, isHash, isFunction,
+	undef, defined, notdefined, hasKey, isFunction,
 	} from '@jdeighan/base-utils'
+import {assert, croak} from '@jdeighan/base-utils/exceptions'
 
 # ---------------------------------------------------------------------------
 
 export class NamedLogs
 
-	constructor: (@hDefaultKeys={}) ->
+	constructor: () ->
 
-		# --- <name> must be undef or a non-empty string
-		@hLogs = {}   # --- { <name>: { lLogs: [<str>, ...], ... }}
+		# --- {
+		#        <name>: [<str>, ...],
+		#        ...
+		#        }
+		@hLogs = {}
 
 	# ..........................................................
 
 	dump: () ->
 
-		console.log "hDefaultKeys:"
-		console.log JSON.stringify(@hDefaultKeys, null, 3)
 		console.log "hLogs:"
 		console.log JSON.stringify(@hLogs, null, 3)
 		return
@@ -29,20 +29,26 @@ export class NamedLogs
 
 	log: (name, str) ->
 
-		h = @getHash(name)
-		h.lLogs.push str
+		if hasKey(@hLogs, name)
+			@hLogs[name].push str
+		else
+			@hLogs[name] = [str]
 		return
 
 	# ..........................................................
+	# --- func is a function to filter lines returned
+	#     returns a block, i.e. multi-line string
 
 	getLogs: (name, func=undef) ->
 
-		h = @getHash(name)
+		if ! hasKey(@hLogs, name)
+			return ''
+		lLogs = @hLogs[name]
 		if defined(func)
 			assert isFunction(func), "filter not a function"
-			return h.lLogs.filter(func).join("\n")
+			return lLogs.filter(func).join("\n")
 		else
-			return h.lLogs.join("\n")
+			return lLogs.join("\n")
 
 	# ..........................................................
 
@@ -50,64 +56,20 @@ export class NamedLogs
 
 		lAllLogs = []
 		for own name,h of @hLogs
-			lAllLogs.push @getLogs(name)
-		if defined(func)
-			assert isFunction(func), "filter not a function"
-			return lAllLogs.filter(func).join("\n")
-		else
-			return lAllLogs.join("\n")
+			lAllLogs.push @getLogs(name, func)
+		return lAllLogs.join("\n")
 
 	# ..........................................................
 
 	clear: (name) ->
 
-		h = @getHash(name)
-		h.lLogs = []
+		if hasKey(@hLogs, name)
+			delete @hLogs[name]
 		return
 
 	# ..........................................................
 
 	clearAllLogs: () ->
 
-		for own name,h of @hLogs
-			h.lLogs = []
+		@hLogs = {}
 		return
-
-	# ..........................................................
-
-	setKey: (name, key, value) ->
-
-		h = @getHash(name)
-		h[key] = value
-		return
-
-	# ..........................................................
-
-	getKey: (name, key) ->
-
-		h = @getHash(name)
-		assert isHash(h), "in getKey(), h = #{OL(h)}"
-		if h.hasOwnProperty(key)
-			result = h[key]
-			return result
-		else if @hDefaultKeys.hasOwnProperty(key)
-			result = @hDefaultKeys[key]
-			return result
-		else
-			return undef
-
-	# ..........................................................
-
-	getHash: (name) ->
-
-		assert (name != 'undef'), "cannot use key 'undef'"
-		if notdefined(name)
-			name = 'undef'
-
-		assert isNonEmptyString(name), "name = '#{OL(name)}'"
-		assert (name != 'lLogs'), "cannot use key 'lLogs'"
-		if ! @hLogs.hasOwnProperty(name)
-			@hLogs[name] = {
-				lLogs: []
-				}
-		return @hLogs[name]

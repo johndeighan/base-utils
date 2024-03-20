@@ -2,13 +2,13 @@
 
 import {
 	undef, defined, notdefined, isEmpty, nonEmpty,
-	LOG, OL, execCmd, hasKey,
+	OL, execCmd, hasKey, withExt, newerDestFilesExist,
 	} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
+import {LOG} from '@jdeighan/base-utils/log'
 import {
-	isFile, isDir, mkpath, rmFile, withExt, isProjRoot,
+	isFile, isDir, mkpath, rmFile, isProjRoot,
 	slurp, allFilesMatching, slurpJSON, barf, barfJSON,
-	newerDestFilesExist,
 	} from '@jdeighan/base-utils/fs'
 
 shebang = "#!/usr/bin/env node"

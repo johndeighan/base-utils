@@ -5,18 +5,20 @@ import {
 	equal, like, notequal, truthy, falsy, throws, succeeds,
 	} from '@jdeighan/base-utils/utest'
 import {
-	undef, fromJSON, toJSON, LOG, OL, chomp, jsType,
+	undef, fromJSON, toJSON, OL, chomp, jsType,
 	words, hslice, sortArrayOfHashes,
+	newerDestFilesExist,
 	} from '@jdeighan/base-utils'
+import {LOG} from '@jdeighan/base-utils/log'
 import {setDebugging} from '@jdeighan/base-utils/debug'
 import {
 	workingDir, parentDir, myself, mydir, mkpath, isFile,
 	getPkgJsonDir, getPkgJsonPath,
 	slurp, slurpJSON, slurpTAML, slurpPkgJSON,
 	barf, barfJSON, barfTAML, barfPkgJSON,
-	parsePath, getTextFileContents, allFilesMatching,
+	parsePath, readTextFile, allFilesMatching,
 	allLinesIn, forEachLineInFile,
-	dirContents, FileWriter, newerDestFilesExist,
+	dirContents, FileWriter,
 	} from '@jdeighan/base-utils/fs'
 
 # --- should be root directory of @jdeighan/base-utils
@@ -147,11 +149,11 @@ equal slurp(testPath, 'maxLines=3'), """
 	"""
 
 # ---------------------------------------------------------------------------
-# --- test getTextFileContents
+# --- test readTextFile
 
 (() =>
 	path = "./test/test/file3.txt"
-	h = getTextFileContents(path)
+	h = readTextFile(path)
 	equal h, {
 		metadata: {fName: 'John', lName: 'Deighan'}
 		lLines: ['', 'This is a test']

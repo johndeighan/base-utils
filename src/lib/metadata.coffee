@@ -1,11 +1,12 @@
 # metadata.coffee
 
 import {
-	undef, defined, notdefined, LOG, OL,
-	isHash, isString, isNonEmptyString, isFunction,
+	undef, defined, notdefined, OL,
+	isHash, isString, isArray, isNonEmptyString, isFunction,
 	toArray, toBlock,
 	} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
+import {LOG} from '@jdeighan/base-utils/log'
 import {fromTAML} from '@jdeighan/base-utils/taml'
 # --- { <start>: <converter>, ... }
 hMetaDataTypes = {
@@ -35,9 +36,20 @@ export isMetaDataStart = (str) =>
 # --- blockOrArray will include start line,
 #     but not end line
 
-export convertMetaData = (blockOrArray, start) =>
+export convertMetaData = (blockOrArray) =>
+
+	if isArray(blockOrArray)
+		assert (blockOrArray.length > 0), "Empty array"
+		start = blockOrArray[0]
+		block = toBlock(blockOrArray)
+	else if isString(blockOrArray)
+		arr = toArray(blockOrArray)
+		assert (arr.length > 0), "Empty block"
+		start = arr[0]
+		block = blockOrArray
+	else
+		croak "Bad parameter to convertMetaData()"
 
 	assert defined(hMetaDataTypes[start]),
 		"Bad metadata start: #{OL(start)}"
-	block = toBlock(blockOrArray)
 	return hMetaDataTypes[start](block)

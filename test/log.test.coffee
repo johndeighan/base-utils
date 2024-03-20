@@ -10,14 +10,14 @@ import {
 	setStringifier, resetStringifier,
 	stringify, tamlStringify, orderedStringify,
 	LOG, LOGVALUE, LOGTAML, LOGJSON,
-	clearAllLogs, getMyLogs, echoLogsByDefault,
+	clearAllLogs, getMyLogs, echoLogs,
 	} from '@jdeighan/base-utils/log'
 import {
 	UnitTester,
 	equal, like, notequal, truthy, falsy, throws, succeeds,
 	} from '@jdeighan/base-utils/utest'
 
-echoLogsByDefault false
+echoLogs false
 fiveSpaces = ' '.repeat(5)
 
 # ---------------------------------------------------------------------------
@@ -121,7 +121,7 @@ equal getMyLogs(), """
 clearAllLogs('noecho')
 LOGVALUE 'x', "'\"abc\"'"
 equal getMyLogs(), """
-	x = <'"abc"'>
+	x = «'"abc"'»
 	"""
 
 # --- long string

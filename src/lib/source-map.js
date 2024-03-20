@@ -24,12 +24,12 @@ import {
   getOptions,
   isInteger,
   isString,
-  isHash
+  isHash,
+  fileExt
 } from '@jdeighan/base-utils';
 
 import {
   isFile,
-  fileExt,
   mkpath,
   parsePath
 } from '@jdeighan/base-utils/ll-fs';

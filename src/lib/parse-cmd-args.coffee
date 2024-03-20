@@ -2,10 +2,11 @@
 
 import {
 	undef, defined, notdefined, getOptions,
-	LOG, OL, hasKey, words,
+	OL, hasKey, words,
 	isHash, isArray, isNumber, isInteger, isRegExp,
 	isString, isBoolean,
 	} from '@jdeighan/base-utils'
+import {LOG} from '@jdeighan/base-utils/log'
 import {
 	dbgEnter, dbgReturn, dbg, debugDebug,
 	} from '@jdeighan/base-utils/debug'

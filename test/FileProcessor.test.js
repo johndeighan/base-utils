@@ -3,10 +3,13 @@ import {
   undef,
   defined,
   notdefined,
-  LOG,
   rtrim,
   toArray
 } from '@jdeighan/base-utils';
+
+import {
+  LOG
+} from '@jdeighan/base-utils/log';
 
 import {
   setDebugging

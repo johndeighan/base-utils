@@ -1,8 +1,9 @@
 # FileProcessor.test.coffee
 
 import {
-	undef, defined, notdefined, LOG, rtrim, toArray,
+	undef, defined, notdefined, rtrim, toArray,
 	} from '@jdeighan/base-utils'
+import {LOG} from '@jdeighan/base-utils/log'
 import {setDebugging} from '@jdeighan/base-utils/debug'
 import {
 	slurp, subPath, isDir, dirContents,

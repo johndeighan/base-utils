@@ -8,7 +8,7 @@ import {
 	} from '@jdeighan/base-utils'
 import {
 	LOG, LOGVALUE, LOGSTRING,
-	clearAllLogs, getMyLogs, echoLogsByDefault,
+	clearAllLogs, getMyLogs, echoLogs,
 	} from '@jdeighan/base-utils/log'
 import {CallStack} from '@jdeighan/base-utils/stack'
 import {
@@ -22,7 +22,7 @@ import {
 	equal, like, notequal, truthy, falsy, throws, succeeds,
 	} from '@jdeighan/base-utils/utest'
 
-echoLogsByDefault false
+echoLogs false
 setDebugging false, 'noecho'
 
 # ---------------------------------------------------------------------------

@@ -8,10 +8,11 @@ import {
   notdefined,
   isEmpty,
   nonEmpty,
-  LOG,
   OL,
   execCmd,
-  hasKey
+  hasKey,
+  withExt,
+  newerDestFilesExist
 } from '@jdeighan/base-utils';
 
 import {
@@ -20,18 +21,20 @@ import {
 } from '@jdeighan/base-utils/exceptions';
 
 import {
+  LOG
+} from '@jdeighan/base-utils/log';
+
+import {
   isFile,
   isDir,
   mkpath,
   rmFile,
-  withExt,
   isProjRoot,
   slurp,
   allFilesMatching,
   slurpJSON,
   barf,
-  barfJSON,
-  newerDestFilesExist
+  barfJSON
 } from '@jdeighan/base-utils/fs';
 
 shebang = "#!/usr/bin/env node";

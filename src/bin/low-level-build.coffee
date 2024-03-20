@@ -1,13 +1,15 @@
 # low-level-build.coffee
 
 import {
-	undef, defined, notdefined, isEmpty, nonEmpty, LOG, OL,
+	undef, defined, notdefined, isEmpty, nonEmpty, OL,
 	hasKey, execCmd, toBlock, add_s,
+	withExt, newerDestFilesExist,
 	} from '@jdeighan/base-utils'
 import {assert} from '@jdeighan/base-utils/exceptions'
+import {LOG} from '@jdeighan/base-utils/log'
 import {
-	withExt, newerDestFilesExist, allFilesMatching,
-	slurp, barf, isProjRoot, slurpPkgJSON, barfPkgJSON,
+	allFilesMatching, slurp, barf,
+	isProjRoot, slurpPkgJSON, barfPkgJSON,
 	} from '@jdeighan/base-utils/fs'
 import {brew} from '@jdeighan/base-utils/coffee'
 import {peggify} from '@jdeighan/base-utils/peggy'
@@ -57,7 +59,7 @@ for hFile from allFilesMatching('**/*.coffee', hOptions)
 	barf sourceMap, withExt(filePath, '.js.map')
 
 # ---------------------------------------------------------------------------
-# 3. Search project for *.peggy files and compile them
+# 3. Search src folder for *.peggy files and compile them
 #    unless newer *.js and *.js.map files exist
 
 for hFile from allFilesMatching('**/*.peggy', hOptions)

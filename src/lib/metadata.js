@@ -5,10 +5,10 @@ import {
   undef,
   defined,
   notdefined,
-  LOG,
   OL,
   isHash,
   isString,
+  isArray,
   isNonEmptyString,
   isFunction,
   toArray,
@@ -19,6 +19,10 @@ import {
   assert,
   croak
 } from '@jdeighan/base-utils/exceptions';
+
+import {
+  LOG
+} from '@jdeighan/base-utils/log';
 
 import {
   fromTAML
@@ -48,10 +52,21 @@ export var isMetaDataStart = (str) => {
 // ---------------------------------------------------------------------------
 // --- blockOrArray will include start line,
 //     but not end line
-export var convertMetaData = (blockOrArray, start) => {
-  var block;
+export var convertMetaData = (blockOrArray) => {
+  var arr, block, start;
+  if (isArray(blockOrArray)) {
+    assert(blockOrArray.length > 0, "Empty array");
+    start = blockOrArray[0];
+    block = toBlock(blockOrArray);
+  } else if (isString(blockOrArray)) {
+    arr = toArray(blockOrArray);
+    assert(arr.length > 0, "Empty block");
+    start = arr[0];
+    block = blockOrArray;
+  } else {
+    croak("Bad parameter to convertMetaData()");
+  }
   assert(defined(hMetaDataTypes[start]), `Bad metadata start: ${OL(start)}`);
-  block = toBlock(blockOrArray);
   return hMetaDataTypes[start](block);
 };
 

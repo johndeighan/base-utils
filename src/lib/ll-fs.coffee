@@ -5,7 +5,7 @@ import urlLib from 'url'
 import fs from 'fs'
 
 import {
-	pass, undef, defined, notdefined, LOG,
+	pass, undef, defined, notdefined,
 	isString, getOptions, words,
 	fileExt, withExt, newerDestFilesExist,
 	assert, croak,                  # low level versions

@@ -16,14 +16,18 @@ import {
   undef,
   fromJSON,
   toJSON,
-  LOG,
   OL,
   chomp,
   jsType,
   words,
   hslice,
-  sortArrayOfHashes
+  sortArrayOfHashes,
+  newerDestFilesExist
 } from '@jdeighan/base-utils';
+
+import {
+  LOG
+} from '@jdeighan/base-utils/log';
 
 import {
   setDebugging
@@ -47,13 +51,12 @@ import {
   barfTAML,
   barfPkgJSON,
   parsePath,
-  getTextFileContents,
+  readTextFile,
   allFilesMatching,
   allLinesIn,
   forEachLineInFile,
   dirContents,
-  FileWriter,
-  newerDestFilesExist
+  FileWriter
 } from '@jdeighan/base-utils/fs';
 
 // --- should be root directory of @jdeighan/base-utils
@@ -178,11 +181,11 @@ def
 ghi`);
 
 // ---------------------------------------------------------------------------
-// --- test getTextFileContents
+// --- test readTextFile
 (() => {
   var h, path;
   path = "./test/test/file3.txt";
-  h = getTextFileContents(path);
+  h = readTextFile(path);
   return equal(h, {
     metadata: {
       fName: 'John',

@@ -12,7 +12,6 @@ import {
   undef,
   defined,
   notdefined,
-  LOG,
   isString,
   getOptions,
   words,

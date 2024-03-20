@@ -5,8 +5,9 @@
 
 
 	import {
-		undef, defined, OL, LOG, isEmpty, nonEmpty,
+		undef, defined, OL, isEmpty, nonEmpty,
 		} from '@jdeighan/base-utils';
+	import {LOG} from '@jdeighan/base-utils/log'
 	import {assert} from '@jdeighan/base-utils/exceptions'
 	import {
 		dbgEnter, dbgReturn, dbg,

@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "",
+  "sourceRoot": "",
+  "sources": [
+    "test/coffee.test.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAoB;AAEpB,OAAA;EAAQ,KAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,IAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,QAAR;EAAkB,KAAlB;CAAA,MAAA,6BAJoB;;;AAQpB,QAAA,CAAS,CAAA,CAAA,GAAA;SAAM,IAAA,CAAK,OAAL,EAAc,KAAd,EAAqB,aAArB;AAAN,CAAT;;AACA,KAAA,CAAS,CAAA,CAAA,GAAA;SAAM,IAAA,CAAK,WAAL,EAAkB,KAAlB,EAAyB,aAAzB;AAAN,CAAT",
+  "sourcesContent": [
+    "# coffee.test.coffee\n\nimport {undef} from '@jdeighan/base-utils'\nimport {brew} from '@jdeighan/base-utils/coffee'\nimport {succeeds, fails} from '@jdeighan/base-utils/utest'\n\n# ---------------------------------------------------------------------------\n\nsucceeds () => brew('v = 5', undef, '!fileExists')\nfails    () => brew('let v = 5', undef, '!fileExists')\n"
+  ]
+}

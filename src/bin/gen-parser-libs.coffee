@@ -1,8 +1,9 @@
 # gen-parser-libs.coffee
 
 import {
-	undef, defined, notdefined, LOG, execCmd,
+	undef, defined, notdefined, execCmd,
 	} from '@jdeighan/base-utils'
+import {LOG} from '@jdeighan/base-utils/log'
 import {allFilesMatching, withExt} from '@jdeighan/base-utils/fs'
 
 # ---------------------------------------------------------------------------

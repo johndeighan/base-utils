@@ -1,10 +1,11 @@
 # pll-parser.test.coffee
 
 import {
-	undef, defined, LOG, OL, sortArrayOfHashes,
+	undef, defined, OL, sortArrayOfHashes,
 	isString, toArray,
 	} from '@jdeighan/base-utils'
 import {assert} from '@jdeighan/base-utils/exceptions'
+import {LOG} from '@jdeighan/base-utils/log'
 import {setDebugging} from '@jdeighan/base-utils/debug'
 import {
 	mkpath, allFilesMatching, globFiles,
