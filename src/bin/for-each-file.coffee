@@ -141,7 +141,6 @@ if (debug == 'full')
 if fullDebug
 	LOG "DEBUGGING ON in for-each-file"
 	LOG 'hCmdArgs', hCmdArgs
-	# setDebugging 'allFilesMatching'
 assert defined(debug) || defined(cmdStr),
 		"-cmd option required unless debugging or listing"
 

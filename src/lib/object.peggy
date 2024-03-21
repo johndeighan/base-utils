@@ -4,18 +4,17 @@ include: pll-parser
 ---
 {{
 	import {
-		undef, defined, notdefined, OL, CWS,
+		undef, defined, notdefined, OL, CWS, escapeStr,
+		mkword,
 		} from '@jdeighan/base-utils';
 	import {
 		LOG, LOGVALUE, LOGJSON, LOGSTRING,
 		} from '@jdeighan/base-utils/log';
-	const mkword = (lChars) => {
-		return CWS(lChars.join(''));
-		}
 }}
 
 {
 	// --- add terminating newline if not present
+	//     when parsing an object
 	if ((notdefined(options.startRule)
 				|| (options.startRule == 'object'))
 			&& ! input.endsWith("\n")) {
@@ -52,6 +51,12 @@ object
 		return str;
 		}
 
+item
+	= "-" ws item:(primitive / bare_str) EOL
+		{
+		return item
+		}
+
 primitive
 	= ".undef."
 		{
@@ -73,9 +78,9 @@ primitive
 		return false;
 		}
 
-	/ num:("-"? [0-9]+ ("." [0-9]*)? )
+	/ num:number
 		{
-		return parseFloat(num);
+		return num;
 		}
 
 	/ str:quoted_str
@@ -83,16 +88,17 @@ primitive
 		return str;
 		}
 
-keyValPair
-	= key:key_str ":" " "+ value:bare_str EOL
+number
+	= lChars:("-"? [0-9]+ ("." [0-9]*)? )
 		{
-		return {key, value}
+		let num = mkword(lChars);
+		return parseFloat(num);
 		}
 
-item
-	= "-" item:string EOL
+keyValPair
+	= key:key_str ":" ws value:bare_str EOL
 		{
-		return item
+		return {key, value}
 		}
 
 string
@@ -107,16 +113,26 @@ quoted_str
 	return mkword(lChars);
 	}
 
+	/ '"' lChars:[^"]+ '"'
+	{
+	return mkword(lChars);
+	}
+
+	/ "'" lChars:[^']+ "'"
+	{
+	return mkword(lChars);
+	}
+
 key_str
-	= lChars:[^:\n]+
+	= lChars:(quoted_str / [^:\n]+)
 		{
-		return mkword(lChars);
+		return CWS(mkword(lChars));
 		}
 
 bare_str
 	= lChars:[^\n]+
 		{
-		return mkword(lChars);
+		return CWS(mkword(lChars));
 		}
 
 ws

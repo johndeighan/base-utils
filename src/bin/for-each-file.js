@@ -191,7 +191,6 @@ if (fullDebug) {
   LOG('hCmdArgs', hCmdArgs);
 }
 
-// setDebugging 'allFilesMatching'
 assert(defined(debug) || defined(cmdStr), "-cmd option required unless debugging or listing");
 
 if (defined(dir)) {

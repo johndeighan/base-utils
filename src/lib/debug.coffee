@@ -24,8 +24,8 @@ export debugStack = new CallStack()
 # --- Comes from call to setDebugging()
 lFuncList = []      # array of {funcName, plus}
 
-logAll = false      # if true, always log
-internalDebugging = false
+export debugAll = false      # if true, always log
+export internalDebugging = false
 
 # --- Custom loggers, if defined
 logEnter     = undef
@@ -102,7 +102,7 @@ export resetDebugging = () =>
 	# --- reset everything
 	debugStack.reset()
 	lFuncList = []
-	logAll = false
+	debugAll = false
 	logEnter  = stdLogEnter
 	logReturn = stdLogReturn
 	logYield  = stdLogYield
@@ -156,8 +156,8 @@ export setDebugging = (debugWhat=undef, hOptions={}) =>
 			pass()
 		when 'boolean'
 			if internalDebugging
-				console.log "set logAll to #{OL(debugWhat)}"
-			logAll = debugWhat
+				console.log "set debugAll to #{OL(debugWhat)}"
+			debugAll = debugWhat
 		when 'string', 'array'
 			if internalDebugging
 				console.log "debugWhat is #{OL(debugWhat)}"
@@ -257,7 +257,7 @@ export dbgEnter = (funcName, lValues...) =>
 
 export doDebugFunc = (funcName) =>
 
-	return logAll || funcMatch(funcName)
+	return debugAll || funcMatch(funcName)
 
 # ---------------------------------------------------------------------------
 
@@ -303,7 +303,7 @@ export dbgReturn = (lArgs...) =>
 		return dbgReturnVal lArgs...
 	funcName = lArgs[0]
 	assert isFunctionName(funcName), "not a valid function name"
-	doLog = logAll || debugStack.isLogging()
+	doLog = debugAll || debugStack.isLogging()
 	if internalDebugging
 		console.log "dbgReturn #{OL(funcName)}"
 		console.log "   - doLog = #{OL(doLog)}"
@@ -320,7 +320,7 @@ export dbgReturn = (lArgs...) =>
 dbgReturnVal = (funcName, val) =>
 
 	assert isFunctionName(funcName), "not a valid function name"
-	doLog = logAll || debugStack.isLogging()
+	doLog = debugAll || debugStack.isLogging()
 	if internalDebugging
 		console.log "dbgReturn #{OL(funcName)}, #{OL(val)}"
 		console.log "   - doLog = #{OL(doLog)}"
@@ -343,7 +343,7 @@ export dbgYield = (lArgs...) =>
 		return dbgYieldFrom(funcName)
 
 	assert isFunctionName(funcName), "not a function name: #{OL(funcName)}"
-	doLog = logAll || debugStack.isLogging()
+	doLog = debugAll || debugStack.isLogging()
 	if internalDebugging
 		console.log "dbgYield #{OL(funcName)} #{OL(val)}"
 		console.log "   - doLog = #{OL(doLog)}"
@@ -360,7 +360,7 @@ export dbgYield = (lArgs...) =>
 dbgYieldFrom = (funcName) =>
 
 	assert isFunctionName(funcName), "not a function name: #{OL(funcName)}"
-	doLog = logAll || debugStack.isLogging()
+	doLog = debugAll || debugStack.isLogging()
 	if internalDebugging
 		console.log "dbgYieldFrom #{OL(funcName)}"
 		console.log "   - doLog = #{OL(doLog)}"
@@ -378,7 +378,7 @@ export dbgResume = (funcName) =>
 
 	assert isFunctionName(funcName), "not a valid function name"
 	debugStack.resume funcName
-	doLog = logAll || debugStack.isLogging()
+	doLog = debugAll || debugStack.isLogging()
 	if internalDebugging
 		console.log "dbgResume #{OL(funcName)}"
 		console.log "   - doLog = #{OL(doLog)}"
@@ -394,7 +394,7 @@ export dbgResume = (funcName) =>
 export dbgCall = (func) =>
 
 	assert isFunction(func), "not a function"
-	doLog = logAll || debugStack.isLogging()
+	doLog = debugAll || debugStack.isLogging()
 	if doLog
 		return func()
 	else
@@ -417,7 +417,7 @@ export dbgValue = (label, val) =>
 
 	assert isString(label), "not a string"
 
-	doLog = logAll || debugStack.isLogging()
+	doLog = debugAll || debugStack.isLogging()
 	if internalDebugging
 		console.log "dbgValue #{OL(label)}, #{OL(val)}"
 		console.log "   - doLog = #{OL(doLog)}"
@@ -434,7 +434,7 @@ export dbgValue = (label, val) =>
 export dbgString = (str) =>
 
 	assert isString(str), "not a string"
-	doLog = logAll || debugStack.isLogging()
+	doLog = debugAll || debugStack.isLogging()
 	if internalDebugging
 		console.log "dbgString(#{OL(str)})"
 		console.log "   - doLog = #{OL(doLog)}"

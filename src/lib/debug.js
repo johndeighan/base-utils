@@ -1,5 +1,5 @@
 // debug.coffee
-var dbgReturnVal, dbgYieldFrom, internalDebugging, lFuncList, logAll, logEnter, logResume, logReturn, logString, logType, logValue, logYield, stdLogReturnVal;
+var dbgReturnVal, dbgYieldFrom, lFuncList, logEnter, logResume, logReturn, logString, logType, logValue, logYield, stdLogReturnVal;
 
 import {
   pass,
@@ -67,9 +67,9 @@ export var debugStack = new CallStack();
 // --- Comes from call to setDebugging()
 lFuncList = []; // array of {funcName, plus}
 
-logAll = false; // if true, always log
+export var debugAll = false; // if true, always log
 
-internalDebugging = false;
+export var internalDebugging = false;
 
 // --- Custom loggers, if defined
 logEnter = undef;
@@ -146,7 +146,7 @@ export var resetDebugging = () => {
   // --- reset everything
   debugStack.reset();
   lFuncList = [];
-  logAll = false;
+  debugAll = false;
   logEnter = stdLogEnter;
   logReturn = stdLogReturn;
   logYield = stdLogYield;
@@ -205,9 +205,9 @@ export var setDebugging = (debugWhat = undef, hOptions = {}) => {
       break;
     case 'boolean':
       if (internalDebugging) {
-        console.log(`set logAll to ${OL(debugWhat)}`);
+        console.log(`set debugAll to ${OL(debugWhat)}`);
       }
-      logAll = debugWhat;
+      debugAll = debugWhat;
       break;
     case 'string':
     case 'array':
@@ -323,7 +323,7 @@ export var dbgEnter = (funcName, ...lValues) => {
 
 // ---------------------------------------------------------------------------
 export var doDebugFunc = (funcName) => {
-  return logAll || funcMatch(funcName);
+  return debugAll || funcMatch(funcName);
 };
 
 // ---------------------------------------------------------------------------
@@ -380,7 +380,7 @@ export var dbgReturn = (...lArgs) => {
   }
   funcName = lArgs[0];
   assert(isFunctionName(funcName), "not a valid function name");
-  doLog = logAll || debugStack.isLogging();
+  doLog = debugAll || debugStack.isLogging();
   if (internalDebugging) {
     console.log(`dbgReturn ${OL(funcName)}`);
     console.log(`   - doLog = ${OL(doLog)}`);
@@ -399,7 +399,7 @@ export var dbgReturn = (...lArgs) => {
 dbgReturnVal = (funcName, val) => {
   var doLog, level;
   assert(isFunctionName(funcName), "not a valid function name");
-  doLog = logAll || debugStack.isLogging();
+  doLog = debugAll || debugStack.isLogging();
   if (internalDebugging) {
     console.log(`dbgReturn ${OL(funcName)}, ${OL(val)}`);
     console.log(`   - doLog = ${OL(doLog)}`);
@@ -424,7 +424,7 @@ export var dbgYield = (...lArgs) => {
     return dbgYieldFrom(funcName);
   }
   assert(isFunctionName(funcName), `not a function name: ${OL(funcName)}`);
-  doLog = logAll || debugStack.isLogging();
+  doLog = debugAll || debugStack.isLogging();
   if (internalDebugging) {
     console.log(`dbgYield ${OL(funcName)} ${OL(val)}`);
     console.log(`   - doLog = ${OL(doLog)}`);
@@ -443,7 +443,7 @@ export var dbgYield = (...lArgs) => {
 dbgYieldFrom = (funcName) => {
   var doLog, level;
   assert(isFunctionName(funcName), `not a function name: ${OL(funcName)}`);
-  doLog = logAll || debugStack.isLogging();
+  doLog = debugAll || debugStack.isLogging();
   if (internalDebugging) {
     console.log(`dbgYieldFrom ${OL(funcName)}`);
     console.log(`   - doLog = ${OL(doLog)}`);
@@ -463,7 +463,7 @@ export var dbgResume = (funcName) => {
   var doLog, level;
   assert(isFunctionName(funcName), "not a valid function name");
   debugStack.resume(funcName);
-  doLog = logAll || debugStack.isLogging();
+  doLog = debugAll || debugStack.isLogging();
   if (internalDebugging) {
     console.log(`dbgResume ${OL(funcName)}`);
     console.log(`   - doLog = ${OL(doLog)}`);
@@ -481,7 +481,7 @@ export var dbgResume = (funcName) => {
 export var dbgCall = (func) => {
   var doLog;
   assert(isFunction(func), "not a function");
-  doLog = logAll || debugStack.isLogging();
+  doLog = debugAll || debugStack.isLogging();
   if (doLog) {
     return func();
   } else {
@@ -505,7 +505,7 @@ export var dbg = (...lArgs) => {
 export var dbgValue = (label, val) => {
   var doLog, level;
   assert(isString(label), "not a string");
-  doLog = logAll || debugStack.isLogging();
+  doLog = debugAll || debugStack.isLogging();
   if (internalDebugging) {
     console.log(`dbgValue ${OL(label)}, ${OL(val)}`);
     console.log(`   - doLog = ${OL(doLog)}`);
@@ -524,7 +524,7 @@ export var dbgValue = (label, val) => {
 export var dbgString = (str) => {
   var doLog, level;
   assert(isString(str), "not a string");
-  doLog = logAll || debugStack.isLogging();
+  doLog = debugAll || debugStack.isLogging();
   if (internalDebugging) {
     console.log(`dbgString(${OL(str)})`);
     console.log(`   - doLog = ${OL(doLog)}`);

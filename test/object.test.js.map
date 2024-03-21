@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "",
+  "sourceRoot": "",
+  "sources": [
+    "<anonymous>"
+  ],
+  "names": [],
+  "mappings": "AAAoB;AAEpB,OAAA;EAAQ,KAAR;EAAe,EAAf;CAAA,MAAA;;AACA,OAAA;EAAQ,GAAR;CAAA,MAAA;;AACA,OAAA;EACC,CADD;EACI,KADJ;EACW,MADX;EACmB,KADnB;EAC0B,QAD1B;EACoC,MADpC;CAAA,MAAA;;AAGA,OAAA;EACC,OADD;EACU,WADV;EACuB,MADvB;CAAA,MAAA;;AAGA,OAAA;EAAQ,KAAR;CAAA,MAAA,8BAVoB;;;AAcpB,CAAC,CAAC,cAAF,GAAmB,CAAC,GAAD,CAAA,GAAA;AAAS,SAAO,MAAA,CAAO,KAAP,EAAc,GAAd;AAAhB,EAdC;;;AAkBpB,MAAA,CAAO,KAAP;;AAEA,KAAA,CAAM,SAAN,EAAiB,KAAjB;;AACA,KAAA,CAAM,QAAN,EAAgB,IAAhB;;AACA,KAAA,CAAM,QAAN,EAAgB,IAAhB;;AACA,KAAA,CAAM,SAAN,EAAiB,KAAjB;;AAEA,KAAA,CAAM,CAAA;cAAA,CAAN,EAGM;EACL,KAAA,EAAO,MADF;EAEL,KAAA,EAAO;AAFF,CAHN;;AAQA,KAAA,CAAM,CAAA;;6BAAA,CAAN,EAIM;EACL,YAAA,EAAc,MADT;EAEL,WAAA,EAAc,SAFT;EAGL,WAAA,EAAc;AAHT,CAJN;;AAUA,KAAA,CAAM,CAAA;SAAA,CAAN,EAGM,CACL,MADK,EAEL,SAFK,CAHN;;AAQA,KAAA,CAAM,CAAA;;oBAAA,CAAN,EAIM,CACL,MADK,EAEL,SAFK,EAGL,cAHK,CAJN;;AAUA,KAAA,CAAM,oCAAN,EACC,kCADD;;AAGA,KAAA,CAAM,CAAA;;IAAA,CAAN,EAIM,CACL,MADK,EAEL,cAFK,EAGL,EAHK,CAJN",
+  "sourcesContent": [
+    "# object.test.coffee\n\nimport {undef, OL} from '@jdeighan/base-utils'\nimport {LOG} from '@jdeighan/base-utils/log'\nimport {\n\tu, equal, truthy, falsy, succeeds, throws,\n\t} from '@jdeighan/base-utils/utest'\nimport {\n\tpeggify, peggifyFile, pparse,\n\t} from '@jdeighan/base-utils/peggy'\nimport {parse} from '@jdeighan/base-utils/object'\n\n# ---------------------------------------------------------------------------\n\nu.transformValue = (str) => return pparse(parse, str)\n\n# ---------------------------------------------------------------------------\n\ntruthy parse\n\nequal \".undef.\", undef\nequal \".null.\", null\nequal \".true.\", true\nequal \".false.\", false\n\nequal \"\"\"\n\tfName: John\n\tlName: Deighan\n\t\"\"\", {\n\tfName: 'John'\n\tlName: 'Deighan'\n\t}\n\nequal \"\"\"\n\tfirst name:   John\n\tlast name:    Deighan\n\tfull name  :  John    Deighan\n\t\"\"\", {\n\t\"first name\": 'John'\n\t\"last name\":  'Deighan'\n\t\"full name\":  'John Deighan'\n\t}\n\nequal \"\"\"\n\t- John\n\t- Deighan\n\t\"\"\", [\n\t'John'\n\t'Deighan'\n\t]\n\nequal \"\"\"\n\t-   John\n\t-  Deighan\n\t-    John    Deighan\n\t\"\"\", [\n\t'John'\n\t'Deighan'\n\t'John Deighan'\n\t]\n\nequal \"«\\\"Hello\\\", that's what she said.»\",\n\t\"\\\"Hello\\\", that's what she said.\"\n\nequal \"\"\"\n\t- John\n\t- John Deighan\n\t- 42\n\t\"\"\", [\n\t\"John\"\n\t\"John Deighan\"\n\t42\n\t]"
+  ]
+}

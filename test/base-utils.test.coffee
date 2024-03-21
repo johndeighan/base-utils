@@ -454,6 +454,16 @@ equal words('  a   b   c  '), ['a', 'b', 'c']
 equal words('a b', 'c d'), ['a', 'b', 'c', 'd']
 equal words(' my word ', ' is  word  '), ['my', 'word', 'is', 'word']
 
+# ---------------------------------------------------------------------------
+
+equal mkword('a', 'b', 'c'), 'abc'
+equal mkword(['a','b','c']), 'abc'
+equal mkword('a', ' ', 'c'), 'a c'
+equal mkword(['a',' ','c']), 'a c'
+equal mkword([null, ['4','2'], null]), '42'
+
+# ---------------------------------------------------------------------------
+
 truthy hasChar('abc', 'b')
 falsy  hasChar('abc', 'x')
 falsy  hasChar("\t\t", ' ')

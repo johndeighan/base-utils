@@ -997,6 +997,25 @@ export var words = (...lStrings) => {
 };
 
 // ---------------------------------------------------------------------------
+// --- e.g. mkword([null, ['4','2'], null) returns '42'
+export var mkword = (...lStuff) => {
+  var j, lParts, len1, result, thing;
+  lParts = [];
+  for (j = 0, len1 = lStuff.length; j < len1; j++) {
+    thing = lStuff[j];
+    if (isString(thing)) {
+      lParts.push(thing);
+    } else if (isArray(thing)) {
+      result = mkword(...thing);
+      if (nonEmpty(result)) {
+        lParts.push(result);
+      }
+    }
+  }
+  return lParts.join('');
+};
+
+// ---------------------------------------------------------------------------
 export var isBoolean = (x) => {
   return jsType(x)[0] === 'boolean';
 };
@@ -1286,7 +1305,7 @@ export var getOptions = (options = undef, hDefault = {}) => {
   for (key in hDefault) {
     if (!hasProp.call(hDefault, key)) continue;
     value = hDefault[key];
-    if (!hOptions.hasOwnProperty(key)) {
+    if (!hOptions.hasOwnProperty(key) && defined(value)) {
       hOptions[key] = value;
     }
   }

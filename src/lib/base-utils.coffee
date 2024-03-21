@@ -875,6 +875,21 @@ export words = (lStrings...) =>
 	return lWords
 
 # ---------------------------------------------------------------------------
+# --- e.g. mkword([null, ['4','2'], null) returns '42'
+
+export mkword = (lStuff...) =>
+
+	lParts = []
+	for thing in lStuff
+		if isString(thing)
+			lParts.push thing
+		else if isArray(thing)
+			result = mkword(thing...)
+			if nonEmpty(result)
+				lParts.push result
+	return lParts.join('')
+
+# ---------------------------------------------------------------------------
 
 export isBoolean = (x) =>
 
@@ -1120,7 +1135,7 @@ export getOptions = (options=undef, hDefault={}) =>
 
 	# --- Fill in defaults for missing values
 	for own key,value of hDefault
-		if ! hOptions.hasOwnProperty(key)
+		if ! hOptions.hasOwnProperty(key) && defined(value)
 			hOptions[key] = value
 
 	return hOptions
