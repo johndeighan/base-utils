@@ -5,6 +5,7 @@ import fs from 'fs'
 import CoffeeScript from 'coffeescript'
 
 import {undef, defined, getOptions, toBlock} from '@jdeighan/base-utils'
+import {barf} from '@jdeighan/base-utils/fs'
 
 # ---------------------------------------------------------------------------
 
@@ -31,3 +32,13 @@ export brew = (coffeeCode, filePath=undef) ->
 			})
 		assert defined(jsCode), "No JS code generated"
 		return [jsCode.trim(), undef]
+
+# ---------------------------------------------------------------------------
+
+export brewFile = (filePath) ->
+
+	{hMetaData, lLines} = readTextFile(filePath)
+	[jsCode, sourceMap] = brew lLines, filePath
+	barf jsCode, withExt(filePath, '.js')
+	barf sourceMap, withExt(filePath, '.js.map')
+	return

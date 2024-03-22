@@ -12,6 +12,10 @@ import {
   toBlock
 } from '@jdeighan/base-utils';
 
+import {
+  barf
+} from '@jdeighan/base-utils/fs';
+
 // ---------------------------------------------------------------------------
 export var brew = function(coffeeCode, filePath = undef) {
   var h, jsCode;
@@ -37,6 +41,15 @@ export var brew = function(coffeeCode, filePath = undef) {
     assert(defined(jsCode), "No JS code generated");
     return [jsCode.trim(), undef];
   }
+};
+
+// ---------------------------------------------------------------------------
+export var brewFile = function(filePath) {
+  var hMetaData, jsCode, lLines, sourceMap;
+  ({hMetaData, lLines} = readTextFile(filePath));
+  [jsCode, sourceMap] = brew(lLines, filePath);
+  barf(jsCode, withExt(filePath, '.js'));
+  barf(sourceMap, withExt(filePath, '.js.map'));
 };
 
 //# sourceMappingURL=coffee.js.map
