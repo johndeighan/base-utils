@@ -4,12 +4,13 @@ import assert from 'node:assert'
 import fs from 'fs'
 import CoffeeScript from 'coffeescript'
 
-import {undef, defined, getOptions} from '@jdeighan/base-utils'
+import {undef, defined, getOptions, toBlock} from '@jdeighan/base-utils'
 
 # ---------------------------------------------------------------------------
 
 export brew = (coffeeCode, filePath=undef) ->
 
+	coffeeCode = toBlock(coffeeCode)  # allow passing array
 	if defined(filePath)
 		assert fs.existsSync(filePath), "Not a file: #{filePath}"
 		h = CoffeeScript.compile(coffeeCode, {

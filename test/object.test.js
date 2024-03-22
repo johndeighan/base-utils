@@ -18,8 +18,6 @@ import {
 } from '@jdeighan/base-utils/utest';
 
 import {
-  peggify,
-  peggifyFile,
   pparse
 } from '@jdeighan/base-utils/peggy';
 

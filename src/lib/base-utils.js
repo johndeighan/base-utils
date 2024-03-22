@@ -448,6 +448,57 @@ export var CWS = (str) => {
 };
 
 // ---------------------------------------------------------------------------
+export var trimArray = (lLines) => {
+  // --- lLines is modified in place, but we still return a ref
+  while ((lLines.length > 0) && isEmpty(lLines[0])) {
+    lLines.shift();
+  }
+  while ((lLines.length > 0) && isEmpty(lLines[lLines.length - 1])) {
+    lLines.pop();
+  }
+  return lLines;
+};
+
+// ---------------------------------------------------------------------------
+export var removeEmptyLines = (lLines) => {
+  assert(isArrayOfStrings(lLines), `Not an array of strings: ${OL(lLines)}`);
+  return lLines.filter((line) => {
+    return nonEmpty(line);
+  });
+};
+
+// ---------------------------------------------------------------------------
+export var CWSALL = (blockOrArray) => {
+  var lNewArray, line;
+  if (isArrayOfStrings(blockOrArray)) {
+    lNewArray = (function() {
+      var j, len1, results;
+      results = [];
+      for (j = 0, len1 = blockOrArray.length; j < len1; j++) {
+        line = blockOrArray[j];
+        results.push(CWS(line));
+      }
+      return results;
+    })();
+    return trimArray(lNewArray);
+  } else if (isString(blockOrArray)) {
+    lNewArray = (function() {
+      var j, len1, ref, results;
+      ref = toArray(blockOrArray);
+      results = [];
+      for (j = 0, len1 = ref.length; j < len1; j++) {
+        line = ref[j];
+        results.push(CWS(line));
+      }
+      return results;
+    })();
+    return toBlock(trimArray(lNewArray));
+  } else {
+    throw new Error(`Bad param: ${OL(blockOrArray)}`);
+  }
+};
+
+// ---------------------------------------------------------------------------
 export var splitPrefix = (line) => {
   var lMatches;
   assert(isString(line), `non-string ${OL(line)}`);
@@ -1242,7 +1293,7 @@ export var prefixBlock = (block, prefix) => {
 //   rtrim - strip trailing whitespace
 export var rtrim = (line) => {
   var lMatches, n;
-  assert(isString(line), "rtrim(): line is not a string");
+  assert(isString(line), `not a string: ${OL(line)}`);
   lMatches = line.match(/\s+$/);
   if (defined(lMatches)) {
     n = lMatches[0].length; // num chars to remove

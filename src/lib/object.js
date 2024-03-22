@@ -4,13 +4,22 @@
 
 
 
-	import {
-		undef, defined, notdefined, OL, CWS, escapeStr,
-		mkword,
-		} from '@jdeighan/base-utils';
-	import {
-		LOG, LOGVALUE, LOGJSON, LOGSTRING,
-		} from '@jdeighan/base-utils/log';
+import {
+  undef,
+  defined,
+  notdefined,
+  OL,
+  CWS,
+  escapeStr,
+  mkword
+} from '@jdeighan/base-utils';
+
+import {
+  LOG,
+  LOGVALUE,
+  LOGJSON,
+  LOGSTRING
+} from '@jdeighan/base-utils/log';
 
 function peg$subclass(child, parent) {
   function C() { this.constructor = child; }
@@ -288,71 +297,84 @@ function peg$parse(input, options) {
   var peg$e18 = peg$literalExpectation("\n", false);
 
   var peg$f0 = function(obj) {
-		return obj;
-		};
+    return obj;
+    };
   var peg$f1 = function(lItems) {
-		let lArray = []
-		for (let item of lItems) {
-			lArray.push(item);
-			}
-		return lArray;
-		};
+    var i, item, lArray, len;
+
+    lArray = [];
+
+    for (i = 0, len = lItems.length; i < len; i++) {
+      item = lItems[i];
+      lArray.push(item);
+    }
+
+    return lArray;
+    };
   var peg$f2 = function(lObjects) {
-		let hObj = {};
-		for (let result of lObjects) {
-			hObj[result.key] = result.value;
-			}
-		return hObj;
-		};
+    var hObj, i, len, result;
+
+    hObj = {};
+
+    for (i = 0, len = lObjects.length; i < len; i++) {
+      result = lObjects[i];
+      hObj[result.key] = result.value;
+    }
+
+    return hObj;
+    };
   var peg$f3 = function(str) {
-		return str;
-		};
+    return str;
+    };
   var peg$f4 = function(item) {
-		return item
-		};
+    return item;
+    };
   var peg$f5 = function() {
-		return undef;
-		};
+    return undef;
+    };
   var peg$f6 = function() {
-		return null;
-		};
+    return null;
+    };
   var peg$f7 = function() {
-		return true;
-		};
+    return true;
+    };
   var peg$f8 = function() {
-		return false;
-		};
+    return false;
+    };
   var peg$f9 = function(num) {
-		return num;
-		};
+    return num;
+    };
   var peg$f10 = function(str) {
-		return str;
-		};
+    return str;
+    };
   var peg$f11 = function(lChars) {
-		let num = mkword(lChars);
-		return parseFloat(num);
-		};
+    var num;
+
+    num = mkword(lChars);
+
+    return parseFloat(num);
+    };
   var peg$f12 = function(key, value) {
-		return {key, value}
-		};
+    return {key, value};
+    };
   var peg$f13 = function(str) {
-		return str;
-		};
+    return str;
+    };
   var peg$f14 = function(lChars) {
-	return mkword(lChars);
-	};
+    return mkword(lChars);
+    };
   var peg$f15 = function(lChars) {
-	return mkword(lChars);
-	};
+    return mkword(lChars);
+    };
   var peg$f16 = function(lChars) {
-	return mkword(lChars);
-	};
+    return mkword(lChars);
+    };
   var peg$f17 = function(lChars) {
-		return CWS(mkword(lChars));
-		};
+    return CWS(mkword(lChars));
+    };
   var peg$f18 = function(lChars) {
-		return CWS(mkword(lChars));
-		};
+    return CWS(mkword(lChars));
+    };
   var peg$currPos = options.peg$currPos | 0;
   var peg$savedPos = peg$currPos;
   var peg$posDetailsCache = [{ line: 1, column: 1 }];
@@ -1397,13 +1419,11 @@ function peg$parse(input, options) {
   }
 
 
-	// --- add terminating newline if not present
-	//     when parsing an object
-	if ((notdefined(options.startRule)
-				|| (options.startRule == 'object'))
-			&& ! input.endsWith("\n")) {
-		input += "\n";
-		}
+// --- add terminating newline if not present
+//     when parsing an object
+if ((notdefined(options.startRule) || (options.startRule === 'object')) && !input.endsWith("\n")) {
+  input += "\n";
+}
 
   peg$result = peg$startRuleFunction();
 

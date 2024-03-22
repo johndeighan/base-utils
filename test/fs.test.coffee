@@ -155,7 +155,7 @@ equal slurp(testPath, 'maxLines=3'), """
 	path = "./test/test/file3.txt"
 	h = readTextFile(path)
 	equal h, {
-		metadata: {fName: 'John', lName: 'Deighan'}
+		hMetaData: {fName: 'John', lName: 'Deighan'}
 		lLines: ['', 'This is a test']
 		}
 	)()
@@ -174,27 +174,27 @@ equal slurp(testPath, 'maxLines=3'), """
 	like lFiles, [
 		{
 			fileName: 'file1.txt',
-			metadata: undef,
+			hMetaData: undef,
 			lLines: ['Hello']
 			}
 		{
 			fileName: 'file1.zh',
-			metadata: undef,
+			hMetaData: undef,
 			lLines: ['你好']
 			}
 		{
 			fileName: 'file2.txt',
-			metadata: undef,
+			hMetaData: undef,
 			lLines: ['Goodbye']
 			}
 		{
 			fileName: 'file2.zh',
-			metadata: undef,
+			hMetaData: undef,
 			lLines: ['再见']
 			}
 		{
 			fileName: 'file3.txt'
-			metadata: {
+			hMetaData: {
 				fName: 'John'
 				lName: 'Deighan'
 				}
@@ -202,7 +202,7 @@ equal slurp(testPath, 'maxLines=3'), """
 			}
 		{
 			fileName: 'test.coffee',
-			metadata: undef,
+			hMetaData: undef,
 			lLines: [ 'console.log "Hello"' ]
 			}
 		]
@@ -224,17 +224,17 @@ equal slurp(testPath, 'maxLines=3'), """
 	like lFiles, [
 		{
 			fileName: 'file1.txt',
-			metadata: undef,
+			hMetaData: undef,
 			lLines: ['Hello']
 			}
 		{
 			fileName: 'file2.txt',
-			metadata: undef,
+			hMetaData: undef,
 			lLines: ['Goodbye']
 			}
 		{
 			fileName: 'file3.txt'
-			metadata: {
+			hMetaData: {
 				fName: 'John'
 				lName: 'Deighan'
 				}
@@ -262,17 +262,17 @@ equal slurp(testPath, 'maxLines=3'), """
 	like lFiles, [
 		{
 			fileName: 'file1.txt',
-			metadata: undef,
+			hMetaData: undef,
 			lLines: ['Hello']
 			}
 		{
 			fileName: 'file2.txt',
-			metadata: undef,
+			hMetaData: undef,
 			lLines: ['Goodbye']
 			}
 		{
 			fileName: 'file3.txt'
-			metadata: {
+			hMetaData: {
 				fName: 'John'
 				lName: 'Deighan'
 				}

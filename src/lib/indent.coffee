@@ -40,7 +40,7 @@ export splitLine = (line, oneIndent=undef) =>
 
 export indentLevel = (line, oneIndent=undef) =>
 
-	assert isString(line), "not a string"
+	assert isString(line), "not a string: #{OL(line)}"
 
 	# --- This will always match, and it's greedy
 	if lMatches = line.match(/^\s*/)
@@ -102,12 +102,18 @@ export indentation = (level, oneIndent="\t") =>
 	return oneIndent.repeat(level)
 
 # ---------------------------------------------------------------------------
+#   isIndented - true iff indentLevel(line) > 0
+
+export isIndented = (line) =>
+
+	return defined(line) && defined(line.match(/^\s/))
+
+# ---------------------------------------------------------------------------
 #   isUndented - true iff indentLevel(line) == 0
 
 export isUndented = (line) =>
 
-	assert isString(line), "non-string #{OL(line)}"
-	return notdefined(line.match(/^\s/))
+	return defined(line) && notdefined(line.match(/^\s/))
 
 # ---------------------------------------------------------------------------
 #   indented - add indentation to each string in a block or array

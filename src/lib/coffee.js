@@ -8,12 +8,14 @@ import CoffeeScript from 'coffeescript';
 import {
   undef,
   defined,
-  getOptions
+  getOptions,
+  toBlock
 } from '@jdeighan/base-utils';
 
 // ---------------------------------------------------------------------------
 export var brew = function(coffeeCode, filePath = undef) {
   var h, jsCode;
+  coffeeCode = toBlock(coffeeCode); // allow passing array
   if (defined(filePath)) {
     assert(fs.existsSync(filePath), `Not a file: ${filePath}`);
     h = CoffeeScript.compile(coffeeCode, {

@@ -53,7 +53,7 @@ export var splitLine = (line, oneIndent = undef) => {
 //                 it's OK if the string is ONLY indentation
 export var indentLevel = (line, oneIndent = undef) => {
   var i, lMatches, len, level, nSpaces, nTabs, prefix, prefixLen, ref, str;
-  assert(isString(line), "not a string");
+  assert(isString(line), `not a string: ${OL(line)}`);
   // --- This will always match, and it's greedy
   if (lMatches = line.match(/^\s*/)) {
     prefix = lMatches[0];
@@ -117,10 +117,15 @@ export var indentation = (level, oneIndent = "\t") => {
 };
 
 // ---------------------------------------------------------------------------
+//   isIndented - true iff indentLevel(line) > 0
+export var isIndented = (line) => {
+  return defined(line) && defined(line.match(/^\s/));
+};
+
+// ---------------------------------------------------------------------------
 //   isUndented - true iff indentLevel(line) == 0
 export var isUndented = (line) => {
-  assert(isString(line), `non-string ${OL(line)}`);
-  return notdefined(line.match(/^\s/));
+  return defined(line) && notdefined(line.match(/^\s/));
 };
 
 // ---------------------------------------------------------------------------

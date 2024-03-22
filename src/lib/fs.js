@@ -211,24 +211,24 @@ export var getPkgJsonPath = () => {
 
 // ---------------------------------------------------------------------------
 export var readTextFile = (filePath) => {
-  var hResult, lLines, lMetaLines, line, metadata, numLines, ref;
+  var hMetaData, hResult, lLines, lMetaLines, line, numLines, ref;
   // --- handles metadata if present
   dbgEnter('readTextFile', filePath);
   assert(isFile(filePath), `Not a file: ${OL(filePath)}`);
   lMetaLines = undef;
-  metadata = undef;
+  hMetaData = undef;
   lLines = [];
   numLines = 0;
   ref = allLinesIn(filePath);
   for (line of ref) {
     dbg(`LINE: ${OL(line)}`);
     if ((numLines === 0) && isMetaDataStart(line)) {
-      dbg(`   - start metadata with ${OL(line)}`);
+      dbg(`   - start hMetaData with ${OL(line)}`);
       lMetaLines = [line];
     } else if (defined(lMetaLines)) {
       if (line === lMetaLines[0]) {
         dbg("   - end meta data");
-        metadata = convertMetaData(lMetaLines);
+        hMetaData = convertMetaData(lMetaLines);
         lMetaLines = undef;
       } else {
         dbg(`META: ${OL(line)}`);
@@ -239,7 +239,7 @@ export var readTextFile = (filePath) => {
     }
     numLines += 1;
   }
-  hResult = {metadata, lLines};
+  hResult = {hMetaData, lLines};
   dbgReturn('readTextFile', hResult);
   return hResult;
 };
@@ -319,11 +319,11 @@ export var allFilesMatching = function*(pattern = '*', hOptions = {}) {
   //        path, filePath,
   //        type, root, dir, base, fileName,
   //        name, stub, ext, purpose
-  //        (if eager) metadata, lLines
+  //        (if eager) hMetaData, lLines
   // --- Valid options:
   //        hGlobOptions - options to pass to glob
   //        fileFilter - return path iff fileFilter(filePath) returns true
-  //        eager - read the file and add keys metadata, lLines
+  //        eager - read the file and add keys hMetaData, lLines
   // --- Valid glob options:
   //        ignore - glob pattern for files to ignore
   //        dot - include dot files/directories (default: false)

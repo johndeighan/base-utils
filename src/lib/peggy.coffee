@@ -4,13 +4,21 @@ import peggy from 'peggy'
 {generate} = peggy
 
 import {
-	undef, defined, notdefined, pass, OL, toBlock, getOptions,
-	isString, isEmpty, isFunction,
+	undef, defined, notdefined, pass, OL, getOptions, hasKey,
+	isString, isFunction, isArray, isHash, isEmpty, nonEmpty,
+	toArray, toBlock, isArrayOfStrings, removeEmptyLines,
+	isNonEmptyString, untabify,
 	} from '@jdeighan/base-utils'
+import {LOG} from '@jdeighan/base-utils/log'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
+import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
+import {
+	isIndented, undented, splitLine, indentLevel, indented,
+	} from '@jdeighan/base-utils/indent'
 import {
 	isFile, slurp, barf, withExt, readTextFile,
 	} from '@jdeighan/base-utils/fs'
+import {brew} from '@jdeighan/base-utils/coffee'
 
 hPeggyOptions = {
 	allowedStartRules: ['*']
@@ -19,29 +27,204 @@ hPeggyOptions = {
 	trace: true
 	}
 
+hPreProcessors = {
+	coffee: (lLines) =>
+		[jsCode, _] = brew lLines
+		return jsCode
+	}
+
 # ---------------------------------------------------------------------------
 
-export peggify = (peggyCode, source) =>
+export addPreProcessor = (name, func) =>
 
-	assert isFile(source), "Not a file: #{OL(source)}"
+	assert isNonEmptyString(name), "Bad name: #{OL(name)}"
+	assert ! hasKey(hPreProcessors, name), "Exists: #{OL(name)}"
+	assert isFunction(func), "Not a function: #{OL(func)}"
+	hPreProcessors[name] = func
+	return
+
+# ---------------------------------------------------------------------------
+# --- peggyCode can be a string or array of strings
+
+export peggify = (peggyCode, source=undef, hMetaData) =>
+
+	dbgEnter 'peggify', peggyCode, source, hMetaData
+
+	assert isHash(hMetaData), "Not a hash: #{OL(hMetaData)}"
+
+	# --- preprocess peggyCode if required
+	#        - ensure peggyCode is a string
+
+	type = hMetaData.type
+	dbg "type = #{OL(type)}"
+	if isNonEmptyString(type)
+		peggyCode = convertToJS(peggyCode, hMetaData)
+	else if isArray(peggyCode)
+		peggyCode = toBlock(peggyCode)
 	try
-		hPeggyOptions.grammarSource = source
-		srcNode = generate(peggyCode, hPeggyOptions)
-		h = srcNode.toStringWithSourceMap()
-		return [h.code, h.map.toString()]
+		if defined(source)
+			assert isFile(source), "Not a file: #{OL(source)}"
+			srcNode = generate(peggyCode, {
+				grammarSource: source
+				allowedStartRules: ['*']
+				format: 'es'
+				output: 'source-and-map'
+				trace: true
+				})
+			h = srcNode.toStringWithSourceMap()
+			result = [h.code, h.map.toString()]
+		else
+			jsCode = generate(peggyCode, {
+				allowedStartRules: ['*']
+				format: 'es'
+				output: 'source'
+				trace: true
+				})
+			result = [jsCode, undef]
+
 	catch err
-		console.log "ERROR: #{err.message}"
-		return [undef, undef]
+		console.log '-'.repeat(32) + "  FAILED  " + '-'.repeat(32)
+		console.log untabify(peggyCode)
+		console.log '-'.repeat(74)
+		throw err
+
+	dbgReturn 'peggify', result
+	return result
 
 # ---------------------------------------------------------------------------
 
 export peggifyFile = (filePath) =>
 
-	{metadata, lLines} = readTextFile(filePath)
-	[jsCode, sourceMap] = peggify toBlock(lLines), filePath
+	{hMetaData, lLines} = readTextFile(filePath)
+	[jsCode, sourceMap] = peggify lLines, filePath, hMetaData
 	barf jsCode, withExt(filePath, '.js')
-	barf sourceMap, withExt(filePath, '.js.map')
+	if defined(sourceMap)
+		barf sourceMap, withExt(filePath, '.js.map')
 	return
+
+# ---------------------------------------------------------------------------
+# --- input may be a string or array of strings
+# --- returns a block of JavaScript code
+
+export convertToJS = (input, hMetaData={}) =>
+
+	dbgEnter 'convertToJS', input, hMetaData
+
+	# --- convert input to array of lines
+	if isString(input)
+		dbg "convert string to array"
+		lLines = toArray(input)
+	else
+		dbg "already an array"
+		lLines = input
+	lLines = removeEmptyLines(lLines)
+
+	assert isArrayOfStrings(lLines),
+			"not an array of strings: #{OL(lLines)}"
+
+	# --- NOTE: There are NO empty lines in lLines !!!
+	#     We will remove lines from lLines as they're processed
+
+	assert isHash(hMetaData), "Not a hash: #{OL(hMetaData)}"
+	type = hMetaData.type
+	preProcessor = hPreProcessors[type]
+	assert isFunction(preProcessor), "Unknown type: #{OL(type)}"
+
+	# --- Define some utility functions ----------
+
+	# --- are there more lines to process?
+	more = () =>
+		return (lLines.length > 0)
+
+	# --- what is the next line?
+	next = () =>
+		return lLines[0]
+
+	# --- what is the level of the next line?
+	nextLevel = () =>
+		if (next() == undef)
+			return 0
+		return indentLevel(lLines[0])
+
+	# --- get the next line, removing it from lLines
+	get = () =>
+		return lLines.shift()
+
+	# --- remove the next line without returning it
+	skip = () =>
+		lLines.shift()
+		return
+
+	# --- get a block of code, as an array, undented
+	getCodeLines = (minLevel) =>
+		dbgEnter 'getCodeLines', minLevel
+		lCodeLines = []
+		while (nextLevel() >= minLevel)
+			lCodeLines.push get()
+		result = undented(lCodeLines)
+		dbgReturn 'getCodeLines', result
+		return result
+
+	# --------------------------------------------
+
+	lPeggy = []   # --- shift lines from lLines as processed
+
+	if (next() == 'INITIALIZATION')
+		skip()
+		dbg "Found INITIALIZATION section"
+		lCoffee = getCodeLines(1)
+		dbg "   - #{lCoffee.length} lines of coffee code"
+		lPeggy.push "{{"
+		lPeggy.push preProcessor(lCoffee)
+		lPeggy.push "}}"
+
+	if (next() == 'EACH_PARSE')
+		skip()
+		dbg "Found EACH_PARSE section"
+		lCoffee = getCodeLines(1)
+		dbg "   - #{lCoffee.length} lines of coffee code"
+		lPeggy.push "{"
+		lPeggy.push preProcessor(lCoffee)
+		lPeggy.push "}"
+
+	hRules = {}
+	while more()
+
+		# --- Get rule name - must be left aligned, no whitespace
+		name = get()
+		lPeggy.push name
+		dbg "RULE #{OL(name)}"
+		assert !name.match(/\s/), "whitespace in rule name #{OL(name)}"
+		assert !hasKey(hRules, name), "duplicate rule #{name}"
+		hRules[name] = 0   # number of options
+
+		while more() && (nextLevel() == 1)
+			# --- Get match expression - 1 indent level, may be multi-line
+			lExprLines = []
+			while (nextLevel() == 1)
+				lExprLines.push get().trim()
+			assert (lExprLines.length > 0), "Bad rule #{name}"
+			matchExpr = lExprLines.join(' ')
+
+			ch = if (hRules[name] == 0) then '=' else '/'
+			headerLine = "#{ch} #{matchExpr}"
+			dbg ""
+			dbg "OPTION #{hRules[name]}", headerLine
+			lPeggy.push "  #{headerLine}"
+			hRules[name] += 1
+
+			lCoffee = getCodeLines(2)
+			dbg 'lCoffee', lCoffee
+
+			if (lCoffee.length > 0)
+				lPeggy.push "    {"
+				lPeggy.push indented(preProcessor(lCoffee), 2, "  ")
+				lPeggy.push "    }"
+				lPeggy.push ""
+
+	result = toBlock(lPeggy)
+	dbgReturn 'convertToJS', result
+	return result
 
 # ---------------------------------------------------------------------------
 

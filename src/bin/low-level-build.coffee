@@ -12,7 +12,7 @@ import {
 	isProjRoot, slurpPkgJSON, barfPkgJSON,
 	} from '@jdeighan/base-utils/fs'
 import {brew} from '@jdeighan/base-utils/coffee'
-import {peggify} from '@jdeighan/base-utils/peggy'
+import {peggifyFile} from '@jdeighan/base-utils/peggy'
 
 hFilesProcessed = {
 	coffee: 0
@@ -51,7 +51,7 @@ hOptions = {
 	}
 
 for hFile from allFilesMatching('**/*.coffee', hOptions)
-	{filePath, relPath, metadata, lLines} = hFile
+	{filePath, relPath, hMetaData, lLines} = hFile
 	LOG relPath
 	hFilesProcessed.coffee += 1
 	[jsCode, sourceMap] = brew toBlock(lLines), relPath
@@ -63,12 +63,10 @@ for hFile from allFilesMatching('**/*.coffee', hOptions)
 #    unless newer *.js and *.js.map files exist
 
 for hFile from allFilesMatching('**/*.peggy', hOptions)
-	{filePath, relPath, metadata, lLines} = hFile
+	{relPath} = hFile
 	LOG relPath
 	hFilesProcessed.peggy += 1
-	[jsCode, sourceMap] = peggify toBlock(lLines), relPath
-	barf jsCode, withExt(filePath, '.js')
-	barf sourceMap, withExt(filePath, '.js.map')
+	peggifyFile relPath
 
 # ---------------------------------------------------------------------------
 
@@ -96,12 +94,12 @@ tla = (stub) =>
 #       - save <stub>: <path> in hBin
 
 hOptions = {
-	fileFilter: ({metadata, lLines}) =>
-		assert notdefined(metadata), "metadata in bin *.js file"
+	fileFilter: ({hMetaData, lLines}) =>
+		assert notdefined(hMetaData), "hMetaData in bin *.js file"
 		if (lLines.length == 0)
 			return false
 		return (lLines[0] != shebang)
-	eager: true    # --- h will have keys metadata and lLines
+	eager: true    # --- h will have keys hMetaData and lLines
 	}
 
 for h from allFilesMatching('./src/bin/**/*.js', hOptions)

@@ -565,11 +565,63 @@ equal escapeStr("\thas quote: \"\nnext line", hEsc), \
 equal rtrunc('/user/lib/.env', 5), '/user/lib'
 equal ltrunc('abcdefg', 3), 'defg'
 
+# ---------------------------------------------------------------------------
+
 equal CWS("""
 		abc
 		def
 				ghi
 		"""), "abc def ghi"
+
+# ---------------------------------------------------------------------------
+
+equal trimArray(['', 'abc']), ['abc']
+equal trimArray(['abc', '']), ['abc']
+equal trimArray(['', '   ', 'abc', '', "\t"]), ['abc']
+
+# ---------------------------------------------------------------------------
+
+equal removeEmptyLines(['', 'abc', '']), ['abc']
+equal removeEmptyLines([' ', 'abc', ' ']), ['abc']
+equal removeEmptyLines(['\t', 'abc', '\n']), ['abc']
+
+# ---------------------------------------------------------------------------
+
+equal CWSALL("""
+	one    line
+	    second      line
+	"""), """
+	one line
+	second line
+	"""
+
+equal CWSALL([
+	'one    line'
+	'    second      line'
+	]), [
+	'one line'
+	'second line'
+	]
+
+equal CWSALL("""
+
+	one    line
+	    second      line
+
+	"""), """
+	one line
+	second line
+	"""
+
+equal CWSALL([
+	''
+	'one    line'
+	'    second      line'
+	''
+	]), [
+	'one line'
+	'second line'
+	]
 
 # ---------------------------------------------------------------------------
 

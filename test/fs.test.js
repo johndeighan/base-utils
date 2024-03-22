@@ -187,7 +187,7 @@ ghi`);
   path = "./test/test/file3.txt";
   h = readTextFile(path);
   return equal(h, {
-    metadata: {
+    hMetaData: {
       fName: 'John',
       lName: 'Deighan'
     },
@@ -211,27 +211,27 @@ ghi`);
   return like(lFiles, [
     {
       fileName: 'file1.txt',
-      metadata: undef,
+      hMetaData: undef,
       lLines: ['Hello']
     },
     {
       fileName: 'file1.zh',
-      metadata: undef,
+      hMetaData: undef,
       lLines: ['你好']
     },
     {
       fileName: 'file2.txt',
-      metadata: undef,
+      hMetaData: undef,
       lLines: ['Goodbye']
     },
     {
       fileName: 'file2.zh',
-      metadata: undef,
+      hMetaData: undef,
       lLines: ['再见']
     },
     {
       fileName: 'file3.txt',
-      metadata: {
+      hMetaData: {
         fName: 'John',
         lName: 'Deighan'
       },
@@ -240,7 +240,7 @@ ghi`);
     },
     {
       fileName: 'test.coffee',
-      metadata: undef,
+      hMetaData: undef,
       lLines: ['console.log "Hello"']
     }
   ]);
@@ -262,17 +262,17 @@ ghi`);
   return like(lFiles, [
     {
       fileName: 'file1.txt',
-      metadata: undef,
+      hMetaData: undef,
       lLines: ['Hello']
     },
     {
       fileName: 'file2.txt',
-      metadata: undef,
+      hMetaData: undef,
       lLines: ['Goodbye']
     },
     {
       fileName: 'file3.txt',
-      metadata: {
+      hMetaData: {
         fName: 'John',
         lName: 'Deighan'
       },
@@ -301,17 +301,17 @@ ghi`);
   return like(lFiles, [
     {
       fileName: 'file1.txt',
-      metadata: undef,
+      hMetaData: undef,
       lLines: ['Hello']
     },
     {
       fileName: 'file2.txt',
-      metadata: undef,
+      hMetaData: undef,
       lLines: ['Goodbye']
     },
     {
       fileName: 'file3.txt',
-      metadata: {
+      hMetaData: {
         fName: 'John',
         lName: 'Deighan'
       },

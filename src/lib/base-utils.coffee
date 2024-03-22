@@ -394,6 +394,39 @@ export CWS = (str) =>
 
 # ---------------------------------------------------------------------------
 
+export trimArray = (lLines) =>
+
+	# --- lLines is modified in place, but we still return a ref
+	while (lLines.length > 0) && isEmpty(lLines[0])
+		lLines.shift()
+	while (lLines.length > 0) && isEmpty(lLines[lLines.length-1])
+		lLines.pop()
+	return lLines
+
+# ---------------------------------------------------------------------------
+
+export removeEmptyLines = (lLines) =>
+
+	assert isArrayOfStrings(lLines), "Not an array of strings: #{OL(lLines)}"
+	return lLines.filter (line) => nonEmpty(line)
+
+# ---------------------------------------------------------------------------
+
+export CWSALL = (blockOrArray) =>
+
+	if isArrayOfStrings(blockOrArray)
+		lNewArray = for line in blockOrArray
+			CWS(line)
+		return trimArray(lNewArray)
+	else if isString(blockOrArray)
+		lNewArray = for line in toArray(blockOrArray)
+			CWS(line)
+		return toBlock(trimArray(lNewArray))
+	else
+		throw new Error("Bad param: #{OL(blockOrArray)}")
+
+# ---------------------------------------------------------------------------
+
 export splitPrefix = (line) =>
 
 	assert isString(line), "non-string #{OL(line)}"
@@ -1076,7 +1109,7 @@ export prefixBlock = (block, prefix) =>
 
 export rtrim = (line) =>
 
-	assert isString(line), "rtrim(): line is not a string"
+	assert isString(line), "not a string: #{OL(line)}"
 	lMatches = line.match(/\s+$/)
 	if defined(lMatches)
 		n = lMatches[0].length   # num chars to remove

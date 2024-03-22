@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // low-level-build.coffee
-var contents, fileFilter, filePath, h, hBin, hFile, hFilesProcessed, hJson, hOptions, jsCode, key, lLines, metadata, nCoffee, nJS, nPeggy, numCoffee, ref, ref1, ref2, relPath, shebang, short_name, sourceMap, stub, tla, value;
+var contents, fileFilter, filePath, h, hBin, hFile, hFilesProcessed, hJson, hMetaData, hOptions, jsCode, key, lLines, nCoffee, nJS, nPeggy, numCoffee, ref, ref1, ref2, relPath, shebang, short_name, sourceMap, stub, tla, value;
 
 import {
   undef,
@@ -39,7 +39,7 @@ import {
 } from '@jdeighan/base-utils/coffee';
 
 import {
-  peggify
+  peggifyFile
 } from '@jdeighan/base-utils/peggy';
 
 hFilesProcessed = {
@@ -81,7 +81,7 @@ hOptions = {
 
 ref = allFilesMatching('**/*.coffee', hOptions);
 for (hFile of ref) {
-  ({filePath, relPath, metadata, lLines} = hFile);
+  ({filePath, relPath, hMetaData, lLines} = hFile);
   LOG(relPath);
   hFilesProcessed.coffee += 1;
   [jsCode, sourceMap] = brew(toBlock(lLines), relPath);
@@ -94,12 +94,10 @@ ref1 = allFilesMatching('**/*.peggy', hOptions);
 // 3. Search src folder for *.peggy files and compile them
 //    unless newer *.js and *.js.map files exist
 for (hFile of ref1) {
-  ({filePath, relPath, metadata, lLines} = hFile);
+  ({relPath} = hFile);
   LOG(relPath);
   hFilesProcessed.peggy += 1;
-  [jsCode, sourceMap] = peggify(toBlock(lLines), relPath);
-  barf(jsCode, withExt(filePath, '.js'));
-  barf(sourceMap, withExt(filePath, '.js.map'));
+  peggifyFile(relPath);
 }
 
 // ---------------------------------------------------------------------------
@@ -123,14 +121,14 @@ tla = (stub) => {
 //       - add shebang line if missing
 //       - save <stub>: <path> in hBin
 hOptions = {
-  fileFilter: ({metadata, lLines}) => {
-    assert(notdefined(metadata), "metadata in bin *.js file");
+  fileFilter: ({hMetaData, lLines}) => {
+    assert(notdefined(hMetaData), "hMetaData in bin *.js file");
     if (lLines.length === 0) {
       return false;
     }
     return lLines[0] !== shebang;
   },
-  eager: true // --- h will have keys metadata and lLines
+  eager: true // --- h will have keys hMetaData and lLines
 };
 
 ref2 = allFilesMatching('./src/bin/**/*.js', hOptions);

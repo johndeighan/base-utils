@@ -5,9 +5,7 @@ import {LOG} from '@jdeighan/base-utils/log'
 import {
 	u, equal, truthy, falsy, succeeds, throws,
 	} from '@jdeighan/base-utils/utest'
-import {
-	peggify, peggifyFile, pparse,
-	} from '@jdeighan/base-utils/peggy'
+import {pparse} from '@jdeighan/base-utils/peggy'
 import {parse} from '@jdeighan/base-utils/object'
 
 # ---------------------------------------------------------------------------
