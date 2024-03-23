@@ -187,12 +187,6 @@ export class LineProcessor extends FileProcessor
 
 	# ..........................................................
 
-	transformLine: (line) ->
-
-		return line
-
-	# ..........................................................
-
 	handleFile: (hFile) ->
 
 		dbgEnter 'handleFile', hFile
@@ -234,8 +228,8 @@ export class LineProcessor extends FileProcessor
 			#     - string to write a line literally
 			#     - a hash which cannot contain key 'lineNum'
 
-			item = @handleLine @transformLine(line), lineNum, filePath
-			addToRecipe item, line
+			newline = @handleLine line, lineNum, filePath
+			addToRecipe newline, line
 			lineNum += 1
 		if fileChanged
 			result = {lRecipe}
