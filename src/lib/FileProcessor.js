@@ -221,13 +221,8 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
   }
 
   // ..........................................................
-  transformLine(line) {
-    return line;
-  }
-
-  // ..........................................................
   handleFile(hFile) {
-    var addToRecipe, fileChanged, filePath, item, lRecipe, line, lineNum, ref, result;
+    var addToRecipe, fileChanged, filePath, lRecipe, line, lineNum, newline, ref, result;
     dbgEnter('handleFile', hFile);
     ({filePath} = hFile);
     assert(isString(filePath), "not a string");
@@ -273,8 +268,8 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
       //     - undef to ignore line
       //     - string to write a line literally
       //     - a hash which cannot contain key 'lineNum'
-      item = this.handleLine(this.transformLine(line), lineNum, filePath);
-      addToRecipe(item, line);
+      newline = this.handleLine(line, lineNum, filePath);
+      addToRecipe(newline, line);
       lineNum += 1;
     }
     if (fileChanged) {
