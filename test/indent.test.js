@@ -8,16 +8,9 @@ import {
   assert
 } from '@jdeighan/base-utils/exceptions';
 
-import {
-  indentLevel,
-  isUndented,
-  indentation,
-  undented,
-  splitLine,
-  indented,
-  enclose,
-  getOneIndent
-} from '@jdeighan/base-utils/indent';
+import * as lib from '@jdeighan/base-utils/indent';
+
+Object.assign(global, lib);
 
 import {
   UnitTester,

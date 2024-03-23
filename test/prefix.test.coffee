@@ -3,9 +3,8 @@
 import {
 	undef, defined, notdefined, pass, escapeStr,
 	} from '@jdeighan/base-utils'
-import {
-	getPrefix,
-	} from '@jdeighan/base-utils/prefix'
+import * as lib from '@jdeighan/base-utils/prefix'
+Object.assign(global, lib)
 import {equal} from '@jdeighan/base-utils/utest'
 
 un = (str) =>

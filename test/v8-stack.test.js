@@ -19,13 +19,9 @@ import {
   LOGVALUE
 } from '@jdeighan/base-utils/log';
 
-import {
-  getMyDirectCaller,
-  getMyOutsideCaller,
-  getV8Stack,
-  debugV8Stack,
-  getV8StackStr
-} from '@jdeighan/base-utils/v8-stack';
+import * as lib from '@jdeighan/base-utils/v8-stack';
+
+Object.assign(global, lib);
 
 import {
   getBoth
@@ -166,9 +162,9 @@ import {
     stackStr = (await getV8StackStr());
     return stackStr;
   };
-  return equal((await func1()), `function at v8-stack.test.js:153:23
-function at v8-stack.test.js:150:19
-script at v8-stack.test.js:169:23`);
+  return equal((await func1()), `function at v8-stack.test.js:151:23
+function at v8-stack.test.js:148:19
+script at v8-stack.test.js:165:23`);
 })();
 
 // ---------------------------------------------------------------------------
@@ -183,6 +179,6 @@ script at v8-stack.test.js:169:23`);
     x = 2 * 2;
     return x;
   };
-  return equal((await func1()), `function at v8-stack.test.js:169:19
-script at v8-stack.test.js:186:23`);
+  return equal((await func1()), `function at v8-stack.test.js:167:19
+script at v8-stack.test.js:182:23`);
 })();

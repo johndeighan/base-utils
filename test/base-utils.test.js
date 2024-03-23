@@ -12,9 +12,9 @@ import {
   falsy
 } from '@jdeighan/base-utils/utest';
 
-import * as util from '@jdeighan/base-utils';
+import * as lib from '@jdeighan/base-utils';
 
-Object.assign(global, util);
+Object.assign(global, lib);
 
 equal(undef, void 0);
 

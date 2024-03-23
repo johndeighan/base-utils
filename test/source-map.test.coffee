@@ -7,9 +7,8 @@
 
 import {hasKey} from '@jdeighan/base-utils'
 import {mkpath} from '@jdeighan/base-utils/ll-fs'
-import {
-	getMap, mapSourcePos, mapLineNum,
-	} from '@jdeighan/base-utils/source-map'
+import * as lib from '@jdeighan/base-utils/source-map'
+Object.assign(global, lib)
 import {
 	UnitTester,
 	equal, like, notequal, succeeds, throws, truthy, falsy,

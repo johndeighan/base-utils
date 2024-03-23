@@ -7,9 +7,9 @@ import {
   u
 } from '@jdeighan/base-utils/utest';
 
-import {
-  TextTable
-} from '@jdeighan/base-utils/TextTable';
+import * as lib from '@jdeighan/base-utils/TextTable';
+
+Object.assign(global, lib);
 
 // -------------------------------------------------------------
 (() => {

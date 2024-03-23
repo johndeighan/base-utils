@@ -3,7 +3,8 @@
 import {
 	undef, defined, notdefined, pass, escapeStr,
 	} from '@jdeighan/base-utils'
-import {NamedLogs} from '@jdeighan/base-utils/named-logs'
+import * as lib from '@jdeighan/base-utils/named-logs'
+Object.assign(global, lib)
 import {equal, truthy, falsy} from '@jdeighan/base-utils/utest'
 
 # ---------------------------------------------------------------------------

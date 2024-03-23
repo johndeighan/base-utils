@@ -1,9 +1,7 @@
 // exceptions.test.coffee
-import {
-  assert,
-  croak,
-  suppressExceptionLogging
-} from '@jdeighan/base-utils/exceptions';
+import * as lib from '@jdeighan/base-utils/exceptions';
+
+Object.assign(global, lib);
 
 import {
   throws,

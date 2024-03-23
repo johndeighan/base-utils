@@ -22,25 +22,9 @@ import {
   falsy
 } from '@jdeighan/base-utils/utest';
 
-import {
-  myself,
-  mydir,
-  mkpath,
-  relpath,
-  mkDir,
-  touch,
-  isFile,
-  isDir,
-  pathType,
-  rmFile,
-  rmDir,
-  parsePath,
-  rename,
-  clearDir,
-  dirContents,
-  parallelPath,
-  subPath
-} from '@jdeighan/base-utils/ll-fs';
+import * as lib from '@jdeighan/base-utils/ll-fs';
+
+Object.assign(global, lib);
 
 dir = mydir(import.meta.url);
 

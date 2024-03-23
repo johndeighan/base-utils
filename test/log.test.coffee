@@ -4,14 +4,8 @@ import {
 	undef, defined, notdefined, pass, jsType, spaces,
 	} from '@jdeighan/base-utils'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
-import {
-	logWidth, sep_dash, sep_eq,
-	setLogWidth, resetLogWidth, debugLogging,
-	setStringifier, resetStringifier,
-	stringify, tamlStringify, orderedStringify,
-	LOG, LOGVALUE, LOGTAML, LOGJSON,
-	clearAllLogs, getMyLogs, echoLogs,
-	} from '@jdeighan/base-utils/log'
+import * as lib from '@jdeighan/base-utils/log'
+Object.assign(global, lib)
 import {
 	UnitTester,
 	equal, like, notequal, truthy, falsy, throws, succeeds,
@@ -29,20 +23,6 @@ equal orderedStringify(['a', 42, [1,2]]), """
 	- - 1
 	  - 2
 	"""
-
-# ---------------------------------------------------------------------------
-
-equal logWidth, 42
-
-setLogWidth 5
-equal logWidth, 5
-equal sep_dash, '-----'
-resetLogWidth()
-
-setLogWidth 5
-equal logWidth, 5
-equal sep_eq, '====='
-resetLogWidth()
 
 # ---------------------------------------------------------------------------
 

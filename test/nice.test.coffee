@@ -5,7 +5,8 @@ import {
 	UnitTester,
 	equal, like, notequal, truthy, falsy, throws, succeeds,
 	} from '@jdeighan/base-utils/utest'
-import {formatString, toNICE} from '@jdeighan/base-utils/nice'
+import * as lib from '@jdeighan/base-utils/nice'
+Object.assign(global, lib)
 
 # ---------------------------------------------------------------------------
 
@@ -26,89 +27,112 @@ equal formatString("mary's \"stuff\""), '«mary\'s˳"stuff"»'
 # ---------------------------------------------------------------------------
 # --- repeat formatString() tests using toNICE()
 
-# --- transform value using toNICE() automatically
-u = new UnitTester()
-u.transformValue = (str) => return toNICE(str)
+(() =>
+	# --- transform value using toNICE() automatically
+	u = new UnitTester()
+	u.transformValue = (str) => return toNICE(str)
 
-u.equal "a word", "'a˳word'"
-u.equal "\t\tword", "'→→word'"
-u.equal "first\nsecond", "'first▼second'"
-u.equal "abc", "'abc'"
-u.equal "mary's lamb", '"mary\'s˳lamb"'
-u.equal "mary's \"stuff\"", '«mary\'s˳"stuff"»'
+	u.equal "a word", "'a˳word'"
+	u.equal "\t\tword", "'→→word'"
+	u.equal "first\nsecond", "'first▼second'"
+	u.equal "abc", "'abc'"
+	u.equal "mary's lamb", '"mary\'s˳lamb"'
+	u.equal "mary's \"stuff\"", '«mary\'s˳"stuff"»'
 
-u.equal undef, "undef"
-u.equal null, "null"
-u.equal NaN, 'NaN'
-u.equal 42, "42"
-u.equal true, 'true'
-u.equal false, 'false'
-u.equal (() => 42), '[Function]'
+	u.equal undef, "undef"
+	u.equal null, "null"
+	u.equal NaN, 'NaN'
+	u.equal 42, "42"
+	u.equal true, 'true'
+	u.equal false, 'false'
+	u.equal (() => 42), '[Function]'
 
-func2 = (x) =>
-	return
-u.equal func2, "[Function func2]"
+	func2 = (x) =>
+		return
+	u.equal func2, "[Function func2]"
 
-u.equal ['a','b'], """
-	- 'a'
-	- 'b'
-	"""
-u.equal [1,2], """
-	- 1
-	- 2
-	"""
-u.equal {a: 1, b: 2}, """
-	a: 1
-	b: 2
-	"""
-u.equal {a: 'a', b: 'b'}, """
-	a: 'a'
-	b: 'b'
-	"""
-
-u.equal [ {a:1}, 'abc'], """
-	-
-		a: 1
-	- 'abc'
-	"""
-
-u.equal {a: [1,2], b: 'abc'}, """
-	a:
+	u.equal ['a','b'], """
+		- 'a'
+		- 'b'
+		"""
+	u.equal [1,2], """
 		- 1
 		- 2
-	b: 'abc'
-	"""
+		"""
+	u.equal {a: 1, b: 2}, """
+		a: 1
+		b: 2
+		"""
+	u.equal {a: 'a', b: 'b'}, """
+		a: 'a'
+		b: 'b'
+		"""
 
-u.equal {a:1, b:'abc', f: func2}, """
-	a: 1
-	b: 'abc'
-	f: [Function func2]
-	"""
-
-u.equal {
-	key: 'wood'
-	value: [
-		"a word"
-		{a:1, b:2}
-		undef,
-		[1,2,"mary's lamb","mary's \"stuff\""]
-		]
-	items: ["\ta", 2, "\t\tb\n"]
-	}, """
-	key: 'wood'
-	value:
-		- 'a˳word'
+	u.equal [ {a:1}, 'abc'], """
 		-
 			a: 1
-			b: 2
-		- undef
-		-
+		- 'abc'
+		"""
+
+	u.equal {a: [1,2], b: 'abc'}, """
+		a:
 			- 1
 			- 2
-			- "mary\'s˳lamb"
-			- «mary\'s˳"stuff"»
-	items:
-		- '→a'
-		- 2
-		- '→→b▼'
-	"""
+		b: 'abc'
+		"""
+
+	u.equal {a:1, b:'abc', f: func2}, """
+		a: 1
+		b: 'abc'
+		f: [Function func2]
+		"""
+
+	u.equal {
+		key: 'wood'
+		value: [
+			"a word"
+			{a:1, b:2}
+			undef,
+			[1,2,"mary's lamb","mary's \"stuff\""]
+			]
+		items: ["\ta", 2, "\t\tb\n"]
+		}, """
+		key: 'wood'
+		value:
+			- 'a˳word'
+			-
+				a: 1
+				b: 2
+			- undef
+			-
+				- 1
+				- 2
+				- "mary\'s˳lamb"
+				- «mary\'s˳"stuff"»
+		items:
+			- '→a'
+			- 2
+			- '→→b▼'
+		"""
+	)()
+
+# ---------------------------------------------------------------------------
+# --- test fromNICE()
+
+(() =>
+	# --- transform value using fromNICE() automatically
+	u = new UnitTester()
+	u.transformValue = (str) => return fromNICE(str)
+
+	u.equal """
+		fileName: primitive-value
+		type: coffee
+		author: John Deighan
+		include: pll-parser
+		""", {
+		fileName: 'primitive-value'
+		type: 'coffee'
+		author: 'John Deighan'
+		include: 'pll-parser'
+		}
+	)()

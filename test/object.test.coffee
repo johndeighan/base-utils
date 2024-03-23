@@ -5,12 +5,13 @@ import {LOG} from '@jdeighan/base-utils/log'
 import {
 	u, equal, truthy, falsy, succeeds, throws,
 	} from '@jdeighan/base-utils/utest'
-import {pparse} from '@jdeighan/base-utils/peggy'
-import {parse} from '@jdeighan/base-utils/object'
+import {peggyParse} from '@jdeighan/base-utils/peggy'
+import * as lib from '@jdeighan/base-utils/object'
+Object.assign(global, lib)
 
 # ---------------------------------------------------------------------------
 
-u.transformValue = (str) => return pparse(parse, str)
+u.transformValue = (str) => return peggyParse(parse, str)
 
 # ---------------------------------------------------------------------------
 

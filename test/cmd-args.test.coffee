@@ -1,7 +1,8 @@
 # cmd-args.test.coffee
 
 import {u, equal, throws} from '@jdeighan/base-utils/utest'
-import {parse} from '@jdeighan/base-utils/cmd-args'
+import * as lib from '@jdeighan/base-utils/cmd-args'
+Object.assign(global, lib)
 
 u.transformValue = (str) => return parse(str)
 

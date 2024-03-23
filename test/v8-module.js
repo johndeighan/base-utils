@@ -1,10 +1,9 @@
 // v8-module.coffee
 var secondFunc, thirdFunc;
 
-import {
-  getMyDirectCaller,
-  getMyOutsideCaller
-} from '@jdeighan/base-utils/v8-stack';
+import * as lib from '@jdeighan/base-utils/v8-stack';
+
+Object.assign(global, lib);
 
 // ---------------------------------------------------------------------------
 export var getBoth = function() {

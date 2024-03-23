@@ -18,10 +18,9 @@ import {
   echoLogs
 } from '@jdeighan/base-utils/log';
 
-import {
-  CallStack,
-  getStackLog
-} from '@jdeighan/base-utils/stack';
+import * as lib from '@jdeighan/base-utils/stack';
+
+Object.assign(global, lib);
 
 import {
   UnitTester,

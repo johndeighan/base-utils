@@ -11,15 +11,8 @@ import {
 	} from '@jdeighan/base-utils'
 import {LOG} from '@jdeighan/base-utils/log'
 import {setDebugging} from '@jdeighan/base-utils/debug'
-import {
-	workingDir, parentDir, myself, mydir, mkpath, isFile,
-	getPkgJsonDir, getPkgJsonPath,
-	slurp, slurpJSON, slurpTAML, slurpPkgJSON,
-	barf, barfJSON, barfTAML, barfPkgJSON,
-	parsePath, readTextFile, allFilesMatching,
-	allLinesIn, forEachLineInFile,
-	dirContents, FileWriter,
-	} from '@jdeighan/base-utils/fs'
+import * as lib from '@jdeighan/base-utils/fs'
+Object.assign(global, lib)
 
 # --- should be root directory of @jdeighan/base-utils
 projDir = workingDir()

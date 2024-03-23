@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "",
+  "sourceRoot": "",
+  "sources": [
+    "<anonymous>"
+  ],
+  "names": [],
+  "mappings": "AAAsB;AAEtB,OAAA;EACC,KADD;CAAA,MAAA;;AAGA,OAAA;EAAQ,CAAR;EAAW,KAAX;CAAA,MAAA;;AACA,OAAO,CAAA,OAAP,MAAA;;AACA,MAAM,CAAC,MAAP,CAAc,MAAd,EAAsB,GAAtB;;AAEA,CAAC,CAAC,cAAF,GAAmB,CAAC,KAAD,CAAA,GAAA;SAAW,eAAA,CAAgB,KAAhB;AAAX,EATG;;;AAatB,KAAA,CAAM,CAAA;;;;mBAAA,CAAN,EAMM;EACL,QAAA,EAAU,iBADL;EAEL,IAAA,EAAM,QAFD;EAGL,MAAA,EAAQ,cAHH;EAIL,OAAA,EAAS;AAJJ,CANN;;AAaA,KAAA,CAAM,CAAA;;;;mBAAA,CAAN,EAMM;EACL,QAAA,EAAU,iBADL;EAEL,IAAA,EAAM,QAFD;EAGL,MAAA,EAAQ,cAHH;EAIL,OAAA,EAAS;AAJJ,CANN",
+  "sourcesContent": [
+    "# metadata.test.coffee\n\nimport {\n\tundef,\n\t} from '@jdeighan/base-utils'\nimport {u, equal} from '@jdeighan/base-utils/utest'\nimport * as lib from '@jdeighan/base-utils/metadata'\nObject.assign(global, lib)\n\nu.transformValue = (block) => convertMetaData(block)\n\n# ---------------------------------------------------------------------------\n\nequal \"\"\"\n\t---\n\tfileName: primitive-value\n\ttype: coffee\n\tauthor: John Deighan\n\tinclude: pll-parser\n\t\"\"\", {\n\tfileName: 'primitive-value'\n\ttype: 'coffee'\n\tauthor: 'John Deighan'\n\tinclude: 'pll-parser'\n\t}\n\nequal \"\"\"\n\t!!!\n\tfileName: primitive-value\n\ttype: coffee\n\tauthor: John Deighan\n\tinclude: pll-parser\n\t\"\"\", {\n\tfileName: 'primitive-value'\n\ttype: 'coffee'\n\tauthor: 'John Deighan'\n\tinclude: 'pll-parser'\n\t}"
+  ]
+}

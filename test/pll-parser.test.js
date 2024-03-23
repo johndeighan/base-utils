@@ -26,9 +26,9 @@ import {
   globFiles
 } from '@jdeighan/base-utils/fs';
 
-import {
-  parse
-} from '@jdeighan/base-utils/pll-parser';
+import * as lib from '@jdeighan/base-utils/pll-parser';
+
+Object.assign(global, lib);
 
 import {
   transformValue,

@@ -8,9 +8,8 @@ import {setDebugging} from '@jdeighan/base-utils/debug'
 import {
 	slurp, subPath, isDir, dirContents,
 	} from '@jdeighan/base-utils/fs'
-import {
-	FileProcessor, LineProcessor,
-	} from '@jdeighan/base-utils/FileProcessor'
+import * as lib from '@jdeighan/base-utils/FileProcessor'
+Object.assign(global, lib)
 import {
 	line2hWord, hWord2line,
 	} from './utils.js'   # relative to this dir?

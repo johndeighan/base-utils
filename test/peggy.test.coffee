@@ -5,9 +5,8 @@ import {
 	} from '@jdeighan/base-utils'
 import {setDebugging} from '@jdeighan/base-utils/debug'
 import {assert} from '@jdeighan/base-utils/exceptions'
-import {
-	peggify, peggifyFile, pparse, convertToJS,
-	} from '@jdeighan/base-utils/peggy'
+import * as lib from '@jdeighan/base-utils/peggy'
+Object.assign(global, lib)
 import {
 	u, equal, succeeds, fails,
 	} from '@jdeighan/base-utils/utest'

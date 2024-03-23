@@ -20,13 +20,6 @@ import {
 	} from '@jdeighan/base-utils/fs'
 import {brew} from '@jdeighan/base-utils/coffee'
 
-hPeggyOptions = {
-	allowedStartRules: ['*']
-	format: 'es'
-	output: 'source-and-map'
-	trace: true
-	}
-
 hPreProcessors = {
 	coffee: (lLines) =>
 		[jsCode, _] = brew lLines
@@ -69,7 +62,7 @@ export peggify = (peggyCode, source=undef, hMetaData) =>
 				allowedStartRules: ['*']
 				format: 'es'
 				output: 'source-and-map'
-				trace: true
+				trace: true   # compile w/tracing capability
 				})
 			h = srcNode.toStringWithSourceMap()
 			result = [h.code, h.map.toString()]
@@ -78,7 +71,7 @@ export peggify = (peggyCode, source=undef, hMetaData) =>
 				allowedStartRules: ['*']
 				format: 'es'
 				output: 'source'
-				trace: true
+				trace: true   # compile w/tracing capability
 				})
 			result = [jsCode, undef]
 
@@ -264,7 +257,7 @@ class MyTracer extends Tracer
 
 # ---------------------------------------------------------------------------
 
-export pparse = (parseFunc, inputStr, hOptions={}) =>
+export peggyParse = (parseFunc, inputStr, hOptions={}) =>
 
 	{start, tracer} = getOptions hOptions, {
 		start: undef     #     name of start rule

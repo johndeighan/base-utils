@@ -18,16 +18,16 @@ import {
 } from '@jdeighan/base-utils/utest';
 
 import {
-  pparse
+  peggyParse
 } from '@jdeighan/base-utils/peggy';
 
-import {
-  parse
-} from '@jdeighan/base-utils/object';
+import * as lib from '@jdeighan/base-utils/object';
+
+Object.assign(global, lib);
 
 // ---------------------------------------------------------------------------
 u.transformValue = (str) => {
-  return pparse(parse, str);
+  return peggyParse(parse, str);
 };
 
 // ---------------------------------------------------------------------------

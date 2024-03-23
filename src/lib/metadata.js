@@ -25,13 +25,26 @@ import {
 } from '@jdeighan/base-utils/log';
 
 import {
+  dbgEnter,
+  dbgReturn,
+  dbg
+} from '@jdeighan/base-utils/debug';
+
+import {
   fromTAML
 } from '@jdeighan/base-utils/taml';
+
+import {
+  fromNICE
+} from '@jdeighan/base-utils/nice';
 
 // --- { <start>: <converter>, ... }
 hMetaDataTypes = {
   '---': (block) => {
-    return fromTAML(block);
+    return fromTAML(`---\n${block}`);
+  },
+  '!!!': (block) => {
+    return fromNICE(block);
   }
 };
 
@@ -50,24 +63,30 @@ export var isMetaDataStart = (str) => {
 };
 
 // ---------------------------------------------------------------------------
-// --- blockOrArray will include start line,
-//     but not end line
-export var convertMetaData = (blockOrArray) => {
-  var arr, block, start;
-  if (isArray(blockOrArray)) {
-    assert(blockOrArray.length > 0, "Empty array");
-    start = blockOrArray[0];
-    block = toBlock(blockOrArray);
-  } else if (isString(blockOrArray)) {
-    arr = toArray(blockOrArray);
+// --- input can be a string or array of strings
+// --- input will include start line, but not end line
+export var convertMetaData = (input) => {
+  var arr, block, result, start;
+  dbgEnter('convertMetaData', input);
+  // --- convert input to a block, set var start
+  if (isArray(input)) {
+    assert(input.length > 0, "Empty array");
+    start = input.shift();
+    block = toBlock(input);
+  } else if (isString(input)) {
+    arr = toArray(input);
     assert(arr.length > 0, "Empty block");
-    start = arr[0];
-    block = blockOrArray;
+    start = arr.shift();
+    block = toBlock(arr);
   } else {
     croak("Bad parameter to convertMetaData()");
   }
+  dbg('block', block);
   assert(defined(hMetaDataTypes[start]), `Bad metadata start: ${OL(start)}`);
-  return hMetaDataTypes[start](block);
+  // --- NOTE: block should not include the start line
+  result = hMetaDataTypes[start](block);
+  dbgReturn('convertMetaData', result);
+  return result;
 };
 
 //# sourceMappingURL=metadata.js.map

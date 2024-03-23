@@ -15,15 +15,9 @@ import {
   mkpath
 } from '@jdeighan/base-utils/ll-fs';
 
-import {
-  isTAML,
-  toTAML,
-  fromTAML,
-  llSplit,
-  splitTaml,
-  tamlFix,
-  fixValStr
-} from '@jdeighan/base-utils/taml';
+import * as lib from '@jdeighan/base-utils/taml';
+
+Object.assign(global, lib);
 
 import {
   UnitTester,

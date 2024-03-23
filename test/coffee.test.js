@@ -3,9 +3,9 @@ import {
   undef
 } from '@jdeighan/base-utils';
 
-import {
-  brew
-} from '@jdeighan/base-utils/coffee';
+import * as lib from '@jdeighan/base-utils/coffee';
+
+Object.assign(global, lib);
 
 import {
   succeeds,

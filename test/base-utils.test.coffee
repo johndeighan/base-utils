@@ -4,8 +4,8 @@ import {
 	UnitTester,
 	equal, like, notequal, succeeds, throws, truthy, falsy,
 	} from '@jdeighan/base-utils/utest'
-import * as util from '@jdeighan/base-utils'
-Object.assign(global, util)
+import * as lib from '@jdeighan/base-utils'
+Object.assign(global, lib)
 
 equal  undef, undefined
 succeeds () -> pass()

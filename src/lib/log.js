@@ -1,5 +1,5 @@
 // log.coffee
-var doEcho, handleSimpleCase, internalDebugging, logs, putstr, threeSpaces;
+var doEcho, handleSimpleCase, internalDebugging, logWidth, logs, putstr, sep_dash, sep_eq, threeSpaces;
 
 import {
   pass,
@@ -58,11 +58,11 @@ import {
   NamedLogs
 } from '@jdeighan/base-utils/named-logs';
 
-export var logWidth = 42;
+logWidth = 42;
 
-export var sep_dash = '-'.repeat(logWidth);
+sep_dash = '-'.repeat(logWidth);
 
-export var sep_eq = '='.repeat(logWidth);
+sep_eq = '='.repeat(logWidth);
 
 export var stringify = undef;
 

@@ -15,12 +15,9 @@ import {
   assert
 } from '@jdeighan/base-utils/exceptions';
 
-import {
-  peggify,
-  peggifyFile,
-  pparse,
-  convertToJS
-} from '@jdeighan/base-utils/peggy';
+import * as lib from '@jdeighan/base-utils/peggy';
+
+Object.assign(global, lib);
 
 import {
   u,

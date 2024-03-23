@@ -23,6 +23,10 @@ import {
   parse
 } from '@jdeighan/base-utils/object';
 
+import {
+  peggyParse
+} from '@jdeighan/base-utils/peggy';
+
 // ---------------------------------------------------------------------------
 // --- There are 3 types of quotes:
 //        " - double quotes
@@ -134,8 +138,8 @@ export var toNICE = (obj, hOptions = {}) => {
 export var fromNICE = (block) => {
   var result;
   dbgEnter('fromNICE', block);
-  result = parse(block);
-  dbgReturn('fromNice', result);
+  result = peggyParse(parse, block);
+  dbgReturn('fromNICE', result);
   return result;
 };
 

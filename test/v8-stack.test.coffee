@@ -6,10 +6,8 @@ import {
 	} from '@jdeighan/base-utils'
 import {fromTAML} from '@jdeighan/base-utils/taml'
 import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
-import {
-	getMyDirectCaller, getMyOutsideCaller,
-	getV8Stack, debugV8Stack, getV8StackStr,
-	} from '@jdeighan/base-utils/v8-stack'
+import * as lib from '@jdeighan/base-utils/v8-stack'
+Object.assign(global, lib)
 import {getBoth} from './v8-module.js'
 import {
 	UnitTester,
@@ -154,9 +152,9 @@ import {
 		return stackStr
 
 	equal await func1(), """
-		function at v8-stack.test.js:153:23
-		function at v8-stack.test.js:150:19
-		script at v8-stack.test.js:169:23
+		function at v8-stack.test.js:151:23
+		function at v8-stack.test.js:148:19
+		script at v8-stack.test.js:165:23
 		"""
 
 	)()
@@ -173,7 +171,7 @@ import {
 		return x
 
 	equal await func1(), """
-		function at v8-stack.test.js:169:19
-		script at v8-stack.test.js:186:23
+		function at v8-stack.test.js:167:19
+		script at v8-stack.test.js:182:23
 		"""
 	)()

@@ -14,9 +14,9 @@ import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {getMyOutsideCaller} from '@jdeighan/base-utils/v8-stack'
 import {NamedLogs} from '@jdeighan/base-utils/named-logs'
 
-export logWidth = 42
-export sep_dash = '-'.repeat(logWidth)
-export sep_eq = '='.repeat(logWidth)
+logWidth = 42
+sep_dash = '-'.repeat(logWidth)
+sep_eq = '='.repeat(logWidth)
 
 export stringify = undef
 internalDebugging = false

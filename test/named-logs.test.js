@@ -7,9 +7,9 @@ import {
   escapeStr
 } from '@jdeighan/base-utils';
 
-import {
-  NamedLogs
-} from '@jdeighan/base-utils/named-logs';
+import * as lib from '@jdeighan/base-utils/named-logs';
+
+Object.assign(global, lib);
 
 import {
   equal,

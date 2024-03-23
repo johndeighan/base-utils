@@ -9,6 +9,7 @@ import {
 	dbgEnter, dbgReturn, dbg,
 	} from '@jdeighan/base-utils/debug'
 import {parse} from '@jdeighan/base-utils/object'
+import {peggyParse} from '@jdeighan/base-utils/peggy'
 
 # ---------------------------------------------------------------------------
 # --- There are 3 types of quotes:
@@ -104,6 +105,6 @@ export toNICE = (obj, hOptions={}) =>
 export fromNICE = (block) =>
 
 	dbgEnter 'fromNICE', block
-	result = parse(block)
-	dbgReturn 'fromNice', result
+	result = peggyParse(parse, block)
+	dbgReturn 'fromNICE', result
 	return result

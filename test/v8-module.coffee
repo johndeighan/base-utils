@@ -1,8 +1,7 @@
 # v8-module.coffee
 
-import {
-	getMyDirectCaller, getMyOutsideCaller,
-	} from '@jdeighan/base-utils/v8-stack'
+import * as lib from '@jdeighan/base-utils/v8-stack'
+Object.assign(global, lib)
 
 # ---------------------------------------------------------------------------
 

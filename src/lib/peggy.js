@@ -1,5 +1,5 @@
 // peggy.coffee
-var MyTracer, Tracer, generate, hPeggyOptions, hPreProcessors;
+var MyTracer, Tracer, generate, hPreProcessors;
 
 import peggy from 'peggy';
 
@@ -62,13 +62,6 @@ import {
   brew
 } from '@jdeighan/base-utils/coffee';
 
-hPeggyOptions = {
-  allowedStartRules: ['*'],
-  format: 'es',
-  output: 'source-and-map',
-  trace: true
-};
-
 hPreProcessors = {
   coffee: (lLines) => {
     var _, jsCode;
@@ -108,7 +101,7 @@ export var peggify = (peggyCode, source = undef, hMetaData) => {
         allowedStartRules: ['*'],
         format: 'es',
         output: 'source-and-map',
-        trace: true
+        trace: true // compile w/tracing capability
       });
       h = srcNode.toStringWithSourceMap();
       result = [h.code, h.map.toString()];
@@ -117,7 +110,7 @@ export var peggify = (peggyCode, source = undef, hMetaData) => {
         allowedStartRules: ['*'],
         format: 'es',
         output: 'source',
-        trace: true
+        trace: true // compile w/tracing capability
       });
       result = [jsCode, undef];
     }
@@ -306,7 +299,7 @@ MyTracer = class MyTracer extends Tracer {
 };
 
 // ---------------------------------------------------------------------------
-export var pparse = (parseFunc, inputStr, hOptions = {}) => {
+export var peggyParse = (parseFunc, inputStr, hOptions = {}) => {
   var hParseOptions, start, tracer;
   ({start, tracer} = getOptions(hOptions, {
     start: undef, //     name of start rule

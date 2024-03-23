@@ -22,9 +22,9 @@ import {
   succeeds
 } from '@jdeighan/base-utils/utest';
 
-import {
-  StateMachine
-} from '@jdeighan/base-utils/state-machine';
+import * as lib from '@jdeighan/base-utils/state-machine';
+
+Object.assign(global, lib);
 
 suppressExceptionLogging();
 

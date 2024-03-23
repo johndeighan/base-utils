@@ -26,21 +26,9 @@ import {
   CallStack
 } from '@jdeighan/base-utils/stack';
 
-import {
-  debugStack,
-  setDebugging,
-  debugDebug,
-  getType,
-  dumpDebugLoggers,
-  dbgEnter,
-  dbgReturn,
-  dbgYield,
-  dbgResume,
-  dbg,
-  clearDebugLog,
-  getDebugLog,
-  stdLogString
-} from '@jdeighan/base-utils/debug';
+import * as lib from '@jdeighan/base-utils/debug';
+
+Object.assign(global, lib);
 
 import {
   UnitTester,

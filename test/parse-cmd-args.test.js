@@ -13,9 +13,9 @@ import {
   setDebugging
 } from '@jdeighan/base-utils/debug';
 
-import {
-  parseCmdArgs
-} from '@jdeighan/base-utils/parse-cmd-args';
+import * as lib from '@jdeighan/base-utils/parse-cmd-args';
+
+Object.assign(global, lib);
 
 import {
   UnitTester
