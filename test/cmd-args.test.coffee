@@ -1,6 +1,6 @@
 # cmd-args.test.coffee
 
-import {u, equal, throws} from '@jdeighan/base-utils/utest'
+import {u, equal, fails} from '@jdeighan/base-utils/utest'
 import * as lib from '@jdeighan/base-utils/cmd-args'
 Object.assign(global, lib)
 
@@ -71,4 +71,4 @@ equal "'do that' -am \"do this\"", {
 	_:['do that', 'do this']
 	}
 
-throws () => parse('--')
+fails () => parse('--')

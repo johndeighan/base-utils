@@ -68,7 +68,8 @@ export indentLevel = (line, oneIndent=undef) =>
 				level = nTabs     # there may also be spaces, but we ignore them
 				oneIndent = "\t"  # may be used at end
 			else
-				assert (nSpaces > 0), "There must be TABS or spaces"
+				assert (nSpaces > 0),
+						"There must be TABS or spaces in #{OL(line)}"
 				level = 1
 				oneIndent = ' '.repeat(nSpaces) # may be used at end
 		when "\t"

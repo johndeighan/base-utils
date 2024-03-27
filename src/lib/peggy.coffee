@@ -1,13 +1,12 @@
 # peggy.coffee
 
 import peggy from 'peggy'
-{generate} = peggy
 
 import {
 	undef, defined, notdefined, pass, OL, getOptions, hasKey,
 	isString, isFunction, isArray, isHash, isEmpty, nonEmpty,
 	toArray, toBlock, isArrayOfStrings, removeEmptyLines,
-	isNonEmptyString, untabify,
+	isNonEmptyString, untabify, centeredText,
 	} from '@jdeighan/base-utils'
 import {LOG} from '@jdeighan/base-utils/log'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
@@ -20,44 +19,84 @@ import {
 	} from '@jdeighan/base-utils/fs'
 import {brew} from '@jdeighan/base-utils/coffee'
 
-hPreProcessors = {
-	coffee: (lLines) =>
-		[jsCode, _] = brew lLines
+hCodePreProcessors = {
+	coffee: (code) =>
+		[jsCode, _] = brew code
 		return jsCode
+	javascript: (code) =>
+		return code
 	}
 
 # ---------------------------------------------------------------------------
 
-export addPreProcessor = (name, func) =>
+export addCodePreProcessor = (name, func) =>
 
 	assert isNonEmptyString(name), "Bad name: #{OL(name)}"
-	assert ! hasKey(hPreProcessors, name), "Exists: #{OL(name)}"
+	assert ! hasKey(hCodePreProcessors, name), "Exists: #{OL(name)}"
 	assert isFunction(func), "Not a function: #{OL(func)}"
-	hPreProcessors[name] = func
+	hCodePreProcessors[name] = func
+	return
+
+# ---------------------------------------------------------------------------
+
+export peggifyFile = (filePath) =>
+
+	dbgEnter 'peggifyFile', filePath
+	{hMetaData, lLines} = readTextFile(filePath)
+	dbg 'hMetaData', hMetaData
+	[jsCode, sourceMap] = peggify lLines, {
+		source: filePath
+		hMetaData
+		}
+	barf jsCode, withExt(filePath, '.js')
+	if defined(sourceMap)
+		barf sourceMap, withExt(filePath, '.js.map')
+	dbgReturn 'peggifyFile'
 	return
 
 # ---------------------------------------------------------------------------
 # --- peggyCode can be a string or array of strings
+#     Valid options:
+#        source - relative or absolute path to source file
+#        type - usually 'coffee', may also appear in hMetaData
+#        hMetaData - may contain key 'type' (usually 'coffee')
 
-export peggify = (peggyCode, source=undef, hMetaData) =>
+export peggify = (peggyCode, hOptions) =>
 
-	dbgEnter 'peggify', peggyCode, source, hMetaData
+	dbgEnter 'peggify', peggyCode, hOptions
+	{source, type, hMetaData} = getOptions hOptions, {
+		source: undef
+		type: undef
+		hMetaData: {}
+		}
 
-	assert isHash(hMetaData), "Not a hash: #{OL(hMetaData)}"
+	assert isHash(hMetaData), "hMetaData not a hash: #{OL(hMetaData)}"
+
+	# --- determine type, if any
+	if defined(type)
+		assert notdefined(hMetaData.type) || (hMetaData.type == type),
+			"Conflicting types"
+	else if defined(hMetaData.type)
+		type = hMetaData.type
+	dbg "type = #{OL(type)}"
 
 	# --- preprocess peggyCode if required
-	#        - ensure peggyCode is a string
+	#        - ensure peggyCode ends up as a string
 
-	type = hMetaData.type
-	dbg "type = #{OL(type)}"
-	if isNonEmptyString(type)
-		peggyCode = convertToJS(peggyCode, hMetaData)
+	if defined(type)
+		if isString(peggyCode)
+			peggyCode = convertToJS(toArray(peggyCode), type, hMetaData)
+		else if isArrayOfStrings(peggyCode)
+			peggyCode = convertToJS(peggyCode, type, hMetaData)
+		else
+			croak "Bad peggy code"
+		dbg "JSified peggy code", peggyCode
 	else if isArray(peggyCode)
 		peggyCode = toBlock(peggyCode)
 	try
 		if defined(source)
 			assert isFile(source), "Not a file: #{OL(source)}"
-			srcNode = generate(peggyCode, {
+			srcNode = peggy.generate(peggyCode, {
 				grammarSource: source
 				allowedStartRules: ['*']
 				format: 'es'
@@ -67,7 +106,7 @@ export peggify = (peggyCode, source=undef, hMetaData) =>
 			h = srcNode.toStringWithSourceMap()
 			result = [h.code, h.map.toString()]
 		else
-			jsCode = generate(peggyCode, {
+			jsCode = peggy.generate(peggyCode, {
 				allowedStartRules: ['*']
 				format: 'es'
 				output: 'source'
@@ -76,7 +115,7 @@ export peggify = (peggyCode, source=undef, hMetaData) =>
 			result = [jsCode, undef]
 
 	catch err
-		console.log '-'.repeat(32) + "  FAILED  " + '-'.repeat(32)
+		console.log centeredText('peggy generate failed', 74, 'char=-')
 		console.log untabify(peggyCode)
 		console.log '-'.repeat(74)
 		throw err
@@ -86,30 +125,31 @@ export peggify = (peggyCode, source=undef, hMetaData) =>
 
 # ---------------------------------------------------------------------------
 
-export peggifyFile = (filePath) =>
+export convertCodeToJS = (code, type) =>
 
-	{hMetaData, lLines} = readTextFile(filePath)
-	[jsCode, sourceMap] = peggify lLines, filePath, hMetaData
-	barf jsCode, withExt(filePath, '.js')
-	if defined(sourceMap)
-		barf sourceMap, withExt(filePath, '.js.map')
-	return
+	dbgEnter 'convertCodeToJS', code, type
+	code = toBlock(code)
+	try
+		jsCode = hCodePreProcessors[type](code)
+	catch err
+		console.log "ERROR: Unable to convert #{type} code to JS"
+		console.log '-'.repeat(40)
+		console.log code
+		console.log '-'.repeat(40)
+		jsCode = ''
+	dbgReturn 'convertCodeToJS', jsCode
+	return jsCode
 
 # ---------------------------------------------------------------------------
 # --- input may be a string or array of strings
 # --- returns a block of JavaScript code
 
-export convertToJS = (input, hMetaData={}) =>
+export convertToJS = (lLines, type, hMetaData) =>
 
-	dbgEnter 'convertToJS', input, hMetaData
+	dbgEnter 'convertToJS', lLines, type, hMetaData
+	assert isArray(lLines), "lLines = #{OL(lLines)}"
+	assert isHash(hMetaData), "Not a hash: #{OL(hMetaData)}"
 
-	# --- convert input to array of lines
-	if isString(input)
-		dbg "convert string to array"
-		lLines = toArray(input)
-	else
-		dbg "already an array"
-		lLines = input
 	lLines = removeEmptyLines(lLines)
 
 	assert isArrayOfStrings(lLines),
@@ -118,12 +158,10 @@ export convertToJS = (input, hMetaData={}) =>
 	# --- NOTE: There are NO empty lines in lLines !!!
 	#     We will remove lines from lLines as they're processed
 
-	assert isHash(hMetaData), "Not a hash: #{OL(hMetaData)}"
-	type = hMetaData.type
-	preProcessor = hPreProcessors[type]
-	assert isFunction(preProcessor), "Unknown type: #{OL(type)}"
+	assert isFunction(hCodePreProcessors[type]),
+			"Unknown type: #{OL(type)}"
 
-	# --- Define some utility functions ----------
+	# --- Define some utility functions -----------------
 
 	# --- are there more lines to process?
 	more = () =>
@@ -165,19 +203,19 @@ export convertToJS = (input, hMetaData={}) =>
 	if (next() == 'INITIALIZATION')
 		skip()
 		dbg "Found INITIALIZATION section"
-		lCoffee = getCodeLines(1)
-		dbg "   - #{lCoffee.length} lines of coffee code"
+		lCode = getCodeLines(1)
+		jsCode = convertCodeToJS(lCode, type)
 		lPeggy.push "{{"
-		lPeggy.push preProcessor(lCoffee)
+		lPeggy.push jsCode
 		lPeggy.push "}}"
 
 	if (next() == 'EACH_PARSE')
 		skip()
 		dbg "Found EACH_PARSE section"
-		lCoffee = getCodeLines(1)
-		dbg "   - #{lCoffee.length} lines of coffee code"
+		lCode = getCodeLines(1)
+		jsCode = convertCodeToJS(lCode, type)
 		lPeggy.push "{"
-		lPeggy.push preProcessor(lCoffee)
+		lPeggy.push jsCode
 		lPeggy.push "}"
 
 	hRules = {}
@@ -206,12 +244,11 @@ export convertToJS = (input, hMetaData={}) =>
 			lPeggy.push "  #{headerLine}"
 			hRules[name] += 1
 
-			lCoffee = getCodeLines(2)
-			dbg 'lCoffee', lCoffee
-
-			if (lCoffee.length > 0)
+			lCode = getCodeLines(2)
+			if nonEmpty(lCode)
+				jsCode = convertCodeToJS(lCode, type)
 				lPeggy.push "    {"
-				lPeggy.push indented(preProcessor(lCoffee), 2, "  ")
+				lPeggy.push indented(jsCode, 2, "  ")
 				lPeggy.push "    }"
 				lPeggy.push ""
 
@@ -257,12 +294,16 @@ class MyTracer extends Tracer
 
 # ---------------------------------------------------------------------------
 
-export peggyParse = (parseFunc, inputStr, hOptions={}) =>
+export pparse = (parseFunc, inputStr, hOptions={}) =>
+
+	dbgEnter 'pparse', 'FUNC', inputStr, hOptions
 
 	{start, tracer} = getOptions hOptions, {
 		start: undef     #     name of start rule
-		tracer: 'none'   # --- can be 'none'/'peggy'/'default'/a function
+		tracer: 'none'   # --- can be none/peggy/default/a function
 		}
+
+	dbg "tracer = #{OL(tracer)}"
 
 	hParseOptions = {}
 	if defined(start)
@@ -278,7 +319,6 @@ export peggyParse = (parseFunc, inputStr, hOptions={}) =>
 			assert isFunction(tracer), "tracer not a function"
 			hParseOptions.tracer = tracer
 
-	return parseFunc(inputStr, hParseOptions)
-
-# ---------------------------------------------------------------------------
-
+	result = parseFunc(inputStr, hParseOptions)
+	dbgReturn 'pparse', result
+	return result

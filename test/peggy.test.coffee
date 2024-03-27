@@ -1,7 +1,7 @@
 # peggy.test.coffee
 
 import {
-	undef, defined, notdefined, toArray, CWSALL,
+	undef, defined, notdefined, isString, toArray, CWSALL,
 	} from '@jdeighan/base-utils'
 import {setDebugging} from '@jdeighan/base-utils/debug'
 import {assert} from '@jdeighan/base-utils/exceptions'
@@ -13,7 +13,8 @@ import {
 
 u.transformValue = (peggyCode) ->
 	try
-		jsCode = convertToJS peggyCode, {type: 'coffee'}
+		# --- convertToJS() requires an array
+		jsCode = convertToJS toArray(peggyCode), 'coffee', {}
 		assert defined(jsCode), "empty jsCode"
 		return CWSALL(jsCode)
 	catch err

@@ -71,21 +71,21 @@ import {
 (() => {
   var u;
   u = new UnitTester();
-  u.throws(() => {
+  u.fails(() => {
     return parseCmdArgs({
       hExpect: {
         x: 'badtype'
       }
     });
   });
-  u.throws(() => {
+  u.fails(() => {
     return parseCmdArgs({
       hExpect: {
         _: 'non-array'
       }
     });
   });
-  u.throws(() => {
+  u.fails(() => {
     return parseCmdArgs({
       hExpect: {
         _: [3] // --- should have length 2
@@ -102,7 +102,7 @@ import {
       }
     });
   });
-  u.throws(() => {
+  u.fails(() => {
     return parseCmdArgs({
       hExpect: {
         _: [
@@ -122,7 +122,7 @@ import {
       }
     });
   });
-  u.throws(() => {
+  u.fails(() => {
     return parseCmdArgs({
       hExpect: {
         _: [
@@ -185,7 +185,7 @@ import {
     _: ['nonoption']
   });
   // --- -vv is taken as 2 flags, flag 'v' is not expected
-  u.throws(() => {
+  u.fails(() => {
     return parseCmdArgs({
       argStr: '-vv nonoption',
       hExpect
@@ -200,7 +200,7 @@ import {
     _: ['nonoption']
   });
   // --- -name must be given a value
-  u.throws(() => {
+  u.fails(() => {
     return parseCmdArgs({
       argStr: '-name nonoption',
       hExpect
@@ -216,14 +216,14 @@ import {
     _: ['nonoption']
   });
   // --- there must be at least one non-option
-  u.throws(() => {
+  u.fails(() => {
     return parseCmdArgs({
       argStr: '-f',
       hExpect
     });
   });
   // --- there can't be more than 3 non-options
-  u.throws(() => {
+  u.fails(() => {
     return parseCmdArgs({
       argStr: 'a b c d',
       hExpect
@@ -239,21 +239,21 @@ import {
     _: ['opt1', 'opt2', 'opt3']
   });
   // --- test numeric options
-  u.throws(() => {
+  u.fails(() => {
     return parseCmdArgs({
       argStr: 'slip -i=abc',
       hExpect
     });
   });
   // --- test numeric options
-  u.throws(() => {
+  u.fails(() => {
     return parseCmdArgs({
       argStr: 'slip -i=3.5',
       hExpect
     });
   });
   // --- test numeric options
-  u.throws(() => {
+  u.fails(() => {
     return parseCmdArgs({
       argStr: 'slip -n=abc',
       hExpect
@@ -274,14 +274,14 @@ import {
     });
   });
   // --- test regexp
-  u.throws(() => {
+  u.fails(() => {
     return parseCmdArgs({
       argStr: 'nonoption -debug=abc',
       hExpect
     });
   });
   // --- test regexp
-  return u.throws(() => {
+  return u.fails(() => {
     return parseCmdArgs({
       argStr: 'nonoption -debug=" full"',
       hExpect

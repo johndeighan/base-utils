@@ -229,6 +229,24 @@ export extractKey = (h, key) =>
 
 # ---------------------------------------------------------------------------
 
+export removeKeys = (item, lKeys) =>
+
+	assert isArray(lKeys), "not an array"
+	[type, subtype] = jsType(item)
+	switch type
+		when 'array'
+			for subitem in item
+				removeKeys subitem, lKeys
+		when 'hash', 'object'
+			for key in lKeys
+				if item.hasOwnProperty(key)
+					delete item[key]
+			for prop,value of item
+				removeKeys value, lKeys
+	return item
+
+# ---------------------------------------------------------------------------
+
 export hasAllKeys = (obj, lKeys...) =>
 
 	for key in lKeys
@@ -361,15 +379,31 @@ export tabs = (n) =>
 	return "\t".repeat(n)
 
 # ---------------------------------------------------------------------------
+# --- valid options:
+#        char - char to use on left and right
+#        buffer - num spaces around text when char <> ' '
 
-export centeredText = (text, width) =>
+export centeredText = (text, width, hOptions={}) =>
 
+	{char, numBuffer} = getOptions hOptions, {
+		char: ' '
+		numBuffer: 2
+		}
+	assert isInteger(width), "width = #{OL(width)}"
 	totSpaces = width - text.length
 	if (totSpaces <= 0)
 		return text
 	numLeft = Math.floor(totSpaces / 2)
 	numRight = totSpaces - numLeft
-	return spaces(numLeft) + text + spaces(numRight)
+	if (char == ' ')
+		return spaces(numLeft) + text + spaces(numRight)
+	else
+		buf = ' '.repeat(numBuffer)
+		left = char.repeat(numLeft - numBuffer)
+		right = char.repeat(numRight - numBuffer)
+		numLeft -= numBuffer
+		numRight -= numBuffer
+		return left + buf + text + buf + right
 
 # ---------------------------------------------------------------------------
 #   rtrunc - strip nChars chars from right of a string
@@ -964,24 +998,6 @@ export isHash = (x, lKeys) =>
 			if ! x.hasOwnProperty(key)
 				return false
 	return true
-
-# ---------------------------------------------------------------------------
-
-export removeKeys = (item, lKeys) =>
-
-	assert isArray(lKeys), "not an array"
-	[type, subtype] = jsType(item)
-	switch type
-		when 'array'
-			for subitem in item
-				removeKeys subitem, lKeys
-		when 'hash', 'object'
-			for key in lKeys
-				if item.hasOwnProperty(key)
-					delete item[key]
-			for prop,value of item
-				removeKeys value, lKeys
-	return item
 
 # ---------------------------------------------------------------------------
 

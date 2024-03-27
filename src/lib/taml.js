@@ -1,10 +1,7 @@
 // taml.coffee
-var myReplacer, squote;
+var myReplacer;
 
-import {
-  parse,
-  stringify
-} from 'yaml';
+import YAML from 'yaml';
 
 import {
   undef,
@@ -14,10 +11,12 @@ import {
   hasChar,
   getOptions,
   isEmpty,
+  nonEmpty,
   isString,
   isFunction,
   isBoolean,
   isArray,
+  isInteger,
   blockToArray,
   arrayToBlock,
   escapeStr,
@@ -64,7 +63,7 @@ export var fromTAML = (text) => {
   }
   block = arrayToBlock(lLines);
   try {
-    result = parse(block, {
+    result = YAML.parse(block, {
       skipInvalid: true
     });
   } catch (error) {
@@ -138,7 +137,8 @@ export var fixValStr = (valStr) => {
 myReplacer = (name, value) => {
   var result;
   if (value === undef) {
-    // --- We need this, otherwise js-yaml will convert undef to null
+    // --- We need this, otherwise js-yaml
+    //     will convert undef to null
     result = "<UNDEFINED_VALUE>";
   } else if (isString(value)) {
     result = escapeStr(value);
@@ -151,33 +151,37 @@ myReplacer = (name, value) => {
 };
 
 // ---------------------------------------------------------------------------
+export var baseCompare = (a, b) => {
+  if (a < b) {
+    return -1;
+  } else if (a > b) {
+    return 1;
+  } else {
+    return 0;
+  }
+};
+
+// ---------------------------------------------------------------------------
 export var toTAML = (obj, hOptions = {}) => {
-  var compareFunc, escape, h, hDefaults, hStrOptions, i, indent, j, key, len, replacer, sortKeys, str, useDashes, useTabs;
-  hDefaults = {
-    useTabs: true,
-    sortKeys: true,
+  var h, i, indent, j, key, len, oneIndent, pre, sortKeys, str, useDashes;
+  ({useDashes, sortKeys, indent, oneIndent} = getOptions(hOptions, {
     useDashes: true,
-    indent: undef
-  };
-  ({useTabs, sortKeys, useDashes, indent, escape, replacer} = getOptions(hOptions, hDefaults));
-  // --- define a compare function for sorting
-  compareFunc = (a, b) => {
-    if (a < b) {
-      return -1;
-    } else if (a > b) {
-      return 1;
-    } else {
-      return 0;
-    }
-  };
-  if (obj === undef) {
-    return "---\nundef";
-  }
-  if (obj === null) {
-    return "---\nnull";
-  }
-  if (notdefined(replacer)) {
-    replacer = myReplacer;
+    sortKeys: true, // --- can be boolean/array/function
+    indent: 0, // --- integer number of levels
+    oneIndent: "\t"
+  }));
+  assert(isInteger(indent), `indent = ${OL(indent)}`);
+  assert(isString(oneIndent), `oneIndent = ${OL(oneIndent)}`);
+  pre = useDashes ? "---\n" : "";
+  switch (obj) {
+    case undef:
+      return `${pre}undef`;
+    case null:
+      return `${pre}null`;
+    case true:
+      return `${pre}true`;
+    case false:
+      return `${pre}false`;
   }
   if (isArray(sortKeys)) {
     h = {};
@@ -185,10 +189,13 @@ export var toTAML = (obj, hOptions = {}) => {
       key = sortKeys[i];
       h[key] = i + 1;
     }
-    sortKeys = function(a, b) {
+    sortKeys = function(aVal, bVal) {
+      var a, b;
+      a = Object.entries(aVal)[0][1];
+      b = Object.entries(bVal)[0][1];
       if (defined(h[a])) {
         if (defined(h[b])) {
-          return compareFunc(h[a], h[b]);
+          return baseCompare(h[a], h[b]);
         } else {
           return -1;
         }
@@ -197,38 +204,25 @@ export var toTAML = (obj, hOptions = {}) => {
           return 1;
         } else {
           // --- compare keys alphabetically
-          return compareFunc(a, b);
+          return baseCompare(a, b);
         }
       }
     };
+  } else {
+    assert(isBoolean(sortKeys) || isFunction(sortKeys), `sortKeys = ${OL(sortKeys)}`);
   }
-  assert(isBoolean(sortKeys) || isFunction(sortKeys), "option sortKeys must be boolean, array or function");
-  hStrOptions = {
-    sortMapEntries: true
-  };
-  str = stringify(obj, myReplacer, hStrOptions);
+  str = YAML.stringify(obj, myReplacer, {
+    sortMapEntries: sortKeys
+  });
   str = str.replace(/<UNDEFINED_VALUE>/g, 'undef');
   str = rtrim(str);
-  if (useTabs) {
-    str = str.replace(/  /g, "\t");
-  }
-  if (useDashes) {
-    str = "---\n" + str;
-  }
-  if (indent) {
-    if (useTabs) {
-      return indented(str, indent);
-    } else {
-      return indented(str, indent, '  ');
-    }
-  } else {
+  str = str.replaceAll("  ", oneIndent);
+  str = pre + str;
+  if (indent === 0) {
     return str;
+  } else {
+    return indented(str, indent, oneIndent);
   }
-};
-
-// ---------------------------------------------------------------------------
-squote = (text) => {
-  return "'" + text.replace(/'/g, "''") + "'";
 };
 
 //# sourceMappingURL=taml.js.map

@@ -7,7 +7,7 @@ import {
   like,
   notequal,
   succeeds,
-  throws,
+  fails,
   truthy,
   falsy
 } from '@jdeighan/base-utils/utest';
@@ -174,6 +174,15 @@ equal(splitPrefix("   "), ["", ""]);
 falsy(hasPrefix("abc"));
 
 truthy(hasPrefix("   abc"));
+
+// ---------------------------------------------------------------------------
+equal(spaces(3), '   ');
+
+equal(tabs(3), "\t\t\t");
+
+equal(centeredText('abc', 7), '  abc  ');
+
+equal(centeredText('xyz', 11, 'char=-'), '--  xyz  --');
 
 // ---------------------------------------------------------------------------
 threeSpaces = spaces(3);
@@ -1588,7 +1597,7 @@ equal(keys({
 (() => {
   var lWords;
   lWords = ['bridge', 'highway', 'garbage'];
-  return throws(() => {
+  return fails(() => {
     var result;
     return result = forEachItem(lWords, (item, h) => {
       throw new Error("unknown error");

@@ -11,7 +11,7 @@ Object.assign(global, lib)
 import {getBoth} from './v8-module.js'
 import {
 	UnitTester,
-	equal, like, notequal, succeeds, throws, truthy, falsy,
+	equal, like, notequal, succeeds, fails, truthy, falsy,
 	} from '@jdeighan/base-utils/utest'
 
 # ---------------------------------------------------------------------------

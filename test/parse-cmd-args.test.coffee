@@ -62,19 +62,19 @@ import {UnitTester} from '@jdeighan/base-utils/utest'
 (() =>
 	u = new UnitTester()
 
-	u.throws () => parseCmdArgs({
+	u.fails () => parseCmdArgs({
 		hExpect: {
 			x: 'badtype'
 			}
 		})
 
-	u.throws () => parseCmdArgs({
+	u.fails () => parseCmdArgs({
 		hExpect: {
 			_: 'non-array'
 			}
 		})
 
-	u.throws () => parseCmdArgs({
+	u.fails () => parseCmdArgs({
 		hExpect: {
 			_: [3]    # --- should have length 2
 			}
@@ -86,7 +86,7 @@ import {UnitTester} from '@jdeighan/base-utils/utest'
 			}
 		})
 
-	u.throws () => parseCmdArgs({
+	u.fails () => parseCmdArgs({
 		hExpect: {
 			_: ['a', undef]    # --- non-integer
 			}
@@ -98,7 +98,7 @@ import {UnitTester} from '@jdeighan/base-utils/utest'
 			}
 		})
 
-	u.throws () => parseCmdArgs({
+	u.fails () => parseCmdArgs({
 		hExpect: {
 			_: [3, 2]    # --- min > max
 			}
@@ -162,7 +162,7 @@ import {UnitTester} from '@jdeighan/base-utils/utest'
 		}
 
 	# --- -vv is taken as 2 flags, flag 'v' is not expected
-	u.throws () => parseCmdArgs({
+	u.fails () => parseCmdArgs({
 		argStr: '-vv nonoption'
 		hExpect
 		})
@@ -178,7 +178,7 @@ import {UnitTester} from '@jdeighan/base-utils/utest'
 		}
 
 	# --- -name must be given a value
-	u.throws () => parseCmdArgs({
+	u.fails () => parseCmdArgs({
 		argStr: '-name nonoption'
 		hExpect
 		})
@@ -195,13 +195,13 @@ import {UnitTester} from '@jdeighan/base-utils/utest'
 		}
 
 	# --- there must be at least one non-option
-	u.throws () => parseCmdArgs({
+	u.fails () => parseCmdArgs({
 		argStr: '-f'
 		hExpect
 		})
 
 	# --- there can't be more than 3 non-options
-	u.throws () => parseCmdArgs({
+	u.fails () => parseCmdArgs({
 		argStr: 'a b c d'
 		hExpect
 		})
@@ -217,19 +217,19 @@ import {UnitTester} from '@jdeighan/base-utils/utest'
 		}
 
 	# --- test numeric options
-	u.throws () => parseCmdArgs({
+	u.fails () => parseCmdArgs({
 		argStr: 'slip -i=abc'
 		hExpect
 		})
 
 	# --- test numeric options
-	u.throws () => parseCmdArgs({
+	u.fails () => parseCmdArgs({
 		argStr: 'slip -i=3.5'
 		hExpect
 		})
 
 	# --- test numeric options
-	u.throws () => parseCmdArgs({
+	u.fails () => parseCmdArgs({
 		argStr: 'slip -n=abc'
 		hExpect
 		})
@@ -247,13 +247,13 @@ import {UnitTester} from '@jdeighan/base-utils/utest'
 		})
 
 	# --- test regexp
-	u.throws () => parseCmdArgs({
+	u.fails () => parseCmdArgs({
 		argStr: 'nonoption -debug=abc'
 		hExpect
 		})
 
 	# --- test regexp
-	u.throws () => parseCmdArgs({
+	u.fails () => parseCmdArgs({
 		argStr: 'nonoption -debug=" full"'
 		hExpect
 		})

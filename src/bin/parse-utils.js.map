@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "",
+  "sourceRoot": "",
+  "sources": [
+    "<anonymous>"
+  ],
+  "names": [],
+  "mappings": "AAAoB;AAEpB,OAAA;EAAQ,KAAR;EAAe,OAAf;CAAA,MAAA;;AACA,OAAA;EAAQ,GAAR;EAAa,QAAb;CAAA,MAAA;;AACA,OAAA;EAAQ,MAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,KAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,YAAR;CAAA,MAAA,sCANoB;;;AAUpB,OAAA,IAAO,OAAA,GAAU,CAAA,CAAA,GAAA;AAEjB,MAAA,QAAA,EAAA;EAAC,QAAA,GAAW,YAAA,CAAA,EAAZ;;EAEC,QAAA,GAAW,QAAQ,CAAC;EACpB,IAAG,OAAA,CAAQ,QAAR,CAAH;AACC,WAAO,QAAQ,CAAC,IAAT,CAAc,GAAd,EADR;GAAA,MAAA;AAGC,WAAO,GAHR;;AALgB;;AAVG",
+  "sourcesContent": [
+    "# parse-utils.coffee\n\nimport {undef, defined} from '@jdeighan/base-utils'\nimport {LOG, LOGVALUE} from '@jdeighan/base-utils/log'\nimport {toTAML} from '@jdeighan/base-utils/taml'\nimport {toAST} from '@jdeighan/base-utils/coffee'\nimport {parseCmdArgs} from '@jdeighan/base-utils/parse-cmd-args'\n\n# ---------------------------------------------------------------------------\n\nexport getExpr = () =>\n\n\thCmdArgs = parseCmdArgs()\n\t# LOGVALUE 'hCmdArgs', hCmdArgs\n\tlNonArgs = hCmdArgs._\n\tif defined(lNonArgs)\n\t\treturn lNonArgs.join(' ')\n\telse\n\t\treturn ''\n\n# ---------------------------------------------------------------------------\n"
+  ]
+}

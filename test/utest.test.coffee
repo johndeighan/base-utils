@@ -15,7 +15,7 @@ u.falsy false
 u.includes "this is a long sentence", "long"
 u.includes ['a','b','c'], 'b'
 u.matches "another 42 lines", /\d+/
-u.throws () => throw new Error("bad")
+u.fails () => throw new Error("bad")
 u.succeeds () => return 'me'
 u.like "abc\n", "abc"         # strings are right trimmed
 u.like "abc\n", "abc   "
@@ -30,7 +30,7 @@ falsy false
 includes "this is a long sentence", "long"
 includes ['a','b','c'], 'b'
 matches "another 42 lines", /\d+/
-throws () => throw new Error("bad")
+fails () => throw new Error("bad")
 succeeds () => return 'me'
 like "abc\n", "abc"           # strings are right trimmed
 like "abc\n", "abc   "
@@ -74,4 +74,23 @@ samelines """
 
 	abc
 	"""
+
+# ---------------------------------------------------------------------------
+# --- test throws()
+
+(() =>
+	func = () =>
+		JSON.parse('{"key": 42,}')
+		return
+
+	throws func, SyntaxError
+	)()
+
+(() =>
+	func = () =>
+		JSON.parse('{"key": 42}')
+		return
+
+	succeeds func
+	)()
 

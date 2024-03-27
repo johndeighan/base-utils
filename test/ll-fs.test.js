@@ -17,7 +17,7 @@ import {
   like,
   notequal,
   succeeds,
-  throws,
+  fails,
   truthy,
   falsy
 } from '@jdeighan/base-utils/utest';
@@ -70,7 +70,7 @@ truthy(isFile(mkpath(dir, 'test', 'file1.zh')));
 
 falsy(isFile(mkpath(dir, 'test', 'file1')));
 
-throws(function() {
+fails(function() {
   return pathType(42);
 });
 

@@ -2,15 +2,15 @@
 
 import * as lib from '@jdeighan/base-utils/exceptions'
 Object.assign(global, lib)
-import {throws, succeeds} from '@jdeighan/base-utils/utest'
+import {fails, succeeds} from '@jdeighan/base-utils/utest'
 
 # ---------------------------------------------------------------------------
 
-throws () ->
+fails () ->
 	suppressExceptionLogging true
 	croak("BAD")
 
-throws () ->
+fails () ->
 	suppressExceptionLogging true
 	assert(2+2 != 4, 'EXCEPTION')
 

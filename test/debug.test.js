@@ -37,7 +37,7 @@ import {
   notequal,
   truthy,
   falsy,
-  throws,
+  fails,
   succeeds
 } from '@jdeighan/base-utils/utest';
 

@@ -10,8 +10,8 @@ import {open} from 'node:fs/promises'
 import {
 	undef, defined, notdefined, nonEmpty, words,
 	toBlock, toArray, getOptions, isNonEmptyString,
-	isString, isNumber, isInteger,
-	isHash, isArray, isIterable, isRegExp,
+	isString, isNumber, isInteger, deepCopy,
+	isHash, isArray, isIterable, isRegExp, removeKeys,
 	fromJSON, toJSON, OL, forEachItem, jsType, hasKey,
 	fileExt, withExt, newerDestFilesExist,
 	} from '@jdeighan/base-utils'
@@ -142,7 +142,7 @@ export readTextFile = (filePath) =>
 		numLines += 1
 
 	hResult = {
-		hMetaData
+		hMetaData: hMetaData || {}
 		lLines
 		}
 	dbgReturn 'readTextFile', hResult
@@ -373,6 +373,28 @@ export barfTAML = (ds, lParts...) =>
 
 	assert isHash(ds) || isArray(ds), "ds not a hash or array"
 	barf(toTAML(ds), lParts...)
+	return
+
+# ---------------------------------------------------------------------------
+#   barfAST - write AST to a file
+#      Valid options:
+#         full = write out complete AST
+
+export barfAST = (hAST, filePath, hOptions={}) =>
+
+	{full} = getOptions hOptions, {
+		full: false
+		}
+	lSortBy = words("type params body left right")
+	if full
+		barf toTAML(hAST, {sortKeys: lSortBy}), filePath
+	else
+		hCopy = deepCopy hAST
+		removeKeys hCopy, words(
+			'start end extra declarations loc range tokens comments',
+			'assertions implicit optional async generate hasIndentedBody'
+			)
+		barf toTAML(hCopy, {sortKeys: lSortBy}), filePath
 	return
 
 # ---------------------------------------------------------------------------

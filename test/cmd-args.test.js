@@ -2,7 +2,7 @@
 import {
   u,
   equal,
-  throws
+  fails
 } from '@jdeighan/base-utils/utest';
 
 import * as lib from '@jdeighan/base-utils/cmd-args';
@@ -90,6 +90,6 @@ equal("'do that' -am \"do this\"", {
   _: ['do that', 'do this']
 });
 
-throws(() => {
+fails(() => {
   return parse('--');
 });

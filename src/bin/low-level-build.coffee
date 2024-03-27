@@ -7,6 +7,7 @@ import {
 	} from '@jdeighan/base-utils'
 import {assert} from '@jdeighan/base-utils/exceptions'
 import {LOG} from '@jdeighan/base-utils/log'
+import {setDebugging} from '@jdeighan/base-utils/debug'
 import {
 	allFilesMatching, slurp, barf,
 	isProjRoot, slurpPkgJSON, barfPkgJSON,
@@ -25,7 +26,7 @@ if (numCoffee && numCoffee.match(/^\d+$/))
 	hFilesProcessed.coffee += parseInt(numCoffee)
 
 console.log "-- low-level-build --"
-
+# setDebugging 'peggifyFile peggify'
 # ---------------------------------------------------------------------------
 # 1. Make sure we're in a project root directory
 
@@ -94,8 +95,8 @@ tla = (stub) =>
 #       - save <stub>: <path> in hBin
 
 hOptions = {
-	fileFilter: ({hMetaData, lLines}) =>
-		assert notdefined(hMetaData), "hMetaData in bin *.js file"
+	fileFilter: ({filePath, hMetaData, lLines}) =>
+		assert isEmpty(hMetaData), "hMetaData in #{OL(filePath)}"
 		if (lLines.length == 0)
 			return false
 		return (lLines[0] != shebang)

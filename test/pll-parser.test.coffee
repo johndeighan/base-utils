@@ -14,7 +14,7 @@ import * as lib from '@jdeighan/base-utils/pll-parser'
 Object.assign(global, lib)
 import {
 	transformValue, transformExpected,
-	equal, throws, succeeds,
+	equal, fails, succeeds,
 	} from '@jdeighan/base-utils/utest'
 
 # ---------------------------------------------------------------------------
@@ -37,8 +37,8 @@ transformExpected (str) =>
 succeeds () => parse("abc")
 succeeds () => parse("abc\n\t\tdef");
 succeeds () => parse("abc\r\n\t\tdef");
-throws () => parse("abc\t\tdef");
-throws () => parse("\t \t ")
+fails () => parse("abc\t\tdef");
+fails () => parse("\t \t ")
 
 # ---------------------------------------------------------------------------
 

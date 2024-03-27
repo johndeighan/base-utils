@@ -30,7 +30,8 @@ import {
   hEscNoNL,
   jsType,
   hasChar,
-  quoted
+  quoted,
+  spaces
 } from '@jdeighan/base-utils';
 
 import {
@@ -228,11 +229,13 @@ export var tamlStringify = (obj, escape = false) => {
 
 // ---------------------------------------------------------------------------
 export var orderedStringify = (obj, escape = false) => {
-  return toTAML(obj, {
-    useTabs: false,
+  var result;
+  result = toTAML(obj, {
     sortKeys: true,
+    oneIndent: spaces(2),
     escape
   });
+  return result;
 };
 
 // ---------------------------------------------------------------------------

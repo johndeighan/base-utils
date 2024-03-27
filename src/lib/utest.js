@@ -12,6 +12,7 @@ import {
   isInteger,
   isRegExp,
   nonEmpty,
+  isClass,
   toArray,
   fileExt
 } from '@jdeighan/base-utils';
@@ -210,24 +211,41 @@ export var UnitTester = class UnitTester {
 
   // ..........................................................
   fails(func) {
-    var err, log, ok;
+    var err, failed, log;
     assert(typeof func === 'function', "function expected");
     try {
       exReset(); // suppress logging of errors
       func();
-      ok = true;
+      failed = false;
     } catch (error) {
       err = error;
-      ok = false;
+      failed = true;
     }
     log = exGetLog(); // we really don't care about log
     test(this.getTestName(), (t) => {
-      return t.falsy(ok);
+      return t.truthy(failed);
     });
   }
 
-  throws(func) {
-    return fails(func);
+  // ..........................................................
+  throws(func, errClass) {
+    var err, errObj, failed, log;
+    assert(typeof func === 'function', `Not a function: ${OL(func)}`);
+    assert(isClass(errClass), `Not a class: ${OL(errClass)}`);
+    errObj = undef;
+    try {
+      exReset(); // suppress logging of errors
+      func();
+      failed = false;
+    } catch (error) {
+      err = error;
+      errObj = err;
+      failed = true;
+    }
+    log = exGetLog(); // we really don't care about log
+    test(this.getTestName(), (t) => {
+      return t.truthy(failed && errObj instanceof errClass);
+    });
   }
 
   // ..........................................................
@@ -300,8 +318,8 @@ export var fails = (func) => {
   return u.fails(func);
 };
 
-export var throws = (func) => {
-  return u.fails(func);
+export var throws = (func, errClass) => {
+  return u.throws(func, errClass);
 };
 
 //# sourceMappingURL=utest.js.map

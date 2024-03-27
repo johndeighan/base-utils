@@ -25,7 +25,7 @@ import {
   like,
   notequal,
   succeeds,
-  throws,
+  fails,
   truthy,
   falsy
 } from '@jdeighan/base-utils/utest';
@@ -124,7 +124,10 @@ equal(toTAML({
 equal(toTAML({
   a: 1,
   b: 2
-}, 'indent=3 !useTabs'), `${spaces(6)}---
+}, {
+  indent: 3,
+  oneIndent: spaces(2)
+}), `${spaces(6)}---
 ${spaces(6)}a: 1
 ${spaces(6)}b: 2`);
 
@@ -244,4 +247,28 @@ source: ${curdir}/test/v8-stack.test.js`;
     funcName: 'main',
     source: `${curdir}/test/v8-stack.test.js`
   });
+})();
+
+// ---------------------------------------------------------------------------
+(() => {
+  var lSortBy, str;
+  str = `---
+type: function
+funcName: main
+source: ${curdir}/test/v8-stack.test.js`;
+  h = {
+    expression: {
+      value: 2,
+      type: 'NumericLiteral'
+    },
+    type: 'ExpressionStatement'
+  };
+  lSortBy = ['type', 'params', 'body', 'left', 'right'];
+  return equal(toTAML(h, {
+    sortKeys: lSortBy
+  }), `---
+type: ExpressionStatement
+expression:
+	type: NumericLiteral
+	value: 2`);
 })();

@@ -259,6 +259,34 @@ export var extractKey = (h, key) => {
 };
 
 // ---------------------------------------------------------------------------
+export var removeKeys = (item, lKeys) => {
+  var j, k, key, len1, len2, prop, subitem, subtype, type, value;
+  assert(isArray(lKeys), "not an array");
+  [type, subtype] = jsType(item);
+  switch (type) {
+    case 'array':
+      for (j = 0, len1 = item.length; j < len1; j++) {
+        subitem = item[j];
+        removeKeys(subitem, lKeys);
+      }
+      break;
+    case 'hash':
+    case 'object':
+      for (k = 0, len2 = lKeys.length; k < len2; k++) {
+        key = lKeys[k];
+        if (item.hasOwnProperty(key)) {
+          delete item[key];
+        }
+      }
+      for (prop in item) {
+        value = item[prop];
+        removeKeys(value, lKeys);
+      }
+  }
+  return item;
+};
+
+// ---------------------------------------------------------------------------
 export var hasAllKeys = (obj, ...lKeys) => {
   var j, key, len1;
   for (j = 0, len1 = lKeys.length; j < len1; j++) {
@@ -418,15 +446,32 @@ export var tabs = (n) => {
 };
 
 // ---------------------------------------------------------------------------
-export var centeredText = (text, width) => {
-  var numLeft, numRight, totSpaces;
+// --- valid options:
+//        char - char to use on left and right
+//        buffer - num spaces around text when char <> ' '
+export var centeredText = (text, width, hOptions = {}) => {
+  var buf, char, left, numBuffer, numLeft, numRight, right, totSpaces;
+  ({char, numBuffer} = getOptions(hOptions, {
+    char: ' ',
+    numBuffer: 2
+  }));
+  assert(isInteger(width), `width = ${OL(width)}`);
   totSpaces = width - text.length;
   if (totSpaces <= 0) {
     return text;
   }
   numLeft = Math.floor(totSpaces / 2);
   numRight = totSpaces - numLeft;
-  return spaces(numLeft) + text + spaces(numRight);
+  if (char === ' ') {
+    return spaces(numLeft) + text + spaces(numRight);
+  } else {
+    buf = ' '.repeat(numBuffer);
+    left = char.repeat(numLeft - numBuffer);
+    right = char.repeat(numRight - numBuffer);
+    numLeft -= numBuffer;
+    numRight -= numBuffer;
+    return left + buf + text + buf + right;
+  }
 };
 
 // ---------------------------------------------------------------------------
@@ -1111,34 +1156,6 @@ export var isHash = (x, lKeys) => {
     }
   }
   return true;
-};
-
-// ---------------------------------------------------------------------------
-export var removeKeys = (item, lKeys) => {
-  var j, k, key, len1, len2, prop, subitem, subtype, type, value;
-  assert(isArray(lKeys), "not an array");
-  [type, subtype] = jsType(item);
-  switch (type) {
-    case 'array':
-      for (j = 0, len1 = item.length; j < len1; j++) {
-        subitem = item[j];
-        removeKeys(subitem, lKeys);
-      }
-      break;
-    case 'hash':
-    case 'object':
-      for (k = 0, len2 = lKeys.length; k < len2; k++) {
-        key = lKeys[k];
-        if (item.hasOwnProperty(key)) {
-          delete item[key];
-        }
-      }
-      for (prop in item) {
-        value = item[prop];
-        removeKeys(value, lKeys);
-      }
-  }
-  return item;
 };
 
 // ---------------------------------------------------------------------------

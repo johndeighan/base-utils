@@ -7,8 +7,8 @@ import {getPrefix} from '@jdeighan/base-utils/prefix'
 import * as lib from '@jdeighan/base-utils/log'
 Object.assign(global, lib)
 import {
-	UnitTester,
-	equal, like, notequal, truthy, falsy, throws, succeeds,
+	UnitTester, equal, notequal, like,
+	truthy, falsy, fails, succeeds,
 	} from '@jdeighan/base-utils/utest'
 
 echoLogs false

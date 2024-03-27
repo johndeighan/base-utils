@@ -15,7 +15,7 @@ import * as lib from '@jdeighan/base-utils/debug'
 Object.assign(global, lib)
 import {
 	UnitTester,
-	equal, like, notequal, truthy, falsy, throws, succeeds,
+	equal, like, notequal, truthy, falsy, fails, succeeds,
 	} from '@jdeighan/base-utils/utest'
 
 echoLogs false

@@ -14,11 +14,11 @@ import {
   truthy,
   falsy,
   succeeds,
-  throws
+  fails
 } from '@jdeighan/base-utils/utest';
 
 import {
-  peggyParse
+  pparse
 } from '@jdeighan/base-utils/peggy';
 
 import * as lib from '@jdeighan/base-utils/object';
@@ -27,7 +27,7 @@ Object.assign(global, lib);
 
 // ---------------------------------------------------------------------------
 u.transformValue = (str) => {
-  return peggyParse(parse, str);
+  return pparse(parse, str);
 };
 
 // ---------------------------------------------------------------------------

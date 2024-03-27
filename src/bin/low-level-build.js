@@ -26,6 +26,10 @@ import {
 } from '@jdeighan/base-utils/log';
 
 import {
+  setDebugging
+} from '@jdeighan/base-utils/debug';
+
+import {
   allFilesMatching,
   slurp,
   barf,
@@ -56,6 +60,7 @@ if (numCoffee && numCoffee.match(/^\d+$/)) {
 
 console.log("-- low-level-build --");
 
+// setDebugging 'peggifyFile peggify'
 // ---------------------------------------------------------------------------
 // 1. Make sure we're in a project root directory
 assert(isProjRoot('strict'), "Not in package root dir");
@@ -121,8 +126,8 @@ tla = (stub) => {
 //       - add shebang line if missing
 //       - save <stub>: <path> in hBin
 hOptions = {
-  fileFilter: ({hMetaData, lLines}) => {
-    assert(notdefined(hMetaData), "hMetaData in bin *.js file");
+  fileFilter: ({filePath, hMetaData, lLines}) => {
+    assert(isEmpty(hMetaData), `hMetaData in ${OL(filePath)}`);
     if (lLines.length === 0) {
       return false;
     }

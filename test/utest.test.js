@@ -36,7 +36,7 @@ u.includes(['a', 'b', 'c'], 'b');
 
 u.matches("another 42 lines", /\d+/);
 
-u.throws(() => {
+u.fails(() => {
   throw new Error("bad");
 });
 
@@ -72,7 +72,7 @@ includes(['a', 'b', 'c'], 'b');
 
 matches("another 42 lines", /\d+/);
 
-throws(() => {
+fails(() => {
   throw new Error("bad");
 });
 
@@ -110,3 +110,21 @@ samelines(`abc
 def`, `def
 
 abc`);
+
+// ---------------------------------------------------------------------------
+// --- test throws()
+(() => {
+  var func;
+  func = () => {
+    JSON.parse('{"key": 42,}');
+  };
+  return throws(func, SyntaxError);
+})();
+
+(() => {
+  var func;
+  func = () => {
+    JSON.parse('{"key": 42}');
+  };
+  return succeeds(func);
+})();

@@ -15,7 +15,7 @@ import {
 	} from './utils.js'   # relative to this dir?
 import {
 	UnitTester,
-	equal, like, notequal, truthy, falsy, throws, succeeds,
+	equal, like, notequal, truthy, falsy, fails, succeeds,
 	} from '@jdeighan/base-utils/utest'
 
 # ---------------------------------------------------------------------------

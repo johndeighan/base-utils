@@ -4,7 +4,7 @@ import test from 'ava'
 
 import {
 	undef, defined, pass, OL, jsType, rtrim,
-	isString, isInteger, isRegExp, nonEmpty,
+	isString, isInteger, isRegExp, nonEmpty, isClass,
 	toArray, fileExt,
 	} from '@jdeighan/base-utils'
 import {
@@ -192,17 +192,33 @@ export class UnitTester
 		try
 			exReset()   # suppress logging of errors
 			func()
-			ok = true
+			failed = false
 		catch err
-			ok = false
+			failed = true
 		log = exGetLog()   # we really don't care about log
 
-		test @getTestName(), (t) => t.falsy(ok)
+		test @getTestName(), (t) => t.truthy(failed)
 		return
 
-	throws: (func) ->
+	# ..........................................................
 
-		return fails(func)
+	throws: (func, errClass) ->
+
+		assert (typeof func == 'function'), "Not a function: #{OL(func)}"
+		assert isClass(errClass), "Not a class: #{OL(errClass)}"
+		errObj = undef
+		try
+			exReset()   # suppress logging of errors
+			func()
+			failed = false
+		catch err
+			errObj = err
+			failed = true
+		log = exGetLog()   # we really don't care about log
+
+		test @getTestName(), (t) =>
+			t.truthy(failed && errObj instanceof errClass)
+		return
 
 	# ..........................................................
 
@@ -234,4 +250,4 @@ export includes = (arg1, arg2) => return u.includes(arg1, arg2)
 export matches = (str, regexp) => return u.matches(str, regexp)
 export succeeds = (func) => return u.succeeds(func)
 export fails = (func) => return u.fails(func)
-export throws = (func) => return u.fails(func)
+export throws = (func, errClass) => return u.throws(func, errClass)

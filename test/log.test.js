@@ -21,11 +21,11 @@ Object.assign(global, lib);
 import {
   UnitTester,
   equal,
-  like,
   notequal,
+  like,
   truthy,
   falsy,
-  throws,
+  fails,
   succeeds
 } from '@jdeighan/base-utils/utest';
 

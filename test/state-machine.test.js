@@ -18,7 +18,7 @@ import {
   notequal,
   truthy,
   falsy,
-  throws,
+  fails,
   succeeds
 } from '@jdeighan/base-utils/utest';
 
@@ -41,13 +41,13 @@ suppressExceptionLogging();
   succeeds(() => {
     return mach.expectState('init', 'not');
   });
-  throws(() => {
+  fails(() => {
     return mach.expectState('xxx', 'not');
   });
   succeeds(() => {
     return mach.expectDefined('flag', 'str');
   });
-  throws(() => {
+  fails(() => {
     return mach.expectDefined('flag', 'str', 'notdef');
   });
   equal(mach.getVar('flag'), true);
@@ -89,13 +89,13 @@ suppressExceptionLogging();
   truthy(mach1.inState('init'));
   truthy(mach2.inState('middle'));
   truthy(mach3.inState('final'));
-  throws(() => {
+  fails(() => {
     return mach1.SECOND();
   });
   succeeds(() => {
     return mach1.FIRST();
   });
-  return throws(() => {
+  return fails(() => {
     return mach1.setState('some state');
   });
 })();

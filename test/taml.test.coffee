@@ -8,7 +8,7 @@ import * as lib from '@jdeighan/base-utils/taml'
 Object.assign(global, lib)
 import {
 	UnitTester,
-	equal, like, notequal, succeeds, throws, truthy, falsy,
+	equal, like, notequal, succeeds, fails, truthy, falsy,
 	} from '@jdeighan/base-utils/utest'
 
 curdir = mkpath(process.cwd())   # will have '/'
@@ -87,7 +87,10 @@ equal toTAML({a:1,b:2}, 'indent=3'), """
 	\t\t\tb: 2
 	"""
 
-equal toTAML({a:1,b:2}, 'indent=3 !useTabs'), """
+equal toTAML({a: 1,b: 2}, {
+	indent: 3,
+	oneIndent: spaces(2)
+	}), """
 	#{spaces(6)}---
 	#{spaces(6)}a: 1
 	#{spaces(6)}b: 2
@@ -198,4 +201,32 @@ equal toTAML(h), '---\nh:\n\t- a: 1\n\t- b: 2'
 		funcName: 'main'
 		source: "#{curdir}/test/v8-stack.test.js"
 		}
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() =>
+	str = """
+		---
+		type: function
+		funcName: main
+		source: #{curdir}/test/v8-stack.test.js
+		"""
+
+	h = {
+		expression: {
+			value: 2
+			type: 'NumericLiteral'
+			}
+		type: 'ExpressionStatement'
+		}
+	lSortBy = ['type','params','body','left','right']
+
+	equal toTAML(h, {sortKeys: lSortBy}), """
+		---
+		type: ExpressionStatement
+		expression:
+			type: NumericLiteral
+			value: 2
+		"""
 	)()

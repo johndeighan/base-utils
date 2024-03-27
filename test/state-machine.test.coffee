@@ -6,7 +6,7 @@ import {
 import {suppressExceptionLogging} from '@jdeighan/base-utils/exceptions'
 import {
 	UnitTester,
-	equal, like, notequal, truthy, falsy, throws, succeeds,
+	equal, like, notequal, truthy, falsy, fails, succeeds,
 	} from '@jdeighan/base-utils/utest'
 import * as lib from '@jdeighan/base-utils/state-machine'
 Object.assign(global, lib)
@@ -22,9 +22,9 @@ suppressExceptionLogging()
 	falsy  mach.inState('not')
 	equal  mach.state, 'init'
 	succeeds () => mach.expectState('init','not')
-	throws () => mach.expectState('xxx','not')
+	fails () => mach.expectState('xxx','not')
 	succeeds () => mach.expectDefined('flag','str')
-	throws () => mach.expectDefined('flag','str','notdef')
+	fails () => mach.expectDefined('flag','str','notdef')
 	equal mach.getVar('flag'), true
 	equal mach.getVar('str'), 'a string'
 	)()
@@ -64,7 +64,7 @@ suppressExceptionLogging()
 	truthy mach2.inState('middle')
 	truthy mach3.inState('final')
 
-	throws () => mach1.SECOND()
+	fails () => mach1.SECOND()
 	succeeds () => mach1.FIRST()
-	throws () => mach1.setState('some state')
+	fails () => mach1.setState('some state')
 	)()

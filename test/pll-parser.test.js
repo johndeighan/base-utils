@@ -34,7 +34,7 @@ import {
   transformValue,
   transformExpected,
   equal,
-  throws,
+  fails,
   succeeds
 } from '@jdeighan/base-utils/utest';
 
@@ -81,11 +81,11 @@ succeeds(() => {
   return parse("abc\r\n\t\tdef");
 });
 
-throws(() => {
+fails(() => {
   return parse("abc\t\tdef");
 });
 
-throws(() => {
+fails(() => {
   return parse("\t \t ");
 });
 

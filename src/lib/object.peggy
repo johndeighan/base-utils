@@ -53,6 +53,9 @@ primitive
 	".false."
 		return false
 
+	".NaN."
+		return NaN
+
 	num:number
 		return num
 

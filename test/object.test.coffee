@@ -3,15 +3,15 @@
 import {undef, OL} from '@jdeighan/base-utils'
 import {LOG} from '@jdeighan/base-utils/log'
 import {
-	u, equal, truthy, falsy, succeeds, throws,
+	u, equal, truthy, falsy, succeeds, fails,
 	} from '@jdeighan/base-utils/utest'
-import {peggyParse} from '@jdeighan/base-utils/peggy'
+import {pparse} from '@jdeighan/base-utils/peggy'
 import * as lib from '@jdeighan/base-utils/object'
 Object.assign(global, lib)
 
 # ---------------------------------------------------------------------------
 
-u.transformValue = (str) => return peggyParse(parse, str)
+u.transformValue = (str) => return pparse(parse, str)
 
 # ---------------------------------------------------------------------------
 

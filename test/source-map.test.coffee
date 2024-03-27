@@ -11,7 +11,7 @@ import * as lib from '@jdeighan/base-utils/source-map'
 Object.assign(global, lib)
 import {
 	UnitTester,
-	equal, like, notequal, succeeds, throws, truthy, falsy,
+	equal, like, notequal, succeeds, fails, truthy, falsy,
 	} from '@jdeighan/base-utils/utest'
 
 jsPath = mkpath "./test/source-map/base-utils.test.js"

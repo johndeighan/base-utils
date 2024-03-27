@@ -2,7 +2,7 @@
 
 import {
 	UnitTester,
-	equal, like, notequal, succeeds, throws, truthy, falsy,
+	equal, like, notequal, succeeds, fails, truthy, falsy,
 	} from '@jdeighan/base-utils/utest'
 import * as lib from '@jdeighan/base-utils'
 Object.assign(global, lib)
@@ -93,6 +93,13 @@ equal splitPrefix("   "),     ["", ""]
 
 falsy  hasPrefix("abc")
 truthy hasPrefix("   abc")
+
+# ---------------------------------------------------------------------------
+
+equal spaces(3), '   '
+equal tabs(3), "\t\t\t"
+equal centeredText('abc', 7), '  abc  '
+equal centeredText('xyz', 11, 'char=-'), '--  xyz  --'
 
 # ---------------------------------------------------------------------------
 
@@ -1314,7 +1321,7 @@ equal keys({a:1, b:2},{c:3, b:5}), ['a','b','c']
 
 (() =>
 	lWords = ['bridge', 'highway', 'garbage']
-	throws () =>
+	fails () =>
 		result = forEachItem lWords, (item, h) =>
 			throw new Error("unknown error")
 	)()

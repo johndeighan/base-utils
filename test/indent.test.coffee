@@ -6,7 +6,7 @@ import * as lib from '@jdeighan/base-utils/indent'
 Object.assign(global, lib)
 import {
 	UnitTester,
-	equal, like, notequal, succeeds, throws, truthy, falsy,
+	equal, like, notequal, succeeds, fails, truthy, falsy,
 	} from '@jdeighan/base-utils/utest'
 
 # ---------------------------------------------------------------------------
@@ -17,8 +17,8 @@ equal getOneIndent("\tabc"), "\t"
 equal getOneIndent("\t\tabc"), "\t"
 equal getOneIndent(" abc"), " "
 equal getOneIndent("   abc"), "   "
-throws () -> getOneIndent(" \tabc")
-throws () -> getOneIndent("\t abc")
+fails () -> getOneIndent(" \tabc")
+fails () -> getOneIndent("\t abc")
 
 # ---------------------------------------------------------------------------
 

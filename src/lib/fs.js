@@ -30,10 +30,12 @@ import {
   isString,
   isNumber,
   isInteger,
+  deepCopy,
   isHash,
   isArray,
   isIterable,
   isRegExp,
+  removeKeys,
   fromJSON,
   toJSON,
   OL,
@@ -239,7 +241,10 @@ export var readTextFile = (filePath) => {
     }
     numLines += 1;
   }
-  hResult = {hMetaData, lLines};
+  hResult = {
+    hMetaData: hMetaData || {},
+    lLines
+  };
   dbgReturn('readTextFile', hResult);
   return hResult;
 };
@@ -473,6 +478,29 @@ export var barfJSON = (hJson, ...lParts) => {
 export var barfTAML = (ds, ...lParts) => {
   assert(isHash(ds) || isArray(ds), "ds not a hash or array");
   barf(toTAML(ds), ...lParts);
+};
+
+// ---------------------------------------------------------------------------
+//   barfAST - write AST to a file
+//      Valid options:
+//         full = write out complete AST
+export var barfAST = (hAST, filePath, hOptions = {}) => {
+  var full, hCopy, lSortBy;
+  ({full} = getOptions(hOptions, {
+    full: false
+  }));
+  lSortBy = words("type params body left right");
+  if (full) {
+    barf(toTAML(hAST, {
+      sortKeys: lSortBy
+    }), filePath);
+  } else {
+    hCopy = deepCopy(hAST);
+    removeKeys(hCopy, words('start end extra declarations loc range tokens comments', 'assertions implicit optional async generate hasIndentedBody'));
+    barf(toTAML(hCopy, {
+      sortKeys: lSortBy
+    }), filePath);
+  }
 };
 
 // ---------------------------------------------------------------------------

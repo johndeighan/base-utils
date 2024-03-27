@@ -1,0 +1,9 @@
+---
+program:
+	body:
+		- expression:
+				type: NumericLiteral
+				value: 2
+			type: ExpressionStatement
+	type: Program
+type: File

@@ -10,7 +10,7 @@ import {
   notequal,
   truthy,
   falsy,
-  throws,
+  fails,
   succeeds
 } from '@jdeighan/base-utils/utest';
 
@@ -19,54 +19,80 @@ import * as lib from '@jdeighan/base-utils/nice';
 Object.assign(global, lib);
 
 // ---------------------------------------------------------------------------
+// --- test needsQuotes
+falsy(needsQuotes("abc"));
+
+falsy(needsQuotes("\"Hi\", Alice's sheep said."));
+
+truthy(needsQuotes("- item"));
+
+truthy(needsQuotes("   - item"));
+
+truthy(needsQuotes("name:"));
+
+truthy(needsQuotes("   name:"));
+
+truthy(needsQuotes("name : John"));
 
 // --- whitespace is always made explicit
-equal(formatString("a word"), "'a˳word'");
+equal(formatString("a word"), "a˳word");
 
-equal(formatString("\t\tword"), "'→→word'");
+equal(formatString("\t\tword"), "→  →  word");
 
-equal(formatString("first\nsecond"), "'first▼second'");
+equal(formatString("first\nsecond"), "first▼second");
 
-equal(formatString("first\r\nsecond\r\n"), "'first◄▼second◄▼'");
+equal(formatString("first\r\nsecond\r\n"), "first◄▼second◄▼");
 
-// --- strings are surrounded by quote marks that
-//     don't clash with internal characters
-equal(formatString("abc"), "'abc'");
+equal(formatString("abc"), "abc");
 
-equal(formatString("mary's lamb"), '"mary\'s˳lamb"');
+equal(formatString("mary's lamb"), 'mary\'s˳lamb');
 
-equal(formatString("mary's \"stuff\""), '«mary\'s˳"stuff"»');
+equal(formatString("mary's \"stuff\""), 'mary\'s˳"stuff"');
+
+// --- If it looks like an array element, add quotes
+equal(formatString("- item"), "«-˳item»");
+
+equal(formatString("   - item"), "«˳˳˳-˳item»");
+
+equal(formatString("-    item"), "«-˳˳˳˳item»");
 
 // ---------------------------------------------------------------------------
 // --- repeat formatString() tests using toNICE()
 (() => {
-  var func2, u;
+  var aFunc, func2, u;
+  // --- define a function:
+  aFunc = () => {
+    return 42;
+  };
   // --- transform value using toNICE() automatically
   u = new UnitTester();
   u.transformValue = (str) => {
     return toNICE(str);
   };
-  u.equal("a word", "'a˳word'");
-  u.equal("\t\tword", "'→→word'");
-  u.equal("first\nsecond", "'first▼second'");
-  u.equal("abc", "'abc'");
-  u.equal("mary's lamb", '"mary\'s˳lamb"');
-  u.equal("mary's \"stuff\"", '«mary\'s˳"stuff"»');
-  u.equal(undef, "undef");
-  u.equal(null, "null");
-  u.equal(0/0, 'NaN');
+  u.equal("a word", "a˳word");
+  u.equal("\t\tword", "→  →  word");
+  u.equal("first\nsecond", "first▼second");
+  u.equal("abc", "abc");
+  u.equal("mary's lamb", 'mary\'s˳lamb');
+  u.equal("mary's \"stuff\"", 'mary\'s˳"stuff"');
+  u.equal(undef, ".undef.");
+  u.equal(null, ".null.");
+  u.equal(0/0, '.NaN.');
   u.equal(42, "42");
-  u.equal(true, 'true');
-  u.equal(false, 'false');
+  u.equal(true, '.true.');
+  u.equal(false, '.false.');
   u.equal((() => {
     return 42;
   }), '[Function]');
+  u.equal(aFunc, '[Function aFunc]');
   func2 = (x) => {};
   u.equal(func2, "[Function func2]");
-  u.equal(['a', 'b'], `- 'a'
-- 'b'`);
+  u.equal(['a', 'b'], `- a
+- b`);
   u.equal([1, 2], `- 1
 - 2`);
+  u.equal(['1', '2'], `- «1»
+- «2»`);
   u.equal({
     a: 1,
     b: 2
@@ -75,8 +101,8 @@ b: 2`);
   u.equal({
     a: 'a',
     b: 'b'
-  }, `a: 'a'
-b: 'b'`);
+  }, `a: a
+b: b`);
   u.equal([
     {
       a: 1
@@ -84,20 +110,20 @@ b: 'b'`);
     'abc'
   ], `-
 	a: 1
-- 'abc'`);
+- abc`);
   u.equal({
     a: [1, 2],
     b: 'abc'
   }, `a:
 	- 1
 	- 2
-b: 'abc'`);
+b: abc`);
   u.equal({
     a: 1,
     b: 'abc',
     f: func2
   }, `a: 1
-b: 'abc'
+b: abc
 f: [Function func2]`);
   return u.equal({
     key: 'wood',
@@ -114,22 +140,50 @@ f: [Function func2]`);
       "mary's \"stuff\""]
     ],
     items: ["\ta", 2, "\t\tb\n"]
-  }, `key: 'wood'
+  }, `key: wood
 value:
-	- 'a˳word'
+	- a˳word
 	-
 		a: 1
 		b: 2
-	- undef
+	- .undef.
 	-
 		- 1
 		- 2
-		- "mary\'s˳lamb"
-		- «mary\'s˳"stuff"»
+		- mary\'s˳lamb
+		- mary\'s˳"stuff"
 items:
-	- '→a'
+	- →  a
 	- 2
-	- '→→b▼'`);
+	- →  →  b▼`);
+})();
+
+// ---------------------------------------------------------------------------
+// --- test toNICE() with options
+(() => {
+  var h;
+  // --- Create a hash
+  h = {};
+  h.mFirst = 'xyz';
+  h.aSecond = 'mno';
+  h.xThird = 'abc';
+  // --- Without sorting, keys should come in insert order
+  equal(toNICE(h), `mFirst: xyz
+aSecond: mno
+xThird: abc`);
+  // --- sort keys alphabetically
+  equal(toNICE(h, {
+    sortKeys: true
+  }), `aSecond: mno
+mFirst: xyz
+xThird: abc`);
+  // --- CURRENTLY THIS TEST FAILS
+  // --- sort keys in a specific order
+  return equal(toNICE(h, {
+    sortKeys: ['xThird']
+  }), `xThird: abc
+aSecond: mno
+mFirst: xyz`);
 })();
 
 // ---------------------------------------------------------------------------

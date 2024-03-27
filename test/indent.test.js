@@ -18,7 +18,7 @@ import {
   like,
   notequal,
   succeeds,
-  throws,
+  fails,
   truthy,
   falsy
 } from '@jdeighan/base-utils/utest';
@@ -36,11 +36,11 @@ equal(getOneIndent(" abc"), " ");
 
 equal(getOneIndent("   abc"), "   ");
 
-throws(function() {
+fails(function() {
   return getOneIndent(" \tabc");
 });
 
-throws(function() {
+fails(function() {
   return getOneIndent("\t abc");
 });
 

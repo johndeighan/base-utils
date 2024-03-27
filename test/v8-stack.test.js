@@ -33,7 +33,7 @@ import {
   like,
   notequal,
   succeeds,
-  throws,
+  fails,
   truthy,
   falsy
 } from '@jdeighan/base-utils/utest';

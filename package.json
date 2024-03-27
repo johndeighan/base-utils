@@ -32,7 +32,7 @@
 		"./package.json": "./package.json"
 	},
 	"scripts": {
-		"build": "node src/base-build.js && node src/bin/low-level-build.js",
+		"build": "clear && node src/base-build.js && node src/bin/low-level-build.js",
 		"test": "npm run build && npx ava --timeout=1m ./test/*.test.js && git status"
 	},
 	"keywords": [
@@ -64,6 +64,9 @@
 		"gbk": "src/bin/gen-bin-keys.js",
 		"fef": "src/bin/for-each-file.js",
 		"low-level-build": "src/bin/low-level-build.js",
-		"llb": "src/bin/low-level-build.js"
+		"llb": "src/bin/low-level-build.js",
+		"parse-utils": "src/bin/parse-utils.js",
+		"parse-expr": "src/bin/parse-expr.js",
+		"program": "src/bin/program.js"
 	}
 }

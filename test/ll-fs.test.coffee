@@ -4,7 +4,7 @@ import {undef, OL, samelist} from '@jdeighan/base-utils'
 import {LOG} from '@jdeighan/base-utils/log'
 import {
 	UnitTester,
-	equal, like, notequal, succeeds, throws, truthy, falsy,
+	equal, like, notequal, succeeds, fails, truthy, falsy,
 	} from '@jdeighan/base-utils/utest'
 import * as lib from '@jdeighan/base-utils/ll-fs'
 Object.assign(global, lib)
@@ -42,7 +42,7 @@ truthy isFile(mkpath(dir, 'test', 'file1.txt'))
 truthy isFile(mkpath(dir, 'test', 'file1.zh'))
 falsy  isFile(mkpath(dir, 'test', 'file1'))
 
-throws () -> pathType(42)
+fails () -> pathType(42)
 equal pathType(':::::'), 'missing'
 
 # --- parsePath() works even if the file doesn't exist

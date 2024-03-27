@@ -3,6 +3,7 @@ import {
   undef,
   defined,
   notdefined,
+  isString,
   toArray,
   CWSALL
 } from '@jdeighan/base-utils';
@@ -29,9 +30,8 @@ import {
 u.transformValue = function(peggyCode) {
   var err, jsCode;
   try {
-    jsCode = convertToJS(peggyCode, {
-      type: 'coffee'
-    });
+    // --- convertToJS() requires an array
+    jsCode = convertToJS(toArray(peggyCode), 'coffee', {});
     assert(defined(jsCode), "empty jsCode");
     return CWSALL(jsCode);
   } catch (error) {

@@ -29,7 +29,7 @@ import {
   notequal,
   truthy,
   falsy,
-  throws,
+  fails,
   succeeds
 } from '@jdeighan/base-utils/utest';
 
@@ -90,7 +90,7 @@ equal(getStackLog(), `ENTER 'func'
 RETURN FROM 'func'`);
 
 // ---------------------------------------------------------------------------
-throws(function() {
+fails(function() {
   suppressExceptionLogging(true);
   clearAllLogs();
   stack = new CallStack();

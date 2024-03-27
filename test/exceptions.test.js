@@ -4,17 +4,17 @@ import * as lib from '@jdeighan/base-utils/exceptions';
 Object.assign(global, lib);
 
 import {
-  throws,
+  fails,
   succeeds
 } from '@jdeighan/base-utils/utest';
 
 // ---------------------------------------------------------------------------
-throws(function() {
+fails(function() {
   suppressExceptionLogging(true);
   return croak("BAD");
 });
 
-throws(function() {
+fails(function() {
   suppressExceptionLogging(true);
   return assert(2 + 2 !== 4, 'EXCEPTION');
 });

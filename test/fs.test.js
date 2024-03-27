@@ -8,7 +8,7 @@ import {
   notequal,
   truthy,
   falsy,
-  throws,
+  fails,
   succeeds
 } from '@jdeighan/base-utils/utest';
 
@@ -189,22 +189,22 @@ ghi`);
   return like(lFiles, [
     {
       fileName: 'file1.txt',
-      hMetaData: undef,
+      hMetaData: {},
       lLines: ['Hello']
     },
     {
       fileName: 'file1.zh',
-      hMetaData: undef,
+      hMetaData: {},
       lLines: ['你好']
     },
     {
       fileName: 'file2.txt',
-      hMetaData: undef,
+      hMetaData: {},
       lLines: ['Goodbye']
     },
     {
       fileName: 'file2.zh',
-      hMetaData: undef,
+      hMetaData: {},
       lLines: ['再见']
     },
     {
@@ -218,7 +218,7 @@ ghi`);
     },
     {
       fileName: 'test.coffee',
-      hMetaData: undef,
+      hMetaData: {},
       lLines: ['console.log "Hello"']
     }
   ]);
@@ -240,12 +240,12 @@ ghi`);
   return like(lFiles, [
     {
       fileName: 'file1.txt',
-      hMetaData: undef,
+      hMetaData: {},
       lLines: ['Hello']
     },
     {
       fileName: 'file2.txt',
-      hMetaData: undef,
+      hMetaData: {},
       lLines: ['Goodbye']
     },
     {
@@ -279,12 +279,12 @@ ghi`);
   return like(lFiles, [
     {
       fileName: 'file1.txt',
-      hMetaData: undef,
+      hMetaData: {},
       lLines: ['Hello']
     },
     {
       fileName: 'file2.txt',
-      hMetaData: undef,
+      hMetaData: {},
       lLines: ['Goodbye']
     },
     {

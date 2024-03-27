@@ -1,6 +1,4 @@
 // coffee.coffee
-import assert from 'node:assert';
-
 import fs from 'fs';
 
 import CoffeeScript from 'coffeescript';
@@ -8,12 +6,36 @@ import CoffeeScript from 'coffeescript';
 import {
   undef,
   defined,
+  notdefined,
   getOptions,
-  toBlock
+  toBlock,
+  OL,
+  words,
+  removeKeys
 } from '@jdeighan/base-utils';
 
 import {
-  barf
+  assert,
+  croak
+} from '@jdeighan/base-utils/exceptions';
+
+import {
+  dbgEnter,
+  dbgReturn,
+  dbg
+} from '@jdeighan/base-utils/debug';
+
+import {
+  isUndented
+} from '@jdeighan/base-utils/indent';
+
+import {
+  toTAML
+} from '@jdeighan/base-utils/taml';
+
+import {
+  barf,
+  barfAST
 } from '@jdeighan/base-utils/fs';
 
 // ---------------------------------------------------------------------------
@@ -50,6 +72,73 @@ export var brewFile = function(filePath) {
   [jsCode, sourceMap] = brew(lLines, filePath);
   barf(jsCode, withExt(filePath, '.js'));
   barf(sourceMap, withExt(filePath, '.js.map'));
+};
+
+// ---------------------------------------------------------------------------
+export var removeExtraKeys = (hAST) => {
+  removeKeys(hAST, words('loc range extra start end', 'directives comments tokens'));
+  return hAST;
+};
+
+// ---------------------------------------------------------------------------
+export var astToTAML = (hAST, full = false) => {
+  var lSortBy;
+  if (!full) {
+    removeExtraKeys(hAST);
+  }
+  lSortBy = ['type', 'params', 'body', 'left', 'operator', 'right'];
+  return toTAML(hAST, {
+    sortKeys: lSortBy
+  });
+};
+
+// ---------------------------------------------------------------------------
+// --- Valid options:
+//        full - retain all keys
+//        format - undef=JS value, else 'taml'
+export var toAST = function(coffeeCode, hOptions = {}) {
+  var ast, err, format, full, hAST;
+  dbgEnter("toAST", coffeeCode);
+  assert(isUndented(coffeeCode), "code has indentation");
+  ({full, format} = getOptions(hOptions, {
+    full: false,
+    format: undef
+  }));
+  try {
+    hAST = CoffeeScript.compile(coffeeCode, {
+      ast: true
+    });
+    assert(defined(hAST), "hAST is empty");
+  } catch (error) {
+    err = error;
+    LOG(`ERROR in CoffeeScript: ${err.message}`);
+    LOG('-'.repeat(78));
+    LOG(`${OL(coffeeCode)}`);
+    LOG('-'.repeat(78));
+    croak(`ERROR in CoffeeScript: ${err.message}`);
+  }
+  switch (format) {
+    case undef:
+      if (!full) {
+        removeExtraKeys(hAST);
+      }
+      ast = hAST;
+      break;
+    case 'taml':
+      ast = astToTAML(hAST, full);
+      break;
+    default:
+      croak("Invalid format");
+  }
+  dbgReturn("toAST", ast);
+  return ast;
+};
+
+// ---------------------------------------------------------------------------
+export var toASTFile = function(coffeeCode, filePath, hOptions = {}) {
+  var hAST;
+  hAST = toAST(coffeeCode, hOptions);
+  barfAST(hAST, filePath);
 };
 
 //# sourceMappingURL=coffee.js.map

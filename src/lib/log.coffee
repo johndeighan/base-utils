@@ -6,6 +6,7 @@ import {
 	blockToArray, arrayToBlock, prefixBlock, centeredText,
 	isNumber, isInteger, isString, isHash, isFunction, isBoolean,
 	isEmpty, nonEmpty, hEscNoNL, jsType, hasChar, quoted,
+	spaces,
 	} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {parsePath} from '@jdeighan/base-utils/ll-fs'
@@ -187,11 +188,12 @@ export tamlStringify = (obj, escape=false) =>
 
 export orderedStringify = (obj, escape=false) =>
 
-	return toTAML(obj, {
-		useTabs: false
+	result = toTAML(obj, {
 		sortKeys: true
+		oneIndent: spaces(2)
 		escape
 		})
+	return result
 
 # ---------------------------------------------------------------------------
 
