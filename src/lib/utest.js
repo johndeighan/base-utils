@@ -13,6 +13,7 @@ import {
   isRegExp,
   nonEmpty,
   isClass,
+  isFunction,
   toArray,
   fileExt
 } from '@jdeighan/base-utils';
@@ -54,6 +55,7 @@ export var UnitTester = class UnitTester {
     // ........................................................................
     this.doDebug = this.doDebug.bind(this);
     // ........................................................................
+    // --- returns, e.g. "line 42"
     this.getTestName = this.getTestName.bind(this);
     this.debug = false;
     this.hFound = {}; // used line numbers
@@ -64,7 +66,7 @@ export var UnitTester = class UnitTester {
   }
 
   getTestName() {
-    var column, err, filePath, line, mapFile, mline;
+    var column, filePath, line;
     // --- We need to figure out the line number of the caller
     ({filePath, line, column} = getMyOutsideCaller());
     if (this.debug) {
@@ -73,24 +75,18 @@ export var UnitTester = class UnitTester {
       console.log(`   line = ${line}, col = ${column}`);
     }
     assert(isInteger(line), `getMyOutsideCaller() line = ${OL(line)}`);
-    assert(fileExt(filePath) === '.js', `caller not a JS file: ${OL(filePath)}`);
-    // --- Attempt to use source map to get true line number
-    mapFile = `${filePath}.map`;
-    if (isFile(mapFile)) {
-      try {
-        mline = mapLineNum(filePath, line, column, {
-          debug: this.debug
-        });
-        if (this.debug) {
-          console.log(`   mapped to ${mline}`);
-        }
-        assert(isInteger(mline), `not an integer: ${mline}`);
-        line = mline;
-      } catch (error) {
-        err = error;
-        pass();
-      }
-    }
+    assert((fileExt(filePath) === '.js') || (fileExt(filePath) === '.coffee'), `caller not a JS or Coffee file: ${OL(filePath)}`);
+    // 		# --- Attempt to use source map to get true line number
+    // 		mapFile = "#{filePath}.map"
+    // 		if isFile(mapFile)
+    // 			try
+    // 				mline = mapLineNum filePath, line, column, {debug: @debug}
+    // 				if @debug
+    // 					console.log "   mapped to #{mline}"
+    // 				assert isInteger(mline), "not an integer: #{mline}"
+    // 				line = mline
+    // 			catch err
+    // 				pass()
     while (this.hFound[line]) {
       line += 1000;
     }
@@ -231,7 +227,7 @@ export var UnitTester = class UnitTester {
   throws(func, errClass) {
     var err, errObj, failed, log;
     assert(typeof func === 'function', `Not a function: ${OL(func)}`);
-    assert(isClass(errClass), `Not a class: ${OL(errClass)}`);
+    assert(isClass(errClass) || isFunction(errClass), `Not a class or function: ${OL(errClass)}`);
     errObj = undef;
     try {
       exReset(); // suppress logging of errors
@@ -321,5 +317,3 @@ export var fails = (func) => {
 export var throws = (func, errClass) => {
   return u.throws(func, errClass);
 };
-
-//# sourceMappingURL=utest.js.map

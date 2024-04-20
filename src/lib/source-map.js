@@ -152,5 +152,3 @@ export var mapSourcePos = (jsPath, line, column, hOptions = {}) => {
   assert(isInteger(line), `originalPositionFor(${line},${column}) returned line = ${line}`);
   return hMapped;
 };
-
-//# sourceMappingURL=source-map.js.map

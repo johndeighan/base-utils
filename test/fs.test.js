@@ -1,5 +1,5 @@
 // fs.test.coffee
-var dir, file, projDir, smDir, subdir, testPath;
+var dir, file, projDir, subdir, testPath;
 
 import {
   UnitTester,
@@ -22,7 +22,8 @@ import {
   words,
   hslice,
   sortArrayOfHashes,
-  newerDestFilesExist
+  newerDestFilesExist,
+  isArray
 } from '@jdeighan/base-utils';
 
 import {
@@ -32,6 +33,10 @@ import {
 import {
   setDebugging
 } from '@jdeighan/base-utils/debug';
+
+import {
+  assert
+} from '@jdeighan/base-utils/exceptions';
 
 import * as lib from '@jdeighan/base-utils/fs';
 
@@ -47,15 +52,6 @@ subdir = mkpath(dir, 'test'); // subdir test inside test
 file = myself(import.meta.url);
 
 testPath = mkpath(projDir, 'test', 'readline.txt');
-
-// ---------------------------------------------------------------------------
-// --- test allLinesIn()
-(() => {
-  var lLines, path;
-  path = './test/readline3.txt';
-  lLines = Array.from(allLinesIn(path));
-  return equal(lLines, ['ghi', 'jkl', '', 'mno', 'pqr']);
-})();
 
 // ---------------------------------------------------------------------------
 like(parsePath(import.meta.url), {
@@ -133,277 +129,6 @@ like(parsePath(testPath), {
   ext: '.txt',
   purpose: undef
 });
-
-// ---------------------------------------------------------------------------
-equal(slurp(testPath, {
-  maxLines: 2
-}), `abc
-def`);
-
-equal(slurp(testPath, {
-  maxLines: 3
-}), `abc
-def
-ghi`);
-
-equal(slurp(testPath, {
-  maxLines: 1000
-}), `abc
-def
-ghi
-jkl
-mno`);
-
-equal(slurp(testPath, 'maxLines=3'), `abc
-def
-ghi`);
-
-// ---------------------------------------------------------------------------
-// --- test readTextFile
-(() => {
-  var h, path;
-  path = "./test/test/file3.txt";
-  h = readTextFile(path);
-  return equal(h, {
-    hMetaData: {
-      fName: 'John',
-      lName: 'Deighan'
-    },
-    lLines: ['', 'This is a test']
-  });
-})();
-
-// ---------------------------------------------------------------------------
-// --- test allFilesMatching
-(() => {
-  var ext, hFile, lFiles, ref;
-  lFiles = [];
-  ref = allFilesMatching('./test/test/*', 'eager');
-  for (hFile of ref) {
-    ({ext} = hFile);
-    if ((ext !== '.map') && (ext !== '.js')) {
-      lFiles.push(hFile);
-    }
-  }
-  sortArrayOfHashes(lFiles, 'fileName');
-  return like(lFiles, [
-    {
-      fileName: 'file1.txt',
-      hMetaData: {},
-      lLines: ['Hello']
-    },
-    {
-      fileName: 'file1.zh',
-      hMetaData: {},
-      lLines: ['你好']
-    },
-    {
-      fileName: 'file2.txt',
-      hMetaData: {},
-      lLines: ['Goodbye']
-    },
-    {
-      fileName: 'file2.zh',
-      hMetaData: {},
-      lLines: ['再见']
-    },
-    {
-      fileName: 'file3.txt',
-      hMetaData: {
-        fName: 'John',
-        lName: 'Deighan'
-      },
-      lLines: ['',
-    'This is a test']
-    },
-    {
-      fileName: 'test.coffee',
-      hMetaData: {},
-      lLines: ['console.log "Hello"']
-    }
-  ]);
-})();
-
-// ---------------------------------------------------------------------------
-// --- test allFilesMatching with pattern
-(() => {
-  var hFile, hOptions, lFiles, ref;
-  lFiles = [];
-  hOptions = {
-    eager: true
-  };
-  ref = allFilesMatching('./test/test/*.txt', hOptions);
-  for (hFile of ref) {
-    lFiles.push(hFile);
-  }
-  sortArrayOfHashes(lFiles, 'fileName');
-  return like(lFiles, [
-    {
-      fileName: 'file1.txt',
-      hMetaData: {},
-      lLines: ['Hello']
-    },
-    {
-      fileName: 'file2.txt',
-      hMetaData: {},
-      lLines: ['Goodbye']
-    },
-    {
-      fileName: 'file3.txt',
-      hMetaData: {
-        fName: 'John',
-        lName: 'Deighan'
-      },
-      lLines: ['',
-    'This is a test']
-    }
-  ]);
-})();
-
-// ---------------------------------------------------------------------------
-// --- test allFilesMatching with pattern and cwd
-(() => {
-  var hFile, hOptions, lFiles, ref;
-  lFiles = [];
-  hOptions = {
-    eager: true,
-    hGlobOptions: {
-      cwd: './test/test'
-    }
-  };
-  ref = allFilesMatching('*.txt', hOptions);
-  for (hFile of ref) {
-    lFiles.push(hFile);
-  }
-  sortArrayOfHashes(lFiles, 'fileName');
-  return like(lFiles, [
-    {
-      fileName: 'file1.txt',
-      hMetaData: {},
-      lLines: ['Hello']
-    },
-    {
-      fileName: 'file2.txt',
-      hMetaData: {},
-      lLines: ['Goodbye']
-    },
-    {
-      fileName: 'file3.txt',
-      hMetaData: {
-        fName: 'John',
-        lName: 'Deighan'
-      },
-      lLines: ['',
-    'This is a test']
-    }
-  ]);
-})();
-
-// ---------------------------------------------------------------------------
-// --- test forEachLineInFile()
-(() => {
-  var callback, result;
-  // --- Contents:
-  //        abc
-  //        def
-  //        ghi
-  //        jkl
-  //        mno
-
-  callback = (item, hContext) => {
-    if ((item === 'def') || (item === 'jkl')) {
-      return `${hContext.label} ${item}`;
-    } else {
-      return undef;
-    }
-  };
-  result = forEachLineInFile(testPath, callback, {
-    label: '-->'
-  });
-  return equal(result, ['--> def', '--> jkl']);
-})();
-
-// ---------------------------------------------------------------------------
-// --- test dirContents()
-smDir = './test/source-map';
-
-equal(dirContents(smDir, '*.coffee').length, 1);
-
-equal(dirContents(smDir, '*.js').length, 2);
-
-equal(dirContents(smDir, '*').length, 6);
-
-equal(dirContents(smDir, '*', 'filesOnly').length, 4);
-
-equal(dirContents(smDir, '*', 'dirsOnly').length, 2);
-
-// ---------------------------------------------------------------------------
-(() => {
-  var filePath4, lLines, line, ref;
-  lLines = [];
-  filePath4 = './test/readline4.txt';
-  ref = allLinesIn(filePath4);
-  for (line of ref) {
-    lLines.push(line);
-  }
-  return equal(lLines, ['ghi', 'jkl', '', 'mno', 'pqr']);
-})();
-
-// ---------------------------------------------------------------------------
-// --- Produce capitalized version, with a prefix "> "
-//        skipping blank lines
-(() => {
-  var filePath3, func, lLines;
-  func = (line, hContext) => {
-    if (line === '') {
-      return undef;
-    } else {
-      return `${hContext.prefix}${line.toUpperCase()}`;
-    }
-  };
-  filePath3 = './test/readline3.txt';
-  lLines = forEachLineInFile(filePath3, func, {
-    prefix: '> '
-  });
-  return equal(lLines, ['> GHI', '> JKL', '> MNO', '> PQR']);
-})();
-
-// ---------------------------------------------------------------------------
-// --- Produce capitalized version, with a prefix "> "
-//        skipping blank lines
-(() => {
-  var filePath4, func, lLines;
-  func = (line, hContext) => {
-    if (line === '') {
-      return undef;
-    } else {
-      return `${hContext.prefix}${line.toUpperCase()}`;
-    }
-  };
-  filePath4 = './test/readline4.txt';
-  lLines = forEachLineInFile(filePath4, func, {
-    prefix: '> '
-  });
-  return equal(lLines, ['> GHI', '> JKL', '> MNO', '> PQR']);
-})();
-
-// ---------------------------------------------------------------------------
-// --- This time, stop processing when a blank line is found
-(() => {
-  var filePath4, func, lLines;
-  func = (line, hContext) => {
-    if (line === '') {
-      throw 'stop';
-    } else {
-      return `${hContext.prefix}${line.toUpperCase()}`;
-    }
-  };
-  filePath4 = './test/readline4.txt';
-  lLines = forEachLineInFile(filePath4, func, {
-    prefix: '> '
-  });
-  return equal(lLines, ['> GHI', '> JKL']);
-})();
 
 // ---------------------------------------------------------------------------
 (() => {

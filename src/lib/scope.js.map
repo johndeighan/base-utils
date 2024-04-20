@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "",
+  "sourceRoot": "",
+  "sources": [
+    "src\\lib\\scope.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAc;AAEd,OAAA;EAAQ,KAAR;EAAe,QAAf;CAAA,MAAA;;AACA,OAAA;EAAQ,GAAR;CAAA,MAAA,2BAHc;;;AAOd,OAAA,IAAa,QAAN,MAAA,MAAA;EAEN,WAAa,KAAA,EAAQ,WAAS,EAAjB,CAAA;IAAC,IAAC,CAAA;IAEd,IAAC,CAAA,QAAD,GAAY,QAAA,CAAS,QAAT;EAFA,CAAd;;;EAMC,GAAK,CAAC,MAAD,CAAA;IAEJ,IAAG,CAAE,IAAC,CAAA,QAAQ,CAAC,QAAV,CAAmB,MAAnB,CAAL;MACC,IAAC,CAAA,QAAQ,CAAC,IAAV,CAAe,MAAf,EADD;;EAFI,CANN;;;EAcC,GAAK,CAAC,MAAD,CAAA;AAEJ,WAAO,IAAC,CAAA,QAAQ,CAAC,QAAV,CAAmB,MAAnB;EAFH,CAdN;;;EAoBC,IAAM,CAAA,CAAA;AAEP,QAAA,CAAA,EAAA,GAAA,EAAA,GAAA,EAAA;AAAE;IAAA,KAAA,qCAAA;;MACC,GAAA,CAAI,OAAA,CAAA,CAAS,MAAT,CAAA,CAAJ;IADD;EAFK;;AAtBA",
+  "sourcesContent": [
+    "# scope.coffee\n\nimport {undef, deepCopy} from '@jdeighan/base-utils'\nimport {LOG} from '@jdeighan/base-utils/log'\n\n# ---------------------------------------------------------------------------\n\nexport class Scope\n\n\tconstructor: (@name, lSymbols=[]) ->\n\n\t\t@lSymbols = deepCopy lSymbols\n\n\t# ..........................................................\n\n\tadd: (symbol) ->\n\n\t\tif ! @lSymbols.includes(symbol)\n\t\t\t@lSymbols.push symbol\n\t\treturn\n\n\t# ..........................................................\n\n\thas: (symbol) ->\n\n\t\treturn @lSymbols.includes(symbol)\n\n\t# ..........................................................\n\n\tdump: () ->\n\n\t\tfor symbol in @lSymbols\n\t\t\tLOG \"      #{symbol}\"\n\t\treturn"
+  ]
+}

@@ -10,7 +10,7 @@ import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 import {
 	mkpath, isFile,
 	} from '@jdeighan/base-utils/fs'
-import {FileProcessor} from '@jdeighan/base-utils/FileProcessor'
+import {FileProcessor} from '@jdeighan/base-utils/file-processor'
 
 # ---------------------------------------------------------------------------
 

@@ -1,0 +1,15 @@
+../base-utils/**/*.coffee
+../blog/**/*.coffee
+../browser/**/*.coffee
+../cielo/**/*.coffee
+../coffee-utils/**/*.coffee
+../mapper/**/*.coffee
+../matcher/**/*.coffee
+../MonthlyBudget/**/*.coffee
+../oz/**/*.coffee
+../peggy/**/*.coffee
+../spaced-rep/**/*.coffee
+../starbucks/**/*.coffee
+../stories/**/*.coffee
+../svelte-utils/**/*.coffee
+../zh-utils/**/*.coffee

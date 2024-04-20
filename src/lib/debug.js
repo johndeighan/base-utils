@@ -51,8 +51,8 @@ import {
 } from '@jdeighan/base-utils/log';
 
 import {
-  toTAML
-} from '@jdeighan/base-utils/taml';
+  toNICE
+} from '@jdeighan/base-utils/to-nice';
 
 import {
   CallStack
@@ -230,7 +230,7 @@ export var setDebugging = (debugWhat = undef, hOptions = {}) => {
 // ---------------------------------------------------------------------------
 export var dumpFuncList = () => {
   console.log('lFuncList: --------------------------------');
-  console.log(toTAML(lFuncList));
+  console.log(toNICE(lFuncList));
   console.log('-------------------------------------------');
 };
 
@@ -502,24 +502,6 @@ export var dbg = (...lArgs) => {
 };
 
 // ---------------------------------------------------------------------------
-export var dbgValue = (label, val) => {
-  var doLog, level;
-  assert(isString(label), "not a string");
-  doLog = debugAll || debugStack.isLogging();
-  if (internalDebugging) {
-    console.log(`dbgValue ${OL(label)}, ${OL(val)}`);
-    console.log(`   - doLog = ${OL(doLog)}`);
-  }
-  if (doLog) {
-    level = debugStack.logLevel;
-    if (!logValue(level, label, val)) {
-      stdLogValue(level, label, val);
-    }
-  }
-  return true;
-};
-
-// ---------------------------------------------------------------------------
 // --- str can be a multi-line string
 export var dbgString = (str) => {
   var doLog, level;
@@ -540,6 +522,24 @@ export var dbgString = (str) => {
 };
 
 // ---------------------------------------------------------------------------
+export var dbgValue = (label, val) => {
+  var doLog, level;
+  assert(isString(label), "not a string");
+  doLog = debugAll || debugStack.isLogging();
+  if (internalDebugging) {
+    console.log(`dbgValue ${OL(label)}, ${OL(val)}`);
+    console.log(`   - doLog = ${OL(doLog)}`);
+  }
+  if (doLog) {
+    level = debugStack.logLevel;
+    if (!logValue(level, label, val)) {
+      stdLogValue(level, label, val);
+    }
+  }
+  return true;
+};
+
+// ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 //    Only these 8 functions ever call LOG or LOGVALUE
 export var stdLogEnter = (level, funcName, lArgs) => {
@@ -549,15 +549,15 @@ export var stdLogEnter = (level, funcName, lArgs) => {
   assert(isInteger(level), "level not an integer");
   labelPre = getPrefix(level, 'plain');
   if (lArgs.length === 0) {
-    LOG(`enter ${funcName}`, labelPre);
+    LOG(labelPre + `enter ${funcName}`);
   } else {
     str = `enter ${funcName} ${OLS(lArgs)}`;
     if (stringFits(`${labelPre}${str}`)) {
-      LOG(str, labelPre);
+      LOG(labelPre + str);
     } else {
       idPre = getPrefix(level + 1, 'plain');
       itemPre = getPrefix(level + 2, 'noLastVbar');
-      LOG(`enter ${funcName}`, labelPre);
+      LOG(labelPre + `enter ${funcName}`);
       for (i = j = 0, len = lArgs.length; j < len; i = ++j) {
         arg = lArgs[i];
         LOGVALUE(`arg[${i}]`, arg, {
@@ -580,7 +580,7 @@ export var stdLogReturn = (...lArgs) => {
   assert(isFunctionName(funcName), "bad function name");
   assert(isInteger(level), "level not an integer");
   labelPre = getPrefix(level, 'withArrow');
-  LOG(`return from ${funcName}`, labelPre);
+  LOG(labelPre + `return from ${funcName}`);
   return true;
 };
 
@@ -592,10 +592,10 @@ stdLogReturnVal = (level, funcName, val) => {
   labelPre = getPrefix(level, 'withArrow');
   str = `return ${OL(val)} from ${funcName}`;
   if (stringFits(str)) {
-    LOG(str, labelPre);
+    LOG(labelPre + str);
   } else {
     pre = getPrefix(level, 'noLastVbar');
-    LOG(`return from ${funcName}`, labelPre);
+    LOG(labelPre + `return from ${funcName}`);
     LOGVALUE("val", val, {
       prefix: pre,
       itemPrefix: pre
@@ -615,10 +615,9 @@ export var stdLogYield = (...lArgs) => {
   valStr = OL(val);
   str = `yield ${valStr}`;
   if (stringFits(str)) {
-    LOG(str, labelPre);
+    LOG(labelPre + str);
   } else {
     pre = getPrefix(level, 'plain');
-    LOG("yield", labelPre);
     LOGVALUE(undef, val, {
       prefix: pre,
       itemPrefix: pre
@@ -631,7 +630,7 @@ export var stdLogYield = (...lArgs) => {
 export var stdLogYieldFrom = (level, funcName) => {
   var labelPre;
   labelPre = getPrefix(level, 'withFlat');
-  LOG("yieldFrom", labelPre);
+  LOG(labelPre + "yieldFrom");
   return true;
 };
 
@@ -640,7 +639,7 @@ export var stdLogResume = (funcName, level) => {
   var labelPre;
   assert(isInteger(level), "level not an integer");
   labelPre = getPrefix(level + 1, 'withResume');
-  LOG("resume", labelPre);
+  LOG(labelPre + "resume");
   return true;
 };
 
@@ -653,7 +652,7 @@ export var stdLogString = (level, str) => {
   ref = blockToArray(str);
   for (j = 0, len = ref.length; j < len; j++) {
     part = ref[j];
-    LOG(part, labelPre);
+    LOG(labelPre + part);
   }
   return true;
 };
@@ -711,5 +710,3 @@ export var parseFunc = (str) => {
 
 // ---------------------------------------------------------------------------
 resetDebugging();
-
-//# sourceMappingURL=debug.js.map

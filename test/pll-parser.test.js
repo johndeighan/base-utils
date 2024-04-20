@@ -21,10 +21,13 @@ import {
 } from '@jdeighan/base-utils/debug';
 
 import {
-  mkpath,
+  mkpath
+} from '@jdeighan/base-utils/fs';
+
+import {
   allFilesMatching,
   globFiles
-} from '@jdeighan/base-utils/fs';
+} from '@jdeighan/base-utils/read-file';
 
 import * as lib from '@jdeighan/base-utils/pll-parser';
 
@@ -38,9 +41,13 @@ import {
   succeeds
 } from '@jdeighan/base-utils/utest';
 
+import {
+  pparse
+} from '@jdeighan/base-utils/peggy';
+
 // ---------------------------------------------------------------------------
 transformValue((item) => {
-  return parse(item);
+  return pparse(parse, item);
 });
 
 transformExpected((str) => {
@@ -70,23 +77,23 @@ transformExpected((str) => {
 
 // ---------------------------------------------------------------------------
 succeeds(() => {
-  return parse("abc");
+  return pparse(parse, "abc");
 });
 
 succeeds(() => {
-  return parse("abc\n\t\tdef");
+  return pparse(parse, "abc\n\t\tdef");
 });
 
 succeeds(() => {
-  return parse("abc\r\n\t\tdef");
+  return pparse(parse, "abc\r\n\t\tdef");
 });
 
 fails(() => {
-  return parse("abc\t\tdef");
+  return pparse(parse, "abc\t\tdef");
 });
 
 fails(() => {
-  return parse("\t \t ");
+  return pparse(parse, "\t \t ");
 });
 
 // ---------------------------------------------------------------------------

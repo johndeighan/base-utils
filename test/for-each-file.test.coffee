@@ -16,9 +16,9 @@ curdir = mkpath(process.cwd())
 (() =>
 	result = execCmd('npx for-each-file -debug=list -glob=test/test/**/*.txt -cmd="echo <file>"')
 	samelines result, """
-		CMD: 'echo˳#{curdir}/test/test/file1.txt'
-		CMD: 'echo˳#{curdir}/test/test/file2.txt'
-		CMD: 'echo˳#{curdir}/test/test/file3.txt'
+		CMD: "echo˳#{curdir}/test/test/file1.txt"
+		CMD: "echo˳#{curdir}/test/test/file2.txt"
+		CMD: "echo˳#{curdir}/test/test/file3.txt"
 		"""
 	)()
 
@@ -30,9 +30,9 @@ curdir = mkpath(process.cwd())
 		glob: 'test/test/**/*.txt'
 		})
 	samelines result, """
-		FILE: '#{curdir}/test/test/file1.txt'
-		FILE: '#{curdir}/test/test/file2.txt'
-		FILE: '#{curdir}/test/test/file3.txt'
+		FILE: "#{curdir}/test/test/file1.txt"
+		FILE: "#{curdir}/test/test/file2.txt"
+		FILE: "#{curdir}/test/test/file3.txt"
 		"""
 	)()
 
@@ -45,9 +45,9 @@ curdir = mkpath(process.cwd())
 		cmd: 'echo <file>'
 		})
 	samelines result, """
-		CMD: 'echo˳#{curdir}/test/test/file1.txt'
-		CMD: 'echo˳#{curdir}/test/test/file2.txt'
-		CMD: 'echo˳#{curdir}/test/test/file3.txt'
+		CMD: "echo˳#{curdir}/test/test/file1.txt"
+		CMD: "echo˳#{curdir}/test/test/file2.txt"
+		CMD: "echo˳#{curdir}/test/test/file3.txt"
 		"""
 	)()
 
@@ -60,8 +60,8 @@ curdir = mkpath(process.cwd())
 		cmd: 'echo <file>'
 		})
 	samelines result, """
-		CMD: 'echo˳#{curdir}/test/test/subdir/test.coffee'
-		CMD: 'echo˳#{curdir}/test/test/test.coffee'
+		CMD: "echo˳#{curdir}/test/test/subdir/test.coffee"
+		CMD: "echo˳#{curdir}/test/test/test.coffee"
 		"""
 	)()
 
@@ -74,8 +74,8 @@ curdir = mkpath(process.cwd())
 		cmd: 'coffee -cmb --no-header <file>'
 		})
 	samelines result, """
-		CMD: 'coffee˳-cmb˳--no-header˳#{curdir}/test/test/subdir/test.coffee'
-		CMD: 'coffee˳-cmb˳--no-header˳#{curdir}/test/test/test.coffee'
+		CMD: "coffee˳-cmb˳--no-header˳#{curdir}/test/test/subdir/test.coffee"
+		CMD: "coffee˳-cmb˳--no-header˳#{curdir}/test/test/test.coffee"
 		"""
 	)()
 

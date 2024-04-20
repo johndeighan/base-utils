@@ -1,3 +1,6 @@
+---
+shebang: true
+---
 # gen-bin-keys.coffee
 
 import {
@@ -8,8 +11,11 @@ import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {LOG} from '@jdeighan/base-utils/log'
 import {
 	isFile, isDir, mkpath, rmFile, isProjRoot,
-	slurp, allFilesMatching, slurpJSON, barf, barfJSON,
+	slurp, slurpJSON, barf, barfJSON,
 	} from '@jdeighan/base-utils/fs'
+import {
+	allFilesMatching,
+	} from '@jdeighan/base-utils/read-file'
 
 shebang = "#!/usr/bin/env node"
 
@@ -39,7 +45,7 @@ tla = (stub) =>
 
 # 1. Error if current directory is not a project root directory
 
-assert isProjRoot('strict'), "Not in package root dir"
+assert isProjRoot('.', 'strict'), "Not in package root dir"
 
 # 2 . For every *.coffee file in the 'src/bin' directory:
 #       - compile to JS if no corresponding JS file

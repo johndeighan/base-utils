@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "",
+  "sourceRoot": "",
+  "sources": [
+    "test/analyze.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAgB;AAAA,IAAA,GAAA,EAAA,IAAA,EAAA,CAAA,EAAA;;AAEhB,OAAA;EAAQ,QAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,YAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,KAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,MAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,iBAAR;CAAA,MAAA;;AAEA,IAAA,GAAO,CAAA;yBAAA;;AAKP,GAAA,GAAM,KAAA,CAAM,IAAN;;AACN,QAAA,GAAW;EACV,QAAA,EAAU,CAAC,MAAD;AADA;;AAGX,OAAO,CAAC,GAAR,CAAY,QAAA,CAAS,MAAA,CAAO,GAAP,EAAY,QAAZ,CAAT,CAAZ;;AAEA,CAAA,GAAI,iBAAA,CAAkB,IAAlB;;AACJ,OAAO,CAAC,GAAR,CAAY,QAAA,CAAS,MAAA,CAAO,CAAP,CAAT,CAAZ",
+  "sourcesContent": [
+    "# analyze.coffee\n\nimport {untabify} from '@jdeighan/base-utils'\nimport {setDebugging} from '@jdeighan/base-utils/debug'\nimport {toAST} from '@jdeighan/base-utils/coffee'\nimport {toTAML} from '@jdeighan/base-utils/taml'\nimport {analyzeCoffeeCode} from '@jdeighan/base-utils/ast-walker'\n\ncode = \"\"\"\n\texport toBlock = (lItems) ->\n\t\treturn lItems.join(\"\\n\")\n\t\"\"\"\n\nast = toAST(code)\nhOptions = {\n\tsortKeys: ['type']\n\t}\nconsole.log untabify(toTAML(ast, hOptions))\n\nh = analyzeCoffeeCode(code)\nconsole.log untabify(toTAML(h))"
+  ]
+}

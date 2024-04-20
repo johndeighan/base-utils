@@ -5,11 +5,14 @@ import fs from 'fs'
 
 import {
 	undef, defined, notdefined, alldefined, isEmpty, nonEmpty,
-	assert, croak,
+	assert, croak, isInteger, hasKey,
 	OL, isIdentifier, isFunctionName, getOptions,
 	} from '@jdeighan/base-utils'
-import {mydir} from '@jdeighan/base-utils/ll-fs'
-import {mapLineNum} from '@jdeighan/base-utils/source-map'
+import {
+	mydir, mkpath, fileExt, withExt,
+	} from '@jdeighan/base-utils/ll-fs'
+import {mapSourcePos} from '@jdeighan/base-utils/source-map'
+import {toNICE} from '@jdeighan/base-utils/to-nice'
 
 export internalDebugging = false
 dir = mydir(import.meta.url)    # directory this file is in
@@ -19,6 +22,7 @@ dir = mydir(import.meta.url)    # directory this file is in
 #    type - eval | native | constructor | method | function | script
 #    filePath
 #    fileName
+#    ext
 #    functionName
 #    objTye, methodName - if type == 'method'
 #    isAsync - true if an async function/method
@@ -46,6 +50,8 @@ export extractFileName = (filePath) =>
 
 export getV8Stack = (hOptions={}) =>
 	# --- ignores any stack frames from this module
+	#     *.js files will be mapped to *.coffee files
+	#        if a source map is available
 
 	debug = hOptions.debug || false
 
@@ -102,10 +108,14 @@ export getV8Stack = (hOptions={}) =>
 				if (objType == 'ModuleJob')
 					break
 
+				{dir, name: stub, ext} = pathLib.parse(filePath)
 				hFrame = {
 					type
 					filePath
 					fileName: extractFileName(filePath)
+					dir
+					stub
+					ext
 					functionName
 					line
 					column
@@ -120,20 +130,19 @@ export getV8Stack = (hOptions={}) =>
 				if (type == 'function') && notdefined(functionName)
 					hFrame.type = 'script'
 					delete hFrame.functionName
+					if (hFrame.ext == '.js')
+						mapJStoCoffee(hFrame)
 					lFrames.push hFrame
 					break
 
-				hParsed = pathLib.parse(filePath)
-				hFrame.dir = hParsed.dir
-				hFrame.stub = hParsed.name
-				hFrame.ext = hParsed.ext
-				if (hParsed.ext == '.js')
-					hFrame.line = mapLineNum filePath, line, column
+				if (ext == '.js')
+					mapJStoCoffee(hFrame)
 				lFrames.push hFrame
 
 			return lFrames
 
-		lStackFrames = new Error().stack
+		errObj = new Error()
+		lStackFrames = errObj.stack
 		assert (lStackFrames.length > 0), "lStackFrames is empty!"
 
 		# --- reset to previous values
@@ -142,6 +151,37 @@ export getV8Stack = (hOptions={}) =>
 	catch e
 		return []
 	return lStackFrames
+
+# ---------------------------------------------------------------------------
+# --- hFrame contains keys:
+#        filePath
+#        ext
+#        line
+#        column
+
+export mapJStoCoffee = (hFrame) =>
+
+	# --- Attempt to convert to original coffee file
+	assert hasKey(hFrame, 'filePath')
+	assert hasKey(hFrame, 'fileName')
+	assert hasKey(hFrame, 'ext')
+	assert hasKey(hFrame, 'line')
+	assert hasKey(hFrame, 'column')
+
+	{filePath, ext, line, column} = hFrame
+	assert (ext == '.js'), "ext = #{ext}"
+
+	hInfo = mapSourcePos filePath, line, column
+	if defined(hInfo.source)
+		# --- successfully mapped
+
+		hFrame.filePath = withExt(hFrame.filePath, '.coffee')
+		hFrame.fileName = withExt(hFrame.fileName, '.coffee')
+		hFrame.ext = '.coffee'
+		hFrame.line = hInfo.line
+		hFrame.column = hInfo.column
+		hFrame.source = hInfo.source
+	return
 
 # ---------------------------------------------------------------------------
 
@@ -195,12 +235,11 @@ export getMyOutsideCaller = () =>
 		return undef
 
 	fileName = undef
-	for hNode in lStack
+	for hNode,i in lStack
 		if (fileName == undef)
 			fileName = hNode.fileName
 		else if (hNode.fileName != fileName)
 			return hNode
-
 	return undef
 
 # ---------------------------------------------------------------------------

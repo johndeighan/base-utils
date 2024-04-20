@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "",
+  "sourceRoot": "",
+  "sources": [
+    "src/bin/hello.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAA,GAAA,CAAI,eAAJ",
+  "sourcesContent": [
+    "LOG \"Hello, World!\""
+  ]
+}

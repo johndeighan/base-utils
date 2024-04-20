@@ -82,5 +82,3 @@ export var NamedLogs = class NamedLogs {
   }
 
 };
-
-//# sourceMappingURL=named-logs.js.map

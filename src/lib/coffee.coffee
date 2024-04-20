@@ -5,7 +5,7 @@ import CoffeeScript from 'coffeescript'
 
 import {
 	undef, defined, notdefined, getOptions, toBlock,
-	OL, words, removeKeys,
+	OL, words, removeKeys, isArray, withExt,
 	} from '@jdeighan/base-utils'
 import {
 	assert, croak,
@@ -15,42 +15,78 @@ import {
 	} from '@jdeighan/base-utils/debug'
 import {isUndented} from '@jdeighan/base-utils/indent'
 import {toTAML} from '@jdeighan/base-utils/taml'
-import {barf, barfAST} from '@jdeighan/base-utils/fs'
+import {isFile, barf, barfAST} from '@jdeighan/base-utils/fs'
+import {
+	readTextFile, getShebang,
+	} from '@jdeighan/base-utils/read-file'
 
 # ---------------------------------------------------------------------------
 
-export brew = (coffeeCode, filePath=undef) ->
+export brew = (coffeeCode, hOptions={}) ->
 
+	# --- metadata is used to add a shebang line
+	#     if true, use "#!/usr/bin/env node"
+	#     else use value of shebang key
+	# --- filePath is used to check for a source map
+	#     without it, no source map is produced
+
+	dbgEnter 'brew', coffeeCode, hOptions
+	{hMetaData, filePath} = getOptions hOptions, {
+		hMetaData: {}
+		filePath: undef
+		}
+	assert defined(coffeeCode), "Missing coffee code"
 	coffeeCode = toBlock(coffeeCode)  # allow passing array
+	dbg 'hMetaData', hMetaData
+	dbg 'filePath', filePath
+
 	if defined(filePath)
-		assert fs.existsSync(filePath), "Not a file: #{filePath}"
-		h = CoffeeScript.compile(coffeeCode, {
+		assert isFile(filePath), "Not a file: #{filePath}"
+		{js, v3SourceMap} = CoffeeScript.compile coffeeCode, {
 			bare: true
 			header: false
-			filename: filePath
 			sourceMap: true
-			filename: undef     # must be filled in
-			})
-		jsCode = h.js
-		assert defined(jsCode), "No JS code generated"
-		return [jsCode.trim(), h.v3SourceMap]
+			filename: filePath
+			}
 	else
-		jsCode = CoffeeScript.compile(coffeeCode, {
+		js = CoffeeScript.compile coffeeCode, {
 			bare: true
 			header: false
 			sourceMap: false
-			})
-		assert defined(jsCode), "No JS code generated"
-		return [jsCode.trim(), undef]
+			}
+		v3SourceMap = undef
+
+	assert defined(js), "No JS code generated"
+
+	shebang = getShebang(hMetaData)
+	dbg 'shebang', shebang
+	if defined(shebang)
+		js = shebang + "\n" + js.trim()
+	else
+		js = js.trim()
+	result = [js, v3SourceMap]
+	dbgReturn 'brew', result
+	return result
 
 # ---------------------------------------------------------------------------
 
 export brewFile = (filePath) ->
 
-	{hMetaData, lLines} = readTextFile(filePath)
-	[jsCode, sourceMap] = brew lLines, filePath
-	barf jsCode, withExt(filePath, '.js')
-	barf sourceMap, withExt(filePath, '.js.map')
+	dbgEnter 'brewFile', filePath
+	[hMetaData, lLines] = readTextFile(filePath, 'eager')
+	dbg 'hMetaData', hMetaData
+	dbg 'lLines', lLines
+	assert isArray(lLines), "Bad return from readTextFile"
+	[jsCode, sourceMap] = brew lLines, {hMetaData, filePath}
+	dbg 'jsCode', jsCode
+	dbg 'sourceMap', sourceMap
+	jsFilePath = withExt(filePath, '.js')
+	mapFilePath = withExt(filePath, '.js.map')
+	dbg 'jsFilePath', jsFilePath
+	dbg 'mapFilePath', mapFilePath
+	barf jsCode, jsFilePath
+	barf sourceMap, mapFilePath
+	dbgReturn 'brewFile'
 	return
 
 # ---------------------------------------------------------------------------

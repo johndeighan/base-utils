@@ -10,7 +10,7 @@ import {
 	} from '@jdeighan/base-utils'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {parsePath} from '@jdeighan/base-utils/ll-fs'
-import {toTAML} from '@jdeighan/base-utils/taml'
+import {toNICE} from '@jdeighan/base-utils/to-nice'
 import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {getMyOutsideCaller} from '@jdeighan/base-utils/v8-stack'
 import {NamedLogs} from '@jdeighan/base-utils/named-logs'
@@ -80,19 +80,6 @@ export getAllLogs = () =>
 
 # ---------------------------------------------------------------------------
 
-export LOG = (str="", prefix="") =>
-
-	if internalDebugging
-		if isEmpty(prefix)
-			console.log "IN LOG(#{OL(str)})"
-		else
-			console.log "IN LOG(#{OL(str)}), prefix=#{OL(prefix)}"
-
-	PUTSTR "#{prefix}#{str}"
-	return true   # to allow use in boolean expressions
-
-# ---------------------------------------------------------------------------
-
 export PUTSTR = (str) =>
 
 	if internalDebugging
@@ -107,17 +94,18 @@ export PUTSTR = (str) =>
 	str = rtrim(str)
 
 	# --- logs are maintained for each possible file
+	#     caller not defined means we're in the main script
 	caller = getMyOutsideCaller()
 	if defined(caller)
 		filePath = caller.filePath
-		fileName = parsePath(filePath).fileName
+		{fileName} = parsePath(filePath)
 		if internalDebugging
 			console.log "   - filePath = #{OL(filePath)}, doEcho = #{OL(doEcho)}"
 			console.log "   - from #{fileName}"
 	else
 		if internalDebugging
-			console.log "   - getMyOutsideCaller() failed, writing '#{str}'"
-		console.log str
+			console.log "   - filePath = 'main', doEcho = #{OL(doEcho)}"
+		filePath = 'main'
 
 	logs.log filePath, str
 	if doEcho
@@ -149,7 +137,7 @@ export resetLogWidth = () =>
 export setStringifier = (func) =>
 
 	orgStringifier = stringify
-	assert isFunction(func), "setStringifier() arg is not a function"
+#	assert isFunction(func), "not a function: #{OL(func)}"
 	stringify = func
 	return orgStringifier
 
@@ -163,7 +151,7 @@ export resetStringifier = () =>
 
 export setLogger = (func) =>
 
-	assert isFunction(func), "setLogger() arg is not a function"
+#	assert isFunction(func), "setLogger() arg is not a function"
 	orgLogger = putstr
 	putstr = func
 	return orgLogger
@@ -176,24 +164,13 @@ export resetLogger = () =>
 
 # ---------------------------------------------------------------------------
 
-export tamlStringify = (obj, escape=false) =>
+export orderedStringify = (obj, hOptiopns={}) =>
 
-	return toTAML(obj, {
-		useTabs: false
-		sortKeys: false
-		escape
-		})
-
-# ---------------------------------------------------------------------------
-
-export orderedStringify = (obj, escape=false) =>
-
-	result = toTAML(obj, {
+	hOptions = getOptions hOptions, {
+		oneIndent: "\t"
 		sortKeys: true
-		oneIndent: spaces(2)
-		escape
-		})
-	return result
+		}
+	return toNICE(obj, hOptions)
 
 # ---------------------------------------------------------------------------
 
@@ -204,6 +181,34 @@ export prefixed = (prefix, lStrings...) =>
 		lLines = lLines.concat(blockToArray(str))
 	result = arrayToBlock(lLines.map((x) => "#{prefix}#{x}"))
 	return result
+
+# ---------------------------------------------------------------------------
+# --- Keep track of the number of times any of these were called:
+#        LOG LOGTAML LOGJSON LOGVALUE LOGSTRING
+
+numLogCalls = 0
+maxReached = (max) =>
+	numLogCalls += 1
+	return defined(max) && (numLogCalls > max)
+# ---------------------------------------------------------------------------
+
+export LOG = (str="", hOptions={}) =>
+
+	{prefix, max} = getOptions hOptions, {
+		prefix: ''
+		max: undef
+		}
+	if maxReached(max)
+		return true
+
+	if internalDebugging
+		if isEmpty(prefix)
+			console.log "IN LOG(#{OL(str)})"
+		else
+			console.log "IN LOG(#{OL(str)}), prefix=#{OL(prefix)}"
+
+	PUTSTR "#{prefix}#{str}"
+	return true   # to allow use in boolean expressions
 
 # ---------------------------------------------------------------------------
 
@@ -222,7 +227,10 @@ export LOGTAML = (label, value, prefix="", itemPrefix=undef) =>
 	if handleSimpleCase(label, value, prefix)
 		return true
 
-	desc = toTAML(value, {sortKeys: true})
+	desc = toNICE(value, {
+		sortKeys: true
+		oneIndent: spaces(3)
+		})
 	PUTSTR prefixed(prefix, "#{prefix}#{label} = <<<", prefixed('   ', desc))
 	return true
 
@@ -252,10 +260,14 @@ export stringFits = (str) =>
 export LOGVALUE = (label, value, hOptions={}) =>
 	# --- Allow label to be empty, i.e. undef
 
-	{prefix, itemPrefix} = getOptions hOptions, {
+	{prefix, itemPrefix, max} = getOptions hOptions, {
 		prefix: ''
 		itemPrefix: undef
+		max: undef
 		}
+	if maxReached(max)
+		return true
+
 	if internalDebugging
 		str1 = OL(label)
 		str2 = OL(value)
@@ -304,7 +316,10 @@ export LOGVALUE = (label, value, hOptions={}) =>
 						"""
 
 		when 'hash', 'array'
-			str = toTAML(value, {sortKeys: true})
+			str = toNICE(value, {
+				sortKeys: true
+				oneIndent: spaces(3)
+				})
 			if labelStr
 				PUTSTR "#{prefix}#{labelStr}"
 			for str in blockToArray(str)
@@ -320,7 +335,8 @@ export LOGVALUE = (label, value, hOptions={}) =>
 			if isObject(value, '&toLogString')
 				str = value.toLogString()
 			else
-				str = toTAML(value)
+				str = toNICE(value)
+				assert defined(str), "str not defined!"
 
 			if hasChar(str, "\n")
 				if labelStr

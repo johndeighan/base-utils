@@ -14,6 +14,7 @@ import {
 	assert, croak,
 	} from '@jdeighan/base-utils/exceptions'
 import {parse} from '@jdeighan/base-utils/cmd-args'
+import {pparse} from '@jdeighan/base-utils/peggy'
 
 lTypes = words('boolean string number integer json')
 
@@ -92,7 +93,7 @@ export parseCmdArgs = (hOptions={}) =>
 		argStr = argStrFromArgv()
 	dbg "arg str = '#{argStr}'"
 
-	hResult = parse(argStr)
+	hResult = pparse(parse, argStr)
 	dbg 'hResult', hResult
 	assert isHash(hResult), "hResult = #{OL(hResult)}"
 

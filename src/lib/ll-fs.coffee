@@ -3,6 +3,7 @@
 import pathLib from 'node:path'
 import urlLib from 'url'
 import fs from 'fs'
+import {globSync as glob} from 'glob'
 
 import {
 	pass, undef, defined, notdefined,
@@ -98,6 +99,12 @@ export mkpath = (lParts...) =>
 
 # ---------------------------------------------------------------------------
 
+export samefile = (path1, path2) =>
+
+	return (mkpath(path1) == mkpath(path2))
+
+# ---------------------------------------------------------------------------
+
 export relpath = (lParts...) =>
 
 	fullPath = pathLib.resolve lParts...
@@ -162,18 +169,33 @@ export mkDir = (dirPath, hOptions={}) =>
 
 # ---------------------------------------------------------------------------
 
-export dirContents = (dirPath) =>
+export dirContents = (dirPath, hOptions={}) ->
 
-	try
-		lContents = []
-		hOptions = {withFileTypes: true, recursive: false}
-		for ent in fs.readdirSync(dirPath, hOptions)
-			if ent.isFile() || ent.isDir()
-				lContents.push ent.name
-		return lContents
-	catch err
-		return undef
+	{filesOnly, dirsOnly, regexp} = getOptions hOptions, {
+		filesOnly: false
+		dirsOnly: false
+		regexp: undef
+		}
+	assert ! (filesOnly && dirsOnly), "Incompatible options"
 
+	h = {withFileTypes: true, recursive: false}
+	for ent in fs.readdirSync(dirPath, h)
+		name = ent.name
+		if ent.isFile()
+			if !dirsOnly
+				if notdefined(regexp) || regexp.test(name)
+					yield name
+		else if ent.isDirectory()
+			if !filesOnly
+				if notdefined(regexp) || regexp.test(name)
+					yield name
+	return
+
+# ---------------------------------------------------------------------------
+
+export dirListing = (dirPath, hOptions={}) =>
+
+	return Array.from(dirContents(dirPath, hOptions))
 
 # ---------------------------------------------------------------------------
 

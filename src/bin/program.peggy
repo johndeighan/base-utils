@@ -1,5 +1,6 @@
 ---
 type: coffee
+shebang: true
 ---
 program
 	lStmts:statement*

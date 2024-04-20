@@ -135,17 +135,30 @@ falsy isFile(file2)
 	equal pathType(file2), 'file'
 	equal pathType(file3), 'missing'
 
-	truthy samelist(dirContents(dirPath), ['file1.txt','file2.txt'])
+	truthy samelist(dirListing(dirPath), ['file1.txt','file2.txt'])
 	rename file2, file3
-	truthy samelist(dirContents(dirPath), ['file1.txt','file3.txt'])
+	truthy samelist(dirListing(dirPath), ['file1.txt','file3.txt'])
 	rmFile file1
-	truthy samelist(dirContents(dirPath), ['file3.txt'])
+	truthy samelist(dirListing(dirPath), ['file3.txt'])
 	clearDir dirPath
-	truthy samelist(dirContents(dirPath), [])
+	truthy samelist(dirListing(dirPath), [])
 
 	truthy isDir(dirPath)
 	rmDir dirPath
 	falsy  isDir(dirPath)
+	)()
+
+# ---------------------------------------------------------------------------
+# --- test dirContents()
+#        - a generator, dirListing() returns corresponding array
+
+(() =>
+	smDir = './test/source-map'
+	equal dirListing(smDir, {regexp: /\.coffee$/}).length, 1
+	equal dirListing(smDir, {regexp: /\.js$/}).length, 2
+	equal dirListing(smDir).length, 6
+	equal dirListing(smDir, 'filesOnly').length, 4
+	equal dirListing(smDir, 'dirsOnly').length, 2
 	)()
 
 # ---------------------------------------------------------------------------

@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "",
+  "sourceRoot": "",
+  "sources": [
+    "test/from-nice.test.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAuB;AAEvB,OAAA;EAAQ,KAAR;CAAA,MAAA;;AACA,OAAA;EACC,UADD;EACa,KADb;EACoB,IADpB;EAC0B,QAD1B;EAEC,MAFD;EAES,KAFT;EAEgB,KAFhB;EAEuB,QAFvB;CAAA,MAAA;;AAIA,OAAO,CAAA,OAAP,MAAA;;AACA,MAAM,CAAC,MAAP,CAAc,MAAd,EAAsB,GAAtB,EARuB;;;;AAavB,CAAC,CAAA,CAAA,GAAA;AACD,MAAA,CAAA;;EACC,CAAA,GAAI,IAAI,UAAJ,CAAA;EACJ,CAAC,CAAC,cAAF,GAAmB,CAAC,GAAD,CAAA,GAAA;AAAS,WAAO,QAAA,CAAS,GAAT;EAAhB;SAEnB,CAAC,CAAC,KAAF,CAAQ,CAAA;;;mBAAA,CAAR,EAKM;IACL,QAAA,EAAU,iBADL;IAEL,IAAA,EAAM,QAFD;IAGL,MAAA,EAAQ,cAHH;IAIL,OAAA,EAAS;EAJJ,CALN;AALA,CAAD,CAAA,CAAA",
+  "sourcesContent": [
+    "# from-nice.test.coffee\n\nimport {undef} from '@jdeighan/base-utils'\nimport {\n\tUnitTester, equal, like, notequal,\n\ttruthy, falsy, fails, succeeds,\n\t} from '@jdeighan/base-utils/utest'\nimport * as lib from '@jdeighan/base-utils/from-nice'\nObject.assign(global, lib)\n\n# ---------------------------------------------------------------------------\n# --- test fromNICE()\n\n(() =>\n\t# --- transform value using fromNICE() automatically\n\tu = new UnitTester()\n\tu.transformValue = (str) => return fromNICE(str)\n\n\tu.equal \"\"\"\n\t\tfileName: primitive-value\n\t\ttype: coffee\n\t\tauthor: John Deighan\n\t\tinclude: pll-parser\n\t\t\"\"\", {\n\t\tfileName: 'primitive-value'\n\t\ttype: 'coffee'\n\t\tauthor: 'John Deighan'\n\t\tinclude: 'pll-parser'\n\t\t}\n\t)()"
+  ]
+}

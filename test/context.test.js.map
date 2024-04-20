@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "",
+  "sourceRoot": "",
+  "sources": [
+    "test/context.test.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAqB;AAAA,IAAA;;AAErB,OAAO,CAAA,QAAP,MAAA;;AACA,MAAM,CAAC,MAAP,CAAc,MAAd,EAAsB,IAAtB;;AACA,OAAA;EAAQ,OAAR;CAAA,MAAA;;AAEA,OAAA,GAAU,IAAI,OAAJ,CAAA;;AACV,OAAO,CAAC,GAAR,CAAY,MAAZ,EAAoB,MAApB;;AAEA,OAAO,CAAC,UAAR,CAAA;;AACA,OAAO,CAAC,GAAR,CAAY,OAAZ,EAAqB,OAArB;;AAEA,MAAA,CAAO,OAAO,CAAC,GAAR,CAAY,MAAZ,CAAP;;AACA,MAAA,CAAO,OAAO,CAAC,GAAR,CAAY,MAAZ,CAAP;;AACA,MAAA,CAAO,OAAO,CAAC,GAAR,CAAY,OAAZ,CAAP;;AACA,KAAA,CAAO,OAAO,CAAC,GAAR,CAAY,UAAZ,CAAP;;AAEA,OAAO,CAAC,QAAR,CAAA;;AAEA,MAAA,CAAO,OAAO,CAAC,GAAR,CAAY,MAAZ,CAAP;;AACA,MAAA,CAAO,OAAO,CAAC,GAAR,CAAY,MAAZ,CAAP;;AACA,KAAA,CAAO,OAAO,CAAC,GAAR,CAAY,OAAZ,CAAP;;AACA,KAAA,CAAO,OAAO,CAAC,GAAR,CAAY,UAAZ,CAAP",
+  "sourcesContent": [
+    "# context.test.coffee\n\nimport * as ulib from '@jdeighan/base-utils/utest'\nObject.assign(global, ulib)\nimport {Context} from '@jdeighan/base-utils/context'\n\ncontext = new Context()\ncontext.add 'main', 'func'\n\ncontext.beginScope()\ncontext.add 'func2', 'func3'\n\ntruthy context.has('main')\ntruthy context.has('func')\ntruthy context.has('func3')\nfalsy  context.has('notthere')\n\ncontext.endScope()\n\ntruthy context.has('main')\ntruthy context.has('func')\nfalsy  context.has('func3')\nfalsy  context.has('notthere')"
+  ]
+}

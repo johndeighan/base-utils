@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "",
+  "sourceRoot": "",
+  "sources": [
+    "src\\lib\\from-nice.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAkB;AAElB,OAAA;EACC,QADD;EACW,SADX;EACsB,GADtB;CAAA,MAAA;;AAGA,OAAA;EAAQ,KAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,MAAR;CAAA,MAAA,6BANkB;;;AAUlB,OAAA,IAAO,QAAA,GAAW,CAAC,KAAD,CAAA,GAAA;AAElB,MAAA;EAAC,QAAA,CAAS,UAAT,EAAqB,KAArB;EACA,MAAA,GAAS,MAAA,CAAO,KAAP,EAAc,KAAd;EACT,SAAA,CAAU,UAAV,EAAsB,MAAtB;AACA,SAAO;AALU",
+  "sourcesContent": [
+    "# from-nice.coffee\n\nimport {\n\tdbgEnter, dbgReturn, dbg,\n\t} from '@jdeighan/base-utils/debug'\nimport {parse} from '@jdeighan/base-utils/object'\nimport {pparse} from '@jdeighan/base-utils/peggy'\n\n# ---------------------------------------------------------------------------\n\nexport fromNICE = (block) =>\n\n\tdbgEnter 'fromNICE', block\n\tresult = pparse(parse, block)\n\tdbgReturn 'fromNICE', result\n\treturn result"
+  ]
+}

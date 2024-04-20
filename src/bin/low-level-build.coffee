@@ -1,36 +1,39 @@
+---
+shebang: true
+---
 # low-level-build.coffee
+
+import {globSync} from 'glob'
 
 import {
 	undef, defined, notdefined, isEmpty, nonEmpty, OL,
 	hasKey, execCmd, toBlock, add_s,
-	withExt, newerDestFilesExist,
+	fileExt, withExt, newerDestFilesExist,
 	} from '@jdeighan/base-utils'
 import {assert} from '@jdeighan/base-utils/exceptions'
 import {LOG} from '@jdeighan/base-utils/log'
 import {setDebugging} from '@jdeighan/base-utils/debug'
 import {
-	allFilesMatching, slurp, barf,
+	slurp, barf, isFakeFile,
 	isProjRoot, slurpPkgJSON, barfPkgJSON,
 	} from '@jdeighan/base-utils/fs'
-import {brew} from '@jdeighan/base-utils/coffee'
+import {
+	readTextFile, allFilesMatching,
+	} from '@jdeighan/base-utils/read-file'
+import {brew, brewFile} from '@jdeighan/base-utils/coffee'
 import {peggifyFile} from '@jdeighan/base-utils/peggy'
 
 hFilesProcessed = {
 	coffee: 0
 	peggy: 0
-	js: 0
 	}
 
-numCoffee = process.argv[2]
-if (numCoffee && numCoffee.match(/^\d+$/))
-	hFilesProcessed.coffee += parseInt(numCoffee)
-
 console.log "-- low-level-build --"
-# setDebugging 'peggifyFile peggify'
+
 # ---------------------------------------------------------------------------
 # 1. Make sure we're in a project root directory
 
-assert isProjRoot('strict'), "Not in package root dir"
+assert isProjRoot('.', 'strict'), "Not in package root dir"
 
 # ---------------------------------------------------------------------------
 # --- A file (either *.coffee or *.peggy) is out of date unless both:
@@ -40,39 +43,36 @@ assert isProjRoot('strict'), "Not in package root dir"
 fileFilter = ({filePath}) =>
 	jsFile = withExt(filePath, '.js')
 	mapFile = withExt(filePath, '.js.map')
+	if (fileExt(filePath) == '.peggy') && isFakeFile(jsFile)
+		return true
 	return ! newerDestFilesExist(filePath, jsFile, mapFile)
 
 # ---------------------------------------------------------------------------
 # 2. Search project for *.coffee files and compile them
 #    unless newer *.js and *.js.map files exist
 
-hOptions = {
-	fileFilter
-	eager: true
-	}
-
-for hFile from allFilesMatching('**/*.coffee', hOptions)
-	{filePath, relPath, hMetaData, lLines} = hFile
+for hFile from allFilesMatching('**/*.coffee', {fileFilter})
+	{relPath} = hFile
 	LOG relPath
+	brewFile relPath
 	hFilesProcessed.coffee += 1
-	[jsCode, sourceMap] = brew toBlock(lLines), relPath
-	barf jsCode, withExt(filePath, '.js')
-	barf sourceMap, withExt(filePath, '.js.map')
 
 # ---------------------------------------------------------------------------
 # 3. Search src folder for *.peggy files and compile them
-#    unless newer *.js and *.js.map files exist
+#    unless newer *.js and *.js.map files exist OR it needs rebuilding
 
-for hFile from allFilesMatching('**/*.peggy', hOptions)
+for hFile from allFilesMatching('**/*.peggy', {fileFilter})
 	{relPath} = hFile
 	LOG relPath
-	hFilesProcessed.peggy += 1
 	peggifyFile relPath
+	hFilesProcessed.peggy += 1
 
 # ---------------------------------------------------------------------------
 
-shebang = "#!/usr/bin/env node"
 hBin = {}    # --- keys to add in package.json / bin
+
+# ---------------------------------------------------------------------------
+# --- generate a 3 letter acronym if file stub is <str>-<str>-<str>
 
 tla = (stub) =>
 
@@ -90,30 +90,19 @@ tla = (stub) =>
 		return undef
 
 # ---------------------------------------------------------------------------
-# 4. For every *.js file in the 'src/bin' directory:
-#       - add shebang line if missing
-#       - save <stub>: <path> in hBin
+# 4. For every *.coffee file in the 'src/bin' directory that
+#       has key "shebang" set:
+#       - save <stub>: <jsPath> in hBin
+#       - if has a tla, save <tla>: <jsPath> in hBin
 
-hOptions = {
-	fileFilter: ({filePath, hMetaData, lLines}) =>
-		assert isEmpty(hMetaData), "hMetaData in #{OL(filePath)}"
-		if (lLines.length == 0)
-			return false
-		return (lLines[0] != shebang)
-	eager: true    # --- h will have keys hMetaData and lLines
-	}
-
-for h from allFilesMatching('./src/bin/**/*.js', hOptions)
-	{filePath, relPath, stub, lLines} = h
-	LOG "#{relPath} -> add shebang line"
-	hFilesProcessed.js += 1
-	contents = shebang + "\n" + toBlock(lLines)
-	barf contents, filePath
-
-	hBin[stub] = relPath
-	short_name = tla(stub)
-	if defined(short_name)
-		hBin[short_name] = relPath
+for {relPath, stub} from allFilesMatching('./src/bin/**/*.coffee')
+	[hMetaData] = readTextFile relPath
+	if hMetaData?.shebang
+		jsPath = withExt(relPath, '.js')
+		hBin[stub] = jsPath
+		short_name = tla(stub)
+		if defined(short_name)
+			hBin[short_name] = jsPath
 
 # ---------------------------------------------------------------------------
 # 5. Add sub-keys to key 'bin' in package.json
@@ -137,7 +126,3 @@ if (nCoffee > 0)
 nPeggy = hFilesProcessed.peggy
 if (nPeggy > 0)
 	console.log "(#{nPeggy} peggy file#{add_s(nPeggy)} compiled)"
-
-nJS = hFilesProcessed.js
-if (nJS > 0)
-	console.log "(#{nJS} js file#{add_s(nJS)} had shebang line added)"

@@ -4,7 +4,7 @@ import test from 'ava'
 
 import {
 	undef, defined, pass, OL, jsType, rtrim,
-	isString, isInteger, isRegExp, nonEmpty, isClass,
+	isString, isInteger, isRegExp, nonEmpty, isClass, isFunction,
 	toArray, fileExt,
 	} from '@jdeighan/base-utils'
 import {
@@ -41,6 +41,7 @@ export class UnitTester
 		return
 
 	# ........................................................................
+	# --- returns, e.g. "line 42"
 
 	getTestName: () =>
 
@@ -52,20 +53,20 @@ export class UnitTester
 			console.log "   line = #{line}, col = #{column}"
 
 		assert isInteger(line), "getMyOutsideCaller() line = #{OL(line)}"
-		assert (fileExt(filePath) == '.js'),
-			"caller not a JS file: #{OL(filePath)}"
+		assert (fileExt(filePath) == '.js') || (fileExt(filePath) == '.coffee'),
+			"caller not a JS or Coffee file: #{OL(filePath)}"
 
-		# --- Attempt to use source map to get true line number
-		mapFile = "#{filePath}.map"
-		if isFile(mapFile)
-			try
-				mline = mapLineNum filePath, line, column, {debug: @debug}
-				if @debug
-					console.log "   mapped to #{mline}"
-				assert isInteger(mline), "not an integer: #{mline}"
-				line = mline
-			catch err
-				pass()
+# 		# --- Attempt to use source map to get true line number
+# 		mapFile = "#{filePath}.map"
+# 		if isFile(mapFile)
+# 			try
+# 				mline = mapLineNum filePath, line, column, {debug: @debug}
+# 				if @debug
+# 					console.log "   mapped to #{mline}"
+# 				assert isInteger(mline), "not an integer: #{mline}"
+# 				line = mline
+# 			catch err
+# 				pass()
 		while @hFound[line]
 			line += 1000
 		@hFound[line] = true
@@ -205,7 +206,8 @@ export class UnitTester
 	throws: (func, errClass) ->
 
 		assert (typeof func == 'function'), "Not a function: #{OL(func)}"
-		assert isClass(errClass), "Not a class: #{OL(errClass)}"
+		assert isClass(errClass) || isFunction(errClass),
+			"Not a class or function: #{OL(errClass)}"
 		errObj = undef
 		try
 			exReset()   # suppress logging of errors

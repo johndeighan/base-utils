@@ -15,8 +15,11 @@ import {
 	isIndented, undented, splitLine, indentLevel, indented,
 	} from '@jdeighan/base-utils/indent'
 import {
-	isFile, slurp, barf, withExt, readTextFile,
+	isFile, slurp, barf, withExt,
 	} from '@jdeighan/base-utils/fs'
+import {
+	readTextFile, getShebang,
+	} from '@jdeighan/base-utils/read-file'
 import {brew} from '@jdeighan/base-utils/coffee'
 
 hCodePreProcessors = {
@@ -42,7 +45,8 @@ export addCodePreProcessor = (name, func) =>
 export peggifyFile = (filePath) =>
 
 	dbgEnter 'peggifyFile', filePath
-	{hMetaData, lLines} = readTextFile(filePath)
+	[hMetaData, lLines] = readTextFile(filePath, 'eager')
+	assert isArray(lLines), "Bad return from readTextFile"
 	dbg 'hMetaData', hMetaData
 	[jsCode, sourceMap] = peggify lLines, {
 		source: filePath
@@ -59,7 +63,9 @@ export peggifyFile = (filePath) =>
 #     Valid options:
 #        source - relative or absolute path to source file
 #        type - usually 'coffee', may also appear in hMetaData
-#        hMetaData - may contain key 'type' (usually 'coffee')
+#        hMetaData
+#           - may contain key 'type' (usually 'coffee')
+#           - may contain key 'shebang' (usually true)
 
 export peggify = (peggyCode, hOptions) =>
 
@@ -104,7 +110,8 @@ export peggify = (peggyCode, hOptions) =>
 				trace: true   # compile w/tracing capability
 				})
 			h = srcNode.toStringWithSourceMap()
-			result = [h.code, h.map.toString()]
+			jsCode = h.code
+			srcMap = h.map.toString()
 		else
 			jsCode = peggy.generate(peggyCode, {
 				allowedStartRules: ['*']
@@ -112,7 +119,13 @@ export peggify = (peggyCode, hOptions) =>
 				output: 'source'
 				trace: true   # compile w/tracing capability
 				})
-			result = [jsCode, undef]
+			srcMap = undef
+
+		shebang = getShebang(hMetaData)
+		if defined(shebang)
+			jsCode = shebang + "\n" + jsCode
+
+		result = [jsCode, srcMap]
 
 	catch err
 		console.log centeredText('peggy generate failed', 74, 'char=-')

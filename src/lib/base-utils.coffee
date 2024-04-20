@@ -1,6 +1,6 @@
 # base-utils.coffee
 
-import fs from 'fs'
+import fs from 'node:fs'
 import {exec as execCB, execSync} from 'node:child_process'
 import {promisify} from 'node:util'
 exec = promisify(execCB)
@@ -9,23 +9,14 @@ import assertLib from 'node:assert'
 # --- ABSOLUTELY NO IMPORTS FROM OUR LIBS !!!!!
 
 `export const undef = void 0`
-export lQuoteChars = ['«', '»']
-
-# ---------------------------------------------------------------------------
-
-export setQuoteChars = (start, end=undef) =>
-
-	lQuoteChars[0] = start
-	lQuoteChars[1] = end || start
-	return
+LOG = console.log   # used internally, not exported
 
 # ---------------------------------------------------------------------------
 # low-level version of assert()
 
 export assert = (cond, msg) =>
 
-	if !cond
-		throw new Error(msg)
+	assertLib.ok cond, msg
 	return true
 
 # ---------------------------------------------------------------------------
@@ -38,17 +29,362 @@ export croak = (msg) =>
 
 # ---------------------------------------------------------------------------
 
+export fileExt = (filePath) =>
+
+	if lMatches = filePath.match(/\.[^\.]+$/)
+		return lMatches[0]
+	else
+		return ''
+
+# ---------------------------------------------------------------------------
+
+export withExt = (filePath, newExt) =>
+
+	if newExt.indexOf('.') != 0
+		newExt = '.' + newExt
+
+	if lMatches = filePath.match(/^(.*)\.[^\.]+$/)
+		[_, pre] = lMatches
+		return pre + newExt
+	throw new Error("Bad path: '#{filePath}'")
+
+# ---------------------------------------------------------------------------
+
+export newerDestFilesExist = (srcPath, lDestPaths...) =>
+
+	for destPath in lDestPaths
+		if ! fs.existsSync(destPath)
+			return false
+		srcModTime = fs.statSync(srcPath).mtimeMs
+		destModTime = fs.statSync(destPath).mtimeMs
+		if (destModTime < srcModTime)
+			return false
+	return true
+
+# ---------------------------------------------------------------------------
+#   pass - do nothing
+
+export pass = () =>
+
+	return true
+
+# ---------------------------------------------------------------------------
+
+export defined = (obj) =>
+
+	return (obj != undef) && (obj != null)
+
+# ---------------------------------------------------------------------------
+
+export notdefined = (obj) =>
+
+	return (obj == undef) || (obj == null)
+
+# ---------------------------------------------------------------------------
+
+export alldefined = (lObj...) =>
+
+	for obj in lObj
+		if (obj == undef) || (obj == null)
+			return false
+	return true
+
+# ---------------------------------------------------------------------------
+
+export truncateStr = (str, maxLen) =>
+
+	assert isString(str), "not a string: #{typeof str}"
+	assert isInteger(maxLen), "not an integer: #{maxLen}"
+	len = str.length
+	if (len <= maxLen)
+		return str
+	else
+		return str.substring(0, maxLen-1) + '…'
+
+# ---------------------------------------------------------------------------
+#   escapeStr - escape newlines, carriage return, TAB chars, etc.
+
+export hEsc = {
+	"\r": '◄'
+	"\n": '▼'
+	"\t": '→'
+	" ": '˳'
+	}
+export hEscNoNL = {
+	"\t": '→'
+	" ": '˳'
+	}
+
+export escapeStr = (str, hReplace=hEsc) =>
+	# --- hReplace can also be a string:
+	#        'esc'     - escape space, newline, tab
+	#        'escNoNL' - escape space, tab
+
+	assert isString(str), "not a string: #{typeof str}"
+	if isString(hReplace)
+		switch hReplace
+			when 'esc'
+				hReplace = hEsc
+			when 'escNoNL'
+				hReplace = hExcNoNL
+			else
+				return str
+	assert isHash(hReplace), "not a hash"
+	if isEmpty(hReplace)
+		return str
+
+	result = ''
+	for ch from str
+		if defined(hReplace[ch])
+			result += hReplace[ch]
+		else
+			result += ch
+	return result
+
+# ---------------------------------------------------------------------------
+
+export userSetQuoteChars = false
+export lQuoteChars = ['«', '»']
+
+export quoted = (str, escape=undef) =>
+
+	assert isString(str), "not a string: #{str}"
+
+	# --- Escape chars if specified
+	switch escape
+		when 'escape'
+			str = escapeStr(str, hEsc)  # escape sp, tab, nl
+		when 'escapeNoNL'
+			str = escapeStr(str, hEscNoNL)
+
+	# --- Surround with quote marks
+
+	if !userSetQuoteChars
+		# --- Prefer using "
+		if ! hasChar(str, '"')
+			result = '"' + str + '"'
+			return result
+
+		if ! hasChar(str, "'")
+			result = "'" + str + "'"
+			return result
+
+	[lq, rq] = lQuoteChars
+	hMyEsc = {
+		[lq]: "\\" + lq
+		[rq]: "\\" + rq
+		}
+	result = lq + escapeStr(str, hMyEsc) + rq
+	return result
+
+# ---------------------------------------------------------------------------
+
+export setQuoteChars = (start='«', end='»') =>
+	# --- returns original quote chars
+
+	lQuoteChars[0] = start
+	lQuoteChars[1] = end || start
+	userSetQuoteChars = true
+	return
+
+export resetQuoteChars = () =>
+
+	userSetQuoteChars = false
+	lQuoteChars = ['«', '»']
+	return
+
+# ---------------------------------------------------------------------------
+
+export OL = (obj, debug=false) =>
+
+	if (obj == undef)
+		return 'undef'
+	if (obj == null)
+		return 'null'
+
+	myReplacer = (key, x) =>
+		type = typeof x
+		switch type
+			when 'bigint'
+				return "«BigInt #{x.toString()}»"
+			when 'function'
+				if x.toString().startsWith('class')
+					tag = 'Class'
+				else
+					tag = 'Function'
+				if defined(x.name)
+					return "«#{tag} #{x.name}»"
+				else
+					return "«#{tag}»"
+			when 'string'
+				# --- NOTE: JSON.stringify will add quote chars
+				return escapeStr(x)
+			when 'object'
+				if x instanceof RegExp
+					return "«RegExp #{x.toString()}»"
+				if defined(x) && (typeof x.then == 'function')
+					return "«Promise»"
+				else
+					return x
+			else
+				return x
+
+	result = JSON.stringify(obj, myReplacer)
+
+	# --- Because JSON.stringify adds quote marks,
+	#     we remove them when using « and »
+	finalResult = result \
+		.replaceAll('"«','«').replaceAll('»"','»')
+	return finalResult
+
+# ---------------------------------------------------------------------------
+
+export OLS = (lObjects, sep=',') =>
+
+	assert isArray(lObjects), "not an array"
+	lParts = []
+	for obj in lObjects
+		lParts.push OL(obj)
+	return lParts.join(sep)
+
+# ---------------------------------------------------------------------------
+
+export jsType = (x) =>
+	# --- return [type, subtype]
+
+	switch x
+		when undef
+			return [undef, undef]
+		when null
+			return [undef, 'null']
+		when true, false
+			return ['boolean', undef]
+
+	switch (typeof x)
+		when 'number'
+			if Number.isNaN(x)
+				return ['number', 'NaN']
+			else if Number.isInteger(x)
+				return ['number', 'integer']
+			else
+				return ['number', undef]
+		when 'bigint'
+			return ['number', 'integer']
+		when 'string'
+			if x.match(/^\s*$/)
+				return ['string', 'empty']
+			else
+				return ['string', undef]
+		when 'boolean'
+			return ['boolean', undef]
+		when 'function'
+			str = x.toString()
+			if str.startsWith('class')
+				return ['class', x.name || undef]
+			else
+				return ['function', x.name || undef]
+		when 'object'
+			if (x instanceof String)
+				if x.match(/^\s*$/)
+					return ['string', 'empty']
+				else
+					return ['string', undef]
+			if (x instanceof Number)
+				if Number.isInteger(x)
+					return ['number', 'integer']
+				else
+					return ['number', undef]
+			if (x instanceof Boolean)
+				return ['boolean', undef]
+			if Array.isArray(x)
+				if (x.length == 0)
+					return ['array', 'empty']
+				else
+					return ['array', undef]
+			if (x instanceof RegExp)
+				return ['regexp', undef]
+			if (x instanceof Function)
+				if x.prototype && (x.prototype.constructor == x)
+					return ['class', undef]
+				else
+					return ['function', x.name || undef]
+			if defined(x.constructor.name) \
+					&& (typeof x.constructor.name == 'string') \
+					&& (x.constructor.name == 'Object')
+				lKeys = keys(x)
+				if (lKeys.length == 0)
+					return ['hash', 'empty']
+				else
+					return ['hash', undef]
+			else if (typeof x.then == 'function')
+				return ['promise', undef]
+			else
+				return ['object', undef]
+		else
+			throw new Error ("Unknown jsType: #{x}")
+
+# ---------------------------------------------------------------------------
+
+export isString   = (x) => (jsType(x)[0] == 'string')
+export isArray    = (x) => (jsType(x)[0] == 'array')
+export isBoolean  = (x) => (jsType(x)[0] == 'boolean')
+export isFunction = (x) => (jsType(x)[0] == 'function')
+export isRegExp   = (x) => (jsType(x)[0] == 'regexp')
+export isPromise  = (x) => (jsType(x)[0] == 'promise')
+
+# ---------------------------------------------------------------------------
+
+export isHash = (x, lKeys=undef) =>
+
+	if (jsType(x)[0] != 'hash')
+		return false
+	if defined(lKeys)
+		if isString(lKeys)
+			lKeys = words(lKeys)
+		else if ! isArray(lKeys)
+			throw new Error("lKeys not an array: #{OL(lKeys)}")
+		for key in lKeys
+			if ! x.hasOwnProperty(key)
+				return false
+	return true
+
+# ---------------------------------------------------------------------------
+
+export isObject = (x, lReqKeys=undef) =>
+
+	if (jsType(x)[0] != 'object')
+		return false
+
+	if defined(lReqKeys)
+		if isString(lReqKeys)
+			lReqKeys = words(lReqKeys)
+		assert isArray(lReqKeys), "lReqKeys not an array: #{OL(lReqKeys)}"
+		for key in lReqKeys
+			type = undef
+			if lMatches = key.match(///^ (\&) (.*) $///)
+				[_, type, key] = lMatches
+			if notdefined(x[key])
+				return false
+			if (type == '&') && (typeof x[key] != 'function')
+				return false
+	return true
+
+# ---------------------------------------------------------------------------
+
 export execCmd = (cmd, lParts...) =>
 	# --- may throw an exception
 
 	cmdLine = buildCmdLine(cmd, lParts...)
-	result = execSync cmdLine, {
-		encoding: 'utf8'
-		windowsHide: true
-		}
+	try
+		result = execSync cmdLine, {
+			encoding: 'utf8'
+			windowsHide: true
+			}
 
-	assert isString(result), "result = #{OL(result)}"
-	return result
+		assert isString(result), "result = #{OL(result)}"
+		return result
+	catch err
+		console.log "ERROR: #{OL(err)}"
 
 # ---------------------------------------------------------------------------
 
@@ -107,34 +443,6 @@ export buildCmdLine = (cmd, lParts...) =>
 	# --- join the parts
 	lAllParts = [cmd, lOptions..., lNonOptions...]
 	return lAllParts.join(' ');
-
-# ---------------------------------------------------------------------------
-#   pass - do nothing
-
-export pass = () =>
-
-	return true
-
-# ---------------------------------------------------------------------------
-
-export defined = (obj) =>
-
-	return (obj != undef) && (obj != null)
-
-# ---------------------------------------------------------------------------
-
-export notdefined = (obj) =>
-
-	return (obj == undef) || (obj == null)
-
-# ---------------------------------------------------------------------------
-
-export alldefined = (lObj...) =>
-
-	for obj in lObj
-		if (obj == undef) || (obj == null)
-			return false
-	return true
 
 # ---------------------------------------------------------------------------
 
@@ -406,6 +714,24 @@ export centeredText = (text, width, hOptions={}) =>
 		return left + buf + text + buf + right
 
 # ---------------------------------------------------------------------------
+
+export delimitBlock = (block, hOptions={}) =>
+
+	{width, label} = getOptions hOptions, {
+		width: 40
+		label: undef
+		}
+	str = '-'.repeat(width)
+	if defined(label)
+		header = centeredText(label, width, {char: '-'})
+	else
+		header = str
+	if (block == '')
+		return [header, str].join("\n")
+	else
+		return [header, block, str].join("\n")
+
+# ---------------------------------------------------------------------------
 #   rtrunc - strip nChars chars from right of a string
 
 export rtrunc = (str, nChars) =>
@@ -555,48 +881,6 @@ export mapEachLine = (item, func) =>
 		return toBlock(lLines)
 
 # ---------------------------------------------------------------------------
-# --- a replacer is (key, value) -> newvalue
-
-myReplacer = (name, value) =>
-
-	if (value == undef)
-		return undef
-	else if (value == null)
-		return null
-	else if isString(value)
-		return escapeStr(value)
-	else if (typeof value == 'function')
-		return "[Function: #{value.name}]"
-	else
-		return value
-
-# ---------------------------------------------------------------------------
-
-export OL = (obj) =>
-
-	if defined(obj)
-		if isString(obj)
-			return quoted(obj, 'escape')
-		else if isRegExp(obj)
-			return obj.toString()
-		else
-			return JSON.stringify(obj, myReplacer)
-	else if (obj == null)
-		return 'null'
-	else
-		return 'undef'
-
-# ---------------------------------------------------------------------------
-
-export OLS = (lObjects, sep=',') =>
-
-	assert isArray(lObjects), "not an array"
-	lParts = []
-	for obj in lObjects
-		lParts.push OL(obj)
-	return lParts.join(sep)
-
-# ---------------------------------------------------------------------------
 
 export qStr = (x) =>
 	# --- x must be string or undef
@@ -611,60 +895,9 @@ export qStr = (x) =>
 
 # ---------------------------------------------------------------------------
 
-export quoted = (str, escape=undef) =>
-
-	assert isString(str), "not a string: #{str}"
-	switch escape
-		when 'escape'
-			str = escapeStr(str)
-		when 'escapeNoNL'
-			str = escapeStr(str, hEscNoNL)
-		else
-			pass
-
-	if ! hasChar(str, "'")
-		return "'" + str + "'"
-	if ! hasChar(str, '"')
-		return '"' + str + '"'
-	return lQuoteChars[0] + str + lQuoteChars[1]
-
-# ---------------------------------------------------------------------------
-#   escapeStr - escape newlines, carriage return, TAB chars, etc.
-
-export hEsc = {
-	"\r": '◄'
-	"\n": '▼'
-	"\t": '→'
-	" ": '˳'
-	}
-export hEscNoNL = {
-	"\t": '→'
-	" ": '˳'
-	}
-
-export escapeStr = (str, hReplace=hEsc) =>
-	# --- hReplace can also be a string:
-	#        'esc'     - escape space, newline, tab
-	#        'escNoNL' - escape space, tab
-
-	if isString(hReplace)
-		switch hReplace
-			when 'esc'
-				hReplace = hEsc
-			when 'escNoNL'
-				hReplace = hExcNoNL
-			else
-				throw new Error("Invalid hReplace string value")
-
-	assert isString(str), "escapeStr(): not a string"
-	lParts = for ch in str.split('')
-		if defined(hReplace[ch]) then hReplace[ch] else ch
-	return lParts.join('')
-
-# ---------------------------------------------------------------------------
-
 export hasChar = (str, ch) =>
 
+	assert isString(str), "Not a string: #{str}"
 	return (str.indexOf(ch) >= 0)
 
 # ---------------------------------------------------------------------------
@@ -688,84 +921,6 @@ export isConstructor = (x) =>
 		return !!(new (new Proxy(x, myHandler))())
 	catch e
 		return false
-
-# ---------------------------------------------------------------------------
-
-export jsType = (x) =>
-	# --- return [type, subtype]
-
-	if (x == null)
-		return [undef, 'null']
-	else if (x == undef)
-		return [undef, undef]
-	else if isPromise(x)
-		return ['promise', undef]
-
-	switch (typeof x)
-		when 'number'
-			if Number.isNaN(x)
-				return ['number', 'NaN']
-			else if Number.isInteger(x)
-				return ['number', 'integer']
-			else
-				return ['number', undef]
-		when 'string'
-			if x.match(/^\s*$/)
-				return ['string', 'empty']
-			else
-				return ['string', undef]
-		when 'boolean'
-			return ['boolean', undef]
-		when 'bigint'
-			return ['number', 'integer']
-		when 'function'
-			if x.prototype && (x.prototype.constructor == x)
-				return ['class', undef]
-			else
-				return ['function', x.name || undef]
-		when 'object'
-			if (x instanceof String)
-				if x.match(/^\s*$/)
-					return ['string', 'empty']
-				else
-					return ['string', undef]
-			if (x instanceof Number)
-				if Number.isInteger(x)
-					return ['number', 'integer']
-				else
-					return ['number', undef]
-			if (x instanceof Boolean)
-				return ['boolean', undef]
-			if Array.isArray(x)
-				if (x.length == 0)
-					return ['array', 'empty']
-				else
-					return ['array', undef]
-			if (x instanceof RegExp)
-				return ['regexp', undef]
-			if (x instanceof Function)
-				if x.prototype && (x.prototype.constructor == x)
-					return ['class', undef]
-				else
-					return ['function', x.name || undef]
-			if defined(x.constructor.name) \
-					&& (typeof x.constructor.name == 'string') \
-					&& (x.constructor.name == 'Object')
-				lKeys = keys(x)
-				if (lKeys.length == 0)
-					return ['hash', 'empty']
-				else
-					return ['hash', undef]
-			else
-				return ['object', undef]
-		else
-			throw new Error ("Unknown jsType: #{x}")
-
-# ---------------------------------------------------------------------------
-
-export isString = (x) =>
-
-	return (jsType(x)[0] == 'string')
 
 # ---------------------------------------------------------------------------
 
@@ -847,12 +1002,6 @@ export isInteger = (x, hOptions={}) =>
 		if defined(hOptions.max) && (x > hOptions.max)
 			result = false
 	return result
-
-# ---------------------------------------------------------------------------
-
-export isArray = (x) =>
-
-	return (jsType(x)[0] == 'array')
 
 # ---------------------------------------------------------------------------
 
@@ -958,19 +1107,6 @@ export mkword = (lStuff...) =>
 
 # ---------------------------------------------------------------------------
 
-export isBoolean = (x) =>
-
-	return (jsType(x)[0] == 'boolean')
-
-# ---------------------------------------------------------------------------
-
-export isFunction = (x) =>
-
-	mtype = jsType(x)[0]
-	return (mtype == 'function') || (mtype == 'class')
-
-# ---------------------------------------------------------------------------
-
 export isIterable = (obj) =>
 
 	if (obj == undef) || (obj == null)
@@ -978,60 +1114,90 @@ export isIterable = (obj) =>
 	return (typeof obj[Symbol.iterator] == 'function')
 
 # ---------------------------------------------------------------------------
+# --- always return hash with the same set of keys!
+#     values should be a string, true, false or undef
 
-export isRegExp = (x) =>
+export analyzeObj = (obj, hOptions={}) =>
 
-	return (jsType(x)[0] == 'regexp')
+	{maxStrLen} = getOptions hOptions, {
+		maxStrLen: 22
+		}
+
+	type = typeof obj
+	lType = jsType(obj)
+	if defined(lType[1])
+		jst = lType.join('/')
+	else
+		jst = lType[0]
+	h = {
+		jsType: jst
+		type
+		isArr: Array.isArray(obj)
+		isIter: isIterable(obj)
+		objType: ''
+		objName: ''
+		conName: ''
+		str: ''
+		}
+
+	if notdefined(obj)
+		return h
+
+	if defined(obj.constructor)
+		h.conName = obj.constructor.name
+
+	if defined(obj.toString)
+		str = truncateStr(CWS(obj.toString()), maxStrLen)
+		if lMatches = str.match(///^
+				\[ object \s+
+				([A-Za-z]+)
+				\]
+				///)
+			[_, objType] = lMatches
+			if (objType == 'Generator')
+				h.objType = 'iterator'
+			else
+				h.objType = objType.toLowerCase()
+		else if lMatches = str.match(///^
+				class \s*
+				(?:
+					([A-Za-z_][A-Za-z0-9_]*)
+					\s*
+					)?
+				\{
+				///)
+			h.objType = 'class'
+			h.objName = lMatches[1] || ''
+		else if lMatches = str.match(///^
+				\s*
+				function \s* (\*)?
+				\s*
+				(?:
+					([A-Za-z_][A-Za-z0-9_]*)
+					\s*
+					)?
+				\(
+				///)
+			[_, star, name] = lMatches
+			h.objType = if (star == '*') then 'generator' else 'function'
+			h.objName = lMatches[1] || ''
+		h.str = str
+	return h
 
 # ---------------------------------------------------------------------------
 
-export isHash = (x, lKeys) =>
+export hasClassConstructor = (obj) =>
 
-	if (jsType(x)[0] != 'hash')
+	con = obj?.constructor
+	if notdefined(con) || notdefined(con.toString)
 		return false
-	if defined(lKeys)
-		if isString(lKeys)
-			lKeys = words(lKeys)
-		else if ! isArray(lKeys)
-			throw new Error("lKeys not an array: #{OL(lKeys)}")
-		for key in lKeys
-			if ! x.hasOwnProperty(key)
-				return false
-	return true
+	return con.toString().startsWith('class')
 
 # ---------------------------------------------------------------------------
 
-export isPromise = (x) =>
+export isClass = (obj) =>
 
-	return (typeof x == 'object') \
-		&& (typeof x.then == 'function')
-
-# ---------------------------------------------------------------------------
-
-export isObject = (x, lReqKeys=undef) =>
-
-	if (jsType(x)[0] != 'object')
-		return false
-
-	if defined(lReqKeys)
-		if isString(lReqKeys)
-			lReqKeys = words(lReqKeys)
-		assert isArray(lReqKeys), "lReqKeys not an array: #{OL(lReqKeys)}"
-		for key in lReqKeys
-			type = undef
-			if lMatches = key.match(///^ (\&) (.*) $///)
-				[_, type, key] = lMatches
-			if notdefined(x[key])
-				return false
-			if (type == '&') && (typeof x[key] != 'function')
-				return false
-	return true
-
-# ---------------------------------------------------------------------------
-
-export isClass = (x) =>
-
-	return (jsType(x)[0] == 'class')
+	return (typeof obj == 'function') && obj.toString().startsWith('class')
 
 # ---------------------------------------------------------------------------
 
@@ -1551,43 +1717,3 @@ export flattenToHash = (x) =>
 			else
 				croak "not a hash or array: #{OL(item)}"
 	return hResult
-
-# ---------------------------------------------------------------------------
-# --- These used to be in ll-fs.coffee, but
-#     don't require imports from other libs
-
-export fileExt = (path) =>
-
-	assert isString(path), "fileExt(): path not a string"
-	if lMatches = path.match(/\.[A-Za-z0-9_]+$/)
-		return lMatches[0]
-	else
-		return ''
-
-# ---------------------------------------------------------------------------
-#   withExt - change file extention in a file name
-
-export withExt = (path, newExt) =>
-
-	assert newExt, "withExt(): No newExt provided"
-	if newExt.indexOf('.') != 0
-		newExt = '.' + newExt
-
-	if lMatches = path.match(/^(.*)\.[^\.]+$/)
-		[_, pre] = lMatches
-		return pre + newExt
-	croak "Bad path: '#{path}'"
-
-# ---------------------------------------------------------------------------
-
-export newerDestFilesExist = (srcPath, lDestPaths...) =>
-
-	for destPath in lDestPaths
-		if ! fs.existsSync(destPath)
-			return false
-		srcModTime = fs.statSync(srcPath).mtimeMs
-		destModTime = fs.statSync(destPath).mtimeMs
-		if (destModTime < srcModTime)
-			return false
-	return true
-

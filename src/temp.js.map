@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "",
+  "sourceRoot": "",
+  "sources": [
+    "src/temp.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAa;AAEb,OAAA;EAAQ,QAAR;CAAA,MAAA;;AACA,OAAA;EACC,QADD;EACW,OADX;EACoB,SADpB;EAC+B,eAD/B;CAAA,MAAA,kBAHa;;;AAQb,QAAA,CAAS,kCAAT",
+  "sourcesContent": [
+    "# temp.coffee\n\nimport {globSync} from 'glob'\nimport {\n\tbrewFile, withExt, normalize, createFakeFiles,\n\t} from './base-funcs.js'\n\n# --- Compile src/bin/low-level-build.coffee\nbrewFile './src/bin/low-level-build.coffee'"
+  ]
+}

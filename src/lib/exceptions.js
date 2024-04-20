@@ -6,7 +6,8 @@ import {
   defined,
   notdefined,
   isEmpty,
-  isString
+  isString,
+  jsType
 } from '@jdeighan/base-utils';
 
 import {
@@ -92,6 +93,13 @@ export var assert = (cond, msg, obj = undef, label = undef) => {
 };
 
 // ---------------------------------------------------------------------------
+export var isType = (type, label, obj) => {
+  var article;
+  article = type === 'array' ? 'an' : 'a';
+  assert(jsType(obj)[0] === type, `${label} is not ${article} ${type}`, obj, label);
+};
+
+// ---------------------------------------------------------------------------
 //   croak - throws an error after possibly printing useful info
 //           err can be a string or an Error object
 export var croak = (err = "unknown error", label = undef, obj = undef) => {
@@ -117,5 +125,3 @@ ${JSON.stringify(obj)}`;
     throw new Error(newmsg);
   }
 };
-
-//# sourceMappingURL=exceptions.js.map

@@ -1,9 +1,10 @@
 @jdeighan/base-utils
 ====================
 
-[unit tests](../test/base-utils.test.coffee)
 
 This library contains many useful functions and synonyms.
+A complete listing appears at the bottom of this page.
+
 Note that the following synopsis uses CoffeeScript. In
 CoffeeScript, you never declare variables - they exist
 upon first assignment. One downside is that there's no
@@ -23,19 +24,17 @@ result = getValue pad('abc'), repeat('-', 20)
 
 `undef` - a synonym for JavaScript's undefined value
 
-`LOG` - a synonym for console.log
-
 ```coffee example-good
-import {undef, LOG} from '@jdeighan/base-utils'
+import {undef} from '@jdeighan/base-utils'
 
 # --- define a new function say()
 say = (x) =>
 	if defined(x)
-		LOG 'YES'
+		console.log 'YES'
 	else if notdefined(x)
-		LOG 'NO'
+		console.log 'NO'
 	else
-		LOG 'Maybe'
+		console.log 'Maybe'
 
 say undef
 say null
@@ -56,11 +55,11 @@ YES
 </pre>
 
 ```coffee
-import {LOG, undef, jsType} from '@jdeighan/base-utils'
+import {undef, jsType} from '@jdeighan/base-utils'
 
 sayType = (label, x) =>
 	[type, subtype] = jsType(x)
-	LOG "#{label} = type: #{type}, subtype: #{subtype}"
+	console.log "#{label} = type: #{type}, subtype: #{subtype}"
 	return
 
 sayType 'undef', undef
@@ -76,3 +75,9 @@ OUTPUT:
 ABC
 DEF
 </pre>
+
+This library includes the following symbols:
+
+- [isString](../test/base-utils.test.coffee#:~:text=#symbol%20isString,%29%28%29)
+- [isNumber](../test/base-utils.test.coffee#:~:text=#symbol%20isNumber,%29%28%29)
+

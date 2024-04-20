@@ -1,5 +1,5 @@
 // log.coffee
-var doEcho, handleSimpleCase, internalDebugging, logWidth, logs, putstr, sep_dash, sep_eq, threeSpaces;
+var doEcho, handleSimpleCase, internalDebugging, logWidth, logs, maxReached, numLogCalls, putstr, sep_dash, sep_eq, threeSpaces;
 
 import {
   pass,
@@ -44,8 +44,8 @@ import {
 } from '@jdeighan/base-utils/ll-fs';
 
 import {
-  toTAML
-} from '@jdeighan/base-utils/taml';
+  toNICE
+} from '@jdeighan/base-utils/to-nice';
 
 import {
   getPrefix
@@ -123,20 +123,6 @@ export var getAllLogs = () => {
 };
 
 // ---------------------------------------------------------------------------
-export var LOG = (str = "", prefix = "") => {
-  if (internalDebugging) {
-    if (isEmpty(prefix)) {
-      console.log(`IN LOG(${OL(str)})`);
-    } else {
-      console.log(`IN LOG(${OL(str)}), prefix=${OL(prefix)}`);
-    }
-  }
-  PUTSTR(`${prefix}${str}`);
-  return true; // to allow use in boolean expressions
-};
-
-
-// ---------------------------------------------------------------------------
 export var PUTSTR = (str) => {
   var caller, fileName, filePath;
   if (internalDebugging) {
@@ -153,19 +139,20 @@ export var PUTSTR = (str) => {
   }
   str = rtrim(str);
   // --- logs are maintained for each possible file
+  //     caller not defined means we're in the main script
   caller = getMyOutsideCaller();
   if (defined(caller)) {
     filePath = caller.filePath;
-    fileName = parsePath(filePath).fileName;
+    ({fileName} = parsePath(filePath));
     if (internalDebugging) {
       console.log(`   - filePath = ${OL(filePath)}, doEcho = ${OL(doEcho)}`);
       console.log(`   - from ${fileName}`);
     }
   } else {
     if (internalDebugging) {
-      console.log(`   - getMyOutsideCaller() failed, writing '${str}'`);
+      console.log(`   - filePath = 'main', doEcho = ${OL(doEcho)}`);
     }
-    console.log(str);
+    filePath = 'main';
   }
   logs.log(filePath, str);
   if (doEcho) {
@@ -194,7 +181,7 @@ export var resetLogWidth = () => {
 export var setStringifier = (func) => {
   var orgStringifier;
   orgStringifier = stringify;
-  assert(isFunction(func), "setStringifier() arg is not a function");
+  //	assert isFunction(func), "not a function: #{OL(func)}"
   stringify = func;
   return orgStringifier;
 };
@@ -207,7 +194,7 @@ export var resetStringifier = () => {
 // ---------------------------------------------------------------------------
 export var setLogger = (func) => {
   var orgLogger;
-  assert(isFunction(func), "setLogger() arg is not a function");
+  //	assert isFunction(func), "setLogger() arg is not a function"
   orgLogger = putstr;
   putstr = func;
   return orgLogger;
@@ -219,23 +206,13 @@ export var resetLogger = () => {
 };
 
 // ---------------------------------------------------------------------------
-export var tamlStringify = (obj, escape = false) => {
-  return toTAML(obj, {
-    useTabs: false,
-    sortKeys: false,
-    escape
+export var orderedStringify = (obj, hOptiopns = {}) => {
+  var hOptions;
+  hOptions = getOptions(hOptions, {
+    oneIndent: "\t",
+    sortKeys: true
   });
-};
-
-// ---------------------------------------------------------------------------
-export var orderedStringify = (obj, escape = false) => {
-  var result;
-  result = toTAML(obj, {
-    sortKeys: true,
-    oneIndent: spaces(2),
-    escape
-  });
-  return result;
+  return toNICE(obj, hOptions);
 };
 
 // ---------------------------------------------------------------------------
@@ -253,6 +230,38 @@ export var prefixed = (prefix, ...lStrings) => {
 };
 
 // ---------------------------------------------------------------------------
+// --- Keep track of the number of times any of these were called:
+//        LOG LOGTAML LOGJSON LOGVALUE LOGSTRING
+numLogCalls = 0;
+
+maxReached = (max) => {
+  numLogCalls += 1;
+  return defined(max) && (numLogCalls > max);
+};
+
+// ---------------------------------------------------------------------------
+export var LOG = (str = "", hOptions = {}) => {
+  var max, prefix;
+  ({prefix, max} = getOptions(hOptions, {
+    prefix: '',
+    max: undef
+  }));
+  if (maxReached(max)) {
+    return true;
+  }
+  if (internalDebugging) {
+    if (isEmpty(prefix)) {
+      console.log(`IN LOG(${OL(str)})`);
+    } else {
+      console.log(`IN LOG(${OL(str)}), prefix=${OL(prefix)}`);
+    }
+  }
+  PUTSTR(`${prefix}${str}`);
+  return true; // to allow use in boolean expressions
+};
+
+
+// ---------------------------------------------------------------------------
 export var LOGTAML = (label, value, prefix = "", itemPrefix = undef) => {
   var desc, str1, str2, str3;
   if (internalDebugging) {
@@ -268,8 +277,9 @@ export var LOGTAML = (label, value, prefix = "", itemPrefix = undef) => {
   if (handleSimpleCase(label, value, prefix)) {
     return true;
   }
-  desc = toTAML(value, {
-    sortKeys: true
+  desc = toNICE(value, {
+    sortKeys: true,
+    oneIndent: spaces(3)
   });
   PUTSTR(prefixed(prefix, `${prefix}${label} = <<<`, prefixed('   ', desc)));
   return true;
@@ -297,12 +307,16 @@ export var stringFits = (str) => {
 
 // ---------------------------------------------------------------------------
 export var LOGVALUE = (label, value, hOptions = {}) => {
-  var escaped, i, itemPrefix, j, labelStr, len, len1, line, prefix, ref, ref1, str, str1, str2, str3, subtype, type;
+  var escaped, i, itemPrefix, j, labelStr, len, len1, line, max, prefix, ref, ref1, str, str1, str2, str3, subtype, type;
   // --- Allow label to be empty, i.e. undef
-  ({prefix, itemPrefix} = getOptions(hOptions, {
+  ({prefix, itemPrefix, max} = getOptions(hOptions, {
     prefix: '',
-    itemPrefix: undef
+    itemPrefix: undef,
+    max: undef
   }));
+  if (maxReached(max)) {
+    return true;
+  }
   if (internalDebugging) {
     str1 = OL(label);
     str2 = OL(value);
@@ -352,8 +366,9 @@ ${prefixBlock('"""', itemPrefix)}`);
       break;
     case 'hash':
     case 'array':
-      str = toTAML(value, {
-        sortKeys: true
+      str = toNICE(value, {
+        sortKeys: true,
+        oneIndent: spaces(3)
       });
       if (labelStr) {
         PUTSTR(`${prefix}${labelStr}`);
@@ -374,7 +389,8 @@ ${prefixBlock('"""', itemPrefix)}`);
       if (isObject(value, '&toLogString')) {
         str = value.toLogString();
       } else {
-        str = toTAML(value);
+        str = toNICE(value);
+        assert(defined(str), "str not defined!");
       }
       if (hasChar(str, "\n")) {
         if (labelStr) {
@@ -463,5 +479,3 @@ handleSimpleCase = (label, value, prefix) => {
 setStringifier(orderedStringify);
 
 resetLogger();
-
-//# sourceMappingURL=log.js.map

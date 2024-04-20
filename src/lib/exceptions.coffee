@@ -2,6 +2,7 @@
 
 import {
 	undef, defined, notdefined, isEmpty, isString,
+	jsType,
 	} from '@jdeighan/base-utils'
 import {
 	getV8Stack, nodeStr,
@@ -77,6 +78,17 @@ export assert = (cond, msg, obj=undef, label=undef) =>
 		EXLOG "ERROR: #{msg}"
 		croak msg
 	return true
+
+# ---------------------------------------------------------------------------
+
+export isType = (type, label, obj) =>
+
+	article = if (type=='array') then 'an' else 'a'
+	assert((jsType(obj)[0] == type),
+			"#{label} is not #{article} #{type}",
+			obj, label
+			)
+	return
 
 # ---------------------------------------------------------------------------
 #   croak - throws an error after possibly printing useful info

@@ -17,11 +17,11 @@ fiveSpaces = ' '.repeat(5)
 # ---------------------------------------------------------------------------
 
 equal orderedStringify(['a', 42, [1,2]]), """
-	---
 	- a
 	- 42
-	- - 1
-	  - 2
+	-
+		- 1
+		- 2
 	"""
 
 # ---------------------------------------------------------------------------
@@ -32,29 +32,37 @@ equal getPrefix(2), spaces(8)
 
 # ---------------------------------------------------------------------------
 
-clearAllLogs('noecho')
-LOG "abc"
-equal getMyLogs(), """
-	abc
-	"""
+(() =>
+	clearAllLogs('noecho')
+	LOG "abc"
+	equal getMyLogs(), """
+		abc
+		"""
+	)()
 
-clearAllLogs('noecho')
-LOG "abc"
-LOG "def"
-equal getMyLogs(), """
-	abc
-	def
-	"""
+(() =>
+	equal (() =>
+		clearAllLogs('noecho')
+		LOG "abc"
+		LOG "def"
+		return getMyLogs()
+		)(), """
+		abc
+		def
+		"""
+	)()
 
 # NOTE: Because logs are destined for the console,
 #       which doesn't allow defining how to display TAB chars,
 #       indentation defaults to 4 space chars, not TAB chars
 
-clearAllLogs('noecho')
-LOG "abc"
-LOG "def", getPrefix(1)
-LOG "ghi", getPrefix(2)
-equal getMyLogs(), """
+equal (() =>
+	clearAllLogs('noecho')
+	LOG "abc"
+	LOG "def", {prefix: getPrefix(1)}
+	LOG "ghi", {prefix: getPrefix(2)}
+	return getMyLogs()
+	)(), """
 	abc
 	#{spaces(4)}def
 	#{spaces(4)}#{spaces(4)}ghi
@@ -77,19 +85,19 @@ equal getMyLogs(), """
 clearAllLogs('noecho')
 LOGVALUE 'x', 'abc'
 equal getMyLogs(), """
-	x = 'abc'
+	x = "abc"
 	"""
 
 clearAllLogs('noecho')
 LOGVALUE 'x', 'abc def'
 equal getMyLogs(), """
-	x = 'abc˳def'
+	x = "abc˳def"
 	"""
 
 clearAllLogs('noecho')
 LOGVALUE 'x', '"abc"'
 equal getMyLogs(), """
-	x = '"abc"'
+	x = "\\"abc\\""
 	"""
 
 clearAllLogs('noecho')
@@ -101,7 +109,7 @@ equal getMyLogs(), """
 clearAllLogs('noecho')
 LOGVALUE 'x', "'\"abc\"'"
 equal getMyLogs(), """
-	x = «'"abc"'»
+	x = "'\\"abc\\"'"
 	"""
 
 # --- long string
@@ -119,7 +127,7 @@ equal getMyLogs(), """
 clearAllLogs('noecho')
 LOGVALUE 'x', 'abc\ndef'
 equal getMyLogs(), """
-	x = 'abc▼def'
+	x = "abc▼def"
 	"""
 
 # --- hash (OL doesn't fit)
@@ -130,7 +138,6 @@ LOGVALUE 'h', {xyz: 42, abc: 99}
 resetLogWidth()
 equal getMyLogs(), """
 	h =
-		---
 		abc: 99
 		xyz: 42
 	"""
@@ -151,11 +158,10 @@ LOGVALUE 'l', ['xyz', 42, false, undef]
 resetLogWidth()
 equal getMyLogs(), """
 	l =
-		---
 		- xyz
 		- 42
-		- false
-		- undef
+		- .false.
+		- .undef.
 	"""
 
 # --- array (OL fits)
@@ -177,10 +183,9 @@ clearAllLogs('noecho')
 LOGVALUE 'Node1', node1
 equal getMyLogs(), """
 	Node1 =
-		---
+		str: abc
 		level: 2
 		name: node1
-		str: abc
 	"""
 
 # --- object with toString method
@@ -225,10 +230,9 @@ LOGVALUE 'hProc', hProc
 
 equal getMyLogs(), """
 	hProc =
-		---
-		Script: "[Function: Script]"
-		code: "[Function: code]"
-		html: "[Function: html]"
+		Script: [Function Script]
+		code: [Function code]
+		html: [Function html]
 	"""
 
 clearAllLogs('noecho')
@@ -237,11 +241,10 @@ LOGTAML 'lItems', ['xyz', 42, false, undef]
 resetLogWidth()
 equal getMyLogs(), """
 	lItems = <<<
-	#{spaces(3)}---
 	#{spaces(3)}- xyz
 	#{spaces(3)}- 42
-	#{spaces(3)}- false
-	#{spaces(3)}- undef
+	#{spaces(3)}- .false.
+	#{spaces(3)}- .undef.
 	"""
 
 clearAllLogs('noecho')

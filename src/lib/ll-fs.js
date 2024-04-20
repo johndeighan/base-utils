@@ -8,6 +8,10 @@ import urlLib from 'url';
 import fs from 'fs';
 
 import {
+  globSync as glob
+} from 'glob';
+
+import {
   pass,
   undef,
   defined,
@@ -107,6 +111,11 @@ export var mkpath = (...lParts) => {
 };
 
 // ---------------------------------------------------------------------------
+export var samefile = (path1, path2) => {
+  return mkpath(path1) === mkpath(path2);
+};
+
+// ---------------------------------------------------------------------------
 export var relpath = (...lParts) => {
   var fullPath;
   fullPath = pathLib.resolve(...lParts);
@@ -175,26 +184,41 @@ export var mkDir = (dirPath, hOptions = {}) => {
 };
 
 // ---------------------------------------------------------------------------
-export var dirContents = (dirPath) => {
-  var ent, err, hOptions, i, lContents, len, ref;
-  try {
-    lContents = [];
-    hOptions = {
-      withFileTypes: true,
-      recursive: false
-    };
-    ref = fs.readdirSync(dirPath, hOptions);
-    for (i = 0, len = ref.length; i < len; i++) {
-      ent = ref[i];
-      if (ent.isFile() || ent.isDir()) {
-        lContents.push(ent.name);
+export var dirContents = function*(dirPath, hOptions = {}) {
+  var dirsOnly, ent, filesOnly, h, i, len, name, ref, regexp;
+  ({filesOnly, dirsOnly, regexp} = getOptions(hOptions, {
+    filesOnly: false,
+    dirsOnly: false,
+    regexp: undef
+  }));
+  assert(!(filesOnly && dirsOnly), "Incompatible options");
+  h = {
+    withFileTypes: true,
+    recursive: false
+  };
+  ref = fs.readdirSync(dirPath, h);
+  for (i = 0, len = ref.length; i < len; i++) {
+    ent = ref[i];
+    name = ent.name;
+    if (ent.isFile()) {
+      if (!dirsOnly) {
+        if (notdefined(regexp) || regexp.test(name)) {
+          yield name;
+        }
+      }
+    } else if (ent.isDirectory()) {
+      if (!filesOnly) {
+        if (notdefined(regexp) || regexp.test(name)) {
+          yield name;
+        }
       }
     }
-    return lContents;
-  } catch (error) {
-    err = error;
-    return undef;
   }
+};
+
+// ---------------------------------------------------------------------------
+export var dirListing = (dirPath, hOptions = {}) => {
+  return Array.from(dirContents(dirPath, hOptions));
 };
 
 // ---------------------------------------------------------------------------
@@ -341,5 +365,3 @@ export var subPath = (path, name = "temp") => {
   ({dir, fileName} = parsePath(fullPath));
   return `${dir}/${name}/${fileName}`;
 };
-
-//# sourceMappingURL=ll-fs.js.map

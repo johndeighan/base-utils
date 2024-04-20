@@ -1,3 +1,6 @@
+---
+shebang: true
+---
 # parse-expr.coffee
 
 import {
@@ -6,7 +9,7 @@ import {
 import {LOG} from '@jdeighan/base-utils/log'
 import {setDebugging} from '@jdeighan/base-utils/debug'
 import {toTAML} from '@jdeighan/base-utils/taml'
-import {toNICE} from '@jdeighan/base-utils/nice'
+import {toNICE} from '@jdeighan/base-utils/to-nice'
 import {toAST} from '@jdeighan/base-utils/coffee'
 import {getExpr} from './parse-utils.js'
 import {parse} from './program.js'   # --- relative to this file

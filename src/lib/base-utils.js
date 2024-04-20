@@ -1,8 +1,8 @@
   // base-utils.coffee
-var exec, hTimers, myHandler, myReplacer,
+var LOG, exec, hTimers, myHandler,
   hasProp = {}.hasOwnProperty;
 
-import fs from 'fs';
+import fs from 'node:fs';
 
 import {
   exec as execCB,
@@ -20,20 +20,13 @@ import assertLib from 'node:assert';
 // --- ABSOLUTELY NO IMPORTS FROM OUR LIBS !!!!!
 export const undef = void 0;
 
-export var lQuoteChars = ['«', '»'];
+LOG = console.log; // used internally, not exported
 
-// ---------------------------------------------------------------------------
-export var setQuoteChars = (start, end = undef) => {
-  lQuoteChars[0] = start;
-  lQuoteChars[1] = end || start;
-};
 
 // ---------------------------------------------------------------------------
 // low-level version of assert()
 export var assert = (cond, msg) => {
-  if (!cond) {
-    throw new Error(msg);
-  }
+  assertLib.ok(cond, msg);
   return true;
 };
 
@@ -45,16 +38,430 @@ export var croak = (msg) => {
 };
 
 // ---------------------------------------------------------------------------
+export var fileExt = (filePath) => {
+  var lMatches;
+  if (lMatches = filePath.match(/\.[^\.]+$/)) {
+    return lMatches[0];
+  } else {
+    return '';
+  }
+};
+
+// ---------------------------------------------------------------------------
+export var withExt = (filePath, newExt) => {
+  var _, lMatches, pre;
+  if (newExt.indexOf('.') !== 0) {
+    newExt = '.' + newExt;
+  }
+  if (lMatches = filePath.match(/^(.*)\.[^\.]+$/)) {
+    [_, pre] = lMatches;
+    return pre + newExt;
+  }
+  throw new Error(`Bad path: '${filePath}'`);
+};
+
+// ---------------------------------------------------------------------------
+export var newerDestFilesExist = (srcPath, ...lDestPaths) => {
+  var destModTime, destPath, j, len1, srcModTime;
+  for (j = 0, len1 = lDestPaths.length; j < len1; j++) {
+    destPath = lDestPaths[j];
+    if (!fs.existsSync(destPath)) {
+      return false;
+    }
+    srcModTime = fs.statSync(srcPath).mtimeMs;
+    destModTime = fs.statSync(destPath).mtimeMs;
+    if (destModTime < srcModTime) {
+      return false;
+    }
+  }
+  return true;
+};
+
+// ---------------------------------------------------------------------------
+//   pass - do nothing
+export var pass = () => {
+  return true;
+};
+
+// ---------------------------------------------------------------------------
+export var defined = (obj) => {
+  return (obj !== undef) && (obj !== null);
+};
+
+// ---------------------------------------------------------------------------
+export var notdefined = (obj) => {
+  return (obj === undef) || (obj === null);
+};
+
+// ---------------------------------------------------------------------------
+export var alldefined = (...lObj) => {
+  var j, len1, obj;
+  for (j = 0, len1 = lObj.length; j < len1; j++) {
+    obj = lObj[j];
+    if ((obj === undef) || (obj === null)) {
+      return false;
+    }
+  }
+  return true;
+};
+
+// ---------------------------------------------------------------------------
+export var truncateStr = (str, maxLen) => {
+  var len;
+  assert(isString(str), `not a string: ${typeof str}`);
+  assert(isInteger(maxLen), `not an integer: ${maxLen}`);
+  len = str.length;
+  if (len <= maxLen) {
+    return str;
+  } else {
+    return str.substring(0, maxLen - 1) + '…';
+  }
+};
+
+// ---------------------------------------------------------------------------
+//   escapeStr - escape newlines, carriage return, TAB chars, etc.
+export var hEsc = {
+  "\r": '◄',
+  "\n": '▼',
+  "\t": '→',
+  " ": '˳'
+};
+
+export var hEscNoNL = {
+  "\t": '→',
+  " ": '˳'
+};
+
+export var escapeStr = (str, hReplace = hEsc) => {
+  var ch, result;
+  // --- hReplace can also be a string:
+  //        'esc'     - escape space, newline, tab
+  //        'escNoNL' - escape space, tab
+  assert(isString(str), `not a string: ${typeof str}`);
+  if (isString(hReplace)) {
+    switch (hReplace) {
+      case 'esc':
+        hReplace = hEsc;
+        break;
+      case 'escNoNL':
+        hReplace = hExcNoNL;
+        break;
+      default:
+        return str;
+    }
+  }
+  assert(isHash(hReplace), "not a hash");
+  if (isEmpty(hReplace)) {
+    return str;
+  }
+  result = '';
+  for (ch of str) {
+    if (defined(hReplace[ch])) {
+      result += hReplace[ch];
+    } else {
+      result += ch;
+    }
+  }
+  return result;
+};
+
+// ---------------------------------------------------------------------------
+export var userSetQuoteChars = false;
+
+export var lQuoteChars = ['«', '»'];
+
+export var quoted = (str, escape = undef) => {
+  var hMyEsc, lq, result, rq;
+  assert(isString(str), `not a string: ${str}`);
+  // --- Escape chars if specified
+  switch (escape) {
+    case 'escape':
+      str = escapeStr(str, hEsc); // escape sp, tab, nl
+      break;
+    case 'escapeNoNL':
+      str = escapeStr(str, hEscNoNL);
+  }
+  if (!userSetQuoteChars) {
+    if (!hasChar(str, '"')) {
+      result = '"' + str + '"';
+      return result;
+    }
+    if (!hasChar(str, "'")) {
+      result = "'" + str + "'";
+      return result;
+    }
+  }
+  [lq, rq] = lQuoteChars;
+  hMyEsc = {
+    [lq]: "\\" + lq,
+    [rq]: "\\" + rq
+  };
+  result = lq + escapeStr(str, hMyEsc) + rq;
+  return result;
+};
+
+// ---------------------------------------------------------------------------
+export var setQuoteChars = (start = '«', end = '»') => {
+  // --- returns original quote chars
+  lQuoteChars[0] = start;
+  lQuoteChars[1] = end || start;
+  userSetQuoteChars = true;
+};
+
+export var resetQuoteChars = () => {
+  userSetQuoteChars = false;
+  lQuoteChars = ['«', '»'];
+};
+
+// ---------------------------------------------------------------------------
+export var OL = (obj, debug = false) => {
+  var finalResult, myReplacer, result;
+  if (obj === undef) {
+    return 'undef';
+  }
+  if (obj === null) {
+    return 'null';
+  }
+  myReplacer = (key, x) => {
+    var tag, type;
+    type = typeof x;
+    switch (type) {
+      case 'bigint':
+        return `«BigInt ${x.toString()}»`;
+      case 'function':
+        if (x.toString().startsWith('class')) {
+          tag = 'Class';
+        } else {
+          tag = 'Function';
+        }
+        if (defined(x.name)) {
+          return `«${tag} ${x.name}»`;
+        } else {
+          return `«${tag}»`;
+        }
+        break;
+      case 'string':
+        // --- NOTE: JSON.stringify will add quote chars
+        return escapeStr(x);
+      case 'object':
+        if (x instanceof RegExp) {
+          return `«RegExp ${x.toString()}»`;
+        }
+        if (defined(x) && (typeof x.then === 'function')) {
+          return "«Promise»";
+        } else {
+          return x;
+        }
+        break;
+      default:
+        return x;
+    }
+  };
+  result = JSON.stringify(obj, myReplacer);
+  // --- Because JSON.stringify adds quote marks,
+  //     we remove them when using « and »
+  finalResult = result.replaceAll('"«', '«').replaceAll('»"', '»');
+  return finalResult;
+};
+
+// ---------------------------------------------------------------------------
+export var OLS = (lObjects, sep = ',') => {
+  var j, lParts, len1, obj;
+  assert(isArray(lObjects), "not an array");
+  lParts = [];
+  for (j = 0, len1 = lObjects.length; j < len1; j++) {
+    obj = lObjects[j];
+    lParts.push(OL(obj));
+  }
+  return lParts.join(sep);
+};
+
+// ---------------------------------------------------------------------------
+export var jsType = (x) => {
+  var lKeys, str;
+  // --- return [type, subtype]
+  switch (x) {
+    case undef:
+      return [undef, undef];
+    case null:
+      return [undef, 'null'];
+    case true:
+    case false:
+      return ['boolean', undef];
+  }
+  switch (typeof x) {
+    case 'number':
+      if (Number.isNaN(x)) {
+        return ['number', 'NaN'];
+      } else if (Number.isInteger(x)) {
+        return ['number', 'integer'];
+      } else {
+        return ['number', undef];
+      }
+      break;
+    case 'bigint':
+      return ['number', 'integer'];
+    case 'string':
+      if (x.match(/^\s*$/)) {
+        return ['string', 'empty'];
+      } else {
+        return ['string', undef];
+      }
+      break;
+    case 'boolean':
+      return ['boolean', undef];
+    case 'function':
+      str = x.toString();
+      if (str.startsWith('class')) {
+        return ['class', x.name || undef];
+      } else {
+        return ['function', x.name || undef];
+      }
+      break;
+    case 'object':
+      if (x instanceof String) {
+        if (x.match(/^\s*$/)) {
+          return ['string', 'empty'];
+        } else {
+          return ['string', undef];
+        }
+      }
+      if (x instanceof Number) {
+        if (Number.isInteger(x)) {
+          return ['number', 'integer'];
+        } else {
+          return ['number', undef];
+        }
+      }
+      if (x instanceof Boolean) {
+        return ['boolean', undef];
+      }
+      if (Array.isArray(x)) {
+        if (x.length === 0) {
+          return ['array', 'empty'];
+        } else {
+          return ['array', undef];
+        }
+      }
+      if (x instanceof RegExp) {
+        return ['regexp', undef];
+      }
+      if (x instanceof Function) {
+        if (x.prototype && (x.prototype.constructor === x)) {
+          return ['class', undef];
+        } else {
+          return ['function', x.name || undef];
+        }
+      }
+      if (defined(x.constructor.name) && (typeof x.constructor.name === 'string') && (x.constructor.name === 'Object')) {
+        lKeys = keys(x);
+        if (lKeys.length === 0) {
+          return ['hash', 'empty'];
+        } else {
+          return ['hash', undef];
+        }
+      } else if (typeof x.then === 'function') {
+        return ['promise', undef];
+      } else {
+        return ['object', undef];
+      }
+      break;
+    default:
+      throw new Error(`Unknown jsType: ${x}`);
+  }
+};
+
+// ---------------------------------------------------------------------------
+export var isString = (x) => {
+  return jsType(x)[0] === 'string';
+};
+
+export var isArray = (x) => {
+  return jsType(x)[0] === 'array';
+};
+
+export var isBoolean = (x) => {
+  return jsType(x)[0] === 'boolean';
+};
+
+export var isFunction = (x) => {
+  return jsType(x)[0] === 'function';
+};
+
+export var isRegExp = (x) => {
+  return jsType(x)[0] === 'regexp';
+};
+
+export var isPromise = (x) => {
+  return jsType(x)[0] === 'promise';
+};
+
+// ---------------------------------------------------------------------------
+export var isHash = (x, lKeys = undef) => {
+  var j, key, len1;
+  if (jsType(x)[0] !== 'hash') {
+    return false;
+  }
+  if (defined(lKeys)) {
+    if (isString(lKeys)) {
+      lKeys = words(lKeys);
+    } else if (!isArray(lKeys)) {
+      throw new Error(`lKeys not an array: ${OL(lKeys)}`);
+    }
+    for (j = 0, len1 = lKeys.length; j < len1; j++) {
+      key = lKeys[j];
+      if (!x.hasOwnProperty(key)) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
+// ---------------------------------------------------------------------------
+export var isObject = (x, lReqKeys = undef) => {
+  var _, j, key, lMatches, len1, type;
+  if (jsType(x)[0] !== 'object') {
+    return false;
+  }
+  if (defined(lReqKeys)) {
+    if (isString(lReqKeys)) {
+      lReqKeys = words(lReqKeys);
+    }
+    assert(isArray(lReqKeys), `lReqKeys not an array: ${OL(lReqKeys)}`);
+    for (j = 0, len1 = lReqKeys.length; j < len1; j++) {
+      key = lReqKeys[j];
+      type = undef;
+      if (lMatches = key.match(/^(\&)(.*)$/)) {
+        [_, type, key] = lMatches;
+      }
+      if (notdefined(x[key])) {
+        return false;
+      }
+      if ((type === '&') && (typeof x[key] !== 'function')) {
+        return false;
+      }
+    }
+  }
+  return true;
+};
+
+// ---------------------------------------------------------------------------
 export var execCmd = (cmd, ...lParts) => {
-  var cmdLine, result;
+  var cmdLine, err, result;
   // --- may throw an exception
   cmdLine = buildCmdLine(cmd, ...lParts);
-  result = execSync(cmdLine, {
-    encoding: 'utf8',
-    windowsHide: true
-  });
-  assert(isString(result), `result = ${OL(result)}`);
-  return result;
+  try {
+    result = execSync(cmdLine, {
+      encoding: 'utf8',
+      windowsHide: true
+    });
+    assert(isString(result), `result = ${OL(result)}`);
+    return result;
+  } catch (error1) {
+    err = error1;
+    return console.log(`ERROR: ${OL(err)}`);
+  }
 };
 
 // ---------------------------------------------------------------------------
@@ -126,34 +533,6 @@ export var buildCmdLine = (cmd, ...lParts) => {
   // --- join the parts
   lAllParts = [cmd, ...lOptions, ...lNonOptions];
   return lAllParts.join(' ');
-};
-
-// ---------------------------------------------------------------------------
-//   pass - do nothing
-export var pass = () => {
-  return true;
-};
-
-// ---------------------------------------------------------------------------
-export var defined = (obj) => {
-  return (obj !== undef) && (obj !== null);
-};
-
-// ---------------------------------------------------------------------------
-export var notdefined = (obj) => {
-  return (obj === undef) || (obj === null);
-};
-
-// ---------------------------------------------------------------------------
-export var alldefined = (...lObj) => {
-  var j, len1, obj;
-  for (j = 0, len1 = lObj.length; j < len1; j++) {
-    obj = lObj[j];
-    if ((obj === undef) || (obj === null)) {
-      return false;
-    }
-  }
-  return true;
 };
 
 // ---------------------------------------------------------------------------
@@ -475,6 +854,28 @@ export var centeredText = (text, width, hOptions = {}) => {
 };
 
 // ---------------------------------------------------------------------------
+export var delimitBlock = (block, hOptions = {}) => {
+  var header, label, str, width;
+  ({width, label} = getOptions(hOptions, {
+    width: 40,
+    label: undef
+  }));
+  str = '-'.repeat(width);
+  if (defined(label)) {
+    header = centeredText(label, width, {
+      char: '-'
+    });
+  } else {
+    header = str;
+  }
+  if (block === '') {
+    return [header, str].join("\n");
+  } else {
+    return [header, block, str].join("\n");
+  }
+};
+
+// ---------------------------------------------------------------------------
 //   rtrunc - strip nChars chars from right of a string
 export var rtrunc = (str, nChars) => {
   return str.substring(0, str.length - nChars);
@@ -650,51 +1051,6 @@ export var mapEachLine = (item, func) => {
 };
 
 // ---------------------------------------------------------------------------
-// --- a replacer is (key, value) -> newvalue
-myReplacer = (name, value) => {
-  if (value === undef) {
-    return undef;
-  } else if (value === null) {
-    return null;
-  } else if (isString(value)) {
-    return escapeStr(value);
-  } else if (typeof value === 'function') {
-    return `[Function: ${value.name}]`;
-  } else {
-    return value;
-  }
-};
-
-// ---------------------------------------------------------------------------
-export var OL = (obj) => {
-  if (defined(obj)) {
-    if (isString(obj)) {
-      return quoted(obj, 'escape');
-    } else if (isRegExp(obj)) {
-      return obj.toString();
-    } else {
-      return JSON.stringify(obj, myReplacer);
-    }
-  } else if (obj === null) {
-    return 'null';
-  } else {
-    return 'undef';
-  }
-};
-
-// ---------------------------------------------------------------------------
-export var OLS = (lObjects, sep = ',') => {
-  var j, lParts, len1, obj;
-  assert(isArray(lObjects), "not an array");
-  lParts = [];
-  for (j = 0, len1 = lObjects.length; j < len1; j++) {
-    obj = lObjects[j];
-    lParts.push(OL(obj));
-  }
-  return lParts.join(sep);
-};
-
-// ---------------------------------------------------------------------------
 export var qStr = (x) => {
   // --- x must be string or undef
   //     puts quotes around a string
@@ -708,78 +1064,8 @@ export var qStr = (x) => {
 };
 
 // ---------------------------------------------------------------------------
-export var quoted = (str, escape = undef) => {
-  assert(isString(str), `not a string: ${str}`);
-  switch (escape) {
-    case 'escape':
-      str = escapeStr(str);
-      break;
-    case 'escapeNoNL':
-      str = escapeStr(str, hEscNoNL);
-      break;
-    default:
-      pass;
-  }
-  if (!hasChar(str, "'")) {
-    return "'" + str + "'";
-  }
-  if (!hasChar(str, '"')) {
-    return '"' + str + '"';
-  }
-  return lQuoteChars[0] + str + lQuoteChars[1];
-};
-
-// ---------------------------------------------------------------------------
-//   escapeStr - escape newlines, carriage return, TAB chars, etc.
-export var hEsc = {
-  "\r": '◄',
-  "\n": '▼',
-  "\t": '→',
-  " ": '˳'
-};
-
-export var hEscNoNL = {
-  "\t": '→',
-  " ": '˳'
-};
-
-export var escapeStr = (str, hReplace = hEsc) => {
-  var ch, lParts;
-  // --- hReplace can also be a string:
-  //        'esc'     - escape space, newline, tab
-  //        'escNoNL' - escape space, tab
-  if (isString(hReplace)) {
-    switch (hReplace) {
-      case 'esc':
-        hReplace = hEsc;
-        break;
-      case 'escNoNL':
-        hReplace = hExcNoNL;
-        break;
-      default:
-        throw new Error("Invalid hReplace string value");
-    }
-  }
-  assert(isString(str), "escapeStr(): not a string");
-  lParts = (function() {
-    var j, len1, ref, results;
-    ref = str.split('');
-    results = [];
-    for (j = 0, len1 = ref.length; j < len1; j++) {
-      ch = ref[j];
-      if (defined(hReplace[ch])) {
-        results.push(hReplace[ch]);
-      } else {
-        results.push(ch);
-      }
-    }
-    return results;
-  })();
-  return lParts.join('');
-};
-
-// ---------------------------------------------------------------------------
 export var hasChar = (str, ch) => {
+  assert(isString(str), `Not a string: ${str}`);
   return str.indexOf(ch) >= 0;
 };
 
@@ -807,101 +1093,6 @@ export var isConstructor = (x) => {
     e = error1;
     return false;
   }
-};
-
-// ---------------------------------------------------------------------------
-export var jsType = (x) => {
-  var lKeys;
-  // --- return [type, subtype]
-  if (x === null) {
-    return [undef, 'null'];
-  } else if (x === undef) {
-    return [undef, undef];
-  } else if (isPromise(x)) {
-    return ['promise', undef];
-  }
-  switch (typeof x) {
-    case 'number':
-      if (Number.isNaN(x)) {
-        return ['number', 'NaN'];
-      } else if (Number.isInteger(x)) {
-        return ['number', 'integer'];
-      } else {
-        return ['number', undef];
-      }
-      break;
-    case 'string':
-      if (x.match(/^\s*$/)) {
-        return ['string', 'empty'];
-      } else {
-        return ['string', undef];
-      }
-      break;
-    case 'boolean':
-      return ['boolean', undef];
-    case 'bigint':
-      return ['number', 'integer'];
-    case 'function':
-      if (x.prototype && (x.prototype.constructor === x)) {
-        return ['class', undef];
-      } else {
-        return ['function', x.name || undef];
-      }
-      break;
-    case 'object':
-      if (x instanceof String) {
-        if (x.match(/^\s*$/)) {
-          return ['string', 'empty'];
-        } else {
-          return ['string', undef];
-        }
-      }
-      if (x instanceof Number) {
-        if (Number.isInteger(x)) {
-          return ['number', 'integer'];
-        } else {
-          return ['number', undef];
-        }
-      }
-      if (x instanceof Boolean) {
-        return ['boolean', undef];
-      }
-      if (Array.isArray(x)) {
-        if (x.length === 0) {
-          return ['array', 'empty'];
-        } else {
-          return ['array', undef];
-        }
-      }
-      if (x instanceof RegExp) {
-        return ['regexp', undef];
-      }
-      if (x instanceof Function) {
-        if (x.prototype && (x.prototype.constructor === x)) {
-          return ['class', undef];
-        } else {
-          return ['function', x.name || undef];
-        }
-      }
-      if (defined(x.constructor.name) && (typeof x.constructor.name === 'string') && (x.constructor.name === 'Object')) {
-        lKeys = keys(x);
-        if (lKeys.length === 0) {
-          return ['hash', 'empty'];
-        } else {
-          return ['hash', undef];
-        }
-      } else {
-        return ['object', undef];
-      }
-      break;
-    default:
-      throw new Error(`Unknown jsType: ${x}`);
-  }
-};
-
-// ---------------------------------------------------------------------------
-export var isString = (x) => {
-  return jsType(x)[0] === 'string';
 };
 
 // ---------------------------------------------------------------------------
@@ -980,11 +1171,6 @@ export var isInteger = (x, hOptions = {}) => {
     }
   }
   return result;
-};
-
-// ---------------------------------------------------------------------------
-export var isArray = (x) => {
-  return jsType(x)[0] === 'array';
 };
 
 // ---------------------------------------------------------------------------
@@ -1112,18 +1298,6 @@ export var mkword = (...lStuff) => {
 };
 
 // ---------------------------------------------------------------------------
-export var isBoolean = (x) => {
-  return jsType(x)[0] === 'boolean';
-};
-
-// ---------------------------------------------------------------------------
-export var isFunction = (x) => {
-  var mtype;
-  mtype = jsType(x)[0];
-  return (mtype === 'function') || (mtype === 'class');
-};
-
-// ---------------------------------------------------------------------------
 export var isIterable = (obj) => {
   if ((obj === undef) || (obj === null)) {
     return false;
@@ -1132,68 +1306,71 @@ export var isIterable = (obj) => {
 };
 
 // ---------------------------------------------------------------------------
-export var isRegExp = (x) => {
-  return jsType(x)[0] === 'regexp';
+// --- always return hash with the same set of keys!
+//     values should be a string, true, false or undef
+export var analyzeObj = (obj, hOptions = {}) => {
+  var _, h, jst, lMatches, lType, maxStrLen, name, objType, star, str, type;
+  ({maxStrLen} = getOptions(hOptions, {
+    maxStrLen: 22
+  }));
+  type = typeof obj;
+  lType = jsType(obj);
+  if (defined(lType[1])) {
+    jst = lType.join('/');
+  } else {
+    jst = lType[0];
+  }
+  h = {
+    jsType: jst,
+    type,
+    isArr: Array.isArray(obj),
+    isIter: isIterable(obj),
+    objType: '',
+    objName: '',
+    conName: '',
+    str: ''
+  };
+  if (notdefined(obj)) {
+    return h;
+  }
+  if (defined(obj.constructor)) {
+    h.conName = obj.constructor.name;
+  }
+  if (defined(obj.toString)) {
+    str = truncateStr(CWS(obj.toString()), maxStrLen);
+    if (lMatches = str.match(/^\[object\s+([A-Za-z]+)\]/)) {
+      [_, objType] = lMatches;
+      if (objType === 'Generator') {
+        h.objType = 'iterator';
+      } else {
+        h.objType = objType.toLowerCase();
+      }
+    } else if (lMatches = str.match(/^class\s*(?:([A-Za-z_][A-Za-z0-9_]*)\s*)?\{/)) {
+      h.objType = 'class';
+      h.objName = lMatches[1] || '';
+    } else if (lMatches = str.match(/^\s*function\s*(\*)?\s*(?:([A-Za-z_][A-Za-z0-9_]*)\s*)?\(/)) {
+      [_, star, name] = lMatches;
+      h.objType = star === '*' ? 'generator' : 'function';
+      h.objName = lMatches[1] || '';
+    }
+    h.str = str;
+  }
+  return h;
 };
 
 // ---------------------------------------------------------------------------
-export var isHash = (x, lKeys) => {
-  var j, key, len1;
-  if (jsType(x)[0] !== 'hash') {
+export var hasClassConstructor = (obj) => {
+  var con;
+  con = obj != null ? obj.constructor : void 0;
+  if (notdefined(con) || notdefined(con.toString)) {
     return false;
   }
-  if (defined(lKeys)) {
-    if (isString(lKeys)) {
-      lKeys = words(lKeys);
-    } else if (!isArray(lKeys)) {
-      throw new Error(`lKeys not an array: ${OL(lKeys)}`);
-    }
-    for (j = 0, len1 = lKeys.length; j < len1; j++) {
-      key = lKeys[j];
-      if (!x.hasOwnProperty(key)) {
-        return false;
-      }
-    }
-  }
-  return true;
+  return con.toString().startsWith('class');
 };
 
 // ---------------------------------------------------------------------------
-export var isPromise = (x) => {
-  return (typeof x === 'object') && (typeof x.then === 'function');
-};
-
-// ---------------------------------------------------------------------------
-export var isObject = (x, lReqKeys = undef) => {
-  var _, j, key, lMatches, len1, type;
-  if (jsType(x)[0] !== 'object') {
-    return false;
-  }
-  if (defined(lReqKeys)) {
-    if (isString(lReqKeys)) {
-      lReqKeys = words(lReqKeys);
-    }
-    assert(isArray(lReqKeys), `lReqKeys not an array: ${OL(lReqKeys)}`);
-    for (j = 0, len1 = lReqKeys.length; j < len1; j++) {
-      key = lReqKeys[j];
-      type = undef;
-      if (lMatches = key.match(/^(\&)(.*)$/)) {
-        [_, type, key] = lMatches;
-      }
-      if (notdefined(x[key])) {
-        return false;
-      }
-      if ((type === '&') && (typeof x[key] !== 'function')) {
-        return false;
-      }
-    }
-  }
-  return true;
-};
-
-// ---------------------------------------------------------------------------
-export var isClass = (x) => {
-  return jsType(x)[0] === 'class';
+export var isClass = (obj) => {
+  return (typeof obj === 'function') && obj.toString().startsWith('class');
 };
 
 // ---------------------------------------------------------------------------
@@ -1802,50 +1979,3 @@ export var flattenToHash = (x) => {
   }
   return hResult;
 };
-
-// ---------------------------------------------------------------------------
-// --- These used to be in ll-fs.coffee, but
-//     don't require imports from other libs
-export var fileExt = (path) => {
-  var lMatches;
-  assert(isString(path), "fileExt(): path not a string");
-  if (lMatches = path.match(/\.[A-Za-z0-9_]+$/)) {
-    return lMatches[0];
-  } else {
-    return '';
-  }
-};
-
-// ---------------------------------------------------------------------------
-//   withExt - change file extention in a file name
-export var withExt = (path, newExt) => {
-  var _, lMatches, pre;
-  assert(newExt, "withExt(): No newExt provided");
-  if (newExt.indexOf('.') !== 0) {
-    newExt = '.' + newExt;
-  }
-  if (lMatches = path.match(/^(.*)\.[^\.]+$/)) {
-    [_, pre] = lMatches;
-    return pre + newExt;
-  }
-  return croak(`Bad path: '${path}'`);
-};
-
-// ---------------------------------------------------------------------------
-export var newerDestFilesExist = (srcPath, ...lDestPaths) => {
-  var destModTime, destPath, j, len1, srcModTime;
-  for (j = 0, len1 = lDestPaths.length; j < len1; j++) {
-    destPath = lDestPaths[j];
-    if (!fs.existsSync(destPath)) {
-      return false;
-    }
-    srcModTime = fs.statSync(srcPath).mtimeMs;
-    destModTime = fs.statSync(destPath).mtimeMs;
-    if (destModTime < srcModTime) {
-      return false;
-    }
-  }
-  return true;
-};
-
-//# sourceMappingURL=base-utils.js.map

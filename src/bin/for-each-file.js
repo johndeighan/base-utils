@@ -8,10 +8,6 @@
 var cmdStr, debug, dir, execute, fullDebug, genOutput, getCmd, glob, hCmdArgs, handleFile, handleGlob, i, j, lFileRecs, lFiles, lPromises, lResults, len, len1, result, sep, str;
 
 import {
-  exec
-} from 'node:child_process';
-
-import {
   undef,
   defined,
   notdefined,
@@ -23,7 +19,8 @@ import {
 } from '@jdeighan/base-utils';
 
 import {
-  LOG
+  LOG,
+  LOGVALUE
 } from '@jdeighan/base-utils/log';
 
 import {
@@ -43,12 +40,15 @@ import {
 } from '@jdeighan/base-utils/parse-cmd-args';
 
 import {
-  allFilesMatching,
   isFile,
   mkpath,
   pushCWD,
   popCWD
 } from '@jdeighan/base-utils/fs';
+
+import {
+  allFilesMatching
+} from '@jdeighan/base-utils/read-file';
 
 // --- Any setting of debug prevents execution
 debug = undef; // --- 'full' | 'list' | 'json'
@@ -74,7 +74,7 @@ genOutput = () => {
   if (fullDebug) {
     LOG("lFileRecs:");
     LOG('-'.repeat(42));
-    LOG(lFileRecs);
+    LOG(JSON.stringify(lFileRecs, null, 3));
     LOG('-'.repeat(42));
   }
   switch (debug) {
@@ -96,7 +96,7 @@ genOutput = () => {
       for (j = 0, len1 = lFileRecs.length; j < len1; j++) {
         hRec = lFileRecs[j];
         LOG(`FILE: ${OL(hRec.filePath)}`);
-        LOG("CMD: ${OL(hRec.cmd)}");
+        LOG(`CMD: ${OL(hRec.cmd)}`);
         if (defined(hRec.output)) {
           LOG(sep);
           LOG(hRec.output);
@@ -156,7 +156,7 @@ handleGlob = (glob) => {
   ref = allFilesMatching(glob);
   for (hFile of ref) {
     ({filePath} = hFile);
-    handleFile(hFile.filePath);
+    handleFile(filePath);
   }
 };
 
@@ -188,7 +188,7 @@ if (debug === 'full') {
 
 if (fullDebug) {
   LOG("DEBUGGING ON in for-each-file");
-  LOG('hCmdArgs', hCmdArgs);
+  LOGVALUE('hCmdArgs', hCmdArgs);
 }
 
 assert(defined(debug) || defined(cmdStr), "-cmd option required unless debugging or listing");

@@ -55,8 +55,8 @@ stack.returnFrom 'func'
 truthy stack.isEmpty()
 
 equal getStackLog(), """
-	ENTER 'func'
-	RETURN FROM 'func'
+	ENTER "func"
+	RETURN FROM "func"
 	"""
 
 # ---------------------------------------------------------------------------
@@ -86,8 +86,8 @@ TEST stack, undef,  undef,  'func func2',  false
 truthy stack.isEmpty()
 
 equal getStackLog(), """
-	ENTER 'func'
-	RETURN FROM 'func'
+	ENTER "func"
+	RETURN FROM "func"
 	"""
 
 # ---------------------------------------------------------------------------
@@ -121,10 +121,10 @@ stack.returnFrom 'func'
 TEST stack, undef, undef,  'func func2', false
 
 equal getStackLog(), """
-	ENTER 'func'
-		ENTER 'func2'
-		RETURN FROM 'func2'
-	RETURN FROM 'func'
+	ENTER "func"
+		ENTER "func2"
+		RETURN FROM "func2"
+	RETURN FROM "func"
 	"""
 truthy stack.isEmpty()
 
@@ -243,10 +243,10 @@ stack.returnFrom 'func1'
 
 equal getStackLog(), """
 	RESET STACK
-	ENTER 'func1' 13
-		ENTER 'func2' 'abc',{"mean":42}
-		YIELD FROM 'func2' 99
-		RESUME 'func2'
-		RETURN FROM 'func2' 'def'
-	RETURN FROM 'func1'
+	ENTER "func1" 13
+		ENTER "func2" "abc",{"mean":42}
+		YIELD FROM "func2" 99
+		RESUME "func2"
+		RETURN FROM "func2" "def"
+	RETURN FROM "func1"
 	"""

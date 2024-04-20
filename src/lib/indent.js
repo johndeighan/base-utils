@@ -224,5 +224,3 @@ export var undented = (input) => {
 export var enclose = (text, pre, post, oneIndent = "\t") => {
   return toBlock([pre, indented(text, 1, oneIndent), post]);
 };
-
-//# sourceMappingURL=indent.js.map

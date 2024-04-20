@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "",
+  "sourceRoot": "",
+  "sources": [
+    "test/coffee-utils.test.coffee"
+  ],
+  "names": [],
+  "mappings": "AAA0B;AAE1B,OAAO,CAAA,QAAP,MAAA;;AACA,MAAM,CAAC,MAAP,CAAc,MAAd,EAAsB,IAAtB;;AACA,OAAO,CAAA,QAAP,MAAA;;AACA,MAAM,CAAC,MAAP,CAAc,MAAd,EAAsB,IAAtB,EAL0B;;;AAS1B,KAAA,CAAM,CAAA,GAAE,CAAR,EAAW,CAAX",
+  "sourcesContent": [
+    "# coffee-utils.test.coffee\n\nimport * as lib1 from '@jdeighan/base-utils/utest'\nObject.assign(global, lib1)\nimport * as lib2 from '@jdeighan/base-utils/coffee-utils'\nObject.assign(global, lib2)\n\n# ---------------------------------------------------------------------------\n\nequal 2+2, 4"
+  ]
+}

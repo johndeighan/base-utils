@@ -64,11 +64,11 @@ import {
 	main()
 	like caller1, {
 		functionName: 'main'
-		fileName: 'v8-stack.test.js'
+		fileName: 'v8-stack.test.coffee'
 		}
 	like caller2, {
 		functionName: 'main'
-		fileName: 'v8-stack.test.js'
+		fileName: 'v8-stack.test.coffee'
 		}
 	)()
 
@@ -95,7 +95,7 @@ import {
 	like hCaller, {
 		type: 'function'
 		functionName: 'main'
-		fileName: 'v8-stack.test.js'
+		fileName: 'v8-stack.test.coffee'
 		}
 
 	)()
@@ -121,22 +121,22 @@ import {
 	like lCallers1[0], {
 		type: 'function'
 		functionName: 'secondFunc'
-		fileName: 'v8-module.js'
+		fileName: 'v8-module.coffee'
 		}
 	like lCallers1[1], {
 		type: 'function'
 		functionName: 'func1'
-		fileName: 'v8-stack.test.js'
+		fileName: 'v8-stack.test.coffee'
 		}
 	like lCallers2[0], {
 		type: 'function'
 		functionName: 'secondFunc'
-		fileName: 'v8-module.js'
+		fileName: 'v8-module.coffee'
 		}
 	like lCallers2[1], {
 		type: 'function'
 		functionName: 'func2'
-		fileName: 'v8-stack.test.js'
+		fileName: 'v8-stack.test.coffee'
 		}
 
 	)()
@@ -152,9 +152,9 @@ import {
 		return stackStr
 
 	equal await func1(), """
-		function at v8-stack.test.js:151:23
-		function at v8-stack.test.js:148:19
-		script at v8-stack.test.js:165:23
+		function at v8-stack.test.coffee:151:19
+		function at v8-stack.test.coffee:148:15
+		script at v8-stack.test.coffee:154:13
 		"""
 
 	)()
@@ -171,7 +171,7 @@ import {
 		return x
 
 	equal await func1(), """
-		function at v8-stack.test.js:167:19
-		script at v8-stack.test.js:182:23
+		function at v8-stack.test.coffee:167:15
+		script at v8-stack.test.coffee:173:13
 		"""
 	)()

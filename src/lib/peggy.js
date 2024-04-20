@@ -53,9 +53,13 @@ import {
   isFile,
   slurp,
   barf,
-  withExt,
-  readTextFile
+  withExt
 } from '@jdeighan/base-utils/fs';
+
+import {
+  readTextFile,
+  getShebang
+} from '@jdeighan/base-utils/read-file';
 
 import {
   brew
@@ -84,7 +88,8 @@ export var addCodePreProcessor = (name, func) => {
 export var peggifyFile = (filePath) => {
   var hMetaData, jsCode, lLines, sourceMap;
   dbgEnter('peggifyFile', filePath);
-  ({hMetaData, lLines} = readTextFile(filePath));
+  [hMetaData, lLines] = readTextFile(filePath, 'eager');
+  assert(isArray(lLines), "Bad return from readTextFile");
   dbg('hMetaData', hMetaData);
   [jsCode, sourceMap] = peggify(lLines, {
     source: filePath,
@@ -102,9 +107,11 @@ export var peggifyFile = (filePath) => {
 //     Valid options:
 //        source - relative or absolute path to source file
 //        type - usually 'coffee', may also appear in hMetaData
-//        hMetaData - may contain key 'type' (usually 'coffee')
+//        hMetaData
+//           - may contain key 'type' (usually 'coffee')
+//           - may contain key 'shebang' (usually true)
 export var peggify = (peggyCode, hOptions) => {
-  var err, h, hMetaData, jsCode, result, source, srcNode, type;
+  var err, h, hMetaData, jsCode, result, shebang, source, srcMap, srcNode, type;
   dbgEnter('peggify', peggyCode, hOptions);
   ({source, type, hMetaData} = getOptions(hOptions, {
     source: undef,
@@ -144,7 +151,8 @@ export var peggify = (peggyCode, hOptions) => {
         trace: true // compile w/tracing capability
       });
       h = srcNode.toStringWithSourceMap();
-      result = [h.code, h.map.toString()];
+      jsCode = h.code;
+      srcMap = h.map.toString();
     } else {
       jsCode = peggy.generate(peggyCode, {
         allowedStartRules: ['*'],
@@ -152,8 +160,13 @@ export var peggify = (peggyCode, hOptions) => {
         output: 'source',
         trace: true // compile w/tracing capability
       });
-      result = [jsCode, undef];
+      srcMap = undef;
     }
+    shebang = getShebang(hMetaData);
+    if (defined(shebang)) {
+      jsCode = shebang + "\n" + jsCode;
+    }
+    result = [jsCode, srcMap];
   } catch (error) {
     err = error;
     console.log(centeredText('peggy generate failed', 74, 'char=-'));
@@ -368,5 +381,3 @@ export var pparse = (parseFunc, inputStr, hOptions = {}) => {
   dbgReturn('pparse', result);
   return result;
 };
-
-//# sourceMappingURL=peggy.js.map

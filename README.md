@@ -2,6 +2,7 @@ Using `@jdeighan/base-utils`
 ============================
 
 [CHANGELOG](CHANGELOG.md)
+[How to debug](DEBUGGING.md)
 
 ```bash
 $ npm install @jdeighan/base-utils
@@ -34,8 +35,10 @@ The `/utest` module provides the following functions:
 		- tests if a value is truthy
 	`falsy(x)`
 		- tests if a value is falsy
-	`throws(() => code)`
+	`fails(() => code)`
 		- when passed a function, tests that it throws an exception
+	`throws(() => code, class)`
+		- when passed a function, tests that it throws the given Error class
 	`succeeds(() => code)`
 		- when passed a function, tests that it doesn't throw an exception
 

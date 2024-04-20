@@ -1,3 +1,6 @@
+---
+shebang: true
+---
 # for-each-file.coffee
 
 # --- Using option -d or -l prevents any execution
@@ -5,13 +8,11 @@
 #        but if provided, allows output of command
 #        that would be executed
 
-import {exec} from 'node:child_process'
-
 import {
 	undef, defined, notdefined, nonEmpty, OL, execCmd,
 	isNonEmptyString, sortArrayOfHashes,
 	} from '@jdeighan/base-utils'
-import {LOG} from '@jdeighan/base-utils/log'
+import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
 import {
 	setDebugging, dbgEnter, dbgReturn, dbg,
 	} from '@jdeighan/base-utils/debug'
@@ -22,9 +23,11 @@ import {
 	parseCmdArgs,
 	} from '@jdeighan/base-utils/parse-cmd-args'
 import {
-	allFilesMatching, isFile, mkpath,
-	pushCWD, popCWD,
+	isFile, mkpath, pushCWD, popCWD,
 	} from '@jdeighan/base-utils/fs'
+import {
+	allFilesMatching,
+	} from '@jdeighan/base-utils/read-file'
 
 # --- Any setting of debug prevents execution
 debug = undef      # --- 'full' | 'list' | 'json'
@@ -48,7 +51,7 @@ genOutput = () =>
 	if fullDebug
 		LOG "lFileRecs:"
 		LOG '-'.repeat(42)
-		LOG lFileRecs
+		LOG JSON.stringify(lFileRecs, null, 3)
 		LOG '-'.repeat(42)
 
 	switch debug
@@ -63,7 +66,7 @@ genOutput = () =>
 		else
 			for hRec in lFileRecs
 				LOG "FILE: #{OL(hRec.filePath)}"
-				LOG "CMD: ${OL(hRec.cmd)}"
+				LOG "CMD: #{OL(hRec.cmd)}"
 				if defined(hRec.output)
 					LOG sep
 					LOG hRec.output
@@ -116,7 +119,7 @@ handleGlob = (glob) =>
 		LOG "HANDLE GLOB: #{OL(glob)}"
 	for hFile from allFilesMatching(glob)
 		{filePath} = hFile
-		handleFile(hFile.filePath)
+		handleFile(filePath)
 	return
 
 # ---------------------------------------------------------------------------
@@ -140,7 +143,7 @@ if (debug == 'full')
 
 if fullDebug
 	LOG "DEBUGGING ON in for-each-file"
-	LOG 'hCmdArgs', hCmdArgs
+	LOGVALUE 'hCmdArgs', hCmdArgs
 assert defined(debug) || defined(cmdStr),
 		"-cmd option required unless debugging or listing"
 

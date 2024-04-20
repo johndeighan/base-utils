@@ -9,7 +9,7 @@ import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {LOG} from '@jdeighan/base-utils/log'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 import {fromTAML} from '@jdeighan/base-utils/taml'
-import {fromNICE} from '@jdeighan/base-utils/nice'
+import {fromNICE} from '@jdeighan/base-utils/from-nice'
 
 # --- { <start>: <converter>, ... }
 hMetaDataTypes = {
@@ -34,7 +34,7 @@ export addMetaDataType = (start, converter) =>
 
 export isMetaDataStart = (str) =>
 
-	return defined(hMetaDataTypes[str])
+	return defined(str) && defined(hMetaDataTypes[str])
 
 # ---------------------------------------------------------------------------
 # --- input can be a string or array of strings
@@ -44,19 +44,15 @@ export convertMetaData = (input) =>
 
 	dbgEnter 'convertMetaData', input
 
-	# --- convert input to a block, set var start
-	if isArray(input)
-		assert (input.length > 0), "Empty array"
-		start = input.shift()
-		block = toBlock(input)
-	else if isString(input)
-		arr = toArray(input)
-		assert (arr.length > 0), "Empty block"
-		start = arr.shift()
-		block = toBlock(arr)
-	else
-		croak "Bad parameter to convertMetaData()"
+	# --- convert input to an array
+	input = toArray(input)
 
+	# --- set vars start and block
+	assert (input.length > 0), "Empty array"
+	start = input[0]
+	block = toBlock input.slice(1)
+
+	dbg 'start', start
 	dbg 'block', block
 
 	assert defined(hMetaDataTypes[start]),

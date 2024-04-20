@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "",
+  "sourceRoot": "",
+  "sources": [
+    "src/bin/bin-utils.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAkB;AAElB,OAAA;EAAQ,OAAR;CAAA,MAAA;;AACA,OAAA;EAAQ,KAAR;EAAe,EAAf;EAAmB,QAAnB;CAAA,MAAA;;AACA,OAAA;EAAQ,MAAR;EAAgB,KAAhB;CAAA,MAAA,kCAJkB;;;AAQlB,OAAA,IAAO,GAAA,GAAM,CAAC,EAAD,EAAK,EAAL,EAAS,EAAT,EAAa,IAAb,CAAA,GAAA;AAEZ,SAAO,OAAA,CAAQ,aAAR,EAAuB,EAAvB,EAA2B,EAA3B,EAA+B,EAA/B,CAAA,GAAqC,KAArC,GAA6C;AAFxC,EARK;;;;AAelB,OAAA,IAAO,IAAA,GAAO,CAAC,GAAD,CAAA,GAAA;AAEd,MAAA;EAAC,QAAA,GAAW,GAAG,CAAC,KAAJ,CAAU,aAAV;EACX,IAAG,QAAH;AACC,WAAO,QAAQ,CAAC,CAAD,EADhB;GAAA,MAAA;AAGC,WAAO,IAHR;;AAHa",
+  "sourcesContent": [
+    "# bin-utils.coffee\n\nimport {sprintf} from 'sprintf-js'\nimport {undef, OL, isString} from '@jdeighan/base-utils'\nimport {assert, croak} from '@jdeighan/base-utils/exceptions'\n\n# ---------------------------------------------------------------------------\n\nexport fmt = (n1, n2, n3, desc) =>\n\n\treturn sprintf(\"%3d %3d %3d\", n1, n2, n3) + ' - ' + desc\n\n# ---------------------------------------------------------------------------\n# --- get project name from its directory path\n\nexport proj = (dir) =>\n\n\tlMatches = dir.match(/\\/([^\\/]+)$/)\n\tif lMatches\n\t\treturn lMatches[1]\n\telse\n\t\treturn dir"
+  ]
+}

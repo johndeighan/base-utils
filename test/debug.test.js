@@ -1,5 +1,5 @@
 // debug.test.coffee
-var TEST;
+var TEST, callGen, callGen1, callGen2, callGen3, callGen4, func1, func2, gen, main;
 
 import {
   assert,
@@ -33,8 +33,8 @@ Object.assign(global, lib);
 import {
   UnitTester,
   equal,
-  like,
   notequal,
+  like,
   truthy,
   falsy,
   fails,
@@ -47,7 +47,7 @@ setDebugging(false, 'noecho');
 
 // ---------------------------------------------------------------------------
 // --- Define some functions to use in testing
-export var main = function() {
+main = function() {
   var i, j, len, ref;
   dbgEnter('main');
   ref = [13, 15];
@@ -59,20 +59,19 @@ export var main = function() {
   dbgReturn('main');
 };
 
-export var func1 = function(i) {
+func1 = function(i) {
   dbgEnter('func1', i);
   func2(i);
   dbgReturn('func1');
 };
 
-export var func2 = function(i) {
+func2 = function(i) {
   dbgEnter('func2', i);
   LOG(2 * i);
   dbgReturn('func2');
 };
 
-// ---------------------------------------------------------------------------
-export var callGen = function() {
+callGen = function() {
   var i, ref;
   dbgEnter('callGen');
   ref = gen();
@@ -83,25 +82,25 @@ export var callGen = function() {
   dbgReturn('callGen');
 };
 
-export var callGen1 = function() {
+callGen1 = function() {
   dbgEnter('func');
   dbgReturn('func');
   return LOG('abc');
 };
 
-export var callGen2 = function() {
+callGen2 = function() {
   dbgEnter('obj.func');
   dbgReturn('obj.func');
   return LOG('abc');
 };
 
-export var callGen3 = function() {
+callGen3 = function() {
   dbgEnter('obj.func');
   dbgReturn('obj.func');
   return LOG('abc');
 };
 
-export var callGen4 = function() {
+callGen4 = function() {
   dbgEnter('Getter.get');
   dbgEnter('Fetcher.fetch');
   dbgReturn('Fetcher.fetch', {
@@ -117,8 +116,7 @@ export var callGen4 = function() {
   return LOG('abc');
 };
 
-// ---------------------------------------------------------------------------
-export var gen = function*() {
+gen = function*() {
   dbgEnter('gen');
   dbgYield('gen', 1);
   yield 1;
@@ -144,7 +142,8 @@ equal(getDebugLog(), `│   │   ---
 // --- possible values for debugWhat:
 //        false - no debug output
 //        true - debug all calls
-//        <string> - spaces separated names of functions/methods to debug
+//        <string> - space separated names
+//                   of functions/methods to debug
 TEST = function(debugWhat, func, expectedDbg, expectedLog) {
   var dbgStr, logStr;
   assert(defined(debugWhat), "1st arg must be defined");
@@ -247,13 +246,11 @@ enter func2 15
 │   enter Fetcher.fetch
 │   └─> return from Fetcher.fetch
 │       val =
-│       ---
 │       lineNum: 15
 │       node: abcdef˳abcdef˳abcdef˳abcdef˳abcdef
 │       str: abcdef˳abcdef˳abcdef˳abcdef˳abcdef
 └─> return from Getter.get
     val =
-    ---
     lineNum: 15
     node: abcdef˳abcdef˳abcdef˳abcdef˳abcdef
     str: abcdef˳abcdef˳abcdef˳abcdef˳abcdef`, `abc`);
@@ -286,3 +283,6 @@ enter func2 15
 └─> return from MAIN`, `Hello
 Hi`);
 })();
+
+// ---------------------------------------------------------------------------
+equal(2 + 2, 4);

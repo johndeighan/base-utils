@@ -1,20 +1,197 @@
 # base-utils.test.coffee
 
-import {
-	UnitTester,
-	equal, like, notequal, succeeds, fails, truthy, falsy,
-	} from '@jdeighan/base-utils/utest'
+import * as ulib from '@jdeighan/base-utils/utest'
+Object.assign(global, ulib)
 import * as lib from '@jdeighan/base-utils'
 Object.assign(global, lib)
 
+# ---------------------------------------------------------------------------
+#symbol undef - a synonym for JavaScript's undefined
+
 equal  undef, undefined
+
+# ---------------------------------------------------------------------------
+#symbol assert(cond, msg)
+#
+#   NOTE: There's a better assert in @jdeighan/base-utils/exceptions
+
+succeeds () => assert(2+2==4, "BAD")
+fails    () => assert(2+3==4, "BAD")
+
+# ---------------------------------------------------------------------------
+#symbol croak(msg:string)
+#
+#   NOTE: There's a better croak in @jdeighan/base-utils/exceptions
+
+fails () => croak("BAD")
+
+# ---------------------------------------------------------------------------
+#symbol pass    - a function that does nothing
+
+succeeds () => pass()
 succeeds () -> pass()
 truthy pass()
+
+# ---------------------------------------------------------------------------
+#symbol defined(obj: Any): boolean
+
 truthy defined(1)
 falsy  defined(undefined)
+falsy  defined(null)
+
+# ---------------------------------------------------------------------------
+#symbol notdefined(obj: Any): boolean
+
 truthy notdefined(undefined)
 falsy  notdefined(12)
-succeeds () => pass()
+
+# ---------------------------------------------------------------------------
+#symbol alldefined(lObj...): boolean
+
+truthy alldefined(13, 'abc', [], {})
+falsy  alldefined(13, 'abc', [], {}, undef)
+
+# ---------------------------------------------------------------------------
+#symbol truncateStr(str: string, maxLen: integer): string
+
+equal truncateStr('abc', 20), 'abc'
+equal truncateStr('abcdefg', 5), 'abcd…'
+
+# ---------------------------------------------------------------------------
+#symbol hEsc = {" ": '˳', "\t": '→', "\r": '◄', "\n": '▼'}
+#symbol hEscNoNL{" ": '˳', "\t": '→'}
+#symbol escapeStr(str: string, {<char>: string, ...): string
+
+(() =>
+	equal escapeStr("   XXX\n"),  "˳˳˳XXX▼"
+	equal escapeStr("\t ABC\n"),  "→˳ABC▼"
+	equal escapeStr("X\nX\nX\n"), "X▼X▼X▼"
+	equal escapeStr("XXX\n\t\t"), "XXX▼→→"
+	equal escapeStr("XXX\n  "),   "XXX▼˳˳"
+
+	hEsc1 = {
+		"\n": "\\n"
+		"\t": "\\t"
+		"\"": "\\\""
+		}
+
+	equal escapeStr("\thas quote: \"\nnext line", hEsc1),
+		"\\thas quote: \\\"\\nnext line"
+
+	hEsc2 = {
+		"«": "\\«"
+		"»": "\\»"
+		}
+	equal escapeStr("«abc»", hEsc2), "\\«abc\\»"
+	)()
+
+# ---------------------------------------------------------------------------
+#symbol quoted(str: string, {<sub>: <rep>, ...): string
+
+equal quoted('abc'), '"abc"'
+equal quoted("mary's"), '"mary\'s"'
+equal quoted("\"mary's lamb\", she said"),
+		'«"mary\'s lamb", she said»'
+equal quoted("\"mary's «lamb»\", she said"),
+		'«"mary\'s \\«lamb\\»", she said»'
+
+# ---------------------------------------------------------------------------
+#symbol userSetQuoteChars: boolean
+#symbol lQuoteChars: array
+
+(() =>
+	succeeds () =>
+		setQuoteChars('<', '>')
+		result = quoted('abc')
+		assert result == '<abc>', "was #{result}"
+		resetQuoteChars()
+	)()
+
+# ---------------------------------------------------------------------------
+#symbol setQuoteChars(start: char, end: char)
+#symbol resetQuoteChars()
+
+# ---------------------------------------------------------------------------
+#symbol OL(obj: Any): string
+
+(() =>
+	func1 = (block) -> return "why?"
+	func2 = (block) => return "why?"
+	hProc = {
+		code:   func1
+		html:   func2
+		Script: (block) -> return 'x'
+		}
+
+	class NewClass
+		constructor: () ->
+			@me = 'John'
+
+	obj = new NewClass()
+
+	promise = new Promise((resolve) => resolve('foo'))
+
+	equal OL(undef), "undef"
+	equal OL(null), "null"
+	equal OL(true), 'true'
+	equal OL(false), 'false'
+	equal OL(42), "42"
+	equal OL(3.14), "3.14"
+	equal OL(BigInt(42)), "«BigInt 42»"
+	equal OL(BigInt('100000000000000000000')), "«BigInt 100000000000000000000»"
+	equal OL('abc'), '"abc"'
+	equal OL({}), "{}"
+	equal OL([]), "[]"
+	equal OL({a:1,b:"c"}), '{"a":1,"b":"c"}'
+	equal OL([1,"a"]), '[1,"a"]'
+	equal OL("\t\tabc\nxyz"), '"→→abc▼xyz"'
+	equal OL("  abc\nxyz"), '"˳˳abc▼xyz"'
+	equal OL({a:1, b:'xyz'}), '{"a":1,"b":"xyz"}'
+	equal OL(func1), '«Function func1»'
+	equal OL(func2), '«Function func2»'
+	equal OL(NewClass), '«Class NewClass»'
+	equal OL(promise), '«Promise»'
+	equal OL(obj), '{"me":"John"}'
+	equal OL(hProc), '{"code":«Function func1»,"html":«Function func2»,"Script":«Function Script»}'
+	equal OL({a:'a b', b:'a\tb'}), '{"a":"a˳b","b":"a→b"}'
+	equal OL(/^ab$/), '«RegExp /^ab$/»'
+	equal jsType(NewClass), ['class', 'NewClass']
+	equal jsType(obj), ['object', undef]
+	)()
+
+# ---------------------------------------------------------------------------
+#symbol jsType - get type of a JavaScript value
+
+(() =>
+	equal jsType(undef), [undef, undef]
+	equal jsType(null),  [undef, 'null']
+	equal jsType('abc'), ['string', undef]
+	equal jsType(''), ['string', 'empty']
+	equal jsType("\t\t"), ['string', 'empty']
+	equal jsType("  "), ['string', 'empty']
+	equal jsType({a:1}), ['hash', undef]
+	equal jsType({}), ['hash', 'empty']
+	equal jsType(3.14159), ['number', undef]
+	equal jsType(42), ['number', 'integer']
+	equal jsType(true), ['boolean', undef]
+	equal jsType(false), ['boolean', undef]
+	equal jsType({}), ['hash', 'empty']
+	equal jsType([1,2]), ['array', undef]
+	equal jsType([]), ['array', 'empty']
+	equal jsType(/abc/), ['regexp', undef]
+
+	func1 = (x) ->
+		return
+
+	func2 = (x) =>
+		return
+
+	equal(jsType(func1), ['function', 'func1'])
+	equal jsType(() -> 42), ['function', undef]
+
+	equal jsType(func2), ['function', 'func2']
+	equal jsType(() => 42), ['function', undef]
+	)()
 
 # ---------------------------------------------------------------------------
 
@@ -90,16 +267,39 @@ equal splitPrefix("\t \t"),   ["", ""]
 equal splitPrefix("   "),     ["", ""]
 
 # ---------------------------------------------------------------------------
+#symbol hasPrefix
 
 falsy  hasPrefix("abc")
 truthy hasPrefix("   abc")
 
 # ---------------------------------------------------------------------------
+#symbol spaces
 
 equal spaces(3), '   '
+
+# ---------------------------------------------------------------------------
+#symbol tabs
+
 equal tabs(3), "\t\t\t"
+
+# ---------------------------------------------------------------------------
+#symbol centeredText
+
 equal centeredText('abc', 7), '  abc  '
 equal centeredText('xyz', 11, 'char=-'), '--  xyz  --'
+
+# ---------------------------------------------------------------------------
+#symbol delimitBlock
+
+equal delimitBlock("""
+	some text
+	without context
+	""", 'label=BLOCK width=20'), """
+	-----  BLOCK  ------
+	some text
+	without context
+	--------------------
+	"""
 
 # ---------------------------------------------------------------------------
 
@@ -204,21 +404,7 @@ equal escapeStr("\thas quote: \"\nnext line", hEsc),
 
 # ---------------------------------------------------------------------------
 
-equal OL(undef), "undef"
-equal OL("\t\tabc\nxyz"), "'→→abc▼xyz'"
-equal OL({a:1, b:'xyz'}), '{"a":1,"b":"xyz"}'
-
-hProc = {
-	code:   (block) -> return "#{block};"
-	html:   (block) -> return block.replace('<p>', '<p> ').replace('</p>', ' </p>')
-	Script: (block) -> return elem('script', undef, block, "\t")
-	}
-
-equal OL(hProc), '{"code":"[Function: code]","html":"[Function: html]","Script":"[Function: Script]"}'
-
-# ---------------------------------------------------------------------------
-
-equal OLS(['abc', 3]), "'abc',3"
+equal OLS(['abc', 3]), '"abc",3'
 equal OLS([]), ""
 equal OLS([undef, {a:1}]), 'undef,{"a":1}'
 
@@ -228,38 +414,136 @@ truthy oneof('a', 'b', 'a', 'c')
 falsy  oneof('a', 'b', 'c')
 
 # ---------------------------------------------------------------------------
-#        jsTypes:
+# define some things for later tests
 
-(() ->
-	class NewClass
-		constructor: (@name = 'bob') ->
-			@doIt = pass
-		meth: (x) ->
-			return 2 * x
+class NewClass
+	constructor: (@name = 'bob') ->
+		@doIt = pass
+	meth: (x) ->
+		return 2 * x
 
-	h = {a:1, b:2}
-	l = [1,2,2]
-	o = new NewClass()
-	n = 42
-	n2 = new Number(42)
-	s = 'simple'
-	s2 = new String('abc')
+o = new NewClass()
+
+generatorFunc = () ->
+	yield 1
+	yield 2
+	yield 3
+	return
+
+# ---------------------------------------------------------------------------
+#symbol isBoolean(x:Any): boolean
+
+(() =>
+	truthy isBoolean(true)
+	truthy isBoolean(false)
+
+	falsy  isBoolean(42)
+	falsy  isBoolean("true")
+	)()
+
+# ---------------------------------------------------------------------------
+#symbol isString(x:Any): boolean
+
+(() =>
+	truthy isString('')
+	truthy isString('simple')
+	truthy isString(new String('abc'))
 
 	falsy isString(undef)
-	falsy isString(h)
-	falsy isString(l)
-	falsy isString(o)
-	falsy isString(n)
-	falsy isString(n2)
+	falsy isString({a:1})
+	falsy isString([1,2])
+	falsy isString(new NewClass())
+	falsy isString(42)
+	falsy isString(3.14)
+	)()
+# ---------------------------------------------------------------------------
+#symbol isNonEmptyString(x:Any): boolean
 
-	truthy isString(s)
-	truthy isString(s2)
-
+(() =>
 	truthy isNonEmptyString('abc')
 	truthy isNonEmptyString('abc def')
+	truthy isNonEmptyString('  abc def')
+
 	falsy  isNonEmptyString('')
 	falsy  isNonEmptyString('  ')
+	falsy  isNonEmptyString("\t\t\t")
+	falsy  isNonEmptyString(undef)
+	falsy  isNonEmptyString(5)
+	falsy  isNonEmptyString({a:1})
+	falsy  isNonEmptyString([1,2])
+	)()
 
+# ---------------------------------------------------------------------------
+#symbol isNumber(x:Any): boolean
+
+(() =>
+	truthy isNumber(42)
+	truthy isNumber(3.14)
+	truthy isNumber(new Number(42))
+	truthy isNumber(NaN)
+	truthy isNumber(42.0, {min: 42.0})
+	truthy isNumber(42.0, {max: 42.0})
+
+	falsy  isNumber(undef)
+	falsy  isNumber(null)
+	falsy  isNumber({a:1})
+	falsy  isNumber([1,2])
+	falsy  isNumber(new NewClass())
+	falsy  isNumber('abc')
+	falsy  isNumber('13')
+	falsy  isNumber(42.0, {min: 42.1})
+	falsy  isNumber(42.0, {max: 41.9})
+	)()
+
+# ---------------------------------------------------------------------------
+#symbol isNumber(x:Any): boolean
+
+(() =>
+	truthy isInteger(42)
+	truthy isInteger(new Number(42))
+	truthy isInteger(42, {min:  0})
+	truthy isInteger(42, {max: 50})
+
+	falsy  isInteger('abc')
+	falsy  isInteger({})
+	falsy  isInteger([])
+	falsy  isInteger(42, {min: 50})
+	falsy  isInteger(42, {max:  0})
+	)()
+
+# ---------------------------------------------------------------------------
+#symbol isHash(x:Any): boolean
+
+(() =>
+	truthy isHash({})
+	truthy isHash({a:1})
+
+	falsy  isHash([1,2])
+	falsy  isHash(new NewClass())
+	falsy  isHash(42)
+	falsy  isHash(3.14)
+	falsy  isHash('abc')
+	falsy  isHash(new String('abc'))
+	)()
+
+# ---------------------------------------------------------------------------
+#symbol isArray(x:Any): boolean
+
+(() =>
+	truthy isArray([])
+	truthy isArray([1,2])
+
+	falsy  isArray({a:1})
+	falsy  isArray(new NewClass())
+	falsy  isArray(42)
+	falsy  isArray(3.14)
+	falsy  isArray('abc')
+	falsy  isArray(new String('abc'))
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() =>
 	truthy isIdentifier('abc')
 	truthy isIdentifier('_Abc')
 	falsy  isIdentifier('abc def')
@@ -273,60 +557,7 @@ falsy  oneof('a', 'b', 'c')
 	falsy  isFunctionName('D()')
 	truthy isFunctionName('class.method')
 
-	generatorFunc = () ->
-		yield 1
-		yield 2
-		yield 3
-		return
-
 	truthy isIterable(generatorFunc())
-
-	falsy  isNumber(undef)
-	falsy  isNumber(null)
-	truthy isNumber(NaN)
-	falsy  isNumber(h)
-	falsy  isNumber(l)
-	falsy  isNumber(o)
-	truthy isNumber(n)
-	truthy isNumber(n2)
-	falsy  isNumber(s)
-	falsy  isNumber(s2)
-
-	truthy isNumber(42.0, {min: 42.0})
-	falsy  isNumber(42.0, {min: 42.1})
-	truthy isNumber(42.0, {max: 42.0})
-	falsy  isNumber(42.0, {max: 41.9})
-
-	truthy isInteger(42)
-	truthy isInteger(new Number(42))
-	falsy  isInteger('abc')
-	falsy  isInteger({})
-	falsy  isInteger([])
-	truthy isInteger(42, {min:  0})
-	falsy  isInteger(42, {min: 50})
-	truthy isInteger(42, {max: 50})
-	falsy  isInteger(42, {max:  0})
-
-	truthy isHash(h)
-	falsy  isHash(l)
-	falsy  isHash(o)
-	falsy  isHash(n)
-	falsy  isHash(n2)
-	falsy  isHash(s)
-	falsy  isHash(s2)
-
-	falsy  isArray(h)
-	truthy isArray(l)
-	falsy  isArray(o)
-	falsy  isArray(n)
-	falsy  isArray(n2)
-	falsy  isArray(s)
-	falsy  isArray(s2)
-
-	truthy isBoolean(true)
-	truthy isBoolean(false)
-	falsy  isBoolean(42)
-	falsy  isBoolean("true")
 
 	truthy isClass(NewClass)
 	falsy  isClass(o)
@@ -339,7 +570,7 @@ falsy  oneof('a', 'b', 'c')
 	falsy  isFunction(undef)
 	falsy  isFunction(null)
 	falsy  isFunction(42)
-	falsy  isFunction(n)
+	falsy  isFunction(3.14)
 
 	truthy isRegExp(/^abc$/)
 	truthy isRegExp(///^ \s* where \s+ areyou $///)
@@ -350,54 +581,21 @@ falsy  oneof('a', 'b', 'c')
 	falsy  isRegExp(undef)
 	truthy isRegExp(/\.coffee/)
 
-	falsy  isObject(h)
-	falsy  isObject(l)
+	falsy  isObject({a:1})
+	falsy  isObject([1,2])
 	truthy isObject(o)
 	truthy isObject(o, ['name','doIt'])
 	truthy isObject(o, "name doIt")
 	falsy  isObject(o, ['name','doIt','missing'])
 	falsy  isObject(o, "name doIt missing")
-	falsy  isObject(n)
-	falsy  isObject(n2)
-	falsy  isObject(s)
-	falsy  isObject(s2)
+	falsy  isObject(42)
+	falsy  isObject(3.14)
+	falsy  isObject('abc')
+	falsy  isObject(new String('abc'))
 	truthy isObject(o, "name doIt")
 	truthy isObject(o, "name doIt meth")
 	truthy isObject(o, "name &doIt &meth")
 	falsy  isObject(o, "&name")
-
-	equal jsType(undef), [undef, undef]
-	equal jsType(null),  [undef, 'null']
-	equal jsType(s), ['string', undef]
-	equal jsType(''), ['string', 'empty']
-	equal jsType("\t\t"), ['string', 'empty']
-	equal jsType("  "), ['string', 'empty']
-	equal jsType(h), ['hash', undef]
-	equal jsType({}), ['hash', 'empty']
-	equal jsType(3.14159), ['number', undef]
-	equal jsType(42), ['number', 'integer']
-	equal jsType(true), ['boolean', undef]
-	equal jsType(false), ['boolean', undef]
-	equal jsType(h), ['hash', undef]
-	equal jsType({}), ['hash', 'empty']
-	equal jsType(l), ['array', undef]
-	equal jsType([]), ['array', 'empty']
-	equal jsType(/abc/), ['regexp', undef]
-
-	func1 = (x) ->
-		return
-
-	func2 = (x) =>
-		return
-
-	# --- NOTE: regular functions can't be distinguished from constructors
-	equal(jsType(func1), ['class', undef])
-	equal jsType(() -> 42), ['class', undef]
-
-	equal jsType(func2), ['function', 'func2']
-	equal jsType(() => 42), ['function', undef]
-	equal jsType(NewClass), ['class', undef]
-	equal jsType(o), ['object', undef]
 	)()
 
 # ---------------------------------------------------------------------------
@@ -477,7 +675,7 @@ falsy  hasChar("\t\t", ' ')
 
 # ---------------------------------------------------------------------------
 
-equal quoted('abc'), "'abc'"
+equal quoted('abc'), '"abc"'
 equal quoted('"abc"'), "'\"abc\"'"
 equal quoted("'abc'"), "\"'abc'\""
 equal quoted("'\"abc\"'"), "«'\"abc\"'»"
@@ -524,12 +722,6 @@ truthy nonEmpty('.')
 truthy nonEmpty([2])
 truthy nonEmpty({width: 2})
 
-truthy isNonEmptyString('abc')
-falsy  isNonEmptyString(undef)
-falsy  isNonEmptyString('')
-falsy  isNonEmptyString('   ')
-falsy  isNonEmptyString("\t\t\t")
-falsy  isNonEmptyString(5)
 
 # ---------------------------------------------------------------------------
 
@@ -750,7 +942,7 @@ falsy isInteger(42, {max:  0})
 # ---------------------------------------------------------------------------
 
 equal OL(undef), "undef"
-equal OL("\t\tabc\nxyz"), "'→→abc▼xyz'"
+equal OL("\t\tabc\nxyz"), '"→→abc▼xyz"'
 equal OL({a:1, b:'xyz'}), '{"a":1,"b":"xyz"}'
 
 # ---------------------------------------------------------------------------

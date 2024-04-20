@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "",
+  "sourceRoot": "",
+  "sources": [
+    "src/bootstrap.coffee"
+  ],
+  "names": [],
+  "mappings": "AAQuE;;;;;;;;;AAAA,IAAA,GAAA,EAAA,QAAA,EAAA,CAAA,EAAA,GAAA,EAAA;;AAEvE,OAAA;EAAQ,QAAR;CAAA,MAAA;;AACA,OAAA;EACC,QADD;EACW,OADX;EACoB,SADpB;EAC+B,eAD/B;CAAA,MAAA,uBAHuE;;;;AAUvE,OAAO,CAAC,GAAR,CAAY,iBAAZ;;AAEA;AAEC;;EAAA,KAAA,qCAAA;;IACC,QAAA,CAAS,QAAT;EADD,CADD;;EAKC,QAAA,CAAS,kCAAT,EALD;;;EAUC,eAAA,CAAA,EAXD;CAaA,aAAA;EAAM;EACL,OAAO,CAAC,KAAR,CAAc,GAAd;EACA,OAAO,CAAC,IAAR,CAAA,EAFD",
+  "sourcesContent": [
+    "# bootstrap.coffee\n\n# --- NOTE: CoffeeScript must be installed globally and locally\n\n# --- We want to run low-level-build.js,\n#     however that requires:\n#        - src/lib .coffee files must be compiled\n#        - src/bin/low-level-build.coffee must be compiled\n#        - some fake JS files, corresponding to peggy files, must exist\n\nimport {globSync} from 'glob'\nimport {\n\tbrewFile, withExt, normalize, createFakeFiles,\n\t} from './bootstrap-utils.js'\n\n# ---------------------------------------------------------------------------\n# --- Compile all coffee files in src/lib and src/bin\n\nconsole.log \"-- bootstrap --\"\n\ntry\n\t# --- Compile all *.coffee files in src/lib\n\tfor filePath in globSync('./src/lib/*.coffee')\n\t\tbrewFile filePath\n\n\t# --- Compile src/bin/low-level-build.coffee\n\tbrewFile './src/bin/low-level-build.coffee'\n\n\t# --- Create fake *.js file for each *.peggy file\n\t#     These will be rebuilt in low-level-build.coffee\n\n\tcreateFakeFiles()\n\ncatch err\n\tconsole.error err\n\tprocess.exit()\n"
+  ]
+}

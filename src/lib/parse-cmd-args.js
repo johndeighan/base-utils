@@ -39,6 +39,10 @@ import {
   parse
 } from '@jdeighan/base-utils/cmd-args';
 
+import {
+  pparse
+} from '@jdeighan/base-utils/peggy';
+
 lTypes = words('boolean string number integer json');
 
 // ---------------------------------------------------------------------------
@@ -122,7 +126,7 @@ export var parseCmdArgs = (hOptions = {}) => {
     argStr = argStrFromArgv();
   }
   dbg(`arg str = '${argStr}'`);
-  hResult = parse(argStr);
+  hResult = pparse(parse, argStr);
   dbg('hResult', hResult);
   assert(isHash(hResult), `hResult = ${OL(hResult)}`);
   if (hasKey(hResult, '_')) {
@@ -194,5 +198,3 @@ export var getVal = (name, type, value) => {
       return JSON.parse(value);
   }
 };
-
-//# sourceMappingURL=parse-cmd-args.js.map

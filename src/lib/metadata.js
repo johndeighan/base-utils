@@ -36,7 +36,7 @@ import {
 
 import {
   fromNICE
-} from '@jdeighan/base-utils/nice';
+} from '@jdeighan/base-utils/from-nice';
 
 // --- { <start>: <converter>, ... }
 hMetaDataTypes = {
@@ -59,28 +59,22 @@ export var addMetaDataType = (start, converter) => {
 
 // ---------------------------------------------------------------------------
 export var isMetaDataStart = (str) => {
-  return defined(hMetaDataTypes[str]);
+  return defined(str) && defined(hMetaDataTypes[str]);
 };
 
 // ---------------------------------------------------------------------------
 // --- input can be a string or array of strings
 // --- input will include start line, but not end line
 export var convertMetaData = (input) => {
-  var arr, block, result, start;
+  var block, result, start;
   dbgEnter('convertMetaData', input);
-  // --- convert input to a block, set var start
-  if (isArray(input)) {
-    assert(input.length > 0, "Empty array");
-    start = input.shift();
-    block = toBlock(input);
-  } else if (isString(input)) {
-    arr = toArray(input);
-    assert(arr.length > 0, "Empty block");
-    start = arr.shift();
-    block = toBlock(arr);
-  } else {
-    croak("Bad parameter to convertMetaData()");
-  }
+  // --- convert input to an array
+  input = toArray(input);
+  // --- set vars start and block
+  assert(input.length > 0, "Empty array");
+  start = input[0];
+  block = toBlock(input.slice(1));
+  dbg('start', start);
   dbg('block', block);
   assert(defined(hMetaDataTypes[start]), `Bad metadata start: ${OL(start)}`);
   // --- NOTE: block should not include the start line
@@ -88,5 +82,3 @@ export var convertMetaData = (input) => {
   dbgReturn('convertMetaData', result);
   return result;
 };
-
-//# sourceMappingURL=metadata.js.map

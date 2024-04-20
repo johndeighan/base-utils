@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 // low-level-build.coffee
-var contents, fileFilter, filePath, h, hBin, hFile, hFilesProcessed, hJson, hMetaData, hOptions, jsCode, key, lLines, nCoffee, nJS, nPeggy, numCoffee, ref, ref1, ref2, relPath, shebang, short_name, sourceMap, stub, tla, value;
+var fileFilter, hBin, hFile, hFilesProcessed, hJson, hMetaData, jsPath, key, nCoffee, nPeggy, ref, ref1, ref2, relPath, short_name, stub, tla, value, x;
+
+import {
+  globSync
+} from 'glob';
 
 import {
   undef,
@@ -13,6 +17,7 @@ import {
   execCmd,
   toBlock,
   add_s,
+  fileExt,
   withExt,
   newerDestFilesExist
 } from '@jdeighan/base-utils';
@@ -30,16 +35,22 @@ import {
 } from '@jdeighan/base-utils/debug';
 
 import {
-  allFilesMatching,
   slurp,
   barf,
+  isFakeFile,
   isProjRoot,
   slurpPkgJSON,
   barfPkgJSON
 } from '@jdeighan/base-utils/fs';
 
 import {
-  brew
+  readTextFile,
+  allFilesMatching
+} from '@jdeighan/base-utils/read-file';
+
+import {
+  brew,
+  brewFile
 } from '@jdeighan/base-utils/coffee';
 
 import {
@@ -48,22 +59,14 @@ import {
 
 hFilesProcessed = {
   coffee: 0,
-  peggy: 0,
-  js: 0
+  peggy: 0
 };
-
-numCoffee = process.argv[2];
-
-if (numCoffee && numCoffee.match(/^\d+$/)) {
-  hFilesProcessed.coffee += parseInt(numCoffee);
-}
 
 console.log("-- low-level-build --");
 
-// setDebugging 'peggifyFile peggify'
 // ---------------------------------------------------------------------------
 // 1. Make sure we're in a project root directory
-assert(isProjRoot('strict'), "Not in package root dir");
+assert(isProjRoot('.', 'strict'), "Not in package root dir");
 
 // ---------------------------------------------------------------------------
 // --- A file (either *.coffee or *.peggy) is out of date unless both:
@@ -73,43 +76,40 @@ fileFilter = ({filePath}) => {
   var jsFile, mapFile;
   jsFile = withExt(filePath, '.js');
   mapFile = withExt(filePath, '.js.map');
+  if ((fileExt(filePath) === '.peggy') && isFakeFile(jsFile)) {
+    return true;
+  }
   return !newerDestFilesExist(filePath, jsFile, mapFile);
 };
 
+ref = allFilesMatching('**/*.coffee', {fileFilter});
 // ---------------------------------------------------------------------------
 // 2. Search project for *.coffee files and compile them
 //    unless newer *.js and *.js.map files exist
-hOptions = {
-  fileFilter,
-  eager: true
-};
-
-ref = allFilesMatching('**/*.coffee', hOptions);
 for (hFile of ref) {
-  ({filePath, relPath, hMetaData, lLines} = hFile);
+  ({relPath} = hFile);
   LOG(relPath);
+  brewFile(relPath);
   hFilesProcessed.coffee += 1;
-  [jsCode, sourceMap] = brew(toBlock(lLines), relPath);
-  barf(jsCode, withExt(filePath, '.js'));
-  barf(sourceMap, withExt(filePath, '.js.map'));
 }
 
-ref1 = allFilesMatching('**/*.peggy', hOptions);
+ref1 = allFilesMatching('**/*.peggy', {fileFilter});
 // ---------------------------------------------------------------------------
 // 3. Search src folder for *.peggy files and compile them
-//    unless newer *.js and *.js.map files exist
+//    unless newer *.js and *.js.map files exist OR it needs rebuilding
 for (hFile of ref1) {
   ({relPath} = hFile);
   LOG(relPath);
-  hFilesProcessed.peggy += 1;
   peggifyFile(relPath);
+  hFilesProcessed.peggy += 1;
 }
 
 // ---------------------------------------------------------------------------
-shebang = "#!/usr/bin/env node";
-
 hBin = {}; // --- keys to add in package.json / bin
 
+
+// ---------------------------------------------------------------------------
+// --- generate a 3 letter acronym if file stub is <str>-<str>-<str>
 tla = (stub) => {
   var _, a, b, c, lMatches, result;
   if (lMatches = stub.match(/^([a-z])(?:[a-z]*)\-([a-z])(?:[a-z]*)\-([a-z])(?:[a-z]*)$/)) {
@@ -121,32 +121,22 @@ tla = (stub) => {
   }
 };
 
+ref2 = allFilesMatching('./src/bin/**/*.coffee');
 // ---------------------------------------------------------------------------
-// 4. For every *.js file in the 'src/bin' directory:
-//       - add shebang line if missing
-//       - save <stub>: <path> in hBin
-hOptions = {
-  fileFilter: ({filePath, hMetaData, lLines}) => {
-    assert(isEmpty(hMetaData), `hMetaData in ${OL(filePath)}`);
-    if (lLines.length === 0) {
-      return false;
+// 4. For every *.coffee file in the 'src/bin' directory that
+//       has key "shebang" set:
+//       - save <stub>: <jsPath> in hBin
+//       - if has a tla, save <tla>: <jsPath> in hBin
+for (x of ref2) {
+  ({relPath, stub} = x);
+  [hMetaData] = readTextFile(relPath);
+  if (hMetaData != null ? hMetaData.shebang : void 0) {
+    jsPath = withExt(relPath, '.js');
+    hBin[stub] = jsPath;
+    short_name = tla(stub);
+    if (defined(short_name)) {
+      hBin[short_name] = jsPath;
     }
-    return lLines[0] !== shebang;
-  },
-  eager: true // --- h will have keys hMetaData and lLines
-};
-
-ref2 = allFilesMatching('./src/bin/**/*.js', hOptions);
-for (h of ref2) {
-  ({filePath, relPath, stub, lLines} = h);
-  LOG(`${relPath} -> add shebang line`);
-  hFilesProcessed.js += 1;
-  contents = shebang + "\n" + toBlock(lLines);
-  barf(contents, filePath);
-  hBin[stub] = relPath;
-  short_name = tla(stub);
-  if (defined(short_name)) {
-    hBin[short_name] = relPath;
   }
 }
 
@@ -180,11 +170,3 @@ nPeggy = hFilesProcessed.peggy;
 if (nPeggy > 0) {
   console.log(`(${nPeggy} peggy file${add_s(nPeggy)} compiled)`);
 }
-
-nJS = hFilesProcessed.js;
-
-if (nJS > 0) {
-  console.log(`(${nJS} js file${add_s(nJS)} had shebang line added)`);
-}
-
-//# sourceMappingURL=low-level-build.js.map

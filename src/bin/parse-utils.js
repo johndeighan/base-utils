@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // parse-utils.coffee
 import {
   undef,

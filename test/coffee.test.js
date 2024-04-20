@@ -14,9 +14,17 @@ import {
 
 // ---------------------------------------------------------------------------
 succeeds(() => {
-  return brew('v = 5', undef, '!fileExists');
+  return brew('v = 5');
 });
 
 fails(() => {
-  return brew('let v = 5', undef, '!fileExists');
+  return brew('let v = 5');
+});
+
+succeeds(() => {
+  return toAST('v = 5');
+});
+
+fails(() => {
+  return toAST('let v = 5');
 });

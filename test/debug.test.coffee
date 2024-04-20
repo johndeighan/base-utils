@@ -14,8 +14,8 @@ import {CallStack} from '@jdeighan/base-utils/stack'
 import * as lib from '@jdeighan/base-utils/debug'
 Object.assign(global, lib)
 import {
-	UnitTester,
-	equal, like, notequal, truthy, falsy, fails, succeeds,
+	UnitTester, equal, notequal,
+	like, truthy, falsy, fails, succeeds,
 	} from '@jdeighan/base-utils/utest'
 
 echoLogs false
@@ -24,7 +24,7 @@ setDebugging false, 'noecho'
 # ---------------------------------------------------------------------------
 # --- Define some functions to use in testing
 
-export main = () ->
+main = () ->
 
 	dbgEnter 'main'
 	for i in [13, 15]
@@ -33,21 +33,19 @@ export main = () ->
 	dbgReturn 'main'
 	return
 
-export func1 = (i) ->
+func1 = (i) ->
 	dbgEnter 'func1', i
 	func2(i)
 	dbgReturn 'func1'
 	return
 
-export func2 = (i) ->
+func2 = (i) ->
 	dbgEnter 'func2', i
 	LOG 2*i
 	dbgReturn 'func2'
 	return
 
-# ---------------------------------------------------------------------------
-
-export callGen = () ->
+callGen = () ->
 	dbgEnter 'callGen'
 	for i from gen()
 		dbg "GOT #{i}"
@@ -55,22 +53,22 @@ export callGen = () ->
 	dbgReturn 'callGen'
 	return
 
-export callGen1 = () ->
+callGen1 = () ->
 	dbgEnter 'func'
 	dbgReturn 'func'
 	LOG 'abc'
 
-export callGen2 = () ->
+callGen2 = () ->
 	dbgEnter 'obj.func'
 	dbgReturn 'obj.func'
 	LOG 'abc'
 
-export callGen3 = () ->
+callGen3 = () ->
 	dbgEnter 'obj.func'
 	dbgReturn 'obj.func'
 	LOG 'abc'
 
-export callGen4 = () ->
+callGen4 = () ->
 	dbgEnter 'Getter.get'
 	dbgEnter 'Fetcher.fetch'
 	dbgReturn 'Fetcher.fetch', {
@@ -85,9 +83,7 @@ export callGen4 = () ->
 		}
 	LOG 'abc'
 
-# ---------------------------------------------------------------------------
-
-export gen = () ->
+gen = () ->
 	dbgEnter 'gen'
 
 	dbgYield 'gen', 1
@@ -119,7 +115,8 @@ equal getDebugLog(), """
 # --- possible values for debugWhat:
 #        false - no debug output
 #        true - debug all calls
-#        <string> - spaces separated names of functions/methods to debug
+#        <string> - space separated names
+#                   of functions/methods to debug
 
 TEST = (debugWhat, func, expectedDbg, expectedLog) ->
 
@@ -269,13 +266,11 @@ TEST = (debugWhat, func, expectedDbg, expectedLog) ->
 		│   enter Fetcher.fetch
 		│   └─> return from Fetcher.fetch
 		│       val =
-		│       ---
 		│       lineNum: 15
 		│       node: abcdef˳abcdef˳abcdef˳abcdef˳abcdef
 		│       str: abcdef˳abcdef˳abcdef˳abcdef˳abcdef
 		└─> return from Getter.get
 		    val =
-		    ---
 		    lineNum: 15
 		    node: abcdef˳abcdef˳abcdef˳abcdef˳abcdef
 		    str: abcdef˳abcdef˳abcdef˳abcdef˳abcdef
@@ -319,3 +314,7 @@ TEST = (debugWhat, func, expectedDbg, expectedLog) ->
 		"""
 
 	)()
+
+# ---------------------------------------------------------------------------
+
+equal 2+2, 4

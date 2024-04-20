@@ -14,6 +14,8 @@ import {
   nonEmpty,
   assert,
   croak,
+  isInteger,
+  hasKey,
   OL,
   isIdentifier,
   isFunctionName,
@@ -21,12 +23,19 @@ import {
 } from '@jdeighan/base-utils';
 
 import {
-  mydir
+  mydir,
+  mkpath,
+  fileExt,
+  withExt
 } from '@jdeighan/base-utils/ll-fs';
 
 import {
-  mapLineNum
+  mapSourcePos
 } from '@jdeighan/base-utils/source-map';
+
+import {
+  toNICE
+} from '@jdeighan/base-utils/to-nice';
 
 export var internalDebugging = false;
 
@@ -38,6 +47,7 @@ dir = mydir(import.meta.url); // directory this file is in
 //    type - eval | native | constructor | method | function | script
 //    filePath
 //    fileName
+//    ext
 //    functionName
 //    objTye, methodName - if type == 'method'
 //    isAsync - true if an async function/method
@@ -64,18 +74,20 @@ export var extractFileName = (filePath) => {
 
 // ---------------------------------------------------------------------------
 export var getV8Stack = (hOptions = {}) => {
-  var debug, e, lStackFrames, oldLimit, oldPreparer;
+  var debug, e, errObj, lStackFrames, oldLimit, oldPreparer;
   // --- ignores any stack frames from this module
+  //     *.js files will be mapped to *.coffee files
+  //        if a source map is available
   debug = hOptions.debug || false;
   try {
     oldLimit = Error.stackTraceLimit;
     oldPreparer = Error.prepareStackTrace;
     Error.stackTraceLimit = 2e308;
     Error.prepareStackTrace = (error, lCallSites) => {
-      var column, filePath, fileURL, functionName, hFrame, hParsed, i, lFrames, len, line, methodName, oSite, objType, pos, thisVal, type;
+      var column, ext, filePath, fileURL, functionName, hFrame, hParsed, j, lFrames, len, line, methodName, oSite, objType, pos, stub, thisVal, type;
       lFrames = [];
-      for (i = 0, len = lCallSites.length; i < len; i++) {
-        oSite = lCallSites[i];
+      for (j = 0, len = lCallSites.length; j < len; j++) {
+        oSite = lCallSites[j];
         fileURL = oSite.getFileName();
         if (defined(fileURL)) {
           hParsed = parseFileURL(fileURL);
@@ -122,10 +134,18 @@ export var getV8Stack = (hOptions = {}) => {
         if (objType === 'ModuleJob') {
           break;
         }
+        ({
+          dir,
+          name: stub,
+          ext
+        } = pathLib.parse(filePath));
         hFrame = {
           type,
           filePath,
           fileName: extractFileName(filePath),
+          dir,
+          stub,
+          ext,
           functionName,
           line,
           column,
@@ -139,21 +159,21 @@ export var getV8Stack = (hOptions = {}) => {
         if ((type === 'function') && notdefined(functionName)) {
           hFrame.type = 'script';
           delete hFrame.functionName;
+          if (hFrame.ext === '.js') {
+            mapJStoCoffee(hFrame);
+          }
           lFrames.push(hFrame);
           break;
         }
-        hParsed = pathLib.parse(filePath);
-        hFrame.dir = hParsed.dir;
-        hFrame.stub = hParsed.name;
-        hFrame.ext = hParsed.ext;
-        if (hParsed.ext === '.js') {
-          hFrame.line = mapLineNum(filePath, line, column);
+        if (ext === '.js') {
+          mapJStoCoffee(hFrame);
         }
         lFrames.push(hFrame);
       }
       return lFrames;
     };
-    lStackFrames = new Error().stack;
+    errObj = new Error();
+    lStackFrames = errObj.stack;
     assert(lStackFrames.length > 0, "lStackFrames is empty!");
     // --- reset to previous values
     Error.stackTraceLimit = oldLimit;
@@ -163,6 +183,34 @@ export var getV8Stack = (hOptions = {}) => {
     return [];
   }
   return lStackFrames;
+};
+
+// ---------------------------------------------------------------------------
+// --- hFrame contains keys:
+//        filePath
+//        ext
+//        line
+//        column
+export var mapJStoCoffee = (hFrame) => {
+  var column, ext, filePath, hInfo, line;
+  // --- Attempt to convert to original coffee file
+  assert(hasKey(hFrame, 'filePath'));
+  assert(hasKey(hFrame, 'fileName'));
+  assert(hasKey(hFrame, 'ext'));
+  assert(hasKey(hFrame, 'line'));
+  assert(hasKey(hFrame, 'column'));
+  ({filePath, ext, line, column} = hFrame);
+  assert(ext === '.js', `ext = ${ext}`);
+  hInfo = mapSourcePos(filePath, line, column);
+  if (defined(hInfo.source)) {
+    // --- successfully mapped
+    hFrame.filePath = withExt(hFrame.filePath, '.coffee');
+    hFrame.fileName = withExt(hFrame.fileName, '.coffee');
+    hFrame.ext = '.coffee';
+    hFrame.line = hInfo.line;
+    hFrame.column = hInfo.column;
+    hFrame.source = hInfo.source;
+  }
 };
 
 // ---------------------------------------------------------------------------
@@ -203,7 +251,7 @@ export var parseFileURL = (url) => {
 
 // ---------------------------------------------------------------------------
 export var getMyOutsideCaller = () => {
-  var err, fileName, hNode, i, lStack, len;
+  var err, fileName, hNode, i, j, lStack, len;
   try {
     // --- Returned object has keys:
     //        type - eval | native | constructor | method | function
@@ -219,7 +267,7 @@ export var getMyOutsideCaller = () => {
     return undef;
   }
   fileName = undef;
-  for (i = 0, len = lStack.length; i < len; i++) {
+  for (i = j = 0, len = lStack.length; j < len; i = ++j) {
     hNode = lStack[i];
     if (fileName === undef) {
       fileName = hNode.fileName;
@@ -272,15 +320,13 @@ export var getV8StackStr = async(hOptions = {}) => {
   var hNode, lParts, lStack;
   lStack = (await getV8Stack(hOptions));
   lParts = (function() {
-    var i, len, results;
+    var j, len, results;
     results = [];
-    for (i = 0, len = lStack.length; i < len; i++) {
-      hNode = lStack[i];
+    for (j = 0, len = lStack.length; j < len; j++) {
+      hNode = lStack[j];
       results.push(nodeStr(hNode));
     }
     return results;
   })();
   return lParts.join("\n");
 };
-
-//# sourceMappingURL=v8-stack.js.map

@@ -7,6 +7,9 @@ import {succeeds, fails} from '@jdeighan/base-utils/utest'
 
 # ---------------------------------------------------------------------------
 
-succeeds () => brew('v = 5', undef, '!fileExists')
-fails    () => brew('let v = 5', undef, '!fileExists')
+succeeds () => brew('v = 5')
+fails    () => brew('let v = 5')
+
+succeeds () => toAST('v = 5')
+fails    () => toAST('let v = 5')
 

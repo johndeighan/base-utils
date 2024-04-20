@@ -32,7 +32,7 @@ import {
 
 import {
   FileProcessor
-} from '@jdeighan/base-utils/FileProcessor';
+} from '@jdeighan/base-utils/file-processor';
 
 // ---------------------------------------------------------------------------
 export var splitEn = (enStr) => {

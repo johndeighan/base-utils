@@ -1,10 +1,12 @@
 # cmd-args.test.coffee
 
-import {u, equal, fails} from '@jdeighan/base-utils/utest'
 import * as lib from '@jdeighan/base-utils/cmd-args'
 Object.assign(global, lib)
+import {pparse} from '@jdeighan/base-utils/peggy'
+import * as ulib from '@jdeighan/base-utils/utest'
+Object.assign(global, ulib)
 
-u.transformValue = (str) => return parse(str)
+u.transformValue = (str) => return pparse(parse, str)
 
 # ---------------------------------------------------------------------------
 
@@ -71,4 +73,4 @@ equal "'do that' -am \"do this\"", {
 	_:['do that', 'do this']
 	}
 
-fails () => parse('--')
+fails () => pparse(parse, '--')

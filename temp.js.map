@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "temp.js",
+  "sourceRoot": "\\",
+  "sources": [
+    "temp.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAa;AAEb,OAAA;EAAQ,MAAR;CAAA,MAAA;;AAEA,IAAG,MAAA,CAAO,cAAP,CAAH;EACC,OAAO,CAAC,GAAR,CAAY,mBAAZ,EADD;CAAA,MAAA;EAGC,OAAO,CAAC,GAAR,CAAY,2BAAZ,EAHD",
+  "sourcesContent": [
+    "# temp.coffee\r\n\r\nimport {isFile} from '@jdeighan/base-utils/fs'\r\n\r\nif isFile(\"./.gitignore\")\r\n\tconsole.log \".gitignore exists\"\r\nelse\r\n\tconsole.log \".gitignore DOES NOT EXIST\"\r\n"
+  ]
+}

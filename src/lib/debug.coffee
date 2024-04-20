@@ -14,7 +14,7 @@ import {
 	LOG, LOGVALUE, stringFits, debugLogging,
 	clearMyLogs, getMyLogs, echoLogs,
 	} from '@jdeighan/base-utils/log'
-import {toTAML} from '@jdeighan/base-utils/taml'
+import {toNICE} from '@jdeighan/base-utils/to-nice'
 import {CallStack} from '@jdeighan/base-utils/stack'
 
 export {debugLogging}
@@ -176,7 +176,7 @@ export setDebugging = (debugWhat=undef, hOptions={}) =>
 export dumpFuncList = () =>
 
 	console.log 'lFuncList: --------------------------------'
-	console.log toTAML(lFuncList)
+	console.log toNICE(lFuncList)
 	console.log '-------------------------------------------'
 	return
 
@@ -412,23 +412,6 @@ export dbg = (lArgs...) =>
 		return dbgValue lArgs[0], lArgs[1]
 
 # ---------------------------------------------------------------------------
-
-export dbgValue = (label, val) =>
-
-	assert isString(label), "not a string"
-
-	doLog = debugAll || debugStack.isLogging()
-	if internalDebugging
-		console.log "dbgValue #{OL(label)}, #{OL(val)}"
-		console.log "   - doLog = #{OL(doLog)}"
-	if doLog
-		level = debugStack.logLevel
-		if ! logValue level, label, val
-			stdLogValue level, label, val
-
-	return true
-
-# ---------------------------------------------------------------------------
 # --- str can be a multi-line string
 
 export dbgString = (str) =>
@@ -447,6 +430,22 @@ export dbgString = (str) =>
 	return true
 
 # ---------------------------------------------------------------------------
+
+export dbgValue = (label, val) =>
+
+	assert isString(label), "not a string"
+	doLog = debugAll || debugStack.isLogging()
+	if internalDebugging
+		console.log "dbgValue #{OL(label)}, #{OL(val)}"
+		console.log "   - doLog = #{OL(doLog)}"
+	if doLog
+		level = debugStack.logLevel
+		if ! logValue level, label, val
+			stdLogValue level, label, val
+
+	return true
+
+# ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 #    Only these 8 functions ever call LOG or LOGVALUE
 
@@ -458,15 +457,15 @@ export stdLogEnter = (level, funcName, lArgs) =>
 
 	labelPre = getPrefix(level, 'plain')
 	if (lArgs.length == 0)
-		LOG "enter #{funcName}", labelPre
+		LOG labelPre + "enter #{funcName}"
 	else
 		str = "enter #{funcName} #{OLS(lArgs)}"
 		if stringFits("#{labelPre}#{str}")
-			LOG str, labelPre
+			LOG labelPre + str
 		else
 			idPre = getPrefix(level+1, 'plain')
 			itemPre = getPrefix(level+2, 'noLastVbar')
-			LOG "enter #{funcName}", labelPre
+			LOG labelPre + "enter #{funcName}"
 			for arg,i in lArgs
 				LOGVALUE "arg[#{i}]", arg, {
 						prefix: idPre
@@ -485,7 +484,7 @@ export stdLogReturn = (lArgs...) =>
 	assert isInteger(level), "level not an integer"
 
 	labelPre = getPrefix(level, 'withArrow')
-	LOG "return from #{funcName}", labelPre
+	LOG labelPre + "return from #{funcName}"
 	return true
 
 # ---------------------------------------------------------------------------
@@ -498,10 +497,10 @@ stdLogReturnVal = (level, funcName, val) =>
 	labelPre = getPrefix(level, 'withArrow')
 	str = "return #{OL(val)} from #{funcName}"
 	if stringFits(str)
-		LOG str, labelPre
+		LOG labelPre + str
 	else
 		pre = getPrefix(level, 'noLastVbar')
-		LOG "return from #{funcName}", labelPre
+		LOG labelPre + "return from #{funcName}"
 		LOGVALUE "val", val, {prefix: pre, itemPrefix: pre}
 	return true
 
@@ -516,10 +515,9 @@ export stdLogYield = (lArgs...) =>
 	valStr = OL(val)
 	str = "yield #{valStr}"
 	if stringFits(str)
-		LOG str, labelPre
+		LOG labelPre + str
 	else
 		pre = getPrefix(level, 'plain')
-		LOG "yield", labelPre
 		LOGVALUE undef, val, {prefix: pre, itemPrefix: pre}
 	return true
 
@@ -528,7 +526,7 @@ export stdLogYield = (lArgs...) =>
 export stdLogYieldFrom = (level, funcName) =>
 
 	labelPre = getPrefix(level, 'withFlat')
-	LOG "yieldFrom", labelPre
+	LOG labelPre + "yieldFrom"
 	return true
 
 # ---------------------------------------------------------------------------
@@ -537,7 +535,7 @@ export stdLogResume = (funcName, level) =>
 
 	assert isInteger(level), "level not an integer"
 	labelPre = getPrefix(level+1, 'withResume')
-	LOG "resume", labelPre
+	LOG labelPre + "resume"
 	return true
 
 # ---------------------------------------------------------------------------
@@ -549,7 +547,7 @@ export stdLogString = (level, str) =>
 
 	labelPre = getPrefix(level, 'plain')
 	for part in blockToArray(str)
-		LOG part, labelPre
+		LOG labelPre + part
 	return true
 
 # ---------------------------------------------------------------------------

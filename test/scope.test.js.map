@@ -1,0 +1,13 @@
+{
+  "version": 3,
+  "file": "",
+  "sourceRoot": "",
+  "sources": [
+    "test/scope.test.coffee"
+  ],
+  "names": [],
+  "mappings": "AAAmB;AAAA,IAAA;;AAEnB,OAAO,CAAA,QAAP,MAAA;;AACA,MAAM,CAAC,MAAP,CAAc,MAAd,EAAsB,IAAtB;;AACA,OAAA;EAAQ,KAAR;CAAA,MAAA;;AAEA,KAAA,GAAQ,IAAI,KAAJ,CAAU,QAAV,EAAoB,CAAC,MAAD,CAApB;;AACR,KAAK,CAAC,GAAN,CAAU,MAAV;;AAEA,MAAA,CAAO,KAAK,CAAC,GAAN,CAAU,MAAV,CAAP;;AACA,MAAA,CAAO,KAAK,CAAC,GAAN,CAAU,MAAV,CAAP;;AACA,KAAA,CAAO,KAAK,CAAC,GAAN,CAAU,UAAV,CAAP",
+  "sourcesContent": [
+    "# scope.test.coffee\n\nimport * as ulib from '@jdeighan/base-utils/utest'\nObject.assign(global, ulib)\nimport {Scope} from '@jdeighan/base-utils/scope'\n\nscope = new Scope('global', ['main'])\nscope.add('func')\n\ntruthy scope.has('main')\ntruthy scope.has('func')\nfalsy  scope.has('notthere')\n"
+  ]
+}

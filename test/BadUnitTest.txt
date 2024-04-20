@@ -1,0 +1,9 @@
+Bad Unit Test
+
+All of these produce duplicated output:
+
+temp
+result = execCmd('npx for-each-file -debug=full -glob=test/test/**/*.txt -cmd="echo <file>"')
+npx for-each-file -debug=full -glob=test/test/**/*.txt -cmd="echo <file>"
+node src/bin/for-each-file.js -debug=full -glob=test/test/**/*.txt -cmd="echo <file>"
+

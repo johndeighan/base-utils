@@ -1,0 +1,21 @@
+--------------------------------------------------------
+obj               type      def emp con pro pcon ccl pcl
+----------------- --------- --- --- --- --- ---- --- ---
+undef             undefined  NO YES  NO  NO   NO  NO  NO
+null              object     NO YES  NO  NO   NO  NO  NO
+true              boolean   YES  NO YES  NO   NO  NO  NO
+false             boolean   YES  NO YES  NO   NO  NO  NO
+{}                object    YES YES YES  NO   NO  NO  NO
+[]                object    YES YES YES  NO   NO  NO  NO
+{a:1}             object    YES  NO YES  NO   NO  NO  NO
+[1,2]             object    YES  NO YES  NO   NO  NO  NO
+NewClass          function  YES  NO YES YES  YES  NO  NO
+new NewClass()    object    YES  NO YES  NO   NO  NO  NO
+42                number    YES  NO YES  NO   NO  NO  NO
+3.14              number    YES  NO YES  NO   NO  NO  NO
+new Number(42)    object    YES YES YES  NO   NO  NO  NO
+BigInt(42)        bigint    YES  NO YES  NO   NO  NO  NO
+'abc'             string    YES  NO YES  NO   NO  NO  NO
+new String('abc') object    YES  NO YES  NO   NO  NO  NO
+() -> return 3    function  YES  NO YES YES  YES  NO  NO
+() => return 3    function  YES  NO YES  NO   NO  NO  NO

@@ -224,5 +224,3 @@ export var toTAML = (obj, hOptions = {}) => {
     return indented(str, indent, oneIndent);
   }
 };
-
-//# sourceMappingURL=taml.js.map

@@ -24,7 +24,7 @@ import {
 
 import {
   toNICE
-} from '@jdeighan/base-utils/nice';
+} from '@jdeighan/base-utils/to-nice';
 
 import {
   toAST

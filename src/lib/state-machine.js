@@ -89,5 +89,3 @@ export var StateMachine = class StateMachine {
   }
 
 };
-
-//# sourceMappingURL=state-machine.js.map
