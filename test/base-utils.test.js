@@ -2069,3 +2069,9 @@ equal(chomp('abc\r\n'), 'abc');
   like(execCmd("echo abc"), "abc");
   return like(execCmd('echo my word'), 'my word');
 })();
+
+// ---------------------------------------------------------------------------
+// --- test npmLogLevel()
+(() => {
+  return equal(npmLogLevel(), "silent");
+})();

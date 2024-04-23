@@ -1659,3 +1659,10 @@ equal chomp('abc\r\n'), 'abc'
 	like execCmd("echo abc"), "abc"
 	like execCmd('echo my word'), 'my word'
 	)()
+
+# ---------------------------------------------------------------------------
+# --- test npmLogLevel()
+
+(() =>
+	equal npmLogLevel(), "silent"
+	)()

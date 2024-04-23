@@ -388,6 +388,13 @@ export execCmd = (cmd, lParts...) =>
 
 # ---------------------------------------------------------------------------
 
+export npmLogLevel = () =>
+
+	result = execCmd('npm config get loglevel')
+	return chomp(result)
+
+# ---------------------------------------------------------------------------
+
 export execCmdAsync = (cmd, lParts...) =>
 	# --- may throw an exception
 

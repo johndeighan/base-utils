@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // low-level-build.coffee
-var fileFilter, hBin, hFile, hFilesProcessed, hJson, hMetaData, jsPath, key, nCoffee, nPeggy, ref, ref1, ref2, relPath, short_name, stub, tla, value, x;
+var doLog, echo, fileFilter, hBin, hFile, hFilesProcessed, hJson, hMetaData, jsPath, key, nCoffee, nPeggy, ref, ref1, ref2, relPath, short_name, stub, tla, value, x;
 
 import {
   globSync
@@ -17,6 +17,7 @@ import {
   execCmd,
   toBlock,
   add_s,
+  npmLogLevel,
   fileExt,
   withExt,
   newerDestFilesExist
@@ -62,7 +63,15 @@ hFilesProcessed = {
   peggy: 0
 };
 
-console.log("-- low-level-build --");
+echo = npmLogLevel() !== 'silent';
+
+doLog = (str) => {
+  if (echo) {
+    console.log(str);
+  }
+};
+
+doLog("-- low-level-build --");
 
 // ---------------------------------------------------------------------------
 // 1. Make sure we're in a project root directory
@@ -92,7 +101,7 @@ ref = allFilesMatching('**/*.coffee', {fileFilter});
 //    unless newer *.js and *.js.map files exist
 for (hFile of ref) {
   ({relPath} = hFile);
-  LOG(relPath);
+  doLog(relPath);
   brewFile(relPath);
   hFilesProcessed.coffee += 1;
 }
@@ -103,7 +112,7 @@ ref1 = allFilesMatching('**/*.peggy', {fileFilter});
 //    unless newer *.js and *.js.map files exist OR it needs rebuilding
 for (hFile of ref1) {
   ({relPath} = hFile);
-  LOG(relPath);
+  doLog(relPath);
   peggifyFile(relPath);
   hFilesProcessed.peggy += 1;
 }
@@ -150,13 +159,13 @@ for (x of ref2) {
 if (nonEmpty(hBin)) {
   hJson = slurpPkgJSON();
   if (!hasKey(hJson, 'bin')) {
-    LOG("   - add key 'bin'");
+    doLog("   - add key 'bin'");
     hJson.bin = {};
   }
   for (key in hBin) {
     value = hBin[key];
     if (hJson.bin[key] !== value) {
-      LOG(`   - add bin/${key} = ${value}`);
+      doLog(`   - add bin/${key} = ${value}`);
       hJson.bin[key] = value;
     }
   }
@@ -166,11 +175,11 @@ if (nonEmpty(hBin)) {
 nCoffee = hFilesProcessed.coffee;
 
 if (nCoffee > 0) {
-  console.log(`(${nCoffee} coffee file${add_s(nCoffee)} compiled)`);
+  doLog(`(${nCoffee} coffee file${add_s(nCoffee)} compiled)`);
 }
 
 nPeggy = hFilesProcessed.peggy;
 
 if (nPeggy > 0) {
-  console.log(`(${nPeggy} peggy file${add_s(nPeggy)} compiled)`);
+  doLog(`(${nPeggy} peggy file${add_s(nPeggy)} compiled)`);
 }

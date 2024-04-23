@@ -465,6 +465,13 @@ export var execCmd = (cmd, ...lParts) => {
 };
 
 // ---------------------------------------------------------------------------
+export var npmLogLevel = () => {
+  var result;
+  result = execCmd('npm config get loglevel');
+  return chomp(result);
+};
+
+// ---------------------------------------------------------------------------
 export var execCmdAsync = async(cmd, ...lParts) => {
   var cmdLine;
   // --- may throw an exception
