@@ -39,8 +39,11 @@ assert isProjRoot('.', 'strict'), "Not in package root dir"
 # --- A file (either *.coffee or *.peggy) is out of date unless both:
 #        - a *.js file exists that's newer than the original file
 #        - a *.js.map file exists that's newer than the original file
+# --- But ignore files inside node_modules
 
 fileFilter = ({filePath}) =>
+	if filePath.match(/node_modules/)
+		return false
 	jsFile = withExt(filePath, '.js')
 	mapFile = withExt(filePath, '.js.map')
 	if (fileExt(filePath) == '.peggy') && isFakeFile(jsFile)
