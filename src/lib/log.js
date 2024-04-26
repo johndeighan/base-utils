@@ -307,12 +307,13 @@ export var stringFits = (str) => {
 
 // ---------------------------------------------------------------------------
 export var LOGVALUE = (label, value, hOptions = {}) => {
-  var escaped, i, itemPrefix, j, labelStr, len, len1, line, max, prefix, ref, ref1, str, str1, str2, str3, subtype, type;
+  var escaped, i, itemPrefix, j, k, labelStr, len, len1, len2, line, max, prefix, ref, ref1, ref2, short, str, str1, str2, str3, subtype, type;
   // --- Allow label to be empty, i.e. undef
-  ({prefix, itemPrefix, max} = getOptions(hOptions, {
+  ({prefix, itemPrefix, max, short} = getOptions(hOptions, {
     prefix: '',
     itemPrefix: undef,
-    max: undef
+    max: undef,
+    short: false
   }));
   if (maxReached(max)) {
     return true;
@@ -365,18 +366,39 @@ ${prefixBlock('"""', itemPrefix)}`);
       }
       break;
     case 'hash':
-    case 'array':
-      str = toNICE(value, {
-        sortKeys: true,
-        oneIndent: spaces(3)
-      });
-      if (labelStr) {
-        PUTSTR(`${prefix}${labelStr}`);
+      if (short) {
+        PUTSTR(`${prefix}${labelStr}HASH`);
+      } else {
+        str = toNICE(value, {
+          sortKeys: true,
+          oneIndent: spaces(3)
+        });
+        if (labelStr) {
+          PUTSTR(`${prefix}${labelStr}`);
+        }
+        ref = blockToArray(str);
+        for (i = 0, len = ref.length; i < len; i++) {
+          str = ref[i];
+          PUTSTR(`${itemPrefix}${str}`);
+        }
       }
-      ref = blockToArray(str);
-      for (i = 0, len = ref.length; i < len; i++) {
-        str = ref[i];
-        PUTSTR(`${itemPrefix}${str}`);
+      break;
+    case 'array':
+      if (short) {
+        PUTSTR(`${prefix}${labelStr}ARRAY`);
+      } else {
+        str = toNICE(value, {
+          sortKeys: true,
+          oneIndent: spaces(3)
+        });
+        if (labelStr) {
+          PUTSTR(`${prefix}${labelStr}`);
+        }
+        ref1 = blockToArray(str);
+        for (j = 0, len1 = ref1.length; j < len1; j++) {
+          str = ref1[j];
+          PUTSTR(`${itemPrefix}${str}`);
+        }
       }
       break;
     case 'regexp':
@@ -399,9 +421,9 @@ ${prefixBlock('"""', itemPrefix)}`);
         if (notdefined(itemPrefix)) {
           itemPrefix = prefix;
         }
-        ref1 = blockToArray(str);
-        for (j = 0, len1 = ref1.length; j < len1; j++) {
-          line = ref1[j];
+        ref2 = blockToArray(str);
+        for (k = 0, len2 = ref2.length; k < len2; k++) {
+          line = ref2[k];
           PUTSTR(`${itemPrefix}${line}`);
         }
       } else {

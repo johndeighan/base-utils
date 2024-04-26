@@ -71,6 +71,8 @@ export var debugAll = false; // if true, always log
 
 export var internalDebugging = false;
 
+export var shortvals = false;
+
 // --- Custom loggers, if defined
 logEnter = undef;
 
@@ -147,6 +149,7 @@ export var resetDebugging = () => {
   debugStack.reset();
   lFuncList = [];
   debugAll = false;
+  shortvals = false;
   logEnter = stdLogEnter;
   logReturn = stdLogReturn;
   logYield = stdLogYield;
@@ -165,6 +168,7 @@ export var setDebugging = (debugWhat = undef, hOptions = {}) => {
   //        3. an array of strings
   // --- Valid options:
   //        'noecho' - don't echo logs to console
+  //        'shortvals' - args and return values always on one line
   //        'enter', 'returnFrom',
   //           'yield', 'resume',
   //           'string', 'value'
@@ -188,6 +192,9 @@ export var setDebugging = (debugWhat = undef, hOptions = {}) => {
     if (internalDebugging) {
       console.log("TURN ON ECHO");
     }
+  }
+  if (hOptions.shortvals) {
+    shortvals = true;
   }
   ref = words('enter returnFrom yield resume string value');
   for (j = 0, len = ref.length; j < len; j++) {
@@ -562,7 +569,8 @@ export var stdLogEnter = (level, funcName, lArgs) => {
         arg = lArgs[i];
         LOGVALUE(`arg[${i}]`, arg, {
           prefix: idPre,
-          itemPrefix: itemPre
+          itemPrefix: itemPre,
+          short: shortvals
         });
       }
     }
@@ -598,7 +606,8 @@ stdLogReturnVal = (level, funcName, val) => {
     LOG(labelPre + `return from ${funcName}`);
     LOGVALUE("val", val, {
       prefix: pre,
-      itemPrefix: pre
+      itemPrefix: pre,
+      short: shortvals
     });
   }
   return true;

@@ -1,5 +1,5 @@
 // ast-walker.coffee
-var hAllHandlers, lBuiltins;
+var hAllHandlers, hSubTrees, lBuiltins;
 
 import {
   undef,
@@ -133,6 +133,14 @@ WhileStatement:
 	lWalkTrees:
 		- test
 		- body`);
+
+hSubTrees = fromTAML(`---
+File:
+	- program
+Program:
+	- body
+ArrayExpression:
+	- elements`);
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------

@@ -285,4 +285,61 @@ Hi`);
 })();
 
 // ---------------------------------------------------------------------------
-equal(2 + 2, 4);
+(() => {
+  var dbgStr, expectedDbg, func, str;
+  str = 'abcde '.repeat(4);
+  func = function(arg) {
+    var result;
+    dbgEnter('func', arg);
+    result = {
+      a: str,
+      b: str
+    };
+    dbgReturn('func', result);
+    return result;
+  };
+  setDebugging('func', 'noecho');
+  debugStack.logCalls(true);
+  clearAllLogs();
+  func([str, str, str]);
+  dbgStr = getDebugLog();
+  expectedDbg = `enter func
+│   arg[0] =
+│       - abcde˳abcde˳abcde˳abcde˳
+│       - abcde˳abcde˳abcde˳abcde˳
+│       - abcde˳abcde˳abcde˳abcde˳
+└─> return from func
+    val =
+    a: abcde˳abcde˳abcde˳abcde˳
+    b: abcde˳abcde˳abcde˳abcde˳`;
+  equal(dbgStr, expectedDbg);
+  return truthy(debugStack.isEmpty());
+})();
+
+// ---------------------------------------------------------------------------
+// --- test option 'shortvals'
+(() => {
+  var dbgStr, expectedDbg, func, str;
+  str = 'abcde '.repeat(4);
+  func = function(arg) {
+    var result;
+    dbgEnter('func', arg);
+    result = {
+      a: str,
+      b: str
+    };
+    dbgReturn('func', result);
+    return result;
+  };
+  setDebugging('func', 'noecho shortvals');
+  debugStack.logCalls(true);
+  clearAllLogs();
+  func([str, str, str]);
+  dbgStr = getDebugLog();
+  expectedDbg = `enter func
+│   arg[0] = ARRAY
+└─> return from func
+    val = HASH`;
+  equal(dbgStr, expectedDbg);
+  return truthy(debugStack.isEmpty());
+})();

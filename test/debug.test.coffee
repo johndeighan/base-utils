@@ -317,4 +317,68 @@ TEST = (debugWhat, func, expectedDbg, expectedLog) ->
 
 # ---------------------------------------------------------------------------
 
-equal 2+2, 4
+(() =>
+	str = 'abcde '.repeat(4)
+
+	func = (arg) ->
+		dbgEnter 'func', arg
+		result = {a:str, b:str}
+		dbgReturn 'func', result
+		return result
+
+	setDebugging 'func', 'noecho'
+
+	debugStack.logCalls true
+	clearAllLogs()
+
+	func([str, str, str])
+
+	dbgStr = getDebugLog()
+
+	expectedDbg = """
+		enter func
+		│   arg[0] =
+		│       - abcde˳abcde˳abcde˳abcde˳
+		│       - abcde˳abcde˳abcde˳abcde˳
+		│       - abcde˳abcde˳abcde˳abcde˳
+		└─> return from func
+		    val =
+		    a: abcde˳abcde˳abcde˳abcde˳
+		    b: abcde˳abcde˳abcde˳abcde˳
+		"""
+
+	equal dbgStr, expectedDbg
+	truthy debugStack.isEmpty()
+	)()
+
+# ---------------------------------------------------------------------------
+# --- test option 'shortvals'
+
+(() =>
+	str = 'abcde '.repeat(4)
+
+	func = (arg) ->
+		dbgEnter 'func', arg
+		result = {a:str, b:str}
+		dbgReturn 'func', result
+		return result
+
+	setDebugging 'func', 'noecho shortvals'
+
+	debugStack.logCalls true
+	clearAllLogs()
+
+	func([str, str, str])
+
+	dbgStr = getDebugLog()
+
+	expectedDbg = """
+		enter func
+		│   arg[0] = ARRAY
+		└─> return from func
+		    val = HASH
+		"""
+
+	equal dbgStr, expectedDbg
+	truthy debugStack.isEmpty()
+	)()

@@ -26,6 +26,7 @@ lFuncList = []      # array of {funcName, plus}
 
 export debugAll = false      # if true, always log
 export internalDebugging = false
+export shortvals = false
 
 # --- Custom loggers, if defined
 logEnter     = undef
@@ -103,6 +104,7 @@ export resetDebugging = () =>
 	debugStack.reset()
 	lFuncList = []
 	debugAll = false
+	shortvals = false
 	logEnter  = stdLogEnter
 	logReturn = stdLogReturn
 	logYield  = stdLogYield
@@ -121,6 +123,7 @@ export setDebugging = (debugWhat=undef, hOptions={}) =>
 	#        3. an array of strings
 	# --- Valid options:
 	#        'noecho' - don't echo logs to console
+	#        'shortvals' - args and return values always on one line
 	#        'enter', 'returnFrom',
 	#           'yield', 'resume',
 	#           'string', 'value'
@@ -144,6 +147,8 @@ export setDebugging = (debugWhat=undef, hOptions={}) =>
 		echoLogs true
 		if internalDebugging
 			console.log "TURN ON ECHO"
+	if hOptions.shortvals
+		shortvals = true
 	for key in words('enter returnFrom yield resume string value')
 		if defined(hOptions[key])
 			setCustomDebugLogger key, hOptions[key]
@@ -470,6 +475,7 @@ export stdLogEnter = (level, funcName, lArgs) =>
 				LOGVALUE "arg[#{i}]", arg, {
 						prefix: idPre
 						itemPrefix: itemPre
+						short: shortvals
 						}
 	return true
 
@@ -501,7 +507,11 @@ stdLogReturnVal = (level, funcName, val) =>
 	else
 		pre = getPrefix(level, 'noLastVbar')
 		LOG labelPre + "return from #{funcName}"
-		LOGVALUE "val", val, {prefix: pre, itemPrefix: pre}
+		LOGVALUE "val", val, {
+			prefix: pre
+			itemPrefix: pre
+			short: shortvals
+			}
 	return true
 
 # ---------------------------------------------------------------------------

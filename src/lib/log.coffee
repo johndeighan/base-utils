@@ -260,10 +260,11 @@ export stringFits = (str) =>
 export LOGVALUE = (label, value, hOptions={}) =>
 	# --- Allow label to be empty, i.e. undef
 
-	{prefix, itemPrefix, max} = getOptions hOptions, {
+	{prefix, itemPrefix, max, short} = getOptions hOptions, {
 		prefix: ''
 		itemPrefix: undef
 		max: undef
+		short: false
 		}
 	if maxReached(max)
 		return true
@@ -315,15 +316,31 @@ export LOGVALUE = (label, value, hOptions={}) =>
 						#{prefixBlock('"""', itemPrefix)}
 						"""
 
-		when 'hash', 'array'
-			str = toNICE(value, {
-				sortKeys: true
-				oneIndent: spaces(3)
-				})
-			if labelStr
-				PUTSTR "#{prefix}#{labelStr}"
-			for str in blockToArray(str)
-				PUTSTR "#{itemPrefix}#{str}"
+		when 'hash'
+			if short
+				PUTSTR "#{prefix}#{labelStr}HASH"
+			else
+				str = toNICE(value, {
+					sortKeys: true
+					oneIndent: spaces(3)
+					})
+				if labelStr
+					PUTSTR "#{prefix}#{labelStr}"
+				for str in blockToArray(str)
+					PUTSTR "#{itemPrefix}#{str}"
+
+		when 'array'
+			if short
+				PUTSTR "#{prefix}#{labelStr}ARRAY"
+			else
+				str = toNICE(value, {
+					sortKeys: true
+					oneIndent: spaces(3)
+					})
+				if labelStr
+					PUTSTR "#{prefix}#{labelStr}"
+				for str in blockToArray(str)
+					PUTSTR "#{itemPrefix}#{str}"
 
 		when 'regexp'
 			PUTSTR "#{prefix}#{labelStr}<regexp>"
