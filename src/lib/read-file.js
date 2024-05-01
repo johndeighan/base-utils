@@ -288,7 +288,7 @@ export var allFilesMatching = function*(pattern = '*', hOptions = {}) {
       ({
         filePath: path
       } = h);
-      return isFile(path) && !path.match(/\bnode_modules\b/i) && !path.match(/\bDropbox\b/i);
+      return isFile(path) && !path.match(/\bnode_modules\b/i);
     },
     eager: false
   }));
