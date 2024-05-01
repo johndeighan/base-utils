@@ -1,6 +1,6 @@
 {
 	"name": "@jdeighan/base-utils",
-	"version": "17.0.9",
+	"version": "17.0.10",
 	"type": "module",
 	"description": "low level utilities",
 	"exports": {
