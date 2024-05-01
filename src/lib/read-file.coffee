@@ -128,6 +128,9 @@ export readTextFile = (source, hOptions={}) =>
 		if notdefined(hMetaData) \
 				&& !inExtra \
 				&& (matches = lineMatches(firstLine, pattern))
+			if notdefined(firstLine)
+				dbgReturn 'reader'
+				return
 			dbg "yielding first line because no metadata"
 			if defined(transform)
 				result = transform(firstLine)

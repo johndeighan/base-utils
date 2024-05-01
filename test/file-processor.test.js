@@ -291,7 +291,7 @@ import {
 // --- Write out new files in `./test/words/temp` that contain
 //        the same lines in the original file, but with
 //        the number incremented by 5
-//     Override transformLine() to do this, override handleLin() to
+//     Override transformLine() to do this, override handleLine() to
 //        return its first arg
 (() => {
   var fp;

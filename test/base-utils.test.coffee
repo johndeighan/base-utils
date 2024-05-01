@@ -1333,7 +1333,7 @@ truthy lShuffled.length == lItems.length
 
 dateStr = '2023-01-01 05:00:00'
 equal timestamp(dateStr), "1/1/2023 5:00:00 AM"
-equal msSinceEpoch(dateStr), 1672578000000
+equal msSinceEpoch(dateStr), 1672516800000
 equal formatDate(dateStr), "Jan 1, 2023"
 
 

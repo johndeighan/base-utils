@@ -165,6 +165,10 @@ export var readTextFile = (source, hOptions = {}) => {
     // --- NOTE lineMatches() returns true if empty pattern
     dbgEnter('reader');
     if (notdefined(hMetaData) && !inExtra && (matches = lineMatches(firstLine, pattern))) {
+      if (notdefined(firstLine)) {
+        dbgReturn('reader');
+        return;
+      }
       dbg("yielding first line because no metadata");
       if (defined(transform)) {
         result = transform(firstLine);

@@ -35,7 +35,7 @@ Object.assign(global, lib2);
 // --- test readTextFile
 (() => {
   var hMetaData, lLines, path;
-  path = "./test/test/file3.txt";
+  path = "./test/read-file/file3.txt";
   [hMetaData, lLines] = readTextFile(path, 'eager');
   assert(isArray(lLines), "Bad return from readTextFile");
   equal(hMetaData, {
@@ -46,7 +46,7 @@ Object.assign(global, lib2);
 })();
 
 // ---------------------------------------------------------------------------
-// Contents of ./test/readline5.txt
+// Contents of ./test/read-file/readline5.txt
 // abc
 // defg
 
@@ -56,14 +56,14 @@ Object.assign(global, lib2);
 // --- get all lines in file
 (() => {
   var hMetaData, lLines, path;
-  path = './test/readline5.txt';
+  path = './test/read-file/readline5.txt';
   [hMetaData, lLines] = readTextFile(path, 'eager');
   return equal(lLines, ['abc', 'defg', '', 'abcdefg', 'more text']);
 })();
 
 (() => {
   var hMetaData, lLines, path;
-  path = './test/readline4.txt';
+  path = './test/read-file/readline4.txt';
   [hMetaData, lLines] = readTextFile(path, 'eager');
   return equal(lLines, ['ghi', 'jkl', '', 'mno', 'pqr']);
 })();
@@ -73,7 +73,7 @@ Object.assign(global, lib2);
 (() => {
   var ext, hFile, lFiles, ref;
   lFiles = [];
-  ref = allFilesMatching('./test/test/*', 'eager');
+  ref = allFilesMatching('./test/read-file/*', 'eager');
   for (hFile of ref) {
     ({ext} = hFile);
     if ((ext !== '.map') && (ext !== '.js')) {
@@ -83,24 +83,16 @@ Object.assign(global, lib2);
   sortArrayOfHashes(lFiles, 'fileName');
   return like(lFiles, [
     {
-      fileName: 'file1.txt',
-      hMetaData: {},
-      lLines: ['Hello']
+      fileName: 'empty-meta.txt',
+      hMetaData: {
+        key: 'myself'
+      },
+      lLines: []
     },
     {
-      fileName: 'file1.zh',
+      fileName: 'empty.txt',
       hMetaData: {},
-      lLines: ['你好']
-    },
-    {
-      fileName: 'file2.txt',
-      hMetaData: {},
-      lLines: ['Goodbye']
-    },
-    {
-      fileName: 'file2.zh',
-      hMetaData: {},
-      lLines: ['再见']
+      lLines: []
     },
     {
       fileName: 'file3.txt',
@@ -112,9 +104,27 @@ Object.assign(global, lib2);
     'This is a test']
     },
     {
-      fileName: 'test.coffee',
+      fileName: 'readline4.txt',
       hMetaData: {},
-      lLines: ['console.log "Hello"']
+      lLines: ['ghi',
+    'jkl',
+    '',
+    'mno',
+    'pqr']
+    },
+    {
+      fileName: 'readline5.txt',
+      hMetaData: {},
+      lLines: ['abc',
+    'defg',
+    '',
+    'abcdefg',
+    'more text']
+    },
+    {
+      fileName: 'zzz.zh',
+      hMetaData: {},
+      lLines: ['zzz']
     }
   ]);
 })();
@@ -127,21 +137,23 @@ Object.assign(global, lib2);
   hOptions = {
     eager: true
   };
-  ref = allFilesMatching('./test/test/*.txt', hOptions);
+  ref = allFilesMatching('./test/read-file/*.txt', hOptions);
   for (hFile of ref) {
     lFiles.push(hFile);
   }
   sortArrayOfHashes(lFiles, 'fileName');
   return like(lFiles, [
     {
-      fileName: 'file1.txt',
-      hMetaData: {},
-      lLines: ['Hello']
+      fileName: 'empty-meta.txt',
+      hMetaData: {
+        key: 'myself'
+      },
+      lLines: []
     },
     {
-      fileName: 'file2.txt',
+      fileName: 'empty.txt',
       hMetaData: {},
-      lLines: ['Goodbye']
+      lLines: []
     },
     {
       fileName: 'file3.txt',
@@ -151,6 +163,24 @@ Object.assign(global, lib2);
       },
       lLines: ['',
     'This is a test']
+    },
+    {
+      fileName: 'readline4.txt',
+      hMetaData: {},
+      lLines: ['ghi',
+    'jkl',
+    '',
+    'mno',
+    'pqr']
+    },
+    {
+      fileName: 'readline5.txt',
+      hMetaData: {},
+      lLines: ['abc',
+    'defg',
+    '',
+    'abcdefg',
+    'more text']
     }
   ]);
 })();
@@ -520,4 +550,40 @@ log 'done'`);
       }
     ]
   ]);
+})();
+
+// ---------------------------------------------------------------------------
+(() => {
+  var filePath, hMetaData, handleLine, line, numLines, reader, ref;
+  filePath = './test/read-file/empty.txt';
+  numLines = 0;
+  handleLine = function(line) {
+    numLines += 1;
+  };
+  [hMetaData, reader] = readTextFile(filePath);
+  ref = reader();
+  for (line of ref) {
+    handleLine(line);
+  }
+  equal(numLines, 0);
+  return equal(hMetaData, {});
+})();
+
+// ---------------------------------------------------------------------------
+(() => {
+  var filePath, hMetaData, handleLine, line, numLines, reader, ref;
+  filePath = './test/read-file/empty-meta.txt';
+  numLines = 0;
+  handleLine = function(line) {
+    numLines += 1;
+  };
+  [hMetaData, reader] = readTextFile(filePath);
+  ref = reader();
+  for (line of ref) {
+    handleLine(line);
+  }
+  equal(numLines, 0);
+  return equal(hMetaData, {
+    key: 'myself'
+  });
 })();

@@ -19,7 +19,7 @@ Object.assign(global, lib2)
 # --- test readTextFile
 
 (() =>
-	path = "./test/test/file3.txt"
+	path = "./test/read-file/file3.txt"
 	[hMetaData, lLines] = readTextFile(path, 'eager')
 	assert isArray(lLines), "Bad return from readTextFile"
 	equal hMetaData, {fName: 'John', lName: 'Deighan'}
@@ -27,7 +27,7 @@ Object.assign(global, lib2)
 	)()
 
 # ---------------------------------------------------------------------------
-# Contents of ./test/readline5.txt
+# Contents of ./test/read-file/readline5.txt
 # abc
 # defg
 #
@@ -37,7 +37,7 @@ Object.assign(global, lib2)
 # --- get all lines in file
 
 (() =>
-	path = './test/readline5.txt'
+	path = './test/read-file/readline5.txt'
 	[hMetaData, lLines] = readTextFile(path, 'eager')
 	equal lLines, [
 		'abc'
@@ -49,7 +49,7 @@ Object.assign(global, lib2)
 	)()
 
 (() =>
-	path = './test/readline4.txt'
+	path = './test/read-file/readline4.txt'
 	[hMetaData, lLines] = readTextFile(path, 'eager')
 	equal lLines, [
 		'ghi'
@@ -65,7 +65,7 @@ Object.assign(global, lib2)
 
 (() =>
 	lFiles = []
-	for hFile from allFilesMatching('./test/test/*', 'eager')
+	for hFile from allFilesMatching('./test/read-file/*', 'eager')
 		{ext} = hFile
 		if (ext != '.map') && (ext != '.js')
 			lFiles.push hFile
@@ -73,37 +73,34 @@ Object.assign(global, lib2)
 
 	like lFiles, [
 		{
-			fileName: 'file1.txt',
-			hMetaData: {},
-			lLines: ['Hello']
+			fileName: 'empty-meta.txt'
+			hMetaData: {key: 'myself'}
+			lLines: []
 			}
 		{
-			fileName: 'file1.zh',
-			hMetaData: {},
-			lLines: ['你好']
+			fileName: 'empty.txt'
+			hMetaData: {}
+			lLines: []
 			}
 		{
-			fileName: 'file2.txt',
-			hMetaData: {},
-			lLines: ['Goodbye']
-			}
-		{
-			fileName: 'file2.zh',
-			hMetaData: {},
-			lLines: ['再见']
-			}
-		{
-			fileName: 'file3.txt'
-			hMetaData: {
-				fName: 'John'
-				lName: 'Deighan'
-				}
+			fileName: 'file3.txt',
+			hMetaData: {fName: 'John', lName: 'Deighan'}
 			lLines: ['', 'This is a test']
 			}
 		{
-			fileName: 'test.coffee',
+			fileName: 'readline4.txt',
 			hMetaData: {},
-			lLines: [ 'console.log "Hello"' ]
+			lLines: ['ghi','jkl','','mno','pqr']
+			}
+		{
+			fileName: 'readline5.txt',
+			hMetaData: {},
+			lLines: ['abc','defg','','abcdefg','more text']
+			}
+		{
+			fileName: 'zzz.zh',
+			hMetaData: {},
+			lLines: ['zzz']
 			}
 		]
 
@@ -117,28 +114,35 @@ Object.assign(global, lib2)
 	hOptions = {
 		eager: true
 		}
-	for hFile from allFilesMatching('./test/test/*.txt', hOptions)
+	for hFile from allFilesMatching('./test/read-file/*.txt', hOptions)
 		lFiles.push hFile
 	sortArrayOfHashes lFiles, 'fileName'
 
 	like lFiles, [
 		{
-			fileName: 'file1.txt',
-			hMetaData: {},
-			lLines: ['Hello']
+			fileName: 'empty-meta.txt'
+			hMetaData: {key: 'myself'}
+			lLines: []
 			}
 		{
-			fileName: 'file2.txt',
-			hMetaData: {},
-			lLines: ['Goodbye']
+			fileName: 'empty.txt'
+			hMetaData: {}
+			lLines: []
 			}
 		{
-			fileName: 'file3.txt'
-			hMetaData: {
-				fName: 'John'
-				lName: 'Deighan'
-				}
+			fileName: 'file3.txt',
+			hMetaData: {fName: 'John', lName: 'Deighan'}
 			lLines: ['', 'This is a test']
+			}
+		{
+			fileName: 'readline4.txt',
+			hMetaData: {},
+			lLines: ['ghi','jkl','','mno','pqr']
+			}
+		{
+			fileName: 'readline5.txt',
+			hMetaData: {},
+			lLines: ['abc','defg','','abcdefg','more text']
 			}
 		]
 
@@ -505,4 +509,41 @@ Object.assign(global, lib2)
 		[0, {type: 'log', text: "'done'"}]
 		]
 	)()
+
+# ---------------------------------------------------------------------------
+
+(() =>
+	filePath = './test/read-file/empty.txt'
+	numLines = 0
+
+	handleLine = (line) ->
+		numLines += 1
+		return
+
+	[hMetaData, reader] = readTextFile(filePath)
+	for line from reader()
+		handleLine line
+
+	equal numLines, 0
+	equal hMetaData, {}
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() =>
+	filePath = './test/read-file/empty-meta.txt'
+	numLines = 0
+
+	handleLine = (line) ->
+		numLines += 1
+		return
+
+	[hMetaData, reader] = readTextFile(filePath)
+	for line from reader()
+		handleLine line
+
+	equal numLines, 0
+	equal hMetaData, {key: 'myself'}
+	)()
+
 

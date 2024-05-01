@@ -173,7 +173,7 @@ export var FileProcessor = class FileProcessor {
   // ..........................................................
   filterFile(hFile) {
     dbgEnter('filterFile', hFile);
-    dbgReturn('filterFile');
+    dbgReturn('filterFile', true);
     return true; // by default, handle all files in dir
   }
 
@@ -181,7 +181,7 @@ export var FileProcessor = class FileProcessor {
     // ..........................................................
   handleFile(hFile) {
     // --- does nothing, returns nothing
-    dbgEnter('handleFile', hFile);
+    dbgEnter('handleFile', hFile.fileName);
     dbgReturn('handleFile');
   }
 
@@ -235,7 +235,7 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
     // ..........................................................
   handleFile(hFile) {
     var addToRecipe, fileChanged, filePath, hMetaData, lRecipe, line, lineNum, newline, reader, ref, result;
-    dbgEnter('handleFile', hFile);
+    dbgEnter('LineProcessor.handleFile', hFile.fileName);
     ({filePath} = hFile);
     assert(isString(filePath), `not a string: ${OL(filePath)}`);
     lRecipe = []; // --- array of hashes
@@ -297,7 +297,7 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
       result = {};
     }
     dbg(`${lineNum - 1} lines processed`);
-    dbgReturn('handleFile', result);
+    dbgReturn('LineProcessor.handleFile', result);
     return result;
   }
 
