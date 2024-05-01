@@ -248,6 +248,7 @@ export class LineProcessor extends FileProcessor
 				addToRecipe newline, line
 			else
 				dbg "line was undef"
+				break
 
 		if fileChanged
 			result = {lRecipe}

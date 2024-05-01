@@ -268,3 +268,30 @@ import {
 	equal dirListing('./test/words/temp2', 'filesOnly').length, 25
 	equal dirListing('./test/words/temp2', 'dirsOnly').length, 0
 	)()
+
+(() =>
+	lp = new LineProcessor('./test/file-processor/test.zh')
+	lp.transformLine = (line) => return line
+	lp.handleLine = (hWord, lineNum, hFileInfo) ->
+		if notdefined(hWord)
+			return undef
+		return undef
+
+	lp.readAll()
+	)()
+
+# ---------------------------------------------------------------------------
+
+(() =>
+	numLines = 0
+
+	lp = new LineProcessor('./test/file-processor/test.zh')
+	lp.transformLine = (line) => return {line}
+	lp.handleLine = (h, lineNum, hFileInfo) ->
+		numLines += 1
+		return undef
+
+	lp.readAll()
+	equal numLines, 0
+
+	)()

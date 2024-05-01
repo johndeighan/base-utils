@@ -325,3 +325,34 @@ import {
   equal(dirListing('./test/words/temp2', 'filesOnly').length, 25);
   return equal(dirListing('./test/words/temp2', 'dirsOnly').length, 0);
 })();
+
+(() => {
+  var lp;
+  lp = new LineProcessor('./test/file-processor/test.zh');
+  lp.transformLine = (line) => {
+    return line;
+  };
+  lp.handleLine = function(hWord, lineNum, hFileInfo) {
+    if (notdefined(hWord)) {
+      return undef;
+    }
+    return undef;
+  };
+  return lp.readAll();
+})();
+
+// ---------------------------------------------------------------------------
+(() => {
+  var lp, numLines;
+  numLines = 0;
+  lp = new LineProcessor('./test/file-processor/test.zh');
+  lp.transformLine = (line) => {
+    return {line};
+  };
+  lp.handleLine = function(h, lineNum, hFileInfo) {
+    numLines += 1;
+    return undef;
+  };
+  lp.readAll();
+  return equal(numLines, 0);
+})();
