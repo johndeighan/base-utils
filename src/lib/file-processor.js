@@ -10,6 +10,7 @@ import {
   getOptions,
   add_s,
   isEmpty,
+  nonEmpty,
   isString,
   isHash,
   toJSON,
@@ -139,6 +140,10 @@ export var FileProcessor = class FileProcessor {
       hGlobOptions: this.hOptions.hGlobOptions,
       eager: this.hOptions.eager
     };
+    dbg(`Find files matching ${OL(this.pattern)}`);
+    if (nonEmpty(hOptions)) {
+      dbg('hOptions', hOptions);
+    }
     ref = allFilesMatching(this.pattern, hOptions);
     for (hFile of ref) {
       ({filePath} = hFile);

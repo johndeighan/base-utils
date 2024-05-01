@@ -3,7 +3,7 @@
 import {globSync as glob} from 'glob'
 
 import {
-	undef, defined, notdefined, getOptions, add_s, isEmpty,
+	undef, defined, notdefined, getOptions, add_s, isEmpty, nonEmpty,
 	isString, isHash, toJSON, jsType, OL,
 	hasKey, hasAnyKey, addNewKey, toBlock, toArray,
 	sortedArrayOfHashes,
@@ -104,6 +104,9 @@ export class FileProcessor
 			hGlobOptions: @hOptions.hGlobOptions
 			eager: @hOptions.eager
 			}
+		dbg "Find files matching #{OL(@pattern)}"
+		if nonEmpty(hOptions)
+			dbg 'hOptions', hOptions
 		for hFile from allFilesMatching(@pattern, hOptions)
 			{filePath} = hFile
 			if @filterFile hFile

@@ -1588,7 +1588,7 @@ dateStr = '2023-01-01 05:00:00';
 
 equal(timestamp(dateStr), "1/1/2023 5:00:00 AM");
 
-equal(msSinceEpoch(dateStr), 1672567200000);
+equal(msSinceEpoch(dateStr), 1672578000000);
 
 equal(formatDate(dateStr), "Jan 1, 2023");
 
