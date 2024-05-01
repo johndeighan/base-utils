@@ -203,7 +203,7 @@ export class LineProcessor extends FileProcessor
 
 		dbgEnter 'handleFile', hFile
 		{filePath} = hFile
-		assert isString(filePath), "not a string"
+		assert isString(filePath), "not a string: #{OL(filePath)}"
 		lRecipe = []   # --- array of hashes
 		lineNum = 1
 		fileChanged = false
@@ -235,17 +235,19 @@ export class LineProcessor extends FileProcessor
 		[hMetaData, reader, lineNum] = readTextFile(filePath)
 		@handleMetaData hMetaData
 		for line from reader()
-			dbg "LINE: '#{line}'"
-			lineNum += 1
+			dbg "LINE: #{OL(line)}"
+			if defined(line)
+				lineNum += 1
 
-			# --- handleLine should return:
-			#     - undef to ignore line
-			#     - string to write a line literally
-			#     - a hash which cannot contain key 'lineNum'
+				# --- handleLine should return:
+				#     - undef to ignore line
+				#     - string to write a line literally
+				#     - a hash which cannot contain key 'lineNum'
 
-			newline = @handleLine line, lineNum, filePath
-			addToRecipe newline, line
-			lineNum += 1
+				newline = @handleLine line, lineNum, filePath
+				addToRecipe newline, line
+			else
+				dbg "line was undef"
 
 		if fileChanged
 			result = {lRecipe}

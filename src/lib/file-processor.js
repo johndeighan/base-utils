@@ -237,7 +237,7 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
     var addToRecipe, fileChanged, filePath, hMetaData, lRecipe, line, lineNum, newline, reader, ref, result;
     dbgEnter('handleFile', hFile);
     ({filePath} = hFile);
-    assert(isString(filePath), "not a string");
+    assert(isString(filePath), `not a string: ${OL(filePath)}`);
     lRecipe = []; // --- array of hashes
     lineNum = 1;
     fileChanged = false;
@@ -277,15 +277,18 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
     this.handleMetaData(hMetaData);
     ref = reader();
     for (line of ref) {
-      dbg(`LINE: '${line}'`);
-      lineNum += 1;
-      // --- handleLine should return:
-      //     - undef to ignore line
-      //     - string to write a line literally
-      //     - a hash which cannot contain key 'lineNum'
-      newline = this.handleLine(line, lineNum, filePath);
-      addToRecipe(newline, line);
-      lineNum += 1;
+      dbg(`LINE: ${OL(line)}`);
+      if (defined(line)) {
+        lineNum += 1;
+        // --- handleLine should return:
+        //     - undef to ignore line
+        //     - string to write a line literally
+        //     - a hash which cannot contain key 'lineNum'
+        newline = this.handleLine(line, lineNum, filePath);
+        addToRecipe(newline, line);
+      } else {
+        dbg("line was undef");
+      }
     }
     if (fileChanged) {
       result = {lRecipe};
