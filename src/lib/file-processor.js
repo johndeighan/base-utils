@@ -96,17 +96,17 @@ export var FileProcessor = class FileProcessor {
   // ..........................................................
   dumpdata(h) {
     var taml;
-    dbgEnter('dumpdata', h);
+    dbgEnter('FileProcessor.dumpdata', h);
     taml = toTAML(h, '!useTabs !useDashes indent=1');
     console.log(taml);
-    dbgReturn('dumpdata');
+    dbgReturn('FileProcessor.dumpdata');
   }
 
   // ..........................................................
   dumpUserData(format = 'nice') {
     var fileName, h, i, len, ref, str;
     // --- formats: 'nice', 'json', 'taml'
-    dbgEnter('dumpUserData', format);
+    dbgEnter('FileProcessor.dumpUserData', format);
     switch (format.toLowerCase()) {
       case 'nice':
         ref = this.lUserData;
@@ -128,13 +128,13 @@ export var FileProcessor = class FileProcessor {
       default:
         croak(`Bad format: ${format}`);
     }
-    dbgReturn('dumpUserData');
+    dbgReturn('FileProcessor.dumpUserData');
   }
 
   // ..........................................................
   readAll() {
     var filePath, h, hFile, hOptions, numFiles, ref;
-    dbgEnter('readAll');
+    dbgEnter('FileProcessor.readAll');
     numFiles = 0;
     hOptions = {
       hGlobOptions: this.hOptions.hGlobOptions,
@@ -161,7 +161,7 @@ export var FileProcessor = class FileProcessor {
       }
     }
     dbg(`${numFiles} file${add_s(numFiles)} processed`);
-    dbgReturn('readAll', this.lUserData);
+    dbgReturn('FileProcessor.readAll', this.lUserData);
     return this.lUserData;
   }
 
@@ -172,8 +172,8 @@ export var FileProcessor = class FileProcessor {
 
   // ..........................................................
   filterFile(hFile) {
-    dbgEnter('filterFile', hFile);
-    dbgReturn('filterFile', true);
+    dbgEnter('FileProcessor.filterFile', hFile);
+    dbgReturn('FileProcessor.filterFile', true);
     return true; // by default, handle all files in dir
   }
 
@@ -181,8 +181,8 @@ export var FileProcessor = class FileProcessor {
     // ..........................................................
   handleFile(hFile) {
     // --- does nothing, returns nothing
-    dbgEnter('handleFile', hFile.fileName);
-    dbgReturn('handleFile');
+    dbgEnter('FileProcessor.handleFile', hFile.fileName);
+    dbgReturn('FileProcessor.handleFile');
   }
 
   // ..........................................................
@@ -234,12 +234,12 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
   
     // ..........................................................
   handleFile(hFile) {
-    var addToRecipe, fileChanged, filePath, hMetaData, lRecipe, line, lineNum, newline, reader, ref, result;
+    var addToRecipe, fileChanged, filePath, hMetaData, lRecipe, line, newline, numLines, obj, reader, ref, result;
     dbgEnter('LineProcessor.handleFile', hFile.fileName);
     ({filePath} = hFile);
     assert(isString(filePath), `not a string: ${OL(filePath)}`);
     lRecipe = []; // --- array of hashes
-    lineNum = 1;
+    numLines = 0;
     fileChanged = false;
     addToRecipe = (item, orgLine) => {
       var i, len, results, subitem;
@@ -255,7 +255,7 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
           break;
         case 'hash':
           fileChanged = true;
-          addNewKey(item, 'lineNum', lineNum);
+          addNewKey(item, 'lineNum', numLines);
           dbg("RECIPE:", item);
           return lRecipe.push(item);
         case 'array':
@@ -273,18 +273,19 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
           return dbg(`RECIPE: line '${line}' removed`);
       }
     };
-    [hMetaData, reader, lineNum] = readTextFile(filePath);
+    [hMetaData, reader, numLines] = readTextFile(filePath);
     this.handleMetaData(hMetaData);
     ref = reader();
     for (line of ref) {
       dbg(`LINE: ${OL(line)}`);
       if (defined(line)) {
-        lineNum += 1;
+        numLines += 1;
         // --- handleLine should return:
         //     - undef to ignore line
         //     - string to write a line literally
         //     - a hash which cannot contain key 'lineNum'
-        newline = this.handleLine(line, lineNum, filePath);
+        obj = this.transformLine(line, numLines, filePath);
+        newline = this.handleLine(obj, numLines, filePath);
         addToRecipe(newline, line);
       } else {
         dbg("line was undef");
@@ -296,12 +297,19 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
     } else {
       result = {};
     }
-    dbg(`${lineNum - 1} lines processed`);
+    dbg(`${numLines} lines processed`);
     dbgReturn('LineProcessor.handleFile', result);
     return result;
   }
 
   // ..........................................................
+  // --- SHOULD OVERRIDE, to transform a line
+  transformLine(line, lineNum, filePath) {
+    return line; // by default, returns original line
+  }
+
+  
+    // ..........................................................
   // --- SHOULD OVERRIDE, to save data for a given line
   handleLine(line, lineNum, filePath) {} // by default, returns nothing
 
@@ -309,7 +317,7 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
     // ..........................................................
   writeFile(newPath, hUserData) {
     var filePath, i, item, lOutput, lRecipe, len, text;
-    dbgEnter('writeFile', newPath, hUserData);
+    dbgEnter('LineProcessor.writeFile', newPath, hUserData);
     ({lRecipe, filePath} = hUserData);
     if (!this.hOptions.allowOverwrite) {
       assert(newPath !== filePath, "Attempt to write org file");
@@ -334,7 +342,7 @@ export var LineProcessor = class LineProcessor extends FileProcessor {
         barf(toBlock(lOutput), newPath);
       }
     }
-    dbgReturn('writeFile');
+    dbgReturn('LineProcessor.writeFile');
   }
 
   // ..........................................................

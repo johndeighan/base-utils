@@ -64,10 +64,10 @@ export class FileProcessor
 
 	dumpdata: (h) ->
 
-		dbgEnter 'dumpdata', h
+		dbgEnter 'FileProcessor.dumpdata', h
 		taml = toTAML(h, '!useTabs !useDashes indent=1')
 		console.log taml
-		dbgReturn 'dumpdata'
+		dbgReturn 'FileProcessor.dumpdata'
 		return
 
 	# ..........................................................
@@ -75,7 +75,7 @@ export class FileProcessor
 	dumpUserData: (format='nice') ->
 		# --- formats: 'nice', 'json', 'taml'
 
-		dbgEnter 'dumpUserData', format
+		dbgEnter 'FileProcessor.dumpUserData', format
 		switch format.toLowerCase()
 			when 'nice'
 				for h in @lUserData
@@ -90,14 +90,14 @@ export class FileProcessor
 				console.log toTAML(@lUserData, '!useTabs')
 			else
 				croak "Bad format: #{format}"
-		dbgReturn 'dumpUserData'
+		dbgReturn 'FileProcessor.dumpUserData'
 		return
 
 	# ..........................................................
 
 	readAll: () ->
 
-		dbgEnter 'readAll'
+		dbgEnter 'FileProcessor.readAll'
 		numFiles = 0
 
 		hOptions = {
@@ -121,7 +121,7 @@ export class FileProcessor
 				dbg "[#{numFiles}] #{hFile.fileName} - Skip"
 
 		dbg "#{numFiles} file#{add_s(numFiles)} processed"
-		dbgReturn 'readAll', @lUserData
+		dbgReturn 'FileProcessor.readAll', @lUserData
 		return @lUserData
 
 	# ..........................................................
@@ -134,8 +134,8 @@ export class FileProcessor
 
 	filterFile: (hFile) ->
 
-		dbgEnter 'filterFile', hFile
-		dbgReturn 'filterFile', true
+		dbgEnter 'FileProcessor.filterFile', hFile
+		dbgReturn 'FileProcessor.filterFile', true
 		return true    # by default, handle all files in dir
 
 	# ..........................................................
@@ -143,8 +143,8 @@ export class FileProcessor
 	handleFile: (hFile) ->
 		# --- does nothing, returns nothing
 
-		dbgEnter 'handleFile', hFile.fileName
-		dbgReturn 'handleFile'
+		dbgEnter 'FileProcessor.handleFile', hFile.fileName
+		dbgReturn 'FileProcessor.handleFile'
 		return
 
 	# ..........................................................
@@ -205,7 +205,7 @@ export class LineProcessor extends FileProcessor
 		{filePath} = hFile
 		assert isString(filePath), "not a string: #{OL(filePath)}"
 		lRecipe = []   # --- array of hashes
-		lineNum = 1
+		numLines = 0
 		fileChanged = false
 
 		addToRecipe = (item, orgLine) =>
@@ -219,7 +219,7 @@ export class LineProcessor extends FileProcessor
 						dbg "RECIPE: '#{item}' - changed"
 				when 'hash'
 					fileChanged = true
-					addNewKey item, 'lineNum', lineNum
+					addNewKey item, 'lineNum', numLines
 					dbg "RECIPE:", item
 					lRecipe.push item
 				when 'array'
@@ -232,19 +232,20 @@ export class LineProcessor extends FileProcessor
 					dbg "RECIPE: line '#{line}' removed"
 
 
-		[hMetaData, reader, lineNum] = readTextFile(filePath)
+		[hMetaData, reader, numLines] = readTextFile(filePath)
 		@handleMetaData hMetaData
 		for line from reader()
 			dbg "LINE: #{OL(line)}"
 			if defined(line)
-				lineNum += 1
+				numLines += 1
 
 				# --- handleLine should return:
 				#     - undef to ignore line
 				#     - string to write a line literally
 				#     - a hash which cannot contain key 'lineNum'
 
-				newline = @handleLine line, lineNum, filePath
+				obj = @transformLine(line, numLines, filePath)
+				newline = @handleLine obj, numLines, filePath
 				addToRecipe newline, line
 			else
 				dbg "line was undef"
@@ -255,9 +256,16 @@ export class LineProcessor extends FileProcessor
 		else
 			result = {}
 
-		dbg "#{lineNum-1} lines processed"
+		dbg "#{numLines} lines processed"
 		dbgReturn 'LineProcessor.handleFile', result
 		return result
+
+	# ..........................................................
+	# --- SHOULD OVERRIDE, to transform a line
+
+	transformLine: (line, lineNum, filePath) ->
+
+		return line   # by default, returns original line
 
 	# ..........................................................
 	# --- SHOULD OVERRIDE, to save data for a given line
@@ -270,7 +278,7 @@ export class LineProcessor extends FileProcessor
 
 	writeFile: (newPath, hUserData) ->
 
-		dbgEnter 'writeFile', newPath, hUserData
+		dbgEnter 'LineProcessor.writeFile', newPath, hUserData
 		{lRecipe, filePath} = hUserData
 
 		if ! @hOptions.allowOverwrite
@@ -291,7 +299,7 @@ export class LineProcessor extends FileProcessor
 			# --- Now write out the text in lOutput
 			if (lOutput.length > 0)
 				barf toBlock(lOutput), newPath
-		dbgReturn 'writeFile'
+		dbgReturn 'LineProcessor.writeFile'
 		return
 
 	# ..........................................................
