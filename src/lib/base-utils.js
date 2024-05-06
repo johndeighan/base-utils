@@ -214,13 +214,31 @@ export var resetQuoteChars = () => {
 };
 
 // ---------------------------------------------------------------------------
-export var OL = (obj, debug = false) => {
-  var finalResult, myReplacer, result;
+export var OL = (obj, hOptions = {}) => {
+  var debug, finalResult, myReplacer, result, short;
+  ({debug, short} = getOptions(hOptions, {
+    debug: false,
+    short: false
+  }));
   if (obj === undef) {
     return 'undef';
   }
   if (obj === null) {
     return 'null';
+  }
+  if (short) {
+    if (isHash(obj)) {
+      return 'HASH';
+    }
+    if (isArray(obj)) {
+      return 'ARRAY';
+    }
+    if (isFunction(obj)) {
+      return 'FUNCTION';
+    }
+    if (isObject(obj)) {
+      return 'OBJECT';
+    }
   }
   myReplacer = (key, x) => {
     var tag, type;
@@ -265,13 +283,17 @@ export var OL = (obj, debug = false) => {
 };
 
 // ---------------------------------------------------------------------------
-export var OLS = (lObjects, sep = ',') => {
-  var j, lParts, len1, obj;
+export var OLS = (lObjects, hOptions = {}) => {
+  var j, lParts, len1, obj, sep, short;
+  ({sep, short} = getOptions(hOptions, {
+    sep: ',',
+    short: false
+  }));
   assert(isArray(lObjects), "not an array");
   lParts = [];
   for (j = 0, len1 = lObjects.length; j < len1; j++) {
     obj = lObjects[j];
-    lParts.push(OL(obj));
+    lParts.push(OL(obj, {short}));
   }
   return lParts.join(sep);
 };
@@ -286,8 +308,9 @@ export var jsType = (x) => {
     case null:
       return [undef, 'null'];
     case true:
+      return ['boolean', 'true'];
     case false:
-      return ['boolean', undef];
+      return ['boolean', 'false'];
   }
   switch (typeof x) {
     case 'number':

@@ -336,8 +336,7 @@ Hi`);
   clearAllLogs();
   func([str, str, str]);
   dbgStr = getDebugLog();
-  expectedDbg = `enter func
-│   arg[0] = ARRAY
+  expectedDbg = `enter func ARRAY
 └─> return from func
     val = HASH`;
   equal(dbgStr, expectedDbg);

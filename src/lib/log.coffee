@@ -137,7 +137,7 @@ export resetLogWidth = () =>
 export setStringifier = (func) =>
 
 	orgStringifier = stringify
-#	assert isFunction(func), "not a function: #{OL(func)}"
+	assert isFunction(func), "not a function: #{OL(func)}"
 	stringify = func
 	return orgStringifier
 
@@ -151,7 +151,7 @@ export resetStringifier = () =>
 
 export setLogger = (func) =>
 
-#	assert isFunction(func), "setLogger() arg is not a function"
+	assert isFunction(func), "not a function: #{OL(func)}"
 	orgLogger = putstr
 	putstr = func
 	return orgLogger
@@ -264,8 +264,9 @@ export LOGVALUE = (label, value, hOptions={}) =>
 		prefix: ''
 		itemPrefix: undef
 		max: undef
-		short: false
+		short: false      # prefer short strings, e.g. 'HASH', 'ARRAY'
 		}
+
 	if maxReached(max)
 		return true
 

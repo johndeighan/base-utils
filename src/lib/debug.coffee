@@ -464,7 +464,8 @@ export stdLogEnter = (level, funcName, lArgs) =>
 	if (lArgs.length == 0)
 		LOG labelPre + "enter #{funcName}"
 	else
-		str = "enter #{funcName} #{OLS(lArgs)}"
+		hOptions = {short: shortvals}
+		str = "enter #{funcName} #{OLS(lArgs, hOptions)}"
 		if stringFits("#{labelPre}#{str}")
 			LOG labelPre + str
 		else

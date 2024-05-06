@@ -373,8 +373,7 @@ TEST = (debugWhat, func, expectedDbg, expectedLog) ->
 	dbgStr = getDebugLog()
 
 	expectedDbg = """
-		enter func
-		│   arg[0] = ARRAY
+		enter func ARRAY
 		└─> return from func
 		    val = HASH
 		"""

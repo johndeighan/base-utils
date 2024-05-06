@@ -550,7 +550,7 @@ export var dbgValue = (label, val) => {
 // ---------------------------------------------------------------------------
 //    Only these 8 functions ever call LOG or LOGVALUE
 export var stdLogEnter = (level, funcName, lArgs) => {
-  var arg, i, idPre, itemPre, j, labelPre, len, str;
+  var arg, hOptions, i, idPre, itemPre, j, labelPre, len, str;
   assert(isFunctionName(funcName), "bad function name");
   assert(isArray(lArgs), "not an array");
   assert(isInteger(level), "level not an integer");
@@ -558,7 +558,10 @@ export var stdLogEnter = (level, funcName, lArgs) => {
   if (lArgs.length === 0) {
     LOG(labelPre + `enter ${funcName}`);
   } else {
-    str = `enter ${funcName} ${OLS(lArgs)}`;
+    hOptions = {
+      short: shortvals
+    };
+    str = `enter ${funcName} ${OLS(lArgs, hOptions)}`;
     if (stringFits(`${labelPre}${str}`)) {
       LOG(labelPre + str);
     } else {

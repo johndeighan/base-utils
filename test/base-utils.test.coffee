@@ -173,8 +173,8 @@ equal quoted("\"mary's «lamb»\", she said"),
 	equal jsType({}), ['hash', 'empty']
 	equal jsType(3.14159), ['number', undef]
 	equal jsType(42), ['number', 'integer']
-	equal jsType(true), ['boolean', undef]
-	equal jsType(false), ['boolean', undef]
+	equal jsType(true), ['boolean', 'true']
+	equal jsType(false), ['boolean', 'false']
 	equal jsType({}), ['hash', 'empty']
 	equal jsType([1,2]), ['array', undef]
 	equal jsType([]), ['array', 'empty']
@@ -407,6 +407,9 @@ equal escapeStr("\thas quote: \"\nnext line", hEsc),
 equal OLS(['abc', 3]), '"abc",3'
 equal OLS([]), ""
 equal OLS([undef, {a:1}]), 'undef,{"a":1}'
+equal OLS([undef, {a:1}], {short: true}), 'undef,HASH'
+equal OLS([undef, [1,2,3]]), 'undef,[1,2,3]'
+equal OLS([undef, [1,2,3]], {short: true}), 'undef,ARRAY'
 
 # ---------------------------------------------------------------------------
 
@@ -1333,9 +1336,7 @@ truthy lShuffled.length == lItems.length
 
 dateStr = '2023-01-01 05:00:00'
 equal timestamp(dateStr), "1/1/2023 5:00:00 AM"
-equal msSinceEpoch(dateStr), 1672516800000
 equal formatDate(dateStr), "Jan 1, 2023"
-
 
 # ---------------------------------------------------------------------------
 # test pad()

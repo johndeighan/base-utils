@@ -195,12 +195,23 @@ export resetQuoteChars = () =>
 
 # ---------------------------------------------------------------------------
 
-export OL = (obj, debug=false) =>
+export OL = (obj, hOptions={}) =>
+
+	{debug, short} = getOptions hOptions, {
+		debug: false
+		short: false
+		}
 
 	if (obj == undef)
 		return 'undef'
 	if (obj == null)
 		return 'null'
+
+	if short
+		if isHash(obj) then return 'HASH'
+		if isArray(obj) then return 'ARRAY'
+		if isFunction(obj) then return 'FUNCTION'
+		if isObject(obj) then return 'OBJECT'
 
 	myReplacer = (key, x) =>
 		type = typeof x
@@ -239,12 +250,17 @@ export OL = (obj, debug=false) =>
 
 # ---------------------------------------------------------------------------
 
-export OLS = (lObjects, sep=',') =>
+export OLS = (lObjects, hOptions={}) =>
+
+	{sep, short} = getOptions hOptions, {
+		sep: ','
+		short: false
+		}
 
 	assert isArray(lObjects), "not an array"
 	lParts = []
 	for obj in lObjects
-		lParts.push OL(obj)
+		lParts.push OL(obj, {short})
 	return lParts.join(sep)
 
 # ---------------------------------------------------------------------------
@@ -257,8 +273,10 @@ export jsType = (x) =>
 			return [undef, undef]
 		when null
 			return [undef, 'null']
-		when true, false
-			return ['boolean', undef]
+		when true
+			return ['boolean', 'true']
+		when false
+			return ['boolean', 'false']
 
 	switch (typeof x)
 		when 'number'
