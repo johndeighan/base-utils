@@ -2,24 +2,27 @@
 
 import {
 	undef, defined, notdefined, OL,
-	isString, isHash, isNonEmptyString,
+	isString, isHash, isArray, isNonEmptyString,
 	} from '@jdeighan/base-utils'
+import {LOG, LOGVALUE} from '@jdeighan/base-utils/log'
 import {assert, croak} from '@jdeighan/base-utils/exceptions'
 import {dbgEnter, dbgReturn, dbg} from '@jdeighan/base-utils/debug'
 
 # ---------------------------------------------------------------------------
-# You should override this class, adding methods (uppercase by convention)
+# You should override this class,
+#    adding methods (uppercase by convention)
 #    that expect one or more states and assign a new state
 # then only use those methods, not setState() directly
 
 export class StateMachine
 
-	constructor: (@state, @hData={}) ->
+	constructor: (@state='start', @hData={}) ->
 
 		dbgEnter 'StateMachine', @state, @hData
-		assert isNonEmptyString(@state), "not a non-empty string"
+		assert isNonEmptyString(@state),
+				"not a non-empty string: #{OL(@state)}"
 		assert isHash(@hData), "data not a hash"
-		dbgReturn 'StateMachine', this
+		dbgReturn 'StateMachine'
 
 	# ..........................................................
 
@@ -53,22 +56,48 @@ export class StateMachine
 
 	# ..........................................................
 
-	expectDefined: (lVarNames...) ->
+	defined: (name) ->
 
-		for varname in lVarNames
-			assert defined(@hData[varname]), "#{varname} should be defined"
+		return defined(@hData[name])
+
+	# ..........................................................
+
+	allDefined: (lNames...) ->
+
+		for name in lNames
+			if notdefined(@hData[name])
+				return false
+		return true
+
+	# ..........................................................
+
+	anyDefined: (lNames...) ->
+
+		for name in lNames
+			if defined(@hData[name])
+				return true
+		return false
+
+	# ..........................................................
+
+	setVar: (name, value) ->
+
+		@hData[name] = value
 		return
 
 	# ..........................................................
 
-	getVar: (varname) ->
+	appendVar: (name, value) ->
 
-		@expectDefined varname
-		return @hData[varname]
+		assert @defined(name), "#{name} not defined"
+		lItems = @hData[name]
+		assert isArray(lItems), "Not an array: #{OL(lItems)}"
+		lItems.push value
+		return
 
 	# ..........................................................
 
-	setVar: (varname, value) ->
+	getVar: (name) ->
 
-		@hData[varname] = value
-		return
+		assert @allDefined(name), "#{name} is not defined"
+		return @hData[name]

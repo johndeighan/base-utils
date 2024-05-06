@@ -15,7 +15,7 @@ import {getPrefix} from '@jdeighan/base-utils/prefix'
 import {getMyOutsideCaller} from '@jdeighan/base-utils/v8-stack'
 import {NamedLogs} from '@jdeighan/base-utils/named-logs'
 
-logWidth = 42
+logWidth = 78
 sep_dash = '-'.repeat(logWidth)
 sep_eq = '='.repeat(logWidth)
 

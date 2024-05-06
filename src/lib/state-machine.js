@@ -8,8 +8,14 @@ import {
   OL,
   isString,
   isHash,
+  isArray,
   isNonEmptyString
 } from '@jdeighan/base-utils';
+
+import {
+  LOG,
+  LOGVALUE
+} from '@jdeighan/base-utils/log';
 
 import {
   assert,
@@ -23,17 +29,18 @@ import {
 } from '@jdeighan/base-utils/debug';
 
 // ---------------------------------------------------------------------------
-// You should override this class, adding methods (uppercase by convention)
+// You should override this class,
+//    adding methods (uppercase by convention)
 //    that expect one or more states and assign a new state
 // then only use those methods, not setState() directly
 export var StateMachine = class StateMachine {
-  constructor(state, hData = {}) {
+  constructor(state = 'start', hData = {}) {
     this.state = state;
     this.hData = hData;
     dbgEnter('StateMachine', this.state, this.hData);
-    assert(isNonEmptyString(this.state), "not a non-empty string");
+    assert(isNonEmptyString(this.state), `not a non-empty string: ${OL(this.state)}`);
     assert(isHash(this.hData), "data not a hash");
-    dbgReturn('StateMachine', this);
+    dbgReturn('StateMachine');
   }
 
   // ..........................................................
@@ -69,23 +76,52 @@ export var StateMachine = class StateMachine {
   }
 
   // ..........................................................
-  expectDefined(...lVarNames) {
-    var i, len, varname;
-    for (i = 0, len = lVarNames.length; i < len; i++) {
-      varname = lVarNames[i];
-      assert(defined(this.hData[varname]), `${varname} should be defined`);
+  defined(name) {
+    return defined(this.hData[name]);
+  }
+
+  // ..........................................................
+  allDefined(...lNames) {
+    var i, len, name;
+    for (i = 0, len = lNames.length; i < len; i++) {
+      name = lNames[i];
+      if (notdefined(this.hData[name])) {
+        return false;
+      }
     }
+    return true;
   }
 
   // ..........................................................
-  getVar(varname) {
-    this.expectDefined(varname);
-    return this.hData[varname];
+  anyDefined(...lNames) {
+    var i, len, name;
+    for (i = 0, len = lNames.length; i < len; i++) {
+      name = lNames[i];
+      if (defined(this.hData[name])) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // ..........................................................
-  setVar(varname, value) {
-    this.hData[varname] = value;
+  setVar(name, value) {
+    this.hData[name] = value;
+  }
+
+  // ..........................................................
+  appendVar(name, value) {
+    var lItems;
+    assert(this.defined(name), `${name} not defined`);
+    lItems = this.hData[name];
+    assert(isArray(lItems), `Not an array: ${OL(lItems)}`);
+    lItems.push(value);
+  }
+
+  // ..........................................................
+  getVar(name) {
+    assert(this.allDefined(name), `${name} is not defined`);
+    return this.hData[name];
   }
 
 };

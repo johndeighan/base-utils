@@ -4,29 +4,44 @@ import {
   defined,
   notdefined,
   pass,
-  escapeStr
+  escapeStr,
+  OL,
+  isArray
 } from '@jdeighan/base-utils';
 
 import {
-  suppressExceptionLogging
+  assert,
+  croak
 } from '@jdeighan/base-utils/exceptions';
 
 import {
-  UnitTester,
-  equal,
-  like,
-  notequal,
-  truthy,
-  falsy,
-  fails,
-  succeeds
-} from '@jdeighan/base-utils/utest';
+  LOG,
+  LOGVALUE
+} from '@jdeighan/base-utils/log';
 
-import * as lib from '@jdeighan/base-utils/state-machine';
+import * as lib from '@jdeighan/base-utils/utest';
 
 Object.assign(global, lib);
 
-suppressExceptionLogging();
+import * as lib2 from '@jdeighan/base-utils/state-machine';
+
+Object.assign(global, lib2);
+
+// ---------------------------------------------------------------------------
+(function() {
+  var mach;
+  mach = new StateMachine();
+  truthy(mach.inState('start'));
+  equal(mach.state, 'start');
+  falsy(mach.inState('not'));
+  succeeds(() => {
+    return mach.expectState('start', 'not');
+  });
+  fails(() => {
+    return mach.expectState('xxx', 'not');
+  });
+  return falsy(mach.allDefined('flag', 'str'));
+})();
 
 // ---------------------------------------------------------------------------
 (function() {
@@ -44,12 +59,8 @@ suppressExceptionLogging();
   fails(() => {
     return mach.expectState('xxx', 'not');
   });
-  succeeds(() => {
-    return mach.expectDefined('flag', 'str');
-  });
-  fails(() => {
-    return mach.expectDefined('flag', 'str', 'notdef');
-  });
+  truthy(mach.allDefined('flag', 'str'));
+  falsy(mach.allDefined('flag', 'str', 'notdef'));
   equal(mach.getVar('flag'), true);
   return equal(mach.getVar('str'), 'a string');
 })();
@@ -71,12 +82,12 @@ suppressExceptionLogging();
 
     FIRST() {
       this.expectState('init');
-      return super.setState('middle');
+      return this.state = 'middle';
     }
 
     SECOND() {
       this.expectState('middle');
-      return super.setState('final');
+      return this.state = 'final';
     }
 
   };
@@ -98,4 +109,64 @@ suppressExceptionLogging();
   return fails(() => {
     return mach1.setState('some state');
   });
+})();
+
+// ---------------------------------------------------------------------------
+// A more comples machine that simulates parsing CoffeeScript
+(function() {
+  var CoffeeStateMachine, mach;
+  CoffeeStateMachine = class CoffeeStateMachine extends StateMachine {
+    constructor() {
+      super();
+      this.setVar('lLines', []);
+    }
+
+    START_IMPORT() {
+      this.expectState('start');
+      this.setState('importing', {
+        lIdents: []
+      });
+      return this;
+    }
+
+    IDENT(name) {
+      this.expectState('importing');
+      this.appendVar('lIdents', name);
+      return this;
+    }
+
+    END_IMPORT(source) {
+      var identStr, lIdents;
+      this.expectState('importing');
+      lIdents = this.getVar('lIdents');
+      assert(isArray(lIdents), `Not an array: ${OL(lIdents)}`);
+      identStr = lIdents.join(',');
+      this.appendVar('lLines', `import {${identStr}} from '${source}';`);
+      this.setState('start', {
+        lIdents: undef
+      });
+      return this;
+    }
+
+    ASSIGN(name, num) {
+      this.expectState('start');
+      return this.appendVar('lLines', `${name} = ${num};`);
+    }
+
+    getCode() {
+      return this.getVar('lLines').join("\n");
+    }
+
+  };
+  mach = new CoffeeStateMachine();
+  mach.START_IMPORT();
+  mach.IDENT('x');
+  mach.IDENT('y');
+  mach.END_IMPORT('@jdeighan/base-utils');
+  mach.ASSIGN('x', 42);
+  mach.ASSIGN('y', 13);
+  truthy(mach.inState('start'));
+  return equal(mach.getCode(), `import {x,y} from '@jdeighan/base-utils';
+x = 42;
+y = 13;`);
 })();

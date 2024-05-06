@@ -7,7 +7,7 @@ import {
 	undef, defined, notdefined, isFunction,
 	} from '@jdeighan/base-utils'
 import {
-	LOG, LOGVALUE, LOGSTRING,
+	LOG, LOGVALUE, LOGSTRING, setLogWidth,
 	clearAllLogs, getMyLogs, echoLogs,
 	} from '@jdeighan/base-utils/log'
 import {CallStack} from '@jdeighan/base-utils/stack'
@@ -20,6 +20,7 @@ import {
 
 echoLogs false
 setDebugging false, 'noecho'
+setLogWidth 64
 
 # ---------------------------------------------------------------------------
 # --- Define some functions to use in testing

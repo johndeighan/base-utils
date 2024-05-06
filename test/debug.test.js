@@ -17,6 +17,7 @@ import {
   LOG,
   LOGVALUE,
   LOGSTRING,
+  setLogWidth,
   clearAllLogs,
   getMyLogs,
   echoLogs
@@ -44,6 +45,8 @@ import {
 echoLogs(false);
 
 setDebugging(false, 'noecho');
+
+setLogWidth(64);
 
 // ---------------------------------------------------------------------------
 // --- Define some functions to use in testing
